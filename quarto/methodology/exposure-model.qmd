@@ -1,0 +1,372 @@
+---
+title: "Stage 1a: Traffic Volume Estimation"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+---
+
+## Why exposure estimation is necessary
+
+Collision counts cannot be compared fairly across roads without accounting for
+traffic exposure. A motorway with 100,000 vehicles per day should have more
+collisions than a rural lane with 500. Risk is collisions per unit of traffic
+exposure, not collisions per road link.
+
+AADF (Annual Average Daily Flow) count points provide directly measured
+exposure at ~13,000 locations across the study area (Birmingham to Yorkshire).
+Most road links — particularly minor and unclassified roads — have no nearby
+count point. Stage 1a estimates AADT for all 2.1 million OS Open Roads links
+using the measured count points as training data.
+
+## Data and model setup
+
+```{python}
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from road_risk.config import _ROOT as ROOT
+from road_risk.model.constants import RANDOM_STATE
+
+try:
+    import geopandas as gpd
+except Exception:
+    gpd = None
+
+road = pd.read_parquet(ROOT / "data" / "features" / "road_link_annual.parquet")
+road_class_col = next(
+    (c for c in ["road_classification", "road_type"] if c in road.columns), None
+)
+
+aadt_path = ROOT / "data" / "models" / "aadt_estimates.parquet"
+aadt = pd.read_parquet(aadt_path) if aadt_path.exists() else pd.DataFrame()
+
+net_path = ROOT / "data" / "features" / "network_features.parquet"
+net = pd.read_parquet(net_path) if net_path.exists() else pd.DataFrame()
+
+print(f"road_link_annual : {road.shape[0]:,} rows × {road.shape[1]} cols")
+print(f"aadt_estimates   : {aadt.shape[0]:,} rows" if not aadt.empty else "aadt_estimates   : not found")
+print(f"network_features : {net.shape[0]:,} links" if not net.empty else "network_features : not found")
+```
+
+## Measured AADF coverage
+
+Only a minority of road links have a directly measured AADF count point within
+the 2km spatial join cap. Most of the network — especially minor and
+unclassified roads — relies on the Stage 1a model.
+
+Note: `road_link_annual` contains only the ~391k link×year rows that have at
+least one collision record. Coverage figures below reflect that filtered subset,
+not the full 2.1M-link OS Open Roads network.
+
+```{python}
+if "all_motor_vehicles" in road.columns:
+    cov_overall = road["all_motor_vehicles"].notna().mean()
+    print(f"Collision-linked rows with measured AADF: {road['all_motor_vehicles'].notna().sum():,} "
+          f"({cov_overall:.1%} of road_link_annual rows)")
+    if not aadt.empty:
+        print(f"Full-network AADT estimates: {len(aadt):,} link×year rows "
+              f"({aadt['link_id'].nunique():,} unique links)")
+
+    cov_by_year = road.groupby("year")["all_motor_vehicles"].apply(
+        lambda s: s.notna().mean()
+    )
+    plt.figure(figsize=(8, 4))
+    cov_by_year.plot(marker="o")
+    plt.ylabel("Share of links with measured AADF")
+    plt.title("Direct AADF coverage by year")
+    plt.ylim(0, 1)
+    plt.grid(alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+if road_class_col and "all_motor_vehicles" in road.columns:
+    cov_class = (
+        road.groupby(road_class_col)["all_motor_vehicles"]
+        .apply(lambda s: s.notna().mean())
+        .sort_values(ascending=False)
+    )
+    plt.figure(figsize=(8, 4))
+    cov_class.plot(kind="bar")
+    plt.ylabel("Share with measured AADF")
+    plt.title("AADF coverage by road class")
+    plt.xticks(rotation=35, ha="right")
+    plt.ylim(0, 1)
+    plt.tight_layout()
+    plt.show()
+```
+
+## Target distribution
+
+```{python}
+if "all_motor_vehicles" in road.columns:
+    observed = road["all_motor_vehicles"].dropna()
+    observed = observed[observed > 0]
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+    axes[0].hist(np.log(observed), bins=50, edgecolor="none")
+    axes[0].set_xlabel("log(AADF vehicles/day)")
+    axes[0].set_ylabel("Count")
+    axes[0].set_title("Distribution of measured AADF (log scale)")
+
+    if road_class_col:
+        grp = (
+            road[[road_class_col, "all_motor_vehicles"]].dropna()
+            .groupby(road_class_col)["all_motor_vehicles"]
+            .median()
+            .sort_values(ascending=False)
+        )
+        grp.plot(kind="bar", ax=axes[1])
+        axes[1].set_ylabel("Median AADF (vehicles/day)")
+        axes[1].set_title("Median AADF by road class")
+        axes[1].tick_params(axis="x", rotation=35)
+
+    plt.tight_layout()
+    plt.show()
+    print(observed.describe(percentiles=[0.1, 0.25, 0.5, 0.75, 0.9, 0.99]).round(0))
+```
+
+## Feature–target relationships
+
+Key features used in Stage 1a: road classification, trunk-road indicator,
+location, network betweenness, population density, distance to major road, link
+length, and HGV proportion where measured. WebTRIS time-profile features are
+not used in Stage 1a because they are not available for the full network at
+inference time; those belong to Stage 1b.
+
+### Counted-only AADF training target
+
+The AADF table contains both direct counts and DfT-estimated rows. Stage 1a now
+uses only rows where `estimation_method == "Counted"` for model training and
+holdout validation. Estimated AADF rows are year-on-year interpolations, so
+including them would mix DfT interpolation with the project's own network-wide
+extrapolation model.
+
+This drops 1,288 count points (9.1% of count-point locations) with no Counted
+observation in the 2015-2024 training window. The drop rate is approximately
+twice as high on Major roads (11.2%) as on Minor roads (4.6%), which means the
+counted-only training set is modestly less representative of Major-road
+conditions than a raw AADF training set would be. Regional distribution is
+broadly uniform; no single core study region loses coverage disproportionately.
+Wales shows a higher rate (17%), but the Welsh count-point sample is small and
+the pattern is consistent with an edge-of-study-area effect; this was not
+investigated further.
+
+Using Estimated rows with downweighting was considered but rejected as arbitrary
+without a principled uncertainty model for DfT's interpolation scheme. The
+filter applies only to the learning signal: the fitted model is still applied
+to every OS Open Roads link for every AADF year, so downstream exposure coverage
+remains unchanged.
+
+The counted-only evaluation should be read as a cleaner, more honest target
+rather than proof that the model became intrinsically stronger. GroupKFold CV
+R² increased from about 0.72 to 0.83 because DfT's smoothed carry-forward
+estimates no longer contaminate the target. Local holdout R² increased from
+0.776 to 0.832 and spatial holdout R² from 0.707 to 0.788. Log-MAE is slightly
+higher on the counted-only holdout, which is expected because direct
+measurements retain real traffic variance that DfT-estimated rows partly
+smooth away.
+
+```{python}
+feature_df = road.copy()
+if not net.empty and "link_id" in road.columns:
+    wanted = [c for c in [
+        "link_id", "betweenness_relative", "pop_density_per_km2",
+        "degree_mean", "dist_to_major_km",
+    ] if c in net.columns]
+    feature_df = feature_df.merge(
+        net[wanted].drop_duplicates("link_id"), on="link_id", how="left"
+    )
+
+check_cols = [c for c in [
+    "all_motor_vehicles", "betweenness_relative",
+    "pop_density_per_km2", "dist_to_major_km",
+] if c in feature_df.columns]
+
+if len(check_cols) > 1:
+    corr = feature_df[check_cols].corr(numeric_only=True)
+    print("Pearson correlations with all_motor_vehicles (measured AADF):")
+    print(corr["all_motor_vehicles"].drop("all_motor_vehicles").round(3).to_string())
+```
+
+```{python}
+def scatter_feature(df, x, y="all_motor_vehicles", max_pts=4000):
+    tmp = df[[x, y]].dropna()
+    tmp = tmp[tmp[y] > 0]
+    if len(tmp) > max_pts:
+        tmp = tmp.sample(max_pts, random_state=RANDOM_STATE)
+    plt.figure(figsize=(5, 4))
+    plt.scatter(tmp[x], np.log(tmp[y]), alpha=0.3, s=6)
+    plt.xlabel(x)
+    plt.ylabel("log(AADF)")
+    plt.title(f"{x} vs AADF")
+    plt.grid(alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+
+for col in ["betweenness_relative", "pop_density_per_km2", "dist_to_major_km"]:
+    if col in feature_df.columns and "all_motor_vehicles" in feature_df.columns:
+        scatter_feature(feature_df, col)
+```
+
+## Estimated vs measured AADT
+
+Stage 1a predictions compared against measured AADF on the training links.
+Note: because the AADT estimator is trained on these same links, this reflects
+in-sample fit; see External Validation for held-out performance.
+
+```{python}
+if not aadt.empty and "all_motor_vehicles" in road.columns:
+    merged = road[["link_id", "year", "all_motor_vehicles"]].merge(
+        aadt, on=["link_id", "year"], how="inner"
+    ).dropna(subset=["all_motor_vehicles", "estimated_aadt"])
+    merged = merged[(merged["all_motor_vehicles"] > 0) & (merged["estimated_aadt"] > 0)]
+
+    sample = merged.sample(min(8000, len(merged)), random_state=RANDOM_STATE)
+    x = np.log(sample["all_motor_vehicles"])
+    y = np.log(sample["estimated_aadt"])
+
+    plt.figure(figsize=(6, 6))
+    plt.scatter(x, y, alpha=0.3, s=6)
+    lo, hi = min(x.min(), y.min()), max(x.max(), y.max())
+    plt.plot([lo, hi], [lo, hi], "--", color="red", linewidth=1)
+    plt.xlabel("log(measured AADF)")
+    plt.ylabel("log(estimated AADT)")
+    plt.title("Measured vs estimated AADT (training links)")
+    plt.grid(alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+
+    resid = np.log(merged["estimated_aadt"]) - np.log(merged["all_motor_vehicles"])
+    print(f"Residuals (log scale): mean={resid.mean():.3f} | "
+          f"std={resid.std():.3f} | MAE={resid.abs().mean():.3f}")
+```
+
+```{python}
+if not aadt.empty and road_class_col and "all_motor_vehicles" in road.columns:
+    merged2 = road[[road_class_col, "link_id", "year", "all_motor_vehicles"]].merge(
+        aadt, on=["link_id", "year"], how="inner"
+    ).dropna(subset=["all_motor_vehicles", "estimated_aadt"])
+    merged2 = merged2[(merged2["all_motor_vehicles"] > 0) & (merged2["estimated_aadt"] > 0)]
+
+    merged2["resid_log"] = (
+        np.log(merged2["estimated_aadt"]) - np.log(merged2["all_motor_vehicles"])
+    )
+    grp = merged2.groupby(road_class_col)["resid_log"].median().sort_values()
+    plt.figure(figsize=(8, 4))
+    grp.plot(kind="bar")
+    plt.axhline(0, color="red", linestyle="--", linewidth=0.8)
+    plt.ylabel("Median log residual (predicted − measured)")
+    plt.title("Residuals by road class")
+    plt.xticks(rotation=35, ha="right")
+    plt.tight_layout()
+    plt.show()
+```
+
+## External validation
+
+### Why standard CV is not enough
+
+The AADT estimator is trained on AADF count points and applied to every road
+link in the network. Standard `GroupKFold` CV (grouped by `count_point_id`)
+prevents leakage within a station across years, but withheld stations are still
+surrounded by nearby training stations with similar road class, urban context,
+and network structure. The model can lean on those neighbours when predicting
+the held-out site.
+
+External validation must mimic the real problem the model solves: estimating
+traffic on roads that have no nearby measurement at all.
+
+### Holdout schemes
+
+**Scheme 1 — Local holdout**
+20% of count point IDs withheld at random. Tests whether the model can fill
+realistic local gaps where nearby counts still exist.
+
+**Scheme 2 — Spatial block**
+All count points north of the 75th-percentile latitude withheld. Tests whether
+the model generalises to a geographic region with no training support.
+
+After evaluation the production model is retrained on all available counts.
+
+```{python}
+val_path = ROOT / "data" / "models" / "aadt_validation_summary.parquet"
+if val_path.exists():
+    val = pd.read_parquet(val_path)
+    print("External validation (log-scale metrics):\n")
+    print(val.to_string(index=False))
+else:
+    print("Not found — run: python -m road_risk.model --stage traffic")
+```
+
+```{python}
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+for ax, scheme in zip(axes, ["local", "spatial"]):
+    bc_path = ROOT / "data" / "models" / f"aadt_validation_{scheme}.parquet"
+    if bc_path.exists():
+        bc = pd.read_parquet(bc_path)
+        road_col = bc.columns[0]
+        bc_s = bc.sort_values("r2", ascending=True)
+        ax.barh(bc_s[road_col], bc_s["r2"])
+        ax.axvline(0, color="grey", linestyle="--", linewidth=0.8)
+        ax.set_xlabel("R² (metrics in log-AADT space)")
+        ax.set_title(f"{'Local holdout' if scheme == 'local' else 'Spatial block'} — R² by road type")
+    else:
+        ax.set_title(f"{scheme} — no data"); ax.axis("off")
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+The spatial-block R² is typically lower than the local-holdout R², confirming
+that the model interpolates best when nearby counts exist and loses accuracy
+when extrapolating to unsupported geography. The current Stage 1a model no
+longer uses WebTRIS-derived features; the dominant signal is road class, with
+network and location features adding local variation.
+:::
+
+## Estimated AADT distribution across the full network
+
+```{python}
+if not aadt.empty:
+    sample_yr = aadt[aadt["year"] == aadt["year"].max()].copy()
+    print(f"Year {sample_yr['year'].iloc[0]} — {len(sample_yr):,} link estimates")
+    print(sample_yr["estimated_aadt"].describe(
+        percentiles=[0.1, 0.25, 0.5, 0.75, 0.9, 0.99]
+    ).round(0).to_string())
+
+    plt.figure(figsize=(8, 4))
+    pos = sample_yr[sample_yr["estimated_aadt"] > 0]["estimated_aadt"]
+    plt.hist(np.log(pos), bins=30, edgecolor="none")
+    plt.xlabel("log(estimated AADT vehicles/day)")
+    plt.ylabel("Count")
+    plt.title("Estimated AADT distribution — full network")
+    plt.tight_layout()
+    plt.show()
+```
+
+## Known limitations
+
+::: {.callout-warning}
+- The Stage 1a model captures the broad road-class hierarchy, but within-class
+  traffic variation (e.g. busy urban A-road vs quiet rural A-road) is still only
+  partially explained by the current features.
+- WebTRIS features are intentionally excluded from Stage 1a because measured
+  sensor values are not available for every Open Roads link at inference time.
+  Time-of-day profiles are estimated separately in Stage 1b.
+- The `road_link_annual` dataset is filtered to links with at least one
+  collision. Coverage and fit metrics here apply to that subset; the Stage 1a
+  model runs on all 2.1M OS Open Roads links.
+- The time-zone profile model (Stage 1b) extends this to estimate *when* traffic
+  flows, not just how much. See [Stage 1b: Time-Zone Profiles](timezone-profile.qmd).
+:::

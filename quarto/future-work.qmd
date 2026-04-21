@@ -1,0 +1,436 @@
+---
+title: "Future Work"
+subtitle: "Research questions and extensions supported by the road-risk pipeline"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+---
+
+## Overview
+
+This page catalogues research questions and analyses that the
+`road_risk_analysis` pipeline can support but which aren't in the
+active backlog (see the repository `TODO.md`). It has two purposes:
+
+1. **For future work on this repo** — by me, collaborators, or
+   contributors. Each entry has enough context to pick up without
+   reconstructing the reasoning.
+2. **As a statement of platform scope** — most UK road-safety research
+   is regionally narrow (M25, single county) and methodologically
+   narrow (one hypothesis per paper). This pipeline is designed to
+   support multiple research questions on a common open-data substrate
+   with consistent methodology. The questions below illustrate what
+   that scope makes possible.
+
+Entries are not ranked against each other. They're organised by theme.
+
+---
+
+## Scope note
+
+The pipeline from raw DfT / OS / OSM data through to modelled outputs
+at OS Open Roads link-year grain is reusable infrastructure. The
+research questions below illustrate what that substrate supports beyond
+the headline risk ranking. Reproducibility documentation and
+contribution paths are in active development in the repository backlog.
+
+**Known platform gaps:** hourly/daily temporal grain not supported at
+Stage 2; SCRIM and pavement-friction data not available; OSM speed-limit
+coverage is only partial (56.4% overall, 59.4% on Unclassified links) and
+lane/surface tags are much sparser; DfT-estimated AADF rows are excluded
+from Stage 1a training (see [Stage 1a: Traffic Volume](methodology/exposure-model.qmd));
+Network Model GDB
+coverage is SRN-only.
+
+**To adapt the pipeline for a new research question:**
+- Fork and reproduce the baseline pipeline.
+- Identify the grain your question needs.
+- For a new target, subset or reweight the collision data and re-run
+  Stage 2.
+- For a new feature, add to `network_features.py` and check coverage
+  before inclusion.
+- For a new analysis, operate on pipeline outputs without modifying
+  the core model.
+- Use the evaluation harness (5-seed rank stability) to compare your
+  variant against baseline on identical held-out links.
+
+---
+
+## Theme 1: Alternative ranking targets
+
+Variants on "what should the production target be?" The current model
+ranks by expected all-injury collision count. Different stakeholders
+might want different targets. Each entry is a parallel Stage 2 training
+run rather than a replacement of the main model.
+
+---
+
+### Weather warning analysis — temporal rank stability
+
+**What it is:** Use Met Office historical weather warnings (date × region)
+or ERA5-threshold-reconstructed equivalents to test whether the top-1%
+risk ranking holds up under extreme conditions. Diagnostic analysis,
+not a Stage 2 feature — link-year aggregation blurs the temporal signal
+that makes weather warnings predictive.
+
+**Why it's interesting:** Literature consistently identifies weather as
+a strong crash-risk predictor, but at the per-crash or hourly grain. At
+link-year grain, the honest use is as a robustness check: does the
+model's top-1% list reshuffle under warnings? Either answer is useful
+— a shift identifies conditionally-risky links the annual model misses;
+stability demonstrates the ranking is robust across conditions.
+
+**Why not now:** Scope-creep relative to current backlog. Requires the
+5-seed stability harness (see `TODO.md` → Queued tasks) to be in place
+first, otherwise the analysis conflates warning-effect with seed-effect.
+Historical Met Office warnings may be hard to obtain cleanly; ERA5-
+threshold reconstruction is a fallback.
+
+**Good starting point for someone else:**
+- Check data availability for Met Office historical warnings 2015–2024
+  (GB regional). May require direct correspondence with Met Office or
+  an archive request.
+- If unavailable, use ERA5-Land hourly data thresholded to
+  amber-equivalent events (e.g. rainfall >20mm/day, wind gusts >50mph).
+- Join to STATS19 collisions by date × region.
+- Report top-1% Jaccard stability and rank correlation, warning vs
+  normal days, by warning type (snow/rain/wind/fog).
+
+**Related:** Temporal risk modelling via Stage 1b would be a more
+thorough treatment; this is the cheaper diagnostic version.
+
+---
+
+### Severity-aware risk ranking (expected KSI)
+
+**What it is:** Replace all-injury collision count as the production
+target with severity-weighted count — fatal-only, KSI (Killed or
+Seriously Injured), or a social-cost weighting. Rank links by expected
+KSI rather than expected all-injury collisions.
+
+**Why it's interesting:** For intervention prioritisation, harm matters
+more than count. A link with many slight-injury collisions may rank
+below a link with one fatality under severity weighting. Relevant UK
+literature includes two-stage mixed multivariate frequency-severity
+modelling on UK motorway data (see Wang/Quddus/Ison-era work — verify
+specific citations before use; see note in `TODO.md` → Citation
+verification). FHWA/HSM methodology also treats severity-weighted
+screening as standard for intervention-led deployments.
+
+**Why not now:** Unclear whether stakeholders want severity-weighted
+ranking. Some safety-team workflows are anchored on all-injury counts
+for operational reasons (council reporting, consistency with DfT
+summary statistics). Also: KSI counts at link grain are sparse —
+likely requires shrinkage or composite social-cost weighting rather
+than a fatal-only cut. Decision is partly user-research, not just
+modelling.
+
+**Good starting point for someone else:**
+- Scope conversation: which severity weighting matches the end-use
+  case (DVSA? Local authority safety teams? National Highways?).
+- DfT publishes a social-cost-per-casualty table alongside road safety
+  statistics — use those weights as a defensible starting point.
+- Fit a parallel Stage 2 model with DfT social-cost weights as target.
+- Compare ranking to current all-injury ranking; identify links that
+  shift substantially between the two.
+
+**Related:** Facility-family split (see `TODO.md` → Queued tasks)
+would help here — severity modelling is noisier on minor roads where
+KSI events are rare, and a per-family model could use different
+severity treatments per class.
+
+---
+
+### DVSA test routes as external validation
+
+**What it is:** Use the existing DVSA test route data and Annex D fault
+rates as an external validation signal for the Stage 2 risk model,
+rather than as a model feature. Test whether high-risk links (by Stage
+2 risk percentile) correlate with high-fault-rate routes (by Annex D),
+across the 174 routes and 24 centres.
+
+**Why it's interesting:** Two independent data-generating processes
+(STATS19 collisions and DVSA driver-test faults) agreeing would be
+external corroboration that the model captures something real about
+road difficulty. Disagreement is also informative: identifies where
+the model's risk signal doesn't transfer to learner-driver difficulty,
+which is a legitimate finding about what the model does and doesn't
+capture. Parked as a model *feature* (selection bias, coverage <1%,
+target-leakage risk) but usable as a *validation* signal.
+
+**Why not now:** Current DVSA correlation pipeline already exists in
+`src/road_risk/dtc/analysis.py` and runs Pearson correlations of
+per-route features against Annex D outcomes. Adding risk-percentile-as-
+validation is a small extension rather than a new system. Queued below
+larger structural work because the validation value comes from the
+Stage 2 model being settled — running it before EB shrinkage and
+facility-family split changes just means redoing it after.
+
+**Good starting point for someone else:**
+- Extend `dtc/analysis.py` to correlate per-route `risk_percentile_mean`
+  and `risk_percentile_p90` against the Annex D fault index and pass
+  rates.
+- Apply multiple-testing correction (already on main TODO — correlating
+  one validation feature against 110+ Annex D outcomes produces
+  spurious significance without correction).
+- Report as a methodology section on the Quarto site: "Stage 2 risk
+  percentile correlates with DVSA-observed route difficulty at r = X
+  across 24 centres (FDR-adjusted)."
+
+**Related:** If the correlation is weak, it doesn't invalidate the
+model — it just means "expert-driver crash risk" and "learner-driver
+fault rate" measure different things, which is unsurprising.
+
+---
+
+### Fatal-only collision modelling
+
+**What it is:** Train a separate Stage 2 model with `fatal_count` as
+target rather than all-injury `collision_count`. Either a direct
+Poisson/NB fit on fatal counts, or a hurdle model separating "any
+fatal?" from "how many fatal given any?".
+
+**Why it's interesting:** Fatal collisions are substantively different
+from slight-injury collisions — different mechanisms (speed, vehicle
+mass, occupant age), different road environments (higher-speed roads
+disproportionately), different policy implications. A fatal-only model
+would identify a different set of high-risk links and could be used as
+a fatality-focused screening layer alongside the main ranking. The
+methodology page notes this is not yet implemented.
+
+**Why not now:** Fatal counts are sparse at link grain — 7,402 fatals
+across 2.17M links over 10 years means most links have zero fatals
+even over the full window. Direct modelling will be noisy without
+shrinkage or hierarchical structure. Better approached after EB
+shrinkage is in place (see `TODO.md` → Queued tasks) so sparse fatal
+counts benefit from shrinkage toward facility-family averages, and
+after facility-family split so motorway-specific fatal patterns don't
+blur with unclassified-road patterns.
+
+**Good starting point for someone else:**
+- After EB shrinkage and facility-family split are in place, add
+  `fatal_count` target as a parallel Stage 2 model.
+- Consider a hurdle approach: fit "P(any fatal in link-year)" as a
+  logistic model, then "E(fatals | any fatal)" as a truncated Poisson.
+  Avoids zero-inflation problems at high road-class levels.
+- Output a parallel `fatal_risk_percentile` alongside the main ranking.
+  Compare which links appear in both top-1% lists vs which are
+  divergent.
+
+**Related:** Severity-aware ranking (above) is the composite alternative
+— fatal-only is the purist version of the same idea.
+
+---
+
+### Vulnerable-road-user-weighted target
+
+**What it is:** Weight the Stage 2 target by casualty type rather than
+treating all collisions equally — pedestrian, cyclist, and motorcycle
+casualties weighted higher than car-occupant. Produces a ranking that
+prioritises links where vulnerable users are at risk, not just where
+total collision counts are high.
+
+**Why it's interesting:** UK road safety strategy (Vision Zero, active
+travel priorities) explicitly prioritises vulnerable road users. A
+ranking that gives equal weight to a motorway rear-end collision and
+a pedestrian fatality doesn't match that strategic frame. STATS19 has
+casualty-type detail per collision that this project currently doesn't
+use beyond severity.
+
+**Why not now:** Requires casualty-level data joined to each collision
+(STATS19 `Casualties.csv` table), then aggregated to link-year with
+weights. Moderate ingestion work and a weighting choice which is itself
+a policy question, not a modelling one. Justifiable only after the base
+model structure is settled — adding this on top of an unsettled model
+makes attribution impossible.
+
+**Good starting point for someone else:**
+- Ingest STATS19 `Casualties.csv` (not just the collision-level table
+  currently used) and join to collisions by accident_index.
+- Per collision, compute a vulnerability-weighted severity score: e.g.
+  `pedestrian_serious = 3.0, cyclist_serious = 2.5, motorcycle_serious
+  = 2.0, car_occupant_serious = 1.0`, scaled similarly for fatal and
+  slight.
+- Aggregate to link-year as `vru_weighted_casualties`.
+- Fit as a parallel Stage 2 target; compare top-1% list to the
+  unweighted ranking.
+
+**Related:** Pairs naturally with severity-aware ranking and fatal-only
+modelling — all three are variants on "what should the production
+target actually be?"
+
+---
+
+## Theme 2: Vehicle-type-specific analyses
+
+The data supports questions the aggregate risk model doesn't directly
+answer. These analyses use the existing pipeline as substrate but
+subset or reframe the data to produce different outputs for different
+audiences.
+
+---
+
+### Motorcycle-specific risk layer
+
+**What it is:** Produce a separate risk ranking for motorcycle-involved
+collisions. Subset STATS19 collisions to those involving a motorcycle,
+re-run Stage 2 on the subset, and identify where motorcycle risk
+concentrates.
+
+**Why it's interesting:** Motorcycle safety is a distinct UK road-safety
+policy area with different risk drivers than general crash risk — rural
+A-roads, seasonal/weather exposure, specific corridor patterns. A
+parallel ranking targeted at motorcycle safety would be operationally
+useful for audiences concerned with motorcyclist casualty reduction:
+local authorities, safer-roads partnerships, motorcycling groups.
+
+**Why not now:** Uses the main pipeline as substrate, so depends on
+main model being settled. Also raises the exposure question — using
+general AADT as exposure for motorcycle risk is defensible but
+imperfect. DfT AADF distinguishes `two_wheeled_motor_vehicles` in its
+vehicle breakdown, so motorcycle AADT is partially recoverable as
+exposure.
+
+**Good starting point for someone else:**
+- Use `two_wheeled_motor_vehicles` from AADF as a motorcycle-specific
+  exposure proxy at count-point grain; let Stage 1a predict motorcycle
+  AADT for all links.
+- Subset STATS19 to collisions with at least one motorcycle casualty
+  or vehicle.
+- Fit a parallel Stage 2 model with motorcycle-AADT offset and
+  motorcycle-collision target.
+- Report ranking, top-1% list, and compare against the main risk
+  ranking to identify motorcycle-specific hotspots.
+
+---
+
+### HGV enforcement site coverage analysis
+
+**What it is:** Use STATS19 HGV-involved collision data to map where
+HGV risk concentrates on the network, then compare against DVSA's
+current HGV enforcement stop sites to test whether enforcement is
+positioned at the highest-HGV-risk locations.
+
+**Why it's interesting:** DVSA has operational control over HGV
+enforcement siting. A data-driven view of whether enforcement geography
+matches risk geography is directly actionable — either it validates
+current placement, or it identifies mismatches worth investigating.
+This is a specific, concrete use-case for an agency that already has
+a mandate and an operational lever. It's also a natural extension of
+the DVSA test-route work already in the project.
+
+**Primary stakeholder:** DVSA.
+
+**Why not now:** Requires DVSA HGV stop-site locations, which the
+project doesn't currently have. May be obtainable via FOI or direct
+request, or partially available in DVSA's published enforcement data.
+Data-availability investigation is the first step.
+
+**Good starting point for someone else:**
+- Investigate whether DVSA publishes HGV enforcement stop locations.
+  If not, consider an FOI request, or scope analysis to published
+  enforcement statistics at regional grain.
+- Compute HGV-involved-collision-rate per link using STATS19 vehicle
+  records and existing HGV proportion data from AADF.
+- Map rate against stop-site locations (or aggregate by local authority
+  / road if stop-site data is coarser).
+- Report coverage: what proportion of HGV risk is near enforcement,
+  what proportion isn't.
+
+**Related:** Extends the DVSA test-route analysis already in the
+project. Same stakeholder (DVSA), same type of operational question
+("is your activity placed where the data suggests it should be?").
+
+---
+
+### Cyclist and pedestrian risk without direct exposure
+
+**What it is:** Produce risk rankings for cyclist and pedestrian
+casualties despite not having direct active-travel exposure data. Use
+motor-vehicle AADT as the denominator with the caveat that this
+measures "cyclist casualty rate per motor-vehicle-km" rather than
+"cyclist casualty rate per cyclist-km" — still operationally useful
+for identifying hotspots, but conceptually different from the main
+ranking.
+
+**Why it's interesting:** Vision Zero and active-travel policy
+priorities target vulnerable road users. The aggregate risk ranking
+doesn't surface cyclist or pedestrian hotspots clearly because those
+casualties are a small fraction of total injuries. A dedicated ranking
+would make cyclist and pedestrian risk concentration visible to policy
+audiences.
+
+**Why not now:** Without cyclist/pedestrian exposure data, the
+denominator is imperfect. Strava Metro is parked in `TODO.md` on
+licensing grounds. DfT publishes some LSOA-level active travel
+statistics that could improve the denominator but aren't in the
+pipeline. Analysis is scoped but caveats matter.
+
+**Good starting point for someone else:**
+- Subset STATS19 collisions to those with pedestrian or cyclist
+  casualties.
+- Use motor-vehicle AADT as interim exposure, with explicit methodology
+  note that this measures motor-vehicle-adjusted rate, not per-active-
+  traveller rate.
+- Fit parallel Stage 2 models for cyclist-casualty-rate and
+  pedestrian-casualty-rate.
+- If DfT LSOA-level active travel statistics can be joined, improve
+  the denominator and report comparison.
+
+**Related:** Links to the parked Strava Metro entry in `TODO.md` — if
+that ever becomes available, this analysis becomes the use case.
+
+---
+
+### Vehicle mix as risk modifier
+
+**What it is:** Test whether the mix of vehicles on a road (already
+captured as `hgv_proportion`) modifies risk for other vehicle types.
+Do cars have higher collision rates on links with high HGV share? Do
+motorcycles have different risk profiles on roads with heavier traffic
+mix?
+
+**Why it's interesting:** Vehicle-mix effects are mentioned in crash-
+frequency literature but the project currently treats `hgv_proportion`
+as a single feature for aggregate risk. A subgroup analysis would test
+whether the feature behaves differently by casualty-vehicle type, with
+implications for intervention design (segregation, speed differentials).
+
+**Why not now:** Subgroup analyses on rare-event data are statistically
+demanding. Likely requires facility-family split to be in place so that
+within-family HGV-mix effects can be estimated without confounding by
+road class.
+
+**Good starting point for someone else:**
+- After facility-family split is in place, fit interaction terms
+  between `hgv_proportion` and casualty-vehicle-type (car, motorcycle,
+  cyclist) in the Stage 2 model.
+- Report whether interactions are meaningful, per family.
+- If motorcycle × HGV-proportion interaction is significant, that's a
+  policy-relevant finding (motorcycle safety on HGV-heavy routes).
+
+---
+
+## Cross-theme note
+
+The ideas above are not independent. Several natural combinations:
+
+- **Motorcycle × weather** — motorcycle crash risk is known to be
+  highly weather-sensitive. Combining the motorcycle-specific risk
+  layer with weather warning analysis would produce a parallel ranking
+  that's likely more actionable than either alone.
+- **HGV enforcement × vehicle-mix** — HGV risk distribution combined
+  with vehicle-mix-as-risk-modifier would identify links where HGV
+  enforcement protects not just the HGV crash rate but also other
+  vehicle types affected by HGV presence.
+- **VRU-weighted × cyclist/pedestrian layers** — these are closely
+  related target reframings. The VRU-weighted version produces a
+  single composite ranking; the cyclist/pedestrian layers produce
+  separate rankings per casualty type. Both are defensible depending
+  on stakeholder.
+
+These combinations are documented here rather than as separate entries
+because each needs the component analyses in place first.

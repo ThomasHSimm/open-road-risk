@@ -1,0 +1,349 @@
+---
+title: "Collision EDA — STATS19"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: python3
+---
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from pathlib import Path
+
+from road_risk.config import _ROOT as ROOT
+
+col = pd.read_parquet(ROOT / "data/processed/stats19/collision_clean.parquet")
+
+# standardise year column name
+year_col = "collision_year" if "collision_year" in col.columns else "accident_year"
+
+print(f"Collisions: {len(col):,} rows | Years: {sorted(col[year_col].unique())} | Cols: {col.shape[1]}")
+```
+
+## Overview
+
+This page explores the raw STATS19 collision records for the study area (Yorkshire
+and surrounding forces) before any spatial joining or modelling. The goal is to
+understand the coverage, quality, and structure of the outcome variable.
+
+```{python}
+by_year = col.groupby(year_col).size().reset_index(name="collisions")
+by_sev = col.groupby([year_col, "collision_severity"]).size().unstack(fill_value=0)
+
+fig, axes = plt.subplots(1, 2, figsize=(13, 4))
+
+by_year.plot(x=year_col, y="collisions", ax=axes[0], legend=False, marker="o", color="steelblue")
+axes[0].set_title("Total collisions by year")
+axes[0].set_xlabel("Year")
+axes[0].set_ylabel("Collisions")
+axes[0].yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+axes[0].grid(alpha=0.2)
+
+if "collision_severity" in col.columns:
+    by_sev.plot(kind="bar", ax=axes[1], stacked=True)
+    axes[1].set_title("Collisions by severity and year")
+    axes[1].set_xlabel("Year")
+    axes[1].set_ylabel("Collisions")
+    axes[1].tick_params(axis="x", rotation=45)
+    axes[1].yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    axes[1].grid(alpha=0.2)
+
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+The sharp drop in 2020–2021 reflects COVID-19 lockdowns reducing traffic and
+reported collisions. Both years are flagged `is_covid = True` and treated
+separately where needed.
+:::
+
+---
+
+## Severity distribution {#severity}
+
+```{python}
+if "collision_severity" in col.columns:
+    sev = col["collision_severity"].value_counts().sort_index()
+    labels = {1: "Fatal", 2: "Serious", 3: "Slight"}
+    sev.index = sev.index.map(lambda x: labels.get(x, str(x)))
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    bars = ax.bar(sev.index, sev.values, color=["#c0392b", "#e67e22", "#3498db"])
+    for bar, val in zip(bars, sev.values):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 200,
+                f"{val:,}", ha="center", va="bottom", fontsize=9)
+    ax.set_title("Collision severity distribution")
+    ax.set_ylabel("Collisions")
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    ax.grid(axis="y", alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+
+    totals = sev.to_dict()
+    for label, n in totals.items():
+        pct = n / len(col) * 100
+        print(f"  {label:8s}: {n:,} ({pct:.1f}%)")
+```
+
+---
+
+## Temporal patterns {#temporal}
+
+### By day of week
+
+```{python}
+if "day_of_week" in col.columns:
+    dow_labels = {1: "Sun", 2: "Mon", 3: "Tue", 4: "Wed", 5: "Thu", 6: "Fri", 7: "Sat"}
+    dow = col["day_of_week"].value_counts().sort_index()
+    dow.index = dow.index.map(lambda x: dow_labels.get(x, str(x)))
+
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.bar(dow.index, dow.values, color="steelblue")
+    ax.set_title("Collisions by day of week")
+    ax.set_ylabel("Collisions")
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    ax.grid(axis="y", alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+```
+
+### By hour of day
+
+```{python}
+if "hour" in col.columns:
+    hour = col["hour"].value_counts().sort_index()
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.bar(hour.index, hour.values, color="steelblue", width=0.8)
+    ax.set_title("Collisions by hour of day")
+    ax.set_xlabel("Hour (24h)")
+    ax.set_ylabel("Collisions")
+    ax.set_xticks(range(0, 24))
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    ax.grid(axis="y", alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+```
+
+### By month
+
+```{python}
+if "month" in col.columns:
+    month_labels = {1:"Jan",2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",
+                    7:"Jul",8:"Aug",9:"Sep",10:"Oct",11:"Nov",12:"Dec"}
+    month = col["month"].value_counts().sort_index()
+    month.index = month.index.map(lambda x: month_labels.get(x, str(x)))
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.bar(month.index, month.values, color="steelblue")
+    ax.set_title("Collisions by month")
+    ax.set_ylabel("Collisions")
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    ax.grid(axis="y", alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+```
+
+---
+
+## Road context {#road-context}
+
+### Road type and class
+
+```{python}
+fig, axes = plt.subplots(1, 2, figsize=(13, 4))
+
+if "road_type" in col.columns:
+    rt = col["road_type"].value_counts().head(8)
+    axes[0].barh(rt.index.astype(str), rt.values, color="steelblue")
+    axes[0].set_title("Collisions by road type")
+    axes[0].set_xlabel("Collisions")
+    axes[0].xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    axes[0].invert_yaxis()
+    axes[0].grid(axis="x", alpha=0.2)
+
+if "first_road_class" in col.columns:
+    rc_labels = {1: "Motorway", 2: "A(M)", 3: "A road", 4: "B road", 5: "C road", 6: "Unclassified"}
+    rc = col["first_road_class"].value_counts().sort_index()
+    rc.index = rc.index.map(lambda x: rc_labels.get(x, str(x)))
+    axes[1].bar(rc.index, rc.values, color="steelblue")
+    axes[1].set_title("Collisions by first road class")
+    axes[1].set_ylabel("Collisions")
+    axes[1].tick_params(axis="x", rotation=30)
+    axes[1].yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    axes[1].grid(axis="y", alpha=0.2)
+
+plt.tight_layout()
+plt.show()
+```
+
+### Speed limit
+
+```{python}
+if "speed_limit" in col.columns:
+    sl = col[col["speed_limit"] > 0]["speed_limit"].value_counts().sort_index()
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.bar(sl.index.astype(str), sl.values, color="steelblue")
+    ax.set_title("Collisions by speed limit (mph)")
+    ax.set_xlabel("Speed limit (mph)")
+    ax.set_ylabel("Collisions")
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    ax.grid(axis="y", alpha=0.2)
+    plt.tight_layout()
+    plt.show()
+```
+
+### Urban vs rural and junction context
+
+```{python}
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+if "urban_or_rural_area" in col.columns:
+    ur = col["urban_or_rural_area"].map({1: "Urban", 2: "Rural"}).value_counts()
+    axes[0].pie(ur.values, labels=ur.index, autopct="%1.1f%%",
+                colors=["#3498db", "#27ae60"])
+    axes[0].set_title("Urban vs rural split")
+
+if "junction_detail" in col.columns:
+    jd_labels = {
+        0: "Not at junction", 1: "Roundabout", 2: "Mini-roundabout",
+        3: "T/staggered junction", 5: "Slip road", 6: "Crossroads",
+        7: "Multiple junction", 8: "Private drive", 9: "Other junction",
+        99: "Unknown"
+    }
+    jd = col["junction_detail"].value_counts().sort_values(ascending=False).head(8)
+    jd.index = jd.index.map(lambda x: jd_labels.get(x, str(x)))
+    jd.plot(kind="barh", ax=axes[1], color="steelblue")
+    axes[1].set_title("Collisions by junction type")
+    axes[1].set_xlabel("Collisions")
+    axes[1].xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    axes[1].invert_yaxis()
+    axes[1].grid(axis="x", alpha=0.2)
+
+plt.tight_layout()
+plt.show()
+```
+
+---
+
+## Light conditions {#light}
+
+```{python}
+if "light_conditions" in col.columns:
+    lc_labels = {
+        1: "Daylight",
+        4: "Dark: street lights",
+        5: "Dark: no lights",
+        6: "Dark: unknown lights",
+        7: "Dark: lights unlit",
+        -1: "Unknown"
+    }
+    lc = col["light_conditions"].value_counts().sort_values(ascending=False)
+    lc.index = lc.index.map(lambda x: lc_labels.get(x, str(x)))
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4))
+
+    lc.plot(kind="barh", ax=axes[0], color="steelblue")
+    axes[0].set_title("Collisions by light conditions")
+    axes[0].set_xlabel("Collisions")
+    axes[0].xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+    axes[0].invert_yaxis()
+    axes[0].grid(axis="x", alpha=0.2)
+
+    # Dark vs daylight severity breakdown
+    col["_is_dark"] = col["light_conditions"].isin([4, 5, 6, 7])
+    if "collision_severity" in col.columns:
+        sev_labels = {1: "Fatal", 2: "Serious", 3: "Slight"}
+        dark_sev = (
+            col.groupby(["_is_dark", "collision_severity"])
+            .size()
+            .unstack(fill_value=0)
+        )
+        dark_sev.index = dark_sev.index.map({True: "Dark", False: "Daylight"})
+        dark_sev.columns = dark_sev.columns.map(lambda x: sev_labels.get(x, str(x)))
+        dark_sev_pct = dark_sev.div(dark_sev.sum(axis=1), axis=0) * 100
+        dark_sev_pct.plot(kind="bar", stacked=True, ax=axes[1],
+                          color=["#c0392b", "#e67e22", "#3498db"])
+        axes[1].set_title("Severity split: daylight vs dark")
+        axes[1].set_ylabel("Percentage of collisions")
+        axes[1].tick_params(axis="x", rotation=0)
+        axes[1].grid(axis="y", alpha=0.2)
+        axes[1].legend(title="Severity")
+
+    plt.tight_layout()
+    plt.show()
+
+    n_dark = col["_is_dark"].sum()
+    print(f"  Dark collisions: {n_dark:,} ({n_dark/len(col):.1%} of total)")
+```
+
+---
+
+## Coordinate quality {#coords}
+
+```{python}
+if "coords_valid" in col.columns:
+    valid = col["coords_valid"].value_counts()
+    suspect = col.get("coords_suspect", pd.Series(dtype=bool))
+
+    print(f"  Coordinate quality:")
+    print(f"    coords_valid=True   : {valid.get(True, 0):,}")
+    print(f"    coords_valid=False  : {valid.get(False, 0):,}")
+    if hasattr(suspect, "sum"):
+        print(f"    coords_suspect=True : {suspect.sum():,} (>10 km from LSOA centroid)")
+
+    fig, ax = plt.subplots(figsize=(7, 4))
+    if "lsoa_dist_m" in col.columns:
+        dist = col["lsoa_dist_m"].dropna()
+        dist_km = dist[dist < 20000] / 1000
+        ax.hist(dist_km, bins=60, edgecolor="none", color="steelblue")
+        ax.axvline(10, color="red", linestyle="--", linewidth=1, label="10 km suspect threshold")
+        ax.set_xlabel("Distance from LSOA centroid (km)")
+        ax.set_ylabel("Collisions")
+        ax.set_title("Collision distance from recorded LSOA centroid")
+        ax.legend()
+        ax.grid(alpha=0.2)
+        plt.tight_layout()
+        plt.show()
+```
+
+---
+
+## Key observations
+
+```{python}
+total = len(col)
+n_fatal = (col["collision_severity"] == 1).sum() if "collision_severity" in col.columns else None
+n_dark = col["_is_dark"].sum() if "_is_dark" in col.columns else None
+n_urban = (col["urban_or_rural_area"] == 1).sum() if "urban_or_rural_area" in col.columns else None
+n_junction = (col["junction_detail"] == 0).sum() if "junction_detail" in col.columns else None
+
+print(f"Total collisions analysed : {total:,}")
+if n_fatal is not None:
+    print(f"Fatal collisions          : {n_fatal:,} ({n_fatal/total:.1%})")
+if n_dark is not None:
+    print(f"Dark conditions           : {n_dark:,} ({n_dark/total:.1%})")
+if n_urban is not None:
+    print(f"Urban setting             : {n_urban:,} ({n_urban/total:.1%})")
+if n_junction is not None:
+    print(f"Not at junction           : {n_junction:,} ({n_junction/total:.1%})")
+```
+
+::: {.callout-note}
+These raw proportions describe the collision dataset, not collision risk.
+Risk requires dividing by exposure (vehicle-kilometres). Roads with high
+urban or junction proportions may look dangerous here but score differently
+after the exposure model is applied in Stage 2.
+:::

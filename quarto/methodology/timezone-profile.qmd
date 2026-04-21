@@ -1,0 +1,267 @@
+---
+title: "Stage 1b: Time-Zone Traffic Profiles"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+---
+
+## Why time-zone profiles matter
+
+Stage 1a estimates total daily traffic (AADT) for every road link. This is
+sufficient for computing collision *rates* — collisions per million
+vehicle-kilometres — but it treats all hours of the day as equivalent. In
+practice, risk varies significantly by time of day: peak-hour traffic is denser,
+faster, and involves more interactions than overnight flow.
+
+Stage 1b estimates the *shape* of the daily traffic profile for every road link:
+what fraction of daily traffic flows in each time band? Combined with the Stage
+1a AADT estimate, this gives per-hour flow rates for any road in the network.
+
+## Time bands
+
+WebTRIS annual reports provide cumulative flow totals for four hour windows.
+Differencing these gives four non-overlapping time bands:
+
+| Band | Hours | Window | Typical character |
+|------|------:|-------|---|
+| Peak | 12 | 07:00–19:00 | Commuter, business, school |
+| Pre-peak | 4 | 19:00–23:00 | Evening leisure, retail |
+| Pre-offpeak | 2 | 23:00–01:00 | Transition |
+| Offpeak | 6 | 01:00–07:00 | Night freight, low volume |
+
+The model predicts the fraction of daily traffic in each band. Absolute
+per-hour flow is then reconstructed as:
+
+$$\text{flow\_ph\_peak} = \text{AADT} \times \frac{\text{peak\_frac}}{12}$$
+
+## Data and model setup
+
+```{python}
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from road_risk.config import _ROOT as ROOT
+
+webtris = pd.read_parquet(ROOT / "data" / "processed" / "webtris" / "webtris_clean.parquet")
+
+profiles_path = ROOT / "data" / "models" / "timezone_profiles.parquet"
+profiles = pd.read_parquet(profiles_path) if profiles_path.exists() else pd.DataFrame()
+
+road = pd.read_parquet(ROOT / "data" / "features" / "road_link_annual.parquet")
+road_class_col = next(
+    (c for c in ["road_classification", "road_type"] if c in road.columns), None
+)
+
+print(f"WebTRIS training sites : {webtris['site_id'].nunique():,} sites × "
+      f"{webtris['year'].nunique()} years = {len(webtris):,} rows")
+print(f"Profile estimates      : {len(profiles):,} rows" if not profiles.empty
+      else "Profile estimates      : not found — run --stage profile")
+```
+
+## Training data: WebTRIS time-zone fractions
+
+The profile model is trained on WebTRIS sensors — National Highways sites on
+motorways and major A-roads. For each site×year, the four time-band fractions
+are computed from the measured flow windows and used as prediction targets.
+
+```{python}
+wt = webtris[webtris["all_flow"] > 0].copy()
+wt["peak_frac"]       = (wt["flow_ph_peak"]       * 12) / wt["all_flow"]
+wt["prepeak_frac"]    = (wt["flow_ph_prepeak"]     *  4) / wt["all_flow"]
+wt["preoffpeak_frac"] = (wt["flow_ph_preoffpeak"]  *  2) / wt["all_flow"]
+wt["offpeak_frac"]    = (wt["flow_ph_offpeak"]     *  6) / wt["all_flow"]
+
+fracs = ["peak_frac", "prepeak_frac", "preoffpeak_frac", "offpeak_frac"]
+print("Time-zone fraction distributions (measured WebTRIS sites):\n")
+print(wt[fracs].describe(percentiles=[0.1, 0.25, 0.5, 0.75, 0.9]).round(3).to_string())
+```
+
+```{python}
+fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+titles = ["Peak (12h, 07–19)", "Pre-peak (4h, 19–23)",
+          "Pre-offpeak (2h, 23–01)", "Offpeak (6h, 01–07)"]
+for ax, col, title in zip(axes.flat, fracs, titles):
+    ax.hist(wt[col].dropna(), bins=40, edgecolor="none")
+    ax.set_title(title)
+    ax.set_xlabel("Fraction of daily traffic")
+    ax.axvline(wt[col].median(), color="red", linestyle="--", linewidth=1,
+               label=f"median={wt[col].median():.3f}")
+    ax.legend(fontsize=8)
+plt.suptitle("Measured time-zone fractions — WebTRIS training sites", y=1.01)
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+print("Peak–offpeak ratio (measured sites):")
+print(wt["peak_offpeak_ratio"].describe(percentiles=[0.1,0.25,0.5,0.75,0.9]).round(2).to_string())
+
+plt.figure(figsize=(7, 4))
+plt.hist(wt["peak_offpeak_ratio"].clip(0, 30), bins=50, edgecolor="none")
+plt.xlabel("Peak flow/hr ÷ offpeak flow/hr")
+plt.ylabel("Count")
+plt.title("Peak–offpeak ratio distribution (WebTRIS sites)")
+plt.axvline(wt["peak_offpeak_ratio"].median(), color="red", linestyle="--", linewidth=1)
+plt.tight_layout()
+plt.show()
+```
+
+## Model performance
+
+Five models are trained (one per target) using `HistGradientBoostingRegressor`
+with `GroupKFold` cross-validation grouped by `site_id`, preventing the same
+sensor from appearing in both train and validation folds.
+
+Features: location (lat/lon), log(AADT), network betweenness, distance to
+major road, population density, year, COVID flag.
+
+::: {.callout-note}
+| Target | CV R² | Interpretation |
+|--------|------:|---|
+| `peak_frac` | ~0.65 | Strong — peak shape driven by road function and location |
+| `prepeak_frac` | ~0.63 | Strong — evening pattern correlates with urban density |
+| `offpeak_frac` | ~0.53 | Moderate — night freight patterns are more variable |
+| `preoffpeak_frac` | ~0.46 | Weakest — short transition band with mixed signal |
+| `hgv_peak_frac` | ~0.63 | Strong — HGV peak timing is structurally driven |
+:::
+
+The MAE for all fraction targets is < 0.03, meaning the model predicts daily
+traffic fractions to within about ±3 percentage points on average.
+
+## Estimated profiles across the full network
+
+```{python}
+if not profiles.empty:
+    latest = profiles[profiles["year"] == profiles["year"].max()].copy()
+    print(f"Year {latest['year'].iloc[0]} — {len(latest):,} link estimates\n")
+    frac_cols = [c for c in fracs if c in latest.columns]
+    print(latest[frac_cols + ["peak_offpeak_ratio"]].describe(
+        percentiles=[0.1, 0.25, 0.5, 0.75, 0.9]
+    ).round(3).to_string())
+```
+
+```{python}
+if not profiles.empty:
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+    titles = ["Peak (12h)", "Pre-peak (4h)", "Pre-offpeak (2h)", "Offpeak (6h)"]
+    for ax, col, title in zip(axes.flat, fracs, titles):
+        if col in latest.columns:
+            ax.hist(latest[col].dropna(), bins=50, edgecolor="none", alpha=0.7,
+                    label="All links (estimated)")
+            if col in wt.columns:
+                ax.hist(wt[col].dropna(), bins=50, edgecolor="none", alpha=0.5,
+                        label="WebTRIS measured")
+            ax.set_title(title)
+            ax.set_xlabel("Fraction of daily traffic")
+            ax.legend(fontsize=8)
+    plt.suptitle("Estimated fractions — full network vs measured WebTRIS", y=1.01)
+    plt.tight_layout()
+    plt.show()
+```
+
+## Profile variation by road class
+
+Roads with different functions show distinct daily profiles. Motorways have
+high peak fractions (commuter + freight); rural unclassified roads have flatter
+profiles. The model captures this through road classification and network
+betweenness.
+
+```{python}
+if not profiles.empty and road_class_col:
+    with_class = profiles[profiles["year"] == profiles["year"].max()].merge(
+        road[["link_id", road_class_col]].drop_duplicates("link_id"),
+        on="link_id", how="left"
+    )
+    grp = (
+        with_class.groupby(road_class_col)[["peak_frac", "offpeak_frac", "peak_offpeak_ratio"]]
+        .median()
+        .sort_values("peak_frac", ascending=False)
+    )
+    print("Median time-zone fractions by road class:\n")
+    print(grp.round(3).to_string())
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4))
+    grp[["peak_frac", "offpeak_frac"]].plot(kind="bar", ax=axes[0])
+    axes[0].set_title("Peak vs offpeak fraction by road class")
+    axes[0].set_ylabel("Fraction of daily traffic")
+    axes[0].tick_params(axis="x", rotation=35)
+
+    grp["peak_offpeak_ratio"].plot(kind="bar", ax=axes[1])
+    axes[1].set_title("Peak–offpeak ratio by road class")
+    axes[1].set_ylabel("Ratio (peak flow/hr ÷ offpeak flow/hr)")
+    axes[1].axhline(1, color="grey", linestyle="--", linewidth=0.8)
+    axes[1].tick_params(axis="x", rotation=35)
+
+    plt.tight_layout()
+    plt.show()
+```
+
+## Reconstructed per-hour flows
+
+Using Stage 1a AADT estimates and Stage 1b fractions, per-hour flow rates can
+be computed for any link in the network.
+
+```{python}
+if not profiles.empty:
+    flow_cols = [c for c in [
+        "flow_ph_peak", "flow_ph_prepeak", "flow_ph_preoffpeak", "flow_ph_offpeak"
+    ] if c in profiles.columns]
+
+    if flow_cols:
+        sample_yr = profiles[profiles["year"] == profiles["year"].max()]
+        print("Per-hour flow estimates — full network (vehicles/hour):\n")
+        print(sample_yr[flow_cols].describe(
+            percentiles=[0.25, 0.5, 0.75, 0.9, 0.99]
+        ).round(1).to_string())
+```
+
+## How this could feed into the collision model
+
+The current production collision model uses total AADT as its exposure
+denominator. The per-hour flow rates from Stage 1b are produced for diagnostics
+and future temporal exposure weighting. A future Stage 2 model could use them
+to distinguish:
+
+- Roads where most collisions occur during peak hours (high peak exposure)
+- Roads with disproportionate night-time collisions (relative to low offpeak flow)
+
+The `peak_offpeak_ratio` is also a candidate model feature, capturing whether a
+road functions primarily as a commuter route or serves mixed/freight traffic.
+
+::: {.callout-note}
+**Pipeline order**
+
+```
+Stage 1a  python -m road_risk.model --stage traffic
+            → data/models/aadt_estimates.parquet
+
+Stage 1b  python -m road_risk.model --stage profile
+            → data/models/timezone_profiles.parquet
+            (requires Stage 1a)
+
+Stage 2   python -m road_risk.model --stage collision
+            → data/models/risk_scores.parquet
+```
+:::
+
+## Known limitations
+
+- WebTRIS training data is concentrated on motorways and major A-roads.
+  Profiles for unclassified roads are extrapolated from location and network
+  position rather than directly observed — the model assumes that road function
+  and urban context are the dominant drivers of profile shape.
+- The pre-offpeak band (23:00–01:00) has the weakest CV R² (~0.46) due to its
+  short duration and mixed signal. Predictions for this band should be
+  interpreted cautiously.
+- Year-on-year variation in profiles (e.g. COVID impact on commuting patterns)
+  is captured through the `year_norm` and `is_covid` features but may not fully
+  reflect rapid behavioural shifts.

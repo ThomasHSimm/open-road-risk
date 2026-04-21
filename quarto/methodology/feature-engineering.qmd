@@ -1,0 +1,475 @@
+---
+title: "Feature Engineering and Model Pipeline"
+format:
+    html:
+        toc: true
+        toc-depth: 3
+        number-sections: true
+        page-layout: full
+---
+
+## Why this matters
+
+::: {.callout-important}
+The model pipeline makes several design choices that are load-bearing but not
+obvious from reading any single function. This page documents **what goes
+in, what comes out, and why** — in particular the decisions that keep the
+model from quietly producing biased or nonsensical risk scores.
+:::
+
+The collision rate modelling problem has three awkward properties:
+
+1. **Zero-collision links are genuine low-risk observations** — not missing
+   data. An earlier pipeline (the now-deprecated `features.py`) silently
+   filtered to collision-positive links only, producing a biased training
+   table that the model couldn't recover from.
+2. **Traffic exposure is sparse** — AADF directly measures count points, but
+   the expanded OS Open Roads network has over 2 million links. A per-link
+   exposure denominator has to be estimated before rate modelling is
+   possible.
+3. **Collisions per link-year are rare events** — most link-years have zero
+   collisions. Standard regression assumptions break; Poisson with log-offset
+   is the correct framing, but has its own engineering issues at scale.
+
+## What this page answers
+
+1. What are the pipeline stages, and what does each produce?
+2. How is AADT estimated for links without a nearby count point?
+3. How is the collision rate model specified, and why Poisson?
+4. Which features actually enter the model, and which are diagnostic only?
+5. What are the main engineering trade-offs and their consequences?
+
+---
+
+## Pipeline overview
+
+Three stages, invoked from `python -m road_risk.model --stage <name>`:
+
+| Stage | File | Input | Output |
+|---|---|---|---|
+| 1a — AADT estimation | `model/aadt.py` | AADF count points | `aadt_estimates.parquet` (all links × years) |
+| 1b — Time-zone profiles | `model/timezone_profile.py` | WebTRIS + Stage 1a AADT | `timezone_profiles.parquet` (context / future exposure weighting) |
+| 2 — Collision model | `model/collision.py` | Stage 1a + `road_link_annual.parquet` | `risk_scores.parquet` (one row per link) |
+
+Stage 1b is currently diagnostic/contextual rather than part of the production
+collision score. The production collision model consumes Stage 1a total AADT as
+its exposure denominator.
+
+### A note on `features.py`
+
+The file `road_risk/features.py` self-deprecates on import. Its feature
+builders were correct in principle but it joined only collision-positive
+link-years, producing a biased training table. The current pipeline builds
+its own feature table inside `collision.py` — see below.
+
+---
+
+## Stage 1a: AADT estimation
+
+### The problem
+
+AADF provides measured flows at count points across the expanded study area,
+but OS Open Roads contains over 2 million links. The join cap of 2 km (see
+[Joining the Datasets](data-joining.qmd)) leaves many links without a direct
+AADF match. A rate model needs an exposure denominator for every link —
+otherwise uncounted-road collisions simply drop out.
+
+### Approach
+
+A gradient boosting regressor (`HistGradientBoostingRegressor`) is trained
+on AADF count points and applied to every OS Open Roads link.
+
+**Target:** year-de-meaned `log1p(all_motor_vehicles)`. The model learns each
+road's deviation from the network-wide mean for that year; the year mean is
+stored separately and added back at inference. This prevents a constant
+per-year feature from dominating the model while still preserving temporal
+level shifts.
+
+**Features used for training:**
+
+| Feature | Source | Type |
+|---|---|---|
+| `road_class_ord` | AADF `road_name` prefix | Ordinal: Motorway=6, A=5, B=4, other=1 |
+| `is_trunk` | AADF `road_name` regex match | Binary |
+| `latitude`, `longitude` | AADF | Coordinates (tree-based model can use raw) |
+| `is_covid` | `year ∈ {2020, 2021}` | Binary |
+| `hgv_proportion` | AADF | Float |
+| `link_length_km` | AADF (via MRDB) | Float, median-imputed per road class |
+| Network features | `network_features.parquet` | See below if available |
+
+WebTRIS-derived flow/profile features are intentionally excluded from Stage 1a:
+they are not available for every Open Roads link at inference time. Time-zone
+traffic shape is modelled separately in Stage 1b.
+
+Network features (`degree_mean`, `betweenness`, `dist_to_major_km`,
+`pop_density_per_km2`, etc.) are joined by snapping each count point to its
+nearest OS Open Roads link via KD-tree (2 km cap). When present they
+materially improve CV R² — the train log at runtime reports how many
+count points had network features attached.
+
+### Network feature definitions
+
+`network_features.py` turns OS Open Roads into a NetworkX graph where road
+links are edges, road-link endpoints are nodes, and link length is the shortest
+path weight. These features are intended to capture network position rather
+than raw latitude/longitude.
+
+| Feature | Definition | Interpretation |
+|---|---|---|
+| `degree_mean` | Mean graph degree of the link's start and end nodes | Local junction complexity; higher values usually mean denser urban or interchange structure |
+| `betweenness` | Approximate node betweenness centrality, averaged across the link's start and end nodes | Through-route importance; higher values mean the link sits near many shortest paths through the road graph |
+| `betweenness_relative` | `log1p(betweenness / mean betweenness for the same road_classification)` | Within-road-class centrality; distinguishes unusually central A-roads from ordinary A-roads, rather than just rediscovering road class |
+| `dist_to_major_km` | Graph distance from the link to the nearest Motorway or A-road node | Feeder-network position; lower values mean closer to the major-road network |
+| `pop_density_per_km2` | LSOA population density joined to the link centroid | Local demand / urbanisation proxy |
+
+Raw `betweenness` is heavily right-skewed and strongly related to road class:
+motorways and A-roads are central partly by definition. `betweenness_relative`
+therefore exists as the safer modelling version when the question is "is this
+link unusually central compared with its peers?" rather than "is this road a
+major road?".
+
+### Validation: `GroupKFold` by count point
+
+Using vanilla `KFold` would leak: the same count point appears in 2019,
+2021, and 2023, and a random split could put the 2019 and 2021 readings of
+station `X` in the training fold and the 2023 reading in test. The model
+would then "predict" a station it has effectively memorised.
+
+`GroupKFold(n_splits=5)` grouped by `count_point_id` ensures a station
+appears in exactly one fold. The reported CV R² is genuine out-of-sample
+performance.
+
+### Applying the estimator
+
+The trained model predicts AADT for **every** OS Open Roads link × every
+AADF year. Prediction uses link centroids for `latitude`/`longitude`;
+`road_class_ord` is derived from `road_classification` using the same ordinal
+space as training (Motorway=6, A Road=5, B Road=4, other=1);
+`hgv_proportion` and `link_length_km` are imputed from AADF medians when not
+available. `HistGradientBoostingRegressor` receives missing network features as
+NaN rather than zero so its native missing-value routing is preserved.
+
+The output has `link_id × year × estimated_aadt` — no link is dropped.
+
+::: {.callout-warning}
+## AADT uncertainty is not propagated
+
+Stage 1a produces point estimates with CV MAE reported in log-units. Stage
+2 treats these estimates as **exact exposure** via the log-offset. AADT
+uncertainty therefore contributes silently to Stage 2 residuals but is
+not represented in model uncertainty or confidence intervals. This is a
+standard simplification but worth knowing if you're interpreting residuals
+closely.
+:::
+
+---
+
+## Stage 1b: Time-zone profiles
+
+Builds daily time-zone fractions from WebTRIS cumulative 12/16/18/24-hour
+windows, then combines those fractions with Stage 1a AADT estimates to produce
+per-hour flow profiles. Current outputs are used for EDA and future temporal
+weighting, not the production collision model.
+
+---
+
+## Stage 2: Collision model
+
+This is where most of the pipeline's design choices live.
+
+### Building the training table
+
+`build_collision_dataset()` constructs a table at `link_id × year` grain
+covering **every** link × **every** year in the AADT output. Collision
+counts are left-joined from `road_link_annual.parquet` and filled with 0
+where there's no match.
+
+This is the fix for the `features.py` bias: zero-collision links are kept,
+and are treated as genuine low-risk observations rather than absence of
+data.
+
+Every row has:
+
+- **Exposure:** `estimated_aadt`, `link_length_km`, `log_offset` = log(AADT
+  × length × 365 / 1e6)
+- **Road structure:** `road_class_ord`, `form_of_way_ord`, and binary flags
+  for motorway / A-road / slip road / roundabout / dual carriageway / trunk
+  / primary
+- **Link length:** `log_link_length_km`
+- **Temporal:** `is_covid`, `year_norm`
+- **Network (when available):** `degree_mean`, `betweenness`,
+  `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph`, `lanes`,
+  `is_unpaved`
+- **Targets:** `collision_count`, `fatal_count`, `serious_count`
+
+### Post-event diagnostics are excluded from Stage 2 features
+
+`road_link_annual.parquet` also contains contextual aggregates derived from
+snapped collision records, such as `pct_dark`, `pct_urban`, `pct_junction`,
+`pct_near_crossing`, and `mean_speed_limit`. These are post-event diagnostics,
+not pre-collision road attributes: they describe the circumstances of observed
+collisions on a link.
+
+Stage 2 now treats these columns as forbidden model inputs. They are excluded
+from the training dataframe and from `risk_scores.parquet`, and `collision.py`
+asserts that they cannot enter either the GLM or XGBoost feature list. This is
+a provenance guard rather than a fix for an active model leak: the current
+feature lists did not use these columns, but keeping them in the modelling
+table made future leakage too easy.
+
+### Why Poisson with log-offset
+
+Collision counts are non-negative integers with many zeros. Modelling the
+count directly with a Gaussian regression would be wrong on both grounds.
+
+The Poisson formulation is:
+
+$$
+\text{collision\_count} \sim \text{Poisson}(\lambda)
+$$
+$$
+\log \lambda = \beta_0 + X\beta + \underbrace{\log(\text{AADT} \cdot \text{length} \cdot 365 \cdot 10^{-6})}_{\text{offset}}
+$$
+
+The log-offset forces the coefficient on exposure to 1, so the model
+effectively learns `log(rate) = β₀ + Xβ` — a rate model expressed as a count
+regression. Without the offset, the model would learn counts directly and
+systematically overestimate risk on high-traffic links.
+
+### Two models trained in parallel
+
+Both are fit to the same table but differ in what they optimise and what
+they can represent.
+
+**Poisson GLM (`statsmodels`)** — linear-in-log-rate, interpretable
+coefficients, standard errors, p-values. Used for diagnostic residual
+analysis (`residual_glm`) but **not** for the final risk ranking, because
+GLM zero-downsampling biases the intercept and makes absolute predictions
+unreliable.
+
+**XGBoost Poisson** — captures non-linearities and interactions. Trained
+on the full dataset (no downsampling) and drives the final `risk_percentile`
+ranking via `predicted_xgb`. Comparing `predicted_glm` and `predicted_xgb`
+surfaces links where the GLM linear assumption breaks down.
+
+### Engineering detail: GLM zero-downsampling
+
+The full training table is ~18M rows. `statsmodels` builds a dense design
+matrix — 18M rows × 15 features × float64 ≈ 2 GB+, which OOMs on many
+machines.
+
+The GLM training set downsamples zero-collision rows to 10× the number of
+positive rows. All ~391k positives are kept; ~3.9M zeros are sampled. This
+keeps the Poisson coefficient estimates stable while making the design
+matrix tractable.
+
+**Consequence:** the GLM intercept is biased upward — the effective zero
+rate in training (~91% zeros instead of ~98%) implies a higher baseline
+rate than the true population. Feature coefficients are unaffected, so
+**relative** risk rankings are correct, but absolute predicted counts
+inherit the bias. XGBoost uses the full dataset and does not have this
+issue.
+
+### Engineering detail: XGBoost `base_margin`
+
+XGBoost's Poisson objective learns `log(predicted)` directly. To pass the
+log-offset, the training call uses `base_margin=log_offset`, which sets
+the initial prediction in log-space so the model learns rate conditional
+on exposure rather than absolute count.
+
+Without `base_margin`, XGBoost would learn high-traffic motorway links
+have more collisions on average (trivially true by exposure) and
+over-predict their risk. With it, the model predicts collisions per unit
+vehicle-km and learns the residual risk after exposure is accounted for.
+
+### Feature imputation
+
+Network features have varying coverage. The GLM applies a coverage-based
+rule:
+
+- **> 50% coverage** — include as-is, drop rows with NaN.
+- **5–50% coverage** — median-impute into a new `{col}_imputed` feature.
+- **< 5% coverage** — drop the feature entirely.
+
+This preserves rows with partial network data at the cost of some
+coefficient interpretability on imputed columns.
+
+---
+
+## Output: pooled risk scores
+
+`score_and_save()` applies both models to the full dataset, then pools
+predictions to one row per link.
+
+### Pooling logic
+
+For each `link_id`, aggregate across years:
+
+| Field | Aggregation |
+|---|---|
+| `collision_count` | sum |
+| `fatal_count`, `serious_count` | sum |
+| `estimated_aadt` | mean |
+| `predicted_glm`, `predicted_xgb` | mean |
+| Road metadata | first |
+
+The key derived columns:
+
+- `residual_glm = collision_count - predicted_glm × n_years` — observed
+  minus expected (diagnostic; GLM intercept is biased by downsampling, so
+  use for relative comparison only).
+- `risk_percentile = rank(mean predicted_xgb) × 100 / n_links` — single
+  stable ranking across the network, driven by XGBoost predictions.
+
+### Why pool instead of score per year
+
+The app consuming these scores shouldn't ask "which year?" — a road link
+that's consistently risky is risky. Percentile is computed over the mean
+predicted rate, which is stable across small year-to-year fluctuations.
+Temporal features (`is_covid`, `year_norm`) remain in training so the
+model learns the year effect, but the output doesn't expose it.
+
+### Residuals as under-/over-performance
+
+`residual_glm` is the signed excess collisions a link has relative to the
+model's prediction given its road type, exposure, and network
+characteristics. Positive → worse than expected, negative → better than
+expected. This is the concrete form of the "underperforming roads"
+research question from the [project overview](../index.qmd).
+
+::: {.callout-warning}
+Residuals are a statistical summary, not a causal diagnosis. A positive
+residual means "this link has more collisions than similar links" — it
+does not identify *why*, and does not mean any specific intervention would
+reduce collisions.
+:::
+
+---
+
+## Feature summary
+
+Condensed view of which columns reach the model and how they're used.
+
+| Category | Features | Used by | Notes |
+|---|---|---|---|
+| Exposure (via log-offset) | `estimated_aadt`, `link_length_km` | GLM + XGB | Combined into `log_offset`; coefficient forced to 1 |
+| Road structure | `road_class_ord`, `form_of_way_ord`, 7 binary flags | GLM + XGB | Ordinals + flags for interaction capture |
+| Link length | `log_link_length_km` | GLM + XGB | Captures non-exposure length effects |
+| Temporal | `is_covid`, `year_norm` | GLM + XGB | Training-only; pooled away in scoring |
+| Network | `degree_mean`, `betweenness`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph`, `lanes`, `is_unpaved` | GLM + XGB (when available) | OSM-enriched where present; sparse OSM attributes use coverage-based imputation |
+| AADT raw | `estimated_aadt` | XGB only | Also in offset; XGB can use both |
+
+---
+
+## Known limitations and tradeoffs
+
+### XGBoost validation uses GroupShuffleSplit by link
+
+`GroupShuffleSplit(by=link_id, test_size=0.2)` ensures no link appears in
+both training and test sets across years. This gives honest generalisation
+performance — a link seen in 2019 cannot leak into the 2021 test fold.
+Reported pseudo-R² reflects out-of-link performance, not in-sample fit.
+
+### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}
+
+The current GLM pseudo-R² (0.251) and XGBoost pseudo-R² (0.858) are computed on
+different row subsets with different null models. **They are not directly
+comparable.**
+
+| | GLM | XGBoost |
+|---|---|---|
+| Evaluation set | In-sample (downsampled training table) | Out-of-sample (held-out 20% of links) |
+| Rows | ~2.47M (all positives + 1:10 zero sample) | ~4.34M (true link-year distribution) |
+| Zero rate in eval set | ~91% (downsampled) | ~98% (real distribution) |
+| Null model | Intercept-only Poisson on downsampled set | `y_test.mean()` on the real test set |
+
+The reported Stage 2 metrics were generated after both the counted-only Stage
+1a filter and the Stage 2 post-event provenance guard were applied. The earlier
+0.269 GLM pseudo-R² figure referenced a prior training run without these changes
+and is not directly comparable. No ablation was run to attribute the delta to a
+single change; subsequent methodology work uses a five-seed evaluation harness
+to make such attributions possible.
+
+Because the GLM null model sees an artificially balanced zero rate, it is
+easier to beat — the true 98% zero rate would produce a higher null deviance
+and a lower pseudo-R² for the same model. Because XGBoost is evaluated on
+the real held-out distribution against that harder null, its 0.858 is the
+more conservative and honest metric.
+
+The practical implication: the 0.251 vs 0.858 gap overstates the genuine
+predictive lift of XGBoost over the GLM. A fair comparison would require
+both models evaluated on the same held-out set against the same null model.
+This has not been done; recomputing both on a common evaluation set is a
+known pending improvement.
+
+### GLM intercept bias
+
+Zero-downsampling shifts the baseline rate upward. Absolute predicted
+counts from the GLM should not be taken at face value; percentiles and
+relative comparisons are the intended use.
+
+### Stage 1a uncertainty is ignored
+
+AADT estimates feed Stage 2 as exact exposure. AADT validation MAE is reported
+in log-units by the traffic stage. This is not propagated, so confidence
+intervals on `predicted_glm` understate total uncertainty.
+
+### No inter-model ensembling or disagreement analysis
+
+Both models are trained; XGBoost drives the final ranking, GLM is
+diagnostic. A future extension could flag links where the two disagree
+substantially — those are candidates for manual review or ensemble weighting.
+
+### Rare-event instability
+
+Fatal-only collision modelling is not implemented as a separate target.
+`fatal_count` and `serious_count` are summed in the output but the primary
+model is on `collision_count` (all severities). Severity-specific risk
+would need a separate model — counts are small enough that regularisation
+or a hurdle model may be required.
+
+### OSM and network feature availability
+
+The current Stage 2 run is OSM-enriched: `speed_limit_mph` is included in both
+the GLM and XGBoost feature lists, while `lanes` and `is_unpaved` are used by
+XGBoost and median-imputed for the GLM. Coverage remains incomplete rather than
+uniformly absent: `speed_limit_mph` is populated for 56.4% of scored links
+overall and 59.4% of Unclassified links, so it is not mostly missing on
+Unclassified roads but still leaves a large missing-value tail. The tiered OSM
+imputation task is retained because posted speed, lane, and surface tags remain
+class-conditional and uneven.
+
+The pipeline also reduces feature count if `network_features.parquet` is
+missing, producing lower-quality scores without an obvious downstream signal.
+The train log reports this, but consumers of `risk_scores.parquet` should check
+`data/models/collision_metrics.json` for the actual feature list used by a run.
+
+---
+
+## Running the pipeline
+
+```bash
+# Run all stages
+python -m road_risk.model --stage all
+
+# Individual stages
+python -m road_risk.model --stage traffic    # Stage 1a: AADT
+python -m road_risk.model --stage profile    # Stage 1b: Time-zone profiles
+python -m road_risk.model --stage collision  # Stage 2: Risk model
+```
+
+Stage 2 requires Stage 1a output (`aadt_estimates.parquet`) and will fail
+with a clear error if it's missing.
+
+---
+
+## Next steps
+
+`risk_scores.parquet` feeds into:
+
+- **Application layer** — ranking, mapping, and exploratory UIs.
+- **Test route scoring** (`ingest_test_routes.py`) — each DVSA GPX route
+  is snapped to road links and the per-link percentile + residual is
+  aggregated along the route.
+- **Residual analysis** — identifying links with large positive residuals
+  for review and investigation.

@@ -1,0 +1,102 @@
+# OSM Feature Coverage Diagnostic
+
+## Overall coverage
+
+| column          |   n_links |   n_filled |   pct_coverage |
+|:----------------|----------:|-----------:|---------------:|
+| is_unpaved      |   2167557 |     350597 |           16.2 |
+| lanes           |   2167557 |     158217 |            7.3 |
+| lit             |   2167557 |     201442 |            9.3 |
+| speed_limit_mph |   2167557 |    1223142 |           56.4 |
+
+
+## Coverage by road class (%)
+
+| column          |   Motorway |   A Road |   B Road |   Classified Unnumbered |   Unclassified |   Not Classified |   Unknown |
+|:----------------|-----------:|---------:|---------:|------------------------:|---------------:|-----------------:|----------:|
+| is_unpaved      |       36.2 |     27.4 |     24.9 |                    20.2 |           16.7 |             12.5 |       9.2 |
+| lanes           |       40.3 |     34.7 |     21.9 |                    13.2 |            4.4 |              1.9 |       1.5 |
+| lit             |       38   |     25   |     16.4 |                    10.8 |           10.1 |              3.6 |       2.3 |
+| speed_limit_mph |       46.1 |     55.3 |     52.4 |                    53.9 |           59.4 |             57.4 |      51.1 |
+
+
+## Coverage by latitude band (%)
+
+| column          |   51–52°N |   52–53°N |   53–54°N |   54–55°N |   55–56°N |
+|:----------------|----------:|----------:|----------:|----------:|----------:|
+| is_unpaved      |       2.7 |      22.4 |      13.7 |      17.2 |       8.9 |
+| lanes           |       1.2 |      10.2 |       5.6 |       9.2 |       4.3 |
+| lit             |       1.2 |      11.3 |       8.2 |      12.1 |       8.5 |
+| speed_limit_mph |      10.8 |      75   |      47.8 |      66   |      36.2 |
+
+
+## Value distributions (populated rows only)
+
+### speed_limit_mph
+
+| road_class            |   n_filled |   n_distinct |   min |   q25 |   median |   q75 |   max |
+|:----------------------|-----------:|-------------:|------:|------:|---------:|------:|------:|
+| Motorway              |       1882 |           32 |    15 |    70 |       70 |    70 |    70 |
+| A Road                |      86016 |           65 |    10 |    30 |       36 |    50 |   115 |
+| B Road                |      46830 |           58 |    10 |    30 |       30 |    40 |   125 |
+| Classified Unnumbered |     102922 |           61 |    10 |    30 |       33 |    40 |   195 |
+| Unclassified          |     630118 |           74 |     6 |    22 |       26 |    30 |   220 |
+| Not Classified        |     129078 |           62 |     6 |    21 |       25 |    29 |   224 |
+| Unknown               |     226296 |           76 |     6 |    20 |       22 |    26 |   224 |
+
+
+### lanes
+
+| road_class            |   n_filled |   n_distinct |   min |   q25 |   median |   q75 |   max |
+|:----------------------|-----------:|-------------:|------:|------:|---------:|------:|------:|
+| Motorway              |       1644 |            8 |     1 |     2 |        2 |     3 |    10 |
+| A Road                |      53962 |            7 |     1 |     2 |        2 |     2 |     8 |
+| B Road                |      19547 |            7 |     1 |     2 |        2 |     2 |     7 |
+| Classified Unnumbered |      25119 |            6 |     0 |     2 |        2 |     2 |     5 |
+| Unclassified          |      47151 |            7 |     0 |     2 |        2 |     2 |    20 |
+| Not Classified        |       4347 |            6 |     0 |     1 |        2 |     2 |     5 |
+| Unknown               |       6447 |            6 |     1 |     1 |        2 |     2 |     6 |
+
+
+## Highlights
+
+### Columns with >80% coverage by road class (usable without imputation)
+
+_No column × road-class combination reaches 80% coverage._
+
+
+
+### Columns with <20% coverage by road class (imputation would invent most values)
+
+| road_class            | column     |   pct_coverage |   n_links |   n_filled |
+|:----------------------|:-----------|---------------:|----------:|-----------:|
+| Unknown               | lanes      |            1.5 |    442836 |       6447 |
+| Not Classified        | lanes      |            1.9 |    224878 |       4347 |
+| Unknown               | lit        |            2.3 |    442836 |      10265 |
+| Not Classified        | lit        |            3.6 |    224878 |       8139 |
+| Unclassified          | lanes      |            4.4 |   1060014 |      47151 |
+| Unknown               | is_unpaved |            9.2 |    442836 |      40849 |
+| Unclassified          | lit        |           10.1 |   1060014 |     107342 |
+| Classified Unnumbered | lit        |           10.8 |    190921 |      20620 |
+| Not Classified        | is_unpaved |           12.5 |    224878 |      28159 |
+| Classified Unnumbered | lanes      |           13.2 |    190921 |      25119 |
+| B Road                | lit        |           16.4 |     89286 |      14618 |
+| Unclassified          | is_unpaved |           16.7 |   1060014 |     176644 |
+
+
+### Decision guidance
+
+For each column × road-class, coverage determines the right modelling strategy:
+
+- **≥80%**: Include as-is; drop the small fraction of missing rows.
+- **20–80%**: Median-impute and add an `{col}_imputed` binary flag;
+  coefficient reflects the imputed value and should be interpreted with caution.
+- **<20%**: The imputed value is invented for >80% of rows. The coefficient
+  will primarily reflect the imputation default, not genuine signal.
+  Consider excluding from the model or using road-class median as a proxy
+  only if the proxy is defensible.
+
+Note: coverage on major roads (Motorway, A Road) is typically higher because
+OSM contributors prioritise high-traffic routes. If those columns are included
+in a model trained on all road classes, the signal comes almost entirely from
+major roads and the imputed values for minor roads are close to noise.

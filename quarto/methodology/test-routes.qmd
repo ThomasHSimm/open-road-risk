@@ -1,0 +1,272 @@
+---
+title: "Driving Test Routes: Methodology"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+---
+
+## What this page answers
+
+1. Where do the test routes come from, and what do they represent?
+2. How are routes converted into a sequence of OS Open Roads links?
+3. How are route links matched to risk scores and road features?
+4. What quality checks are applied, and what gets rejected?
+5. How are per-route features aggregated to test-centre level?
+
+---
+
+## Route sources
+
+Routes come from two complementary sources:
+
+| Source | Format | Coverage | Notes |
+|---|---|---|---|
+| Crowdsourced GPX files | `.gpx` track logs | Full GPS trace | Dense point cloud — requires simplification before routing |
+| Google Maps URLs | Shared route links | Sparse waypoints | Resolve redirects → extract coordinates from URL |
+
+Both sources converge on the same pipeline: a list of waypoints → network routing → ordered link sequence.
+
+::: {.callout-note}
+Google Maps routes are pulled from the **UK Driving Test Routes** app, where candidates share the routes they were given on test. GPX files are recorded from plotaroute.com and similar crowdsourcing sites. Neither source is official DVSA data — routes are candidate-reported and reflect variation in what examiners actually use.
+:::
+
+---
+
+## Route validation
+
+Every route is checked against three criteria before routing:
+
+**1. Geographic bounds**
+All points must lie within the GB bounding box (lat 49.5–61.0, lon −8.5–2.0).
+Points outside are discarded; if too few remain, the route is rejected.
+
+**2. Length filter**
+Route length (haversine sum of consecutive waypoints) must be 3–50 km.
+Shorter routes are likely fragments; longer routes are likely multi-journey
+recordings.
+
+**3. DTC matching**
+The start point must be within 1,500 m of a DVSA test centre in the
+`dtc_summary.csv` lookup. The end point must also return to the same centre
+within 1,500 m. Routes that start or end too far from a registered centre
+are rejected.
+
+---
+
+## From waypoints to a link sequence
+
+### GPX: RDP simplification
+
+GPX tracks have one GPS ping every few seconds — typically 200–1,000 points for
+a 20-minute route. Routing through all of them is redundant; consecutive pings
+on the same road are noise rather than turning decisions.
+
+**Ramer-Douglas-Peucker (RDP)** simplification reduces the track to key
+waypoints while preserving the route shape. The epsilon parameter is set to
+0.0002° (≈22 m), which is tight enough to retain individual turns but
+eliminates intermediate pings on straight links.
+
+Loop routes (start ≈ end) are handled specially: RDP degenerates when the
+start and end are the same point. For these, the furthest point from the
+start is identified as the midpoint, and RDP is applied independently to
+each half.
+
+### Google Maps: coordinate extraction
+
+Resolved Google Maps URLs contain waypoint coordinates in the query string.
+Coordinates are extracted with a regex, filtered to GB bounds, and used
+directly as waypoints. Because Google Maps already provides sparse human-chosen
+waypoints, no further simplification is needed.
+
+### NetworkX graph routing
+
+Both sources produce a waypoint list. A NetworkX `MultiGraph` is built from
+OS Open Roads with:
+
+- **Nodes**: road network junctions (`start_node` / `end_node` from Open Roads)
+- **Edges**: road links, weighted by `link_length_m`
+
+For each consecutive pair of waypoints:
+
+1. Each waypoint is projected to BNG and matched to the nearest graph node
+   (within 500 m).
+2. Dijkstra shortest-path finds the sequence of nodes between the two waypoints.
+3. Each edge in the path contributes a `(link_id, forward)` tuple — `forward`
+   records whether the link was traversed in its geometric direction, which
+   is used later for turn analysis.
+
+Consecutive duplicate links are collapsed. The output is an ordered list of
+`(link_id, forward)` pairs representing the full route on the road network.
+
+::: {.callout-note}
+**Why NetworkX routing instead of KD-tree snapping?**
+
+The older `ingest_test_routes.py` snapped each GPS point independently to the
+nearest road link. This produces a valid set of links but loses route order,
+and cannot distinguish between adjacent parallel roads. NetworkX routing
+constrains the path to be topologically connected — the sequence of links
+must form a valid traversal of the road graph.
+:::
+
+---
+
+## Joining route links to risk scores
+
+Each `link_id` in the route sequence is looked up in:
+
+| Dataset | Join key | Features added |
+|---|---|---|
+| `risk_scores.parquet` | `link_id` | `risk_percentile`, `predicted_xgb`, `residual_glm`, `estimated_aadt` |
+| `network_features.parquet` | `link_id` | `degree_mean`, `betweenness_relative`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph` |
+| OS Open Roads | `link_id` | `road_classification`, `form_of_way`, `link_length_km`, `is_trunk`, `is_primary` |
+
+Links not present in any of these tables are retained in the route sequence
+but contribute NaN to aggregated features.
+
+---
+
+## Per-route feature computation
+
+### Speed environment
+
+Speed estimates use OSM `speed_limit_mph` where available, falling back to
+road-class proxies:
+
+| Road class | Proxy (mph) |
+|---|---|
+| Motorway | 70 |
+| A Road | 50 |
+| B Road | 40 |
+| Classified Unnumbered / Not Classified | 30 |
+| Unclassified | 25 |
+
+Features derived: `mean_speed_est`, `pct_high_speed` (≥40 mph),
+`pct_low_speed` (≤30 mph), `pct_urban_speed` (≤20 mph).
+
+### Junction character
+
+- `pct_roundabout`, `n_roundabouts` — from `form_of_way`
+- `pct_dual` — dual carriageway links
+- `pct_t_junction`, `pct_crossroads`, `pct_complex_junction` — from node
+  degree (3 → T-junction, 4 → crossroads, 5+ → complex)
+
+### Turn analysis
+
+For each junction between consecutive links, the bearing change is computed
+from link geometries accounting for traversal direction (`forward` flag).
+
+| Bearing change | Classification |
+|---|---|
+| +30° to +150° | Right turn |
+| −150° to −30° | Left turn |
+| \|change\| > 150° | U-turn |
+| Otherwise | Straight |
+
+Features: `pct_right_turns`, `pct_left_turns`, `pct_straight`,
+`right_left_ratio` (right turns ÷ left turns — a proxy for route complexity
+since right turns require crossing oncoming traffic in the UK).
+
+### Risk aggregates
+
+- `risk_percentile_mean` — mean risk percentile across route links
+- `risk_percentile_p90` — 90th-percentile link risk (captures worst sections)
+- `pct_high_risk` — share of links in the top 10% of the risk distribution
+- `residual_glm_mean` — mean GLM residual (positive = observed more collisions
+  than expected given road type and exposure)
+
+---
+
+## Aggregation to test-centre level
+
+Individual routes are grouped by `dtc_name` and all numeric features are
+averaged. This produces one row per test centre, suitable for correlating
+with DVSA outcome data.
+
+The aggregation retains:
+- `n_routes` — number of routes contributing to the centre average
+- `source` — whether routes came from GPX, Google Maps, or both
+- `mixed_sources` flag — centres with both source types (potentially
+  inconsistent route coverage)
+
+::: {.callout-warning}
+Route coverage is uneven. Some centres have 5–10 routes; others have 1–2.
+Averages from a single route are unreliable. All findings should be treated
+as exploratory given the small number of centres in the study area.
+:::
+
+---
+
+## DVSA outcome data
+
+Test-centre outcomes are sourced from DVSA's published Annex D statistics:
+
+| File | Content |
+|---|---|
+| `dtc_summary.csv` | Centre locations, overall pass rate, first-attempt pass rate |
+| `annex_d_fault_rates.csv` | SD and minor fault rates per test for 110+ fault categories |
+| `manoeuvre_fail_rates.csv` | Fail rates for specific manoeuvres (reverse park, bay park, etc.) |
+
+**Composite indices** derived from Annex D:
+
+- `road_fault_index` — mean SD/minor rate across road-environment faults
+  (junctions, signs, speed, positioning)
+- `aptitude_index` — mean SD/minor rate across candidate-aptitude faults
+  (clutch, steering, signals)
+- `adjusted_difficulty` = `road_fault_index − aptitude_index` — isolates the
+  road-environment contribution after controlling for general candidate skill
+
+The adjusted difficulty index is the primary outcome for correlations,
+because raw pass rates conflate route difficulty with local candidate quality.
+
+---
+
+## Pipeline
+
+```bash
+# 1. Process routes (GPX + Google Maps)
+python src/road_risk/dtc/routes.py
+
+# 2. Compute per-route and per-centre features
+python src/road_risk/dtc/analysis.py
+
+# Outputs
+data/processed/test_routes/routed_routes.parquet   # ordered link sequences
+data/features/dtc_route_features.parquet           # per-centre aggregated features
+data/features/dtc_correlations.csv                 # feature–outcome correlations
+```
+
+---
+
+## Known limitations
+
+### Route coverage is crowd-sourced and unverified
+
+Routes reflect what candidates remembered or recorded — not official examiner
+routes. The same examiner corridor may be recorded slightly differently by
+different candidates. Variation within a centre adds noise to the per-centre
+averages.
+
+### NetworkX shortest-path is not always the true driven path
+
+Dijkstra finds the geometrically shortest path between waypoints. If an
+examiner takes a longer or non-shortest road for testing purposes (e.g.
+deliberately routing through a complex junction), the routed path may
+differ from the actual driven path. Sparse waypoints from Google Maps
+amplify this — more waypoints mean more constrained routing.
+
+### Small number of centres limits statistical power
+
+The Yorkshire study area contains a limited number of DTC centres. With
+fewer than 20 centres in most analyses, correlations require large effect
+sizes to reach significance. All findings should be treated as hypothesis-
+generating rather than confirmatory.
+
+### Risk scores are link-level, not situation-level
+
+`risk_percentile` reflects historical collision rates on that link averaged
+across all conditions. A link that is high-risk at night may be low-risk
+during a daytime test. The risk score does not condition on time of day,
+weather, or the specific test context.

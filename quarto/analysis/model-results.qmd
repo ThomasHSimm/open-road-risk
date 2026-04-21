@@ -1,0 +1,453 @@
+---
+title: "Model Results and Interpretation"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+
+---
+
+## Overview
+
+Stage 2 fits a Poisson collision model on all OS Open Roads links × AADF years
+using estimated AADT as the exposure offset. Two complementary models are used:
+
+- **Poisson GLM** (statsmodels) — interpretable coefficients, fast inference
+- **XGBoost Poisson** — captures non-linear interactions, higher predictive power
+
+Both models are trained on link × year data then pooled to a single stable
+risk score per link. The pooled output (`risk_scores.parquet`) has one row per
+link with no year dimension.
+
+```{python}
+from pathlib import Path
+import json
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+from road_risk.config import _ROOT as ROOT
+RANDOM_STATE = 42
+
+try:
+    import geopandas as gpd
+    HAS_GPD = True
+except Exception:
+    HAS_GPD = False
+
+risk = pd.read_parquet(ROOT / "data/models/risk_scores.parquet")
+
+with open(ROOT / "data/models/collision_metrics.json") as f:
+    metrics = json.load(f)
+
+if HAS_GPD:
+    or_path = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+    openroads = gpd.read_parquet(or_path) if or_path.exists() else None
+else:
+    openroads = None
+
+cls_order = ["Motorway", "A Road", "B Road", "Classified Unnumbered",
+             "Not Classified", "Unclassified", "Unknown"]
+cls_in_data = [c for c in cls_order if c in risk["road_classification"].unique()]
+
+print(f"Links scored     : {len(risk):,}")
+print(f"With collisions  : {(risk['collision_count'] > 0).sum():,} "
+      f"({(risk['collision_count'] > 0).mean():.1%} of all links)")
+print(f"Total collisions : {risk['collision_count'].sum():,}")
+print(f"Total fatals     : {risk['fatal_count'].sum():,}")
+print(f"\nModel performance:")
+print(f"  GLM pseudo-R²  : {metrics['glm']['pseudo_r2']:.3f}")
+print(f"  XGB pseudo-R²  : {metrics['xgb']['pseudo_r2']:.3f}")
+print(f"  GLM converged  : {metrics['glm']['converged']}")
+```
+
+---
+
+## Model performance
+
+### GLM summary
+
+```{python}
+g = metrics["glm"]
+print(f"Training rows (downsampled for GLM) : {g['n_obs']:,}")
+print(f"Full dataset rows                   : {g['n_full']:,}")
+print(f"Positive link-years                 : {g['n_pos']:,} ({g['n_pos']/g['n_full']:.2%})")
+print(f"Pseudo-R² (1 - D/D₀)               : {g['pseudo_r2']:.3f}")
+print(f"AIC                                 : {g['aic']:,.0f}")
+print(f"\nFeatures ({len(g['features'])}):")
+for feat in g["features"]:
+    print(f"  {feat}")
+```
+
+### GLM coefficients
+
+```{python}
+glm_path = ROOT / "data/models/collision_glm.pkl"
+if glm_path.exists():
+    try:
+        import statsmodels.api as sm
+        glm_result = sm.load(str(glm_path))
+
+        coef = pd.DataFrame({
+            "coef":    glm_result.params,
+            "ci_low":  glm_result.conf_int()[0],
+            "ci_high": glm_result.conf_int()[1],
+            "pvalue":  glm_result.pvalues,
+        }).drop(index="const", errors="ignore").sort_values("coef")
+
+        bar_colors = ["#e63946" if p < 0.05 else "#adb5bd" for p in coef["pvalue"]]
+
+        fig, ax = plt.subplots(figsize=(8, max(5, len(coef) * 0.45)))
+        ax.barh(coef.index, coef["coef"], color=bar_colors, alpha=0.85)
+        ax.errorbar(
+            coef["coef"], range(len(coef)),
+            xerr=[coef["coef"] - coef["ci_low"], coef["ci_high"] - coef["coef"]],
+            fmt="none", color="black", linewidth=0.8, capsize=3,
+        )
+        ax.axvline(0, color="black", linewidth=0.8, linestyle="--")
+        ax.set_xlabel("Coefficient (log-rate scale)\nRed = significant p<0.05")
+        ax.set_title(
+            "Poisson GLM coefficients\n"
+            "(positive = higher collision rate per vehicle-km)"
+        )
+        plt.tight_layout()
+        plt.show()
+
+        sig = coef[coef["pvalue"] < 0.05].copy()
+        sig["IRR"] = np.exp(sig["coef"]).round(3)
+        print("\nSignificant coefficients (p<0.05) with incidence rate ratios:")
+        print(sig[["coef", "IRR", "pvalue"]].round(4).to_string())
+
+    except Exception as e:
+        print(f"Could not load GLM: {e}")
+else:
+    print("collision_glm.pkl not found — run: python -m road_risk.model --stage collision")
+```
+
+### XGBoost feature importance
+
+```{python}
+xgb_path = ROOT / "data/models/collision_xgb.json"
+if xgb_path.exists():
+    try:
+        from xgboost import XGBRegressor
+        xgb = XGBRegressor()
+        xgb.load_model(str(xgb_path))
+
+        importance = pd.Series(
+            xgb.feature_importances_,
+            index=metrics["xgb"]["features"],
+        ).sort_values()
+
+        fig, ax = plt.subplots(figsize=(8, max(5, len(importance) * 0.45)))
+        ax.barh(importance.index, importance.values, color="#457b9d", alpha=0.85)
+        ax.set_xlabel("Feature importance (gain, normalised)")
+        ax.set_title("XGBoost Poisson — feature importance")
+        plt.tight_layout()
+        plt.show()
+
+    except Exception as e:
+        print(f"Could not load XGBoost: {e}")
+else:
+    print("collision_xgb.json not found.")
+```
+
+### GLM vs XGBoost agreement
+
+```{python}
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+has_both = risk[["predicted_glm", "predicted_xgb"]].gt(0).all(axis=1)
+sample = risk[has_both].sample(min(50_000, has_both.sum()), random_state=RANDOM_STATE)
+
+axes[0].scatter(np.log(sample["predicted_glm"]), np.log(sample["predicted_xgb"]),
+                s=2, alpha=0.15, color="#1d3557")
+mn = min(np.log(sample["predicted_glm"]).min(), np.log(sample["predicted_xgb"]).min())
+mx = max(np.log(sample["predicted_glm"]).max(), np.log(sample["predicted_xgb"]).max())
+axes[0].plot([mn, mx], [mn, mx], "r--", linewidth=1)
+corr = np.corrcoef(np.log(sample["predicted_glm"]), np.log(sample["predicted_xgb"]))[0, 1]
+axes[0].text(0.05, 0.92, f"r = {corr:.3f}", transform=axes[0].transAxes, fontsize=10)
+axes[0].set_xlabel("log(GLM predicted rate)")
+axes[0].set_ylabel("log(XGBoost predicted rate)")
+axes[0].set_title("GLM vs XGBoost predictions (50k sample, log scale)")
+
+pct_data = [risk[risk["road_classification"] == c]["risk_percentile"].values
+            for c in cls_in_data]
+axes[1].boxplot(pct_data, labels=cls_in_data, patch_artist=True,
+                boxprops=dict(facecolor="#a8dadc", color="#1d3557"),
+                medianprops=dict(color="#e63946", linewidth=2))
+axes[1].set_ylabel("Risk percentile")
+axes[1].set_title("Risk percentile distribution by road class")
+axes[1].tick_params(axis="x", rotation=30)
+
+plt.tight_layout()
+plt.show()
+```
+
+---
+
+## Risk score distribution
+
+```{python}
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+pos = risk[risk["predicted_glm"] > 0]
+axes[0].hist(np.log(pos["predicted_glm"]), bins=60, color="#1d3557", edgecolor="none")
+axes[0].set_xlabel("log(predicted collisions/year)")
+axes[0].set_ylabel("Link count")
+axes[0].set_title("Predicted collision rate — all links (log scale)")
+
+axes[1].hist(risk["collision_count"].clip(0, 20), bins=21,
+             range=(-0.5, 20.5), color="#457b9d", edgecolor="white", linewidth=0.3)
+axes[1].set_yscale("log")
+axes[1].set_xlabel("Observed collisions (pooled years, capped at 20)")
+axes[1].set_ylabel("Link count (log scale)")
+axes[1].set_title(
+    f"Observed collision counts\n"
+    f"({(risk['collision_count'] == 0).mean():.1%} of links: zero collisions)"
+)
+
+plt.tight_layout()
+plt.show()
+```
+
+### Risk percentile by road class
+
+```{python}
+cls_med = (
+    risk.groupby("road_classification")["risk_percentile"]
+    .median()
+    .reindex(cls_in_data)
+    .dropna()
+    .sort_values(ascending=False)
+)
+colors = ["#e63946" if rc in ["Motorway", "A Road"] else "#457b9d"
+          for rc in cls_med.index]
+
+fig, ax = plt.subplots(figsize=(9, 4))
+ax.bar(cls_med.index, cls_med.values, color=colors)
+ax.axhline(50, color="black", linestyle="--", linewidth=0.8, alpha=0.5)
+ax.set_ylabel("Median risk percentile")
+ax.set_title("Median risk percentile by road class  (red = major roads)")
+ax.tick_params(axis="x", rotation=30)
+plt.tight_layout()
+plt.show()
+
+print("Risk percentile by road class:")
+print(
+    risk.groupby("road_classification")["risk_percentile"]
+    .agg(["mean", "median", "count"])
+    .round(1)
+    .reindex(cls_in_data)
+    .to_string()
+)
+```
+
+---
+
+## Residual analysis
+
+Residuals (observed − predicted × n_years) identify where the model
+systematically under- or over-predicts. Large positive residuals flag links
+that had more collisions than the model expected given their traffic and road
+characteristics.
+
+```{python}
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+axes[0].hist(risk["residual_glm"].clip(-5, 10), bins=80,
+             color="#457b9d", edgecolor="none")
+axes[0].axvline(0, color="#e63946", linewidth=1.5, linestyle="--")
+axes[0].set_yscale("log")
+axes[0].set_xlabel("Residual (observed − predicted, pooled years)")
+axes[0].set_ylabel("Link count (log scale)")
+axes[0].set_title(
+    f"GLM residuals\n"
+    f"median={risk['residual_glm'].median():.3f}  std={risk['residual_glm'].std():.2f}"
+)
+
+pos = risk[risk["predicted_glm"] > 0].sample(50_000, random_state=RANDOM_STATE)
+axes[1].scatter(np.log(pos["predicted_glm"]), pos["residual_glm"].clip(-5, 10),
+                s=2, alpha=0.15, color="#1d3557")
+axes[1].axhline(0, color="#e63946", linewidth=1, linestyle="--")
+axes[1].set_xlabel("log(predicted collision rate)")
+axes[1].set_ylabel("Residual (clipped −5 to +10)")
+axes[1].set_title("Residuals vs predicted rate (overdispersion check)")
+
+plt.tight_layout()
+plt.show()
+```
+
+### Residuals by road class
+
+```{python}
+res_by_class = (
+    risk.groupby("road_classification")["residual_glm"]
+    .agg(["mean", "median", "std", "count"])
+    .round(3)
+    .reindex(cls_in_data)
+    .dropna()
+)
+print("Residuals by road class:")
+print(res_by_class.to_string())
+
+fig, ax = plt.subplots(figsize=(9, 4))
+ax.bar(res_by_class.index, res_by_class["median"], color="#457b9d")
+ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
+ax.set_ylabel("Median residual (observed − predicted)")
+ax.set_title("Median GLM residual by road class\n(positive = model under-predicts risk)")
+ax.tick_params(axis="x", rotation=30)
+plt.tight_layout()
+plt.show()
+```
+
+---
+
+## Geographic risk maps
+
+### Full-network risk percentile
+
+```{python}
+if HAS_GPD and openroads is not None:
+    or_risk = openroads[["link_id", "road_classification", "geometry"]].merge(
+        risk[["link_id", "risk_percentile", "residual_glm", "collision_count"]],
+        on="link_id", how="inner",
+    )
+    or_risk = or_risk[or_risk.geometry.notna()].copy()
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 9))
+
+    or_risk.plot(
+        column="risk_percentile", ax=axes[0],
+        cmap="RdYlBu_r", vmin=0, vmax=100,
+        linewidth=0.3, legend=True,
+        legend_kwds={"label": "Risk percentile", "shrink": 0.6},
+    )
+    axes[0].set_title("Risk percentile — all links")
+    axes[0].set_axis_off()
+
+    major = or_risk[or_risk["road_classification"].isin(["Motorway", "A Road"])].copy()
+    major.plot(
+        column="risk_percentile", ax=axes[1],
+        cmap="RdYlBu_r", vmin=0, vmax=100,
+        linewidth=0.8, legend=True,
+        legend_kwds={"label": "Risk percentile", "shrink": 0.6},
+    )
+    axes[1].set_title("Risk percentile — Motorways & A Roads")
+    axes[1].set_axis_off()
+
+    plt.suptitle("Stage 2 collision risk scores", fontsize=13)
+    plt.tight_layout()
+    plt.show()
+```
+
+### Top 1% risk links
+
+```{python}
+if HAS_GPD and openroads is not None:
+    top1 = or_risk[or_risk["risk_percentile"] >= 99].copy()
+    rng  = np.random.default_rng(RANDOM_STATE)
+    bg   = or_risk.iloc[rng.choice(len(or_risk), size=min(150_000, len(or_risk)), replace=False)]
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 9))
+
+    bg.plot(ax=axes[0], color="#e0e0e0", linewidth=0.2, zorder=1)
+    top1.plot(column="collision_count", ax=axes[0], cmap="hot_r",
+              linewidth=1.2, legend=True, zorder=2,
+              legend_kwds={"label": "Observed collisions (pooled)", "shrink": 0.6})
+    axes[0].set_title(f"Top 1% risk links ({len(top1):,})\nColoured by observed collisions")
+    axes[0].set_axis_off()
+
+    bg.plot(ax=axes[1], color="#e0e0e0", linewidth=0.2, zorder=1)
+    top1.plot(column="residual_glm", ax=axes[1], cmap="RdBu",
+              vmin=-5, vmax=5, linewidth=1.2, legend=True, zorder=2,
+              legend_kwds={"label": "GLM residual", "shrink": 0.6})
+    axes[1].set_title("Top 1% risk links\nColoured by GLM residual")
+    axes[1].set_axis_off()
+
+    plt.suptitle("Highest-risk road segments", fontsize=13)
+    plt.tight_layout()
+    plt.show()
+
+    print(f"\nTop 1% risk links by road class ({len(top1):,} total):")
+    print(top1["road_classification"].value_counts().to_string())
+```
+
+### Excess-risk map (residual > 2)
+
+Links where observed collisions substantially exceeded the model's prediction
+given traffic volume and road type — potential candidates for engineering review.
+
+```{python}
+if HAS_GPD and openroads is not None:
+    excess = or_risk[or_risk["residual_glm"] > 2].copy()
+
+    fig, ax = plt.subplots(figsize=(10, 9))
+    bg.plot(ax=ax, color="#e0e0e0", linewidth=0.2, zorder=1)
+    excess.plot(column="residual_glm", ax=ax, cmap="Oranges",
+                linewidth=1.5, legend=True, zorder=2,
+                legend_kwds={"label": "Residual (observed − predicted)", "shrink": 0.6})
+    ax.set_title(
+        f"Excess-risk links — residual > 2  ({len(excess):,} links)\n"
+        "Had substantially more collisions than road type and traffic predict"
+    )
+    ax.set_axis_off()
+    plt.tight_layout()
+    plt.show()
+```
+
+---
+
+## Summary
+
+```{python}
+print("=== Stage 2 collision model summary ===\n")
+print(f"Links scored          : {len(risk):,}")
+print(f"Links with collisions : {(risk['collision_count'] > 0).sum():,} "
+      f"({(risk['collision_count'] > 0).mean():.1%})")
+print(f"\nPoisson GLM pseudo-R² : {metrics['glm']['pseudo_r2']:.3f}")
+print(f"XGBoost pseudo-R²     : {metrics['xgb']['pseudo_r2']:.3f}")
+print(f"\nTop 1% risk links     : {(risk['risk_percentile'] >= 99).sum():,}")
+print(f"Excess-risk links (residual > 2): {(risk['residual_glm'] > 2).sum():,}")
+print(f"\nExcess-risk by road class:")
+print(
+    risk[risk["residual_glm"] > 2]["road_classification"]
+    .value_counts()
+    .to_string()
+)
+```
+
+Key observations:
+
+- XGBoost (pseudo-R² 0.858) substantially outperforms the GLM (pseudo-R² 0.251)
+  on the link-year training table. Part of this gap reflects XGBoost's ability to
+  capture non-linear interactions between road class, form of way, and network
+  betweenness that the GLM cannot. Part also reflects that XGBoost receives
+  `estimated_aadt` as a raw feature in addition to the log-offset, giving it
+  flexibility the GLM's forced-coefficient offset does not have. The two
+  pseudo-R² values are also computed on different row subsets and with different
+  null models (GLM: in-sample on a downsampled training set; XGBoost:
+  out-of-sample on the full zero-heavy test set) — the headline gap should not
+  be read as pure modelling lift. These metrics are from the current run after
+  the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, and
+  OSM feature enrichment; earlier GLM pseudo-R² figures are prior-run snapshots,
+  not directly comparable ablations. See [feature engineering](../methodology/feature-engineering.qmd#pseudo-r-comparability)
+  for the full caveat.
+- The GLM provides interpretable incidence rate ratios per feature; XGBoost
+  predictions complement these with higher predictive power for the risk map.
+- Residuals show where traffic volume and road geometry alone under-predict
+  observed collisions — likely reflecting local factors not in the feature set
+  (junction design, sight lines, speed compliance).
+- The top 1% risk links are concentrated on high-traffic A-roads and
+  motorways, consistent with higher exposure and absolute collision counts.
+- Excess-risk links (residual > 2) are candidates for targeted intervention
+  where infrastructure or behaviour factors drive risk beyond what the model
+  can attribute to road class and traffic alone.

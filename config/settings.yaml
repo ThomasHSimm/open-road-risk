@@ -1,0 +1,133 @@
+# config/settings.yaml
+# Central config — import via src/road_risk/config.py
+
+project:
+  name: road-risk-analysis
+  version: "0.1.0"
+
+# ---------------------------------------------------------------------------
+# Study area — single source of truth for all geographic filters
+# ---------------------------------------------------------------------------
+study_area:
+  # WGS84 bounding box — used by AADF and WebTRIS (lat/lon data)
+  # Extends from south of Birmingham north through Yorkshire.
+  # lat 52.00 ≈ south of Birmingham; lat 55.20 ≈ north of North Yorkshire
+  bbox_wgs84:
+    min_lat: 52.00
+    max_lat: 55.20
+    min_lon: -3.40
+    max_lon:  1.90
+
+  # British National Grid bbox (metres) — used by OS Open Roads (BNG data)
+  # Derived from WGS84 corners above with a 20 km buffer.
+  # SW corner (52.0, -3.4) → BNG ≈ (285000, 233000)
+  # NE corner (55.2,  1.9) → BNG ≈ (664000, 636000)
+  bbox_bng:
+    min_easting:  260000
+    min_northing: 210000
+    max_easting:  690000
+    max_northing: 660000
+
+geography:
+  pilot_region: midlands_to_yorkshire
+  # Police force codes as used in the STATS19 collision CSV (police_force field).
+  # Source: DfT data guide Excel, sheet '2024_code_list', filter field name = 'police_force'
+  # Keys are snake_case labels; values are integer STATS19 codes.
+  police_force_codes:
+    # Yorkshire
+    north_yorkshire:    12
+    west_yorkshire:     13
+    south_yorkshire:    14
+    humberside:         16
+    # NW England
+    lancashire:          4
+    merseyside:          5
+    greater_manchester:  6
+    cheshire:            7
+    # North
+    cumbria:             3
+    durham:             11
+    cleveland:          17
+    # Midlands / East England (extended area)
+    west_midlands:      20
+    staffordshire:      21
+    west_mercia:        22
+    warwickshire:       23
+    derbyshire:         30
+    nottinghamshire:    31
+    lincolnshire:       32
+    leicestershire:     33
+    northamptonshire:   34
+    cambridgeshire:     35
+    norfolk:            36
+    suffolk:            37
+
+years:
+  full_range: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+  pre_covid:  [2015, 2016, 2017, 2018, 2019]
+  covid:      [2020, 2021]
+  post_covid: [2022, 2023, 2024]
+  recent:     [2024]                    # for single-year analyses
+
+paths:
+  raw:
+    stats19:    data/raw/stats19/
+    aadf:       data/raw/aadf/
+    shapefiles: data/raw/shapefiles/
+    webtris:    data/raw/webtris/
+  processed:    data/processed/
+  features:     data/features/
+
+webtris:
+  base_url: "https://webtris.highwaysengland.co.uk/api/v1"
+  report_type: daily
+  page_size: 100                        # max results per API page
+  # Sparse sampling years: pre-COVID baseline, COVID anomaly, recent normal.
+  # Pull only these years to avoid 10× API cost for marginal AADF benefit.
+  target_years: [2019, 2021, 2023]
+
+stats19:
+  # Columns to keep at each join stage (trim memory)
+  collision_cols:
+    - collision_index
+    - date
+    - time
+    - police_force
+    - collision_severity
+    - number_of_vehicles
+    - number_of_casualties
+    - road_type
+    - speed_limit
+    - junction_detail
+    - light_conditions
+    - weather_conditions
+    - road_surface_conditions
+    - urban_or_rural_area
+    - latitude
+    - longitude
+    - local_authority_highway
+  vehicle_cols:
+    - collision_index
+    - vehicle_reference
+    - vehicle_type
+    - vehicle_manoeuvre
+    - vehicle_location_restricted_lane
+    - skidding_and_overturning
+    - age_of_driver
+    - age_of_vehicle
+    - engine_capacity_cc
+  casualty_cols:
+    - collision_index
+    - vehicle_reference
+    - casualty_reference
+    - casualty_class
+    - sex_of_casualty
+    - age_of_casualty
+    - casualty_severity
+    - casualty_type
+
+model:
+  target: collision_severity            # 1=fatal, 2=serious, 3=slight
+  test_size: 0.2
+  random_state: 42
+  cv_folds: 5

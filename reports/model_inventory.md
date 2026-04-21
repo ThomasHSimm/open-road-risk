@@ -1,0 +1,188 @@
+# Model Inventory
+
+**Date:** April 2026  
+**Status:** Refreshed against the current Stage 2 artefacts on 21 April 2026.  
+**Canonical metrics source:** `data/models/collision_metrics.json`
+
+---
+
+## 1. Stage 2 — Collision Risk Model (`src/road_risk/model/collision.py`)
+
+### 1.1 Training data
+
+| Item | Value | Source |
+|---|---|---|
+| Link-year modelling table | 21,675,570 rows | `xgb.n_train + xgb.n_test` |
+| GLM complete-case rows before downsampling | 10,892,180 rows | `glm.n_full` |
+| GLM training rows (after downsampling) | 2,465,287 | `glm.n_obs` |
+| GLM positive rows (collision > 0) | 224,117 | `glm.n_pos` |
+| XGBoost training rows | 17,340,450 | `xgb.n_train` |
+| XGBoost test rows | 4,335,120 | `xgb.n_test` |
+
+**Downsampling:** The GLM first keeps complete-case rows for its feature set,
+then downsamples zero-collision rows to 10× positives (≈ 91% zeros vs 98% in
+the full table) to keep the statsmodels design matrix tractable. XGBoost trains
+on the full ~21.7M-row table with zeros filled to 0.
+
+### 1.2 GLM — Poisson with log-offset
+
+**Family / link:** Poisson, log link (statsmodels `sm.families.Poisson()`).  
+**Regularisation:** None. Standard MLE.  
+**Offset:** `log(AADT × link_length_km × 365 / 1e6)` — forces the exposure coefficient to 1.
+
+**Features (from trained artefact — `collision_metrics.json → glm.features`):**
+
+| # | Feature | Category |
+|---|---|---|
+| 1 | `road_class_ord` | Road structure |
+| 2 | `form_of_way_ord` | Road structure |
+| 3 | `is_motorway` | Binary flag |
+| 4 | `is_a_road` | Binary flag |
+| 5 | `is_slip_road` | Binary flag |
+| 6 | `is_roundabout` | Binary flag |
+| 7 | `is_dual` | Binary flag |
+| 8 | `is_trunk` | Binary flag |
+| 9 | `is_primary` | Binary flag |
+| 10 | `log_link_length` | Geometry |
+| 11 | `is_covid` | Temporal |
+| 12 | `year_norm` | Temporal |
+| 13 | `degree_mean` | Network |
+| 14 | `betweenness` | Network |
+| 15 | `betweenness_relative` | Network |
+| 16 | `dist_to_major_km` | Network |
+| 17 | `pop_density_per_km2` | Network |
+| 18 | `speed_limit_mph` | OSM |
+| 19 | `lanes_imputed` | OSM, imputed |
+| 20 | `is_unpaved_imputed` | OSM, imputed |
+
+**Not in current trained GLM:** `hgv_proportion` and `lit`. The current
+`network_features.parquet` is OSM-enriched: `speed_limit_mph` clears the >50%
+coverage threshold and enters directly, while lower-coverage `lanes` and
+`is_unpaved` enter as median-imputed GLM features.
+
+**Metrics:**
+
+| Metric | Value |
+|---|---|
+| Pseudo-R² | 0.2513 (in-sample on downsampled training set) |
+| Deviance | 856,999 |
+| Null deviance | 1,144,655 |
+| AIC | 1,322,161 |
+| Converged | Yes |
+
+### 1.3 XGBoost — Poisson with base_margin offset
+
+**Hyperparameters (hardcoded in `train_collision_xgb`, lines 322–328):**
+
+| Parameter | Value |
+|---|---|
+| `objective` | `count:poisson` |
+| `n_estimators` | 500 |
+| `max_depth` | 6 |
+| `learning_rate` | 0.05 |
+| `subsample` | 0.8 |
+| `colsample_bytree` | 0.8 |
+| `random_state` | module constant `RANDOM_STATE` |
+| `n_jobs` | -1 |
+
+**Regularisation:** None explicitly set (`reg_alpha`, `reg_lambda` take XGBoost defaults: `reg_alpha=0`, `reg_lambda=1`).  
+**Validation:** `GroupShuffleSplit(n_splits=1, test_size=0.2)` grouped by `link_id` — all years for a link stay in one fold.  
+**Offset:** passed as `base_margin=log_offset` so the model learns log-rate given exposure, not absolute count.
+
+**Features (from trained artefact — `collision_metrics.json → xgb.features`):**
+
+| # | Feature | Category | vs GLM |
+|---|---|---|---|
+| 1 | `road_class_ord` | Road structure | same |
+| 2 | `form_of_way_ord` | Road structure | same |
+| 3–9 | `is_motorway` … `is_primary` | Binary flags | same |
+| 10 | `log_link_length` | Geometry | same |
+| 11 | `estimated_aadt` | Exposure | **XGBoost only** |
+| 12 | `is_covid` | Temporal | same |
+| 13 | `year_norm` | Temporal | same |
+| 14 | `hgv_proportion` | Traffic | **XGBoost only** |
+| 15 | `degree_mean` | Network | same |
+| 16 | `betweenness` | Network | same |
+| 17 | `betweenness_relative` | Network | same |
+| 18 | `dist_to_major_km` | Network | same |
+| 19 | `pop_density_per_km2` | Network | same |
+| 20 | `speed_limit_mph` | OSM | same |
+| 21 | `lanes` | OSM | raw in XGBoost |
+| 22 | `is_unpaved` | OSM | raw in XGBoost |
+
+XGBoost receives `estimated_aadt` as a raw feature in addition to the log-offset (XGBoost can exploit non-linear interactions with exposure that the offset constrains in the GLM). `hgv_proportion` was included in XGBoost because its coverage threshold is simply `if col in df.columns` (no percentage check); it was present at training time.
+The current XGBoost run also includes OSM speed, lanes, and unpaved/surface flag
+features. `lit` is present in `network_features.parquet` but is not currently in
+the trained feature list.
+
+**Metrics:**
+
+| Metric | Value |
+|---|---|
+| Pseudo-R² | 0.8577 (out-of-sample, held-out test set) |
+| Test deviance | 104,384 |
+
+**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are also from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, and OSM feature enrichment; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.
+
+### 1.4 Output
+
+`data/models/risk_scores.parquet` — one row per link. Key columns:
+`predicted_xgb` (mean collisions/year), `predicted_glm`, `residual_glm`,
+`risk_percentile` (XGBoost rank × 100 / n_links), `collision_count`,
+`estimated_aadt`, `hgv_proportion`, `speed_limit_mph`, and
+`betweenness_relative`. Post-event diagnostic columns such as `pct_dark`,
+`pct_urban`, `pct_junction`, `pct_near_crossing`, and `mean_speed_limit` are
+excluded from the output contract.
+
+---
+
+## 2. DVSA Test Route Analysis (`src/road_risk/dtc/`)
+
+**This is not a trained model.** It is a two-stage descriptive pipeline: route-to-link conversion followed by Pearson correlation analysis.
+
+### 2.1 `routes.py` — What it produces
+
+Inputs: GPX files (`data/raw/test_routes/*.gpx`) and Google Maps waypoint URLs (`gmaps_urls.txt`).
+
+Processing: GPX track points → RDP simplification → NetworkX Dijkstra shortest path between consecutive waypoints → ordered list of `(link_id, forward_bool)` pairs. Google Maps waypoints follow the same routing step after URL decode.
+
+Output: `data/processed/test_routes/routed_routes.parquet`  
+One row per route. Key columns: `dtc_name`, `file_name`, `source` (gpx/gmaps), `link_sequence` (JSON-serialised list of `[link_id, forward]` pairs), `n_unique_links`, `route_length_km`. No features — just the link sequence.
+
+Counts from code (runtime values): 174 routes across 24 centres. The code prints these from `df["dtc_name"].nunique()` at runtime; they are not hardcoded.
+
+### 2.2 `analysis.py` — What it produces
+
+**Stage A — per-route feature table** (`compute_route_features`):  
+Joins each route's link sequence to `risk_scores.parquet` and `network_features.parquet`, then computes:
+
+| Feature group | Features computed |
+|---|---|
+| Speed environment | `mean_speed_est`, `pct_high_speed` (≥40 mph), `pct_low_speed` (≤30 mph), `pct_urban_speed` (≤20 mph) |
+| Junction character | `pct_roundabout`, `n_roundabouts`, `pct_dual`, `degree_mean_mean`, `pct_t_junction`, `pct_crossroads`, `pct_complex_junction` |
+| Road class mix | `pct_motorway`, `pct_a_road`, `pct_b_road`, `pct_classified_unnumbered`, `pct_unclassified` |
+| Road character | `mean_link_length_km`, `pct_short_links` (<0.1 km), `pct_long_links` (>0.5 km) |
+| Network | `betweenness_rel_mean`, `dist_to_major_mean`, `pop_density_mean` |
+| Risk | `risk_percentile_mean`, `risk_percentile_p90`, `pct_high_risk` (≥90th pct), `estimated_aadt_mean`, `residual_glm_mean` |
+| Turns | `pct_right_turns`, `pct_left_turns`, `pct_straight`, `pct_u_turns`, `n_junctions`, `right_left_ratio` |
+
+**Stage B — per-DTC aggregation** (`aggregate_to_dtc`):  
+All numeric features are averaged across routes for the same centre. Outputs per-centre route count and source breakdown (n_gpx, n_gmaps).
+
+**Stage C — Pearson correlation analysis** (`run_correlations`):  
+Each per-DTC route feature is correlated (Pearson r, two-sided p-value) against every available outcome column. Centres with fewer than 2 routes are excluded.
+
+Outcome variables:
+
+| Outcome | Source |
+|---|---|
+| `first_attempt_pass_rate` | `dtc_summary.csv` |
+| `overall_pass_rate` | `dtc_summary.csv` |
+| `road_fault_index_sd` / `_minor` | Composite mean of 13 road-linked Annex D fault rates |
+| `adjusted_difficulty_sd` / `_minor` | `road_fault_index − aptitude_index` |
+| 110+ individual Annex D SD and minor fault rates | `annex_d_fault_rates.csv` |
+| Manoeuvre fail rates (parallel park, reverse right, etc.) | `manoeuvre_fail_rates.csv` |
+
+Output: `data/features/dtc_correlations.csv` — one row per (feature × outcome) pair with columns `feature`, `outcome`, `r`, `p`, `sig`, `n`.
+
+**No model is fitted.** There are no hyperparameters, no training/test split, and no predictive output. All findings are exploratory given the small N (≤24 centres).

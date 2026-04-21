@@ -1,0 +1,411 @@
+# Empirical Bayes Shrinkage — Design Document
+
+**Status:** Design only. No code exists yet.  
+**Scope:** v1 implementation for `collision.py`. Per-family k and cross-fold
+stability are explicitly out of scope.  
+**Reference:** FHWA Highway Safety Manual (2010), Chapter 3, Network Screening.
+
+---
+
+## 1. Motivation
+
+The current risk percentile ranks links by `mean(predicted_xgb)` — the
+XGBoost model's expected collision count per year, averaged across the three
+AADF years. This is a model-only ranking: it ignores the observed collision
+history entirely.
+
+HSM network screening recommends combining the model prediction (the prior)
+with observed crash history (the likelihood) using Empirical Bayes (EB)
+shrinkage. The rationale:
+
+- A link with 1 observed collision in 1 year may have a high raw rate, but the
+  estimate is noisy. EB shrinks it toward the model prediction.
+- A link with 10 observed collisions consistently above prediction has strong
+  evidence of elevated risk. EB weights the observation more heavily.
+- The weight is determined by the negative binomial dispersion parameter k:
+  high overdispersion (low k) means observed counts are less reliable and
+  shrinkage toward the prior is stronger.
+
+---
+
+## 2. Units and data shapes (confirmed from `collision.py`)
+
+This section is foundational — getting units wrong silently produces nonsense
+rankings.
+
+### 2.1 What `predicted_xgb` is
+
+The XGBoost model is trained with `objective="count:poisson"` and
+`base_margin = log_offset`, where:
+
+```
+log_offset = log(AADT × link_length_km × 365 / 1e6)
+```
+
+`base_margin` sets the initial log-prediction in XGBoost's internal
+log-space. The model therefore learns the residual log-rate and `predict()`
+returns:
+
+```
+exp(log_offset + f(X)) = AADT × length_km × 365 / 1e6 × exp(f(X))
+```
+
+`exp(log_offset)` is vehicle-kilometres in millions. Multiplied by
+`exp(f(X))` (the learned collision rate per MVKm), the result is the
+**expected collision count per link-year** — an absolute count, not a rate
+per vehicle-km.
+
+At pooling (`score_and_save`), `predicted_xgb` is averaged across the three
+AADF years:
+
+```python
+pooled["predicted_xgb"] = df.groupby("link_id")["predicted_xgb"].mean()
+```
+
+So `predicted_xgb` in `risk_scores.parquet` is:
+
+> **Mean expected collisions per year** (collisions/year; absolute count).
+
+The `residual_glm` computation in `score_and_save` confirms this unit
+interpretation — it uses `predicted_glm × n_years` (not `× vehicle-km`) to
+produce a residual in collision-count units:
+
+```python
+pooled["residual_glm"] = pooled["collision_count"] - pooled["predicted_glm"] * n_years
+```
+
+### 2.2 What `collision_count` is
+
+`collision_count` is the **sum of observed collisions across all years** that
+appear in `road_link_annual.parquet`. In the current pipeline this is 3 years
+(2019, 2021, 2023). It is an integer count, consistent with the Poisson
+target the models were trained on.
+
+### 2.3 n_years per link
+
+`n_years` is computed globally in `score_and_save` as `df["year"].nunique()`
+and currently equals 3 for all links. By design, the base table in
+`build_collision_dataset()` is `all_links × all_AADF_years`, so every link
+that receives an AADT estimate appears in all three years. In the current
+pipeline, per-link n_years will always be 3 with no variation.
+
+Nonetheless, the implementation should compute n_years **per link** (as a
+groupby count of distinct years in `df`) rather than using the global
+constant. This makes the code robust if the set of AADF years changes in
+future runs, and it produces an informative diagnostic column even when the
+current value is uniform.
+
+---
+
+## 3. Mathematical formulation
+
+### 3.1 Negative binomial prior
+
+The EB prior is a negative binomial (NB2) model with the same feature set as
+the current Poisson GLM. The NB2 variance function is:
+
+```
+Var(Y) = μ + k × μ²
+```
+
+where k > 0 is the overdispersion parameter. The NB reduces to Poisson as
+k → 0. k is fitted on the full link-year table (not the downsampled GLM
+table) and extracted from `result.params['alpha']` in statsmodels.
+
+### 3.2 EB combining formula — in totals (HSM standard form)
+
+Define, for each link:
+
+| Symbol | Definition | Units |
+|---|---|---|
+| μ | `predicted_xgb` | collisions/year |
+| n | `n_years` (per link) | years |
+| N_pred | μ × n | total predicted collisions over study period |
+| N_obs | `collision_count` | total observed collisions over study period |
+| k | NB2 overdispersion (`alpha`) | dimensionless |
+
+The EB weight (HSM eq. 3-6):
+
+```
+w = 1 / (1 + k × N_pred)
+  = 1 / (1 + k × μ × n)
+```
+
+The EB expected crash total over the study period:
+
+```
+N_EB = w × N_pred + (1 − w) × N_obs
+     = w × (μ × n) + (1 − w) × collision_count
+```
+
+For ranking across links, convert to a per-year EB rate:
+
+```
+μ_EB = N_EB / n
+     = w × μ + (1 − w) × (collision_count / n)
+```
+
+`risk_percentile_eb` is then `rank(μ_EB) × 100 / n_links`.
+
+### 3.3 Interpretation of the weight
+
+| Condition | w | μ_EB behaviour |
+|---|---|---|
+| High n, high μ (major road, many years) | Near 0 | Dominated by observed rate |
+| Low n, low μ (minor road, few collisions) | Near 1 | Dominated by model prediction |
+| High k (high overdispersion) | Lower | More weight on observation |
+| k → 0 (Poisson) | Near 1 | Converges to model prediction |
+
+This is exactly the desired behaviour: short links with one freak collision
+are shrunk toward the model prior; consistently high-collision corridors
+retain their observed rate.
+
+### 3.4 Units consistency check
+
+All quantities in the formula are in **count space** (total collisions), not
+rate space. The per-year conversion happens only at the final ranking step.
+This matches HSM standard form and avoids mixing count and rate units inside
+the weight formula.
+
+---
+
+## 4. k estimation
+
+A single global k is fitted using statsmodels NB2 on the **full link-year
+table** (18M rows, not the downsampled GLM table). The same feature set as
+the current Poisson GLM is used, with `log_offset` as the exposure offset.
+
+```python
+import statsmodels.api as sm
+
+nb_result = sm.GLM(
+    y, X,
+    family=sm.families.NegativeBinomial(),
+    offset=log_offset,
+).fit()
+
+k = nb_result.params["alpha"]   # overdispersion; matches HSM convention
+```
+
+**Why the full table, not the downsampled GLM table?**  
+k characterises the overdispersion of collision counts at the true zero rate
+(~98% zeros). Fitting on the downsampled table (~91% zeros) would produce a
+biased k that under-states overdispersion, giving EB weights that lean too
+heavily on observations.
+
+**Memory:** The NB GLM on 18M rows will be materially heavier than the
+downsampled Poisson GLM. It may require chunked fitting or sparse design
+matrix construction. This is a known implementation risk; if it OOMs, the
+fallback is to fit on a stratified 10% sample of the full table (stratified
+by road class to preserve the zero/positive ratio within each class).
+
+**Per-family k — future work, not scoped here.**  
+In v1 a single k is applied to all links. Road classes likely have different
+overdispersion (motorways are more predictable; unclassified rural roads more
+noisy). Per-family k would require separate NB fits per `road_classification`
+and a lookup at scoring time. Deferred.
+
+---
+
+## 5. Implementation plan
+
+### 5.1 Files touched
+
+| File | Change |
+|---|---|
+| `src/road_risk/model/collision.py` | Add `fit_nb_dispersion()`, `compute_eb_scores()`, extend `score_and_save()` |
+| `src/road_risk/diagnostics/eb_validation.py` | New script — validation outputs (see §6) |
+| `data/models/collision_metrics.json` | Add `nb_k` field |
+| `data/models/risk_scores.parquet` | Add `n_years`, `eb_weight`, `risk_percentile_eb` columns |
+
+No other pipeline files are touched. The Quarto site pages read from
+`risk_scores.parquet` and will pick up the new columns automatically.
+
+### 5.2 New functions in `collision.py`
+
+**`fit_nb_dispersion(df, glm_features)`**
+
+```
+Inputs:  full link-year DataFrame df, feature list from GLM
+Returns: float k (overdispersion parameter)
+Writes:  nothing (k is passed to score_and_save)
+```
+
+Fits statsmodels NB2 on the full table. Logs k and its 95% CI.
+Falls back to a stratified 10% sample if the design matrix exceeds a
+configurable memory cap (default 4 GB).
+
+**`compute_eb_scores(pooled, k)`**
+
+```
+Inputs:  pooled DataFrame (one row per link), float k
+Returns: pooled DataFrame with added columns:
+           n_years          (int) — years contributing to this link's scores
+           eb_weight        (float) — w = 1 / (1 + k × predicted_xgb × n_years)
+           predicted_eb     (float) — μ_EB per year
+           risk_percentile_eb (float) — rank(predicted_eb) × 100 / n_links
+```
+
+`n_years` is derived from the pre-pooled `df` via
+`df.groupby("link_id")["year"].nunique()`, then joined onto `pooled`. This
+avoids assuming uniformity even if the current value is always 3.
+
+### 5.3 Changes to `score_and_save()`
+
+After the existing pooling and `risk_percentile` computation, add:
+
+```python
+# EB shrinkage
+k = fit_nb_dispersion(df, glm_features)
+pooled = compute_eb_scores(pooled, k)
+
+# Persist k
+glm_summary["nb_k"] = k
+```
+
+Extend `save_cols` to include `n_years`, `eb_weight`, `risk_percentile_eb`.
+
+The existing `risk_percentile` column is **not removed** — both rankings are
+saved. Comparison between them is part of the validation.
+
+### 5.4 What does NOT change
+
+- `build_collision_dataset()` — no change
+- `train_collision_glm()` — no change
+- `train_collision_xgb()` — no change
+- GLM and XGBoost model artefacts — no change
+- Quarto QMD files — read from parquet; will pick up new columns without
+  code changes (though `model-results.qmd` will need narrative updates after
+  validation)
+
+---
+
+## 6. Validation plan
+
+Run as a standalone script `src/road_risk/diagnostics/eb_validation.py`
+against the updated `risk_scores.parquet`. No retraining required.
+
+### 6.1 n_years distribution
+
+Report the distribution of `n_years` across all 2.1M links. Expected: all
+links have n_years = 3 in the current pipeline. If there is any variation,
+flag the links with n_years < 3 and their road class breakdown — they will
+have higher w (stronger shrinkage) than typical links.
+
+### 6.2 k value and weight distribution
+
+- Report k, its 95% CI from the NB fit, and what it implies for a typical
+  link:
+  - At the median predicted_xgb, what is the resulting w?
+  - At the 95th percentile predicted_xgb, what is w?
+- Plot the distribution of `eb_weight` across all links.
+- Stratify w by road class — motorways (high μ, low w) vs unclassified
+  (low μ, high w near 1).
+
+### 6.3 Rank change distribution
+
+- Compute `rank_delta = risk_percentile_eb − risk_percentile` for every link.
+- Report:
+  - Median |rank_delta|
+  - 90th percentile |rank_delta|
+  - % of links that move more than 10 percentile points in either direction
+  - % of links that move more than 25 percentile points
+- Plot histogram of rank_delta (expect right-skewed: most links barely
+  move; a tail of short/zero-collision links drop sharply).
+
+### 6.4 Top-1% list comparison
+
+- How many links are in top 1% under `risk_percentile` (should be ~21,700)?
+- How many links are in top 1% under `risk_percentile_eb`?
+- How many links are in both? How many enter or exit?
+- Stratify entrants and leavers by road class. Are leavers predominantly
+  unclassified/short links? Are entrants major roads where high observed
+  counts were previously being down-weighted by low model predictions?
+
+### 6.5 Qualitative link-level inspection
+
+Select 5 links that **exit** the top 1% under EB and 5 that **enter**.
+For each, report:
+
+| Field | Purpose |
+|---|---|
+| `road_classification` | Road type |
+| `link_length_km` | Exposure proxy |
+| `estimated_aadt` | Traffic volume |
+| `collision_count` | Observed total (3 years) |
+| `predicted_xgb` | Model prior (per year) |
+| `eb_weight` | Shrinkage applied |
+| `risk_percentile` | Old rank |
+| `risk_percentile_eb` | New rank |
+
+Expected patterns:
+
+**Exits (high old rank, lower new rank):** Short links with one or two
+collisions but very low AADT — low predicted_xgb means the observed rate
+is extreme but the model sees little plausible risk. EB pulls rank down
+toward the prior. Likely unclassified or B road, short, possibly rural.
+
+**Entries (lower old rank, higher new rank):** Links where the model
+systematically under-predicts but observed counts are persistently high.
+These links may have attributes that the current model doesn't represent
+well (e.g. signalised junction, specific geometry). EB increases weight on
+observations. Likely A road or urban minor road with repeated collisions.
+
+---
+
+## 7. Caveats and methodological notes
+
+### 7.1 k is borrowed from NB, applied to XGBoost predictions
+
+Standard HSM EB assumes the prior is an NB model, so the NB mean and
+dispersion parameter k are from the same model and are statistically
+coherent. We are using an NB dispersion parameter extracted from an
+auxiliary NB GLM, but applying it to XGBoost predictions as the prior.
+XGBoost predictions do not come with a natural k — they are point estimates
+from a Poisson objective with no overdispersion modelling.
+
+This is a pragmatic approximation. The justification:
+
+- The NB k characterises the overdispersion of collision counts given road
+  features, which is a property of the data-generating process, not of any
+  specific model.
+- If the NB GLM and XGBoost both capture systematic variation in mean counts
+  well, their residual overdispersion should be similar.
+- Using a single global k is already an approximation — per-link k would
+  require fully Bayesian inference.
+
+The consequence if k is wrong: the EB weights will be miscalibrated. Too
+large a k (over-estimated overdispersion) → over-shrinkage toward model
+prior, suppressing genuine outlier links. Too small a k → under-shrinkage,
+leaving the ranking closer to a pure rate ranking.
+
+**A cleaner future version** would use predictions from an NB or NB-mixed
+model directly, so that k and the prior mean come from the same model. This
+is the strict HSM approach. The current approximation is defensible as a v1
+but should be flagged explicitly in any public-facing methodology description.
+
+### 7.2 GLM intercept bias does not affect EB
+
+The decision to shrink toward `predicted_xgb` (not `predicted_glm`) sidesteps
+the GLM zero-downsampling intercept bias described in
+`methodology/feature-engineering.qmd`. The NB GLM used only for k estimation
+is fit on the full table, so its intercept is not biased. If the NB GLM's
+intercept still shows any residual bias (due to model misspecification rather
+than downsampling), this would affect the NB mean but k is relatively
+insensitive to small intercept shifts compared to the feature coefficients.
+
+### 7.3 Pseudo-R² comparability (existing caveat, applies here too)
+
+The NB pseudo-R² will be computed in-sample on the full table. It is not
+directly comparable to the XGBoost out-of-sample pseudo-R². Do not use the
+NB pseudo-R² as a performance claim — it is only needed for k extraction.
+
+### 7.4 n_years is currently uniform (n=3)
+
+As noted in §2.3, all links have n_years = 3 in the current pipeline. The
+EB weights will therefore vary only through `predicted_xgb`, not through
+differential observation periods. This limits one of EB's key advantages —
+giving lower weight to estimates from shorter observation windows. If the
+AADF years change (e.g. adding 2015–2018 AADF) and different links have
+different year coverage, n_years variation will matter and the per-link
+computation will become load-bearing.

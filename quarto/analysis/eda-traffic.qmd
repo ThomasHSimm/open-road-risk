@@ -1,0 +1,469 @@
+---
+title: "Traffic Volume EDA"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+---
+
+## Overview
+
+Stage 1a estimates Annual Average Daily Traffic (AADT) for every OS Open Roads
+link in the study area. Directly measured AADF count points cover only a
+minority of road links — particularly minor and unclassified roads — so a
+gradient-boosted regressor is trained on those measured points and applied to
+the full 2.1M-link network.
+
+This page covers:
+
+- The measured AADF count-point data used for training
+- How the model was built and validated
+- The resulting full-network AADT estimates and their geographic pattern
+
+```{python}
+from pathlib import Path
+import json
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+from road_risk.config import _ROOT as ROOT
+RANDOM_STATE = 42
+
+try:
+    import geopandas as gpd
+    HAS_GPD = True
+except Exception:
+    HAS_GPD = False
+
+aadf = pd.read_parquet(ROOT / "data/processed/aadf/aadf_clean.parquet")
+
+aadt_path = ROOT / "data/models/aadt_estimates.parquet"
+aadt = pd.read_parquet(aadt_path) if aadt_path.exists() else pd.DataFrame()
+
+if HAS_GPD:
+    or_path = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+    openroads = gpd.read_parquet(or_path) if or_path.exists() else None
+else:
+    openroads = None
+
+val_path = ROOT / "data/models/aadt_validation_summary.parquet"
+val_summary = pd.read_parquet(val_path) if val_path.exists() else pd.DataFrame()
+
+print(f"AADF count points : {aadf['count_point_id'].nunique():,} sites × {aadf['year'].nunique()} years ({aadf.shape[0]:,} rows)")
+print(f"AADT estimates    : {aadt['link_id'].nunique():,} links × {aadt['year'].nunique()} years ({len(aadt):,} rows)")
+if openroads is not None:
+    print(f"OS Open Roads     : {len(openroads):,} links")
+```
+
+---
+
+## Measured AADF — training data
+
+### Spatial coverage of count points
+
+```{python}
+if HAS_GPD and openroads is not None:
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    rng = np.random.default_rng(RANDOM_STATE)
+    sample_idx = rng.choice(len(openroads), size=min(200_000, len(openroads)), replace=False)
+    openroads.iloc[sample_idx].plot(ax=ax, color="#d0d0d0", linewidth=0.2, zorder=1)
+
+    latest_aadf = (
+        aadf.sort_values("year")
+        .groupby("count_point_id", as_index=False)
+        .last()
+    )
+    gdf_pts = gpd.GeoDataFrame(
+        latest_aadf,
+        geometry=gpd.points_from_xy(latest_aadf["longitude"], latest_aadf["latitude"]),
+        crs="EPSG:4326",
+    )
+    gdf_pts.plot(ax=ax, markersize=3, color="#e63946", alpha=0.6, zorder=2)
+
+    ax.set_title(
+        f"AADF count-point locations ({gdf_pts['count_point_id'].nunique():,} sites)\n"
+        "Red dots = measured sites; grey = full road network (200k link sample)"
+    )
+    ax.set_axis_off()
+    plt.tight_layout()
+    plt.show()
+```
+
+### AADF distribution by road type
+
+```{python}
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+measured = aadf[aadf["all_motor_vehicles"] > 0].copy()
+
+axes[0].hist(np.log(measured["all_motor_vehicles"]), bins=60, color="#457b9d", edgecolor="none")
+axes[0].set_xlabel("log(AADF vehicles/day)")
+axes[0].set_ylabel("Count")
+axes[0].set_title("Distribution of measured AADF (log scale)")
+
+medians = (
+    measured.groupby("road_type")["all_motor_vehicles"]
+    .median()
+    .sort_values(ascending=False)
+)
+axes[1].barh(medians.index, medians.values / 1000, color="#1d3557")
+axes[1].set_xlabel("Median AADF (thousands vehicles/day)")
+axes[1].set_title("Median AADF by road type")
+for i, v in enumerate(medians.values):
+    axes[1].text(v / 1000 + 0.3, i, f"{v/1000:.1f}k", va="center", fontsize=9)
+
+plt.tight_layout()
+plt.show()
+```
+
+### Annual trends including COVID
+
+```{python}
+year_stats = (
+    measured.groupby("year")["all_motor_vehicles"]
+    .agg(["median", "count"])
+    .reset_index()
+)
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+axes[0].plot(year_stats["year"], year_stats["median"] / 1000, marker="o", color="#1d3557")
+for y in [2020, 2021]:
+    if y in year_stats["year"].values:
+        axes[0].axvline(y, color="#e63946", linestyle="--", alpha=0.5,
+                        label="COVID" if y == 2020 else "")
+axes[0].set_xlabel("Year")
+axes[0].set_ylabel("Median AADF (thousands vehicles/day)")
+axes[0].set_title("Median AADF by year (red dashes = COVID years)")
+axes[0].set_xticks(year_stats["year"])
+axes[0].tick_params(axis="x", rotation=45)
+axes[0].legend()
+
+axes[1].bar(year_stats["year"], year_stats["count"], color="#457b9d")
+axes[1].set_xlabel("Year")
+axes[1].set_ylabel("Observations")
+axes[1].set_title("AADF observations per year")
+axes[1].set_xticks(year_stats["year"])
+axes[1].tick_params(axis="x", rotation=45)
+
+plt.tight_layout()
+plt.show()
+```
+
+### HGV proportion by road type
+
+```{python}
+hgv_data = measured.dropna(subset=["hgv_proportion", "road_type"])
+
+fig, ax = plt.subplots(figsize=(8, 4))
+road_types = hgv_data["road_type"].value_counts().index.tolist()
+box_data = [hgv_data[hgv_data["road_type"] == rt]["hgv_proportion"].values for rt in road_types]
+ax.boxplot(box_data, labels=road_types, patch_artist=True,
+           boxprops=dict(facecolor="#a8dadc", color="#1d3557"),
+           medianprops=dict(color="#e63946", linewidth=2))
+ax.set_ylabel("HGV proportion")
+ax.set_title("HGV proportion by road type")
+plt.tight_layout()
+plt.show()
+```
+
+---
+
+## Stage 1a model
+
+### Design summary
+
+The model is a `HistGradientBoostingRegressor` (sklearn) with native missing-value
+handling. The target is log1p(AADF) **de-meaned by year** so the model learns
+road-level deviation from the network-wide annual average. Year means are stored
+separately and added back at inference — this prevents the year feature from
+dominating importance and collapsing full-network predictions near the annual mean.
+
+GroupKFold CV grouped by `count_point_id` ensures the same station cannot appear
+in both train and test folds across years.
+
+WebTRIS flow features are excluded from Stage 1a: they are unavailable for
+the 2.1M-link network at inference and their absence would need to be imputed
+with zeros, which corrupts predictions because HistGBR routes NaN and zero
+through different tree branches.
+
+| Feature | Source |
+|---------|--------|
+| `road_class_ord` | AADF road name prefix (M=6, A=5, B=4, other=1) |
+| `is_trunk` | road name prefix |
+| `latitude`, `longitude` | AADF count point location |
+| `is_covid` | year flag for 2020–2021 |
+| `hgv_proportion` | AADF vehicle mix |
+| `link_length_km` | OS Open Roads (snapped via KD-tree) |
+| Network features | betweenness, node degree, dist to major road |
+
+### Cross-validation results
+
+```{python}
+metrics_path = ROOT / "data/models/collision_metrics.json"
+if metrics_path.exists():
+    with open(metrics_path) as f:
+        all_metrics = json.load(f)
+    aadt_metrics = all_metrics.get("aadt", {})
+    if aadt_metrics:
+        print(f"CV R²   : {aadt_metrics['cv_r2_mean']:.3f} (±{aadt_metrics['cv_r2_std']:.3f})")
+        print(f"CV MAE  : {aadt_metrics['cv_mae_mean']:.3f} log-units")
+        print(f"n train : {aadt_metrics['n_train']:,}")
+    else:
+        print("No 'aadt' key in collision_metrics.json.")
+else:
+    print("collision_metrics.json not found — run: python -m road_risk.model --stage traffic")
+```
+
+### External validation
+
+Standard CV is optimistic because nearby stations share road class and network
+context. Two harder holdout schemes probe genuine extrapolation:
+
+- **Local holdout** — 20% of count-point IDs withheld at random. Tests gap-filling.
+- **Spatial block** — all points north of the 75th-percentile latitude withheld.
+  Tests generalisation to a region with no measured support.
+
+```{python}
+if not val_summary.empty:
+    for _, row in val_summary.iterrows():
+        print(f"  {row['scheme']:10s}: R²={row['r2']:.3f} | "
+              f"MAE={row['mae']:.3f} | RMSE={row['rmse']:.3f} "
+              f"(n={int(row['n_holdout']):,})")
+
+    fig, ax = plt.subplots(figsize=(6, 3))
+    colors = ["#457b9d", "#e63946"]
+    bars = ax.barh(val_summary["scheme"], val_summary["r2"], color=colors)
+    ax.axvline(0.72, color="black", linestyle="--", linewidth=1, alpha=0.5,
+               label="GroupKFold CV R²≈0.72")
+    ax.set_xlabel("R² (log scale)")
+    ax.set_title("External validation R² by holdout scheme")
+    ax.set_xlim(0, 1)
+    for bar, val in zip(bars, val_summary["r2"]):
+        ax.text(val + 0.005, bar.get_y() + bar.get_height() / 2,
+                f"{val:.3f}", va="center", fontsize=10)
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+val_local_path = ROOT / "data/models/aadt_validation_local.parquet"
+if val_local_path.exists():
+    val_local = pd.read_parquet(val_local_path)
+    print("Local holdout — metrics by road type:\n")
+    print(val_local[["road_type", "r2", "mae", "rmse", "n"]].to_string(index=False))
+```
+
+---
+
+## Full-network AADT estimates
+
+### Distribution by road classification
+
+```{python}
+if not aadt.empty and openroads is not None:
+    est_2023 = aadt[aadt["year"] == 2023].copy()
+    est_2023 = est_2023.merge(
+        openroads[["link_id", "road_classification"]], on="link_id", how="left"
+    )
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+    axes[0].hist(np.log(est_2023["estimated_aadt"].clip(1)), bins=60,
+                 color="#1d3557", edgecolor="none", alpha=0.8)
+    axes[0].set_xlabel("log(estimated AADT vehicles/day)")
+    axes[0].set_ylabel("Link count")
+    axes[0].set_title("Estimated AADT — all 2.1M links (2023, log scale)")
+
+    cls_order = ["Motorway", "A Road", "B Road", "Classified Unnumbered",
+                 "Not Classified", "Unclassified", "Unknown"]
+    cls_medians = (
+        est_2023.groupby("road_classification")["estimated_aadt"]
+        .median()
+        .reindex([c for c in cls_order if c in est_2023["road_classification"].unique()])
+        .dropna()
+    )
+    axes[1].barh(cls_medians.index, cls_medians.values / 1000, color="#457b9d")
+    axes[1].set_xlabel("Median estimated AADT (thousands vehicles/day)")
+    axes[1].set_title("Median estimated AADT by road class (2023)")
+    for i, v in enumerate(cls_medians.values):
+        axes[1].text(v / 1000 + 0.1, i, f"{v/1000:.1f}k", va="center", fontsize=9)
+
+    plt.tight_layout()
+    plt.show()
+```
+
+### Year-on-year trends
+
+```{python}
+if not aadt.empty:
+    yr_med = aadt.groupby("year")["estimated_aadt"].median()
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.plot(yr_med.index, yr_med.values / 1000, marker="o", color="#1d3557", linewidth=2)
+    for y in [2020, 2021]:
+        if y in yr_med.index:
+            ax.axvline(y, color="#e63946", linestyle="--", alpha=0.5,
+                       label="COVID" if y == 2020 else "")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Network-wide median estimated AADT (thousands)")
+    ax.set_title("Network-wide median estimated AADT by year")
+    ax.set_xticks(yr_med.index)
+    ax.tick_params(axis="x", rotation=45)
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
+```
+
+### Geographic distribution — all links (2023)
+
+```{python}
+if HAS_GPD and openroads is not None and not aadt.empty:
+    est_2023 = aadt[aadt["year"] == 2023][["link_id", "estimated_aadt"]].copy()
+    or_plot = openroads.merge(est_2023, on="link_id", how="inner")
+    or_plot = or_plot[or_plot.geometry.notna()].copy()
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 9))
+
+    or_plot.plot(
+        column="estimated_aadt",
+        ax=axes[0],
+        norm=mcolors.LogNorm(
+            vmin=max(1, or_plot["estimated_aadt"].quantile(0.05)),
+            vmax=or_plot["estimated_aadt"].quantile(0.99),
+        ),
+        cmap="plasma",
+        linewidth=0.3,
+        legend=True,
+        legend_kwds={"label": "Estimated AADT (log scale)", "shrink": 0.6},
+    )
+    axes[0].set_title("Estimated AADT — all links (2023)")
+    axes[0].set_axis_off()
+
+    major = or_plot[or_plot["road_classification"].isin(["Motorway", "A Road"])].copy()
+    major.plot(
+        column="estimated_aadt",
+        ax=axes[1],
+        norm=mcolors.LogNorm(
+            vmin=max(1, major["estimated_aadt"].quantile(0.05)),
+            vmax=major["estimated_aadt"].quantile(0.99),
+        ),
+        cmap="plasma",
+        linewidth=0.8,
+        legend=True,
+        legend_kwds={"label": "Estimated AADT (log scale)", "shrink": 0.6},
+    )
+    axes[1].set_title("Motorways & A Roads only (2023)")
+    axes[1].set_axis_off()
+
+    plt.suptitle("Stage 1a full-network AADT estimates", fontsize=13)
+    plt.tight_layout()
+    plt.show()
+```
+
+### Sanity check — estimated vs measured AADF (2023)
+
+Links that have a directly measured AADF count point within 2 km should have
+estimates close to the measured value. This checks in-sample calibration.
+
+```{python}
+if HAS_GPD and openroads is not None and not aadt.empty:
+    import pyproj
+    from scipy.spatial import cKDTree
+    from sklearn.metrics import r2_score, mean_absolute_error
+
+    or_bng = openroads.to_crs("EPSG:27700")
+    link_xy = np.column_stack([
+        or_bng.geometry.centroid.x,
+        or_bng.geometry.centroid.y,
+    ])
+    tree = cKDTree(link_xy)
+
+    wgs_bng = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
+
+    aadf_yr = aadf[(aadf["year"] == 2023) & (aadf["all_motor_vehicles"] > 0)].copy()
+    e, n = wgs_bng.transform(aadf_yr["longitude"].values, aadf_yr["latitude"].values)
+    dists, idx = tree.query(np.column_stack([e, n]), k=1, distance_upper_bound=2000)
+    valid = dists < 2000
+
+    aadf_yr = aadf_yr.reset_index(drop=True)
+    aadf_yr["_link_id"] = None
+    aadf_yr.loc[valid, "_link_id"] = openroads["link_id"].values[idx[valid]]
+
+    comparison = aadf_yr.dropna(subset=["_link_id"]).merge(
+        aadt[aadt["year"] == 2023],
+        left_on="_link_id", right_on="link_id",
+        how="inner",
+    )
+
+    if len(comparison) > 0:
+        fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+        max_pt = max(comparison["all_motor_vehicles"].max(), comparison["estimated_aadt"].max())
+        axes[0].scatter(comparison["all_motor_vehicles"], comparison["estimated_aadt"],
+                        s=5, alpha=0.3, color="#1d3557")
+        axes[0].plot([1, max_pt], [1, max_pt], "r--", linewidth=1, label="1:1 line")
+        axes[0].set_xscale("log"); axes[0].set_yscale("log")
+        axes[0].set_xlabel("Measured AADF (vehicles/day)")
+        axes[0].set_ylabel("Estimated AADT (vehicles/day)")
+        axes[0].set_title(f"Measured vs estimated — {len(comparison):,} matched links (2023)")
+        axes[0].legend()
+
+        residuals = np.log(comparison["estimated_aadt"]) - np.log(comparison["all_motor_vehicles"])
+        axes[1].hist(residuals, bins=60, color="#457b9d", edgecolor="none")
+        axes[1].axvline(0, color="#e63946", linewidth=1.5, linestyle="--")
+        axes[1].set_xlabel("log(estimated) − log(measured)")
+        axes[1].set_ylabel("Count")
+        axes[1].set_title(
+            f"Residuals (log scale)\nmedian={residuals.median():.3f}  std={residuals.std():.3f}"
+        )
+
+        plt.tight_layout()
+        plt.show()
+
+        r2  = r2_score(np.log(comparison["all_motor_vehicles"]),
+                       np.log(comparison["estimated_aadt"]))
+        mae = mean_absolute_error(np.log(comparison["all_motor_vehicles"]),
+                                  np.log(comparison["estimated_aadt"]))
+        print(f"In-sample (2023, matched links): R²={r2:.3f} | MAE={mae:.3f} log-units | n={len(comparison):,}")
+```
+
+---
+
+## Summary
+
+```{python}
+print("=== Stage 1a output summary ===\n")
+if not aadt.empty:
+    print(f"Links with estimates : {aadt['link_id'].nunique():,}")
+    print(f"Years covered        : {sorted(aadt['year'].unique())}")
+    print(f"\nEstimated AADT distribution (2023):")
+    print(aadt[aadt['year'] == 2023]['estimated_aadt'].describe().round(0).to_string())
+
+if not val_summary.empty:
+    print(f"\nExternal validation R²:")
+    for _, row in val_summary.iterrows():
+        print(f"  {row['scheme']:10s}: {row['r2']:.3f}")
+```
+
+Key observations:
+
+- The road hierarchy is preserved: motorways and A-roads receive substantially
+  higher AADT than unclassified roads.
+- COVID years (2020–2021) show a clear network-wide dip consistent with measured AADF.
+- Local holdout R² exceeds spatial block R², confirming the model is stronger at
+  gap-filling than extrapolating to geography without any measured support.
+- The residual plot for matched links shows approximately zero median bias in
+  log space, with spread driven mainly by minor roads where count-point
+  representativeness is weakest.

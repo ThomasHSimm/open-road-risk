@@ -1,0 +1,1177 @@
+---
+title: "Network Model GDB"
+format:
+    html:
+        toc: true
+        toc-depth: 3
+        number-sections: true
+        code-fold: true
+        page-layout: full
+execute:
+    echo: true
+    warning: false
+    message: false
+jupyter: env1
+---
+
+## Overview
+
+The Network Model File Geodatabase provides a link-node representation of the
+road network, with related tables for lanes, roads, streets, junctions, access
+restrictions, vehicle restrictions, and turn restrictions.
+
+In this project it is most useful as a source of **network structure** and
+**road-infrastructure exposure**. It can support structural risk proxies such as
+junction complexity, carriageway type, lane count, and restriction density.
+Observed traffic, collision, speed, and temporal-flow concepts should be checked
+explicitly before they are treated as available model inputs.
+
+::: {.callout-important}
+Use this dataset as a road supply and network structure source. For calibrated
+road risk, join it to observed exposure datasets such as AADF or WebTRIS and to
+collision data such as STATS19.
+:::
+
+## Role In The Pipeline
+
+- Provides link-level road geometry and attributes for road exposure features.
+- Provides lane, junction, and restriction tables for structural risk features.
+- Supports completeness checks against OS Open Roads, MRDB, and modelled road
+  links.
+- Can be aggregated by year, geography, road class, ownership, or operational
+  status.
+- Helps distinguish structural exposure from measured or estimated traffic
+  exposure.
+
+Recommended modelling grain:
+
+```text
+one row per Link.linkid
+```
+
+The `Link` layer should be treated as the spine of the feature table. Related
+tables can be joined or aggregated to `linkid`.
+
+## Load And Inspect
+
+Set `gdb_path` to the local File Geodatabase directory. The project root is
+resolved from `road_risk.config` so the notebook works whether it is run from
+the repository root or from `quarto/data-sources`.
+
+```{python}
+#| label: setup
+
+from pathlib import Path
+
+import fiona
+import geopandas as gpd
+import pandas as pd
+
+from road_risk.config import _ROOT
+
+pd.set_option("display.max_columns", 80)
+
+gdb_path = _ROOT / (
+    "data/raw/Network_Model_(Public_Download)/"
+    "d77ab8dc-afaa-4475-af6f-7dfdaea5b135.gdb"
+)
+```
+
+## Source Documentation
+
+Official source page: [Network Model Public, National Highways on
+data.gov.uk](https://www.data.gov.uk/dataset/a15ee547-8503-4388-a670-ab352ab86f2a/network-model-public).
+The source page describes the dataset as representing England's Strategic Road
+Network and notes that speed limit and smart motorway information were removed
+from the initial release pending validation.
+
+## Coverage Summary
+
+The coverage summary below is computed from the `Link` layer. It is intended to
+answer the first modelling question: whether this dataset is a full road-network
+source or a specialist source for a subset of roads.
+
+```{python}
+#| label: srn-coverage-summary
+
+links_for_coverage = gpd.read_file(gdb_path, layer="Link")
+
+category_counts = (
+    links_for_coverage["linkcategory"]
+    .fillna("<missing>")
+    .astype(str)
+    .value_counts(dropna=False)
+)
+srn_counts = (
+    links_for_coverage["srn"]
+    .fillna("<missing>")
+    .astype(str)
+    .value_counts(dropna=False)
+)
+ownership_counts = (
+    links_for_coverage["ownership"]
+    .fillna("<missing>")
+    .astype(str)
+    .value_counts(dropna=False)
+)
+
+link_count = len(links_for_coverage)
+link_length_km = links_for_coverage["SHAPE_Length"].sum() / 1000
+motorway_or_a = links_for_coverage["linkcategory"].isin(["M", "A"]).sum()
+motorway_or_a_pct = 100 * motorway_or_a / link_count
+srn_y = srn_counts.get("Y", 0)
+srn_y_pct = 100 * srn_y / link_count
+nh_owned = ownership_counts.get("NH", 0)
+nh_owned_pct = 100 * nh_owned / link_count
+
+coverage_summary = pd.DataFrame(
+    [
+        {"metric": "links", "value": f"{link_count:,.0f}"},
+        {"metric": "link geometry length km", "value": f"{link_length_km:,.1f}"},
+        {"metric": "motorway or A-road links", "value": f"{motorway_or_a:,.0f} ({motorway_or_a_pct:.1f}%)"},
+        {"metric": "SRN flag = Y", "value": f"{srn_y:,.0f} ({srn_y_pct:.1f}%)"},
+        {"metric": "ownership = NH", "value": f"{nh_owned:,.0f} ({nh_owned_pct:.1f}%)"},
+        {"metric": "bounds EPSG:4326", "value": ", ".join(f"{x:.3f}" for x in links_for_coverage.to_crs(4326).total_bounds)},
+    ]
+)
+
+display(coverage_summary)
+display(category_counts.rename_axis("linkcategory").reset_index(name="links"))
+```
+
+```{python}
+#| label: srn-coverage-interpretation
+
+print(
+    "Interpretation: this GDB is best treated as an authoritative National "
+    "Highways / Strategic Road Network source. It is not a full all-road "
+    "network. In this extract, coverage is overwhelmingly motorway and "
+    "trunk A-road links managed by National Highways. It should therefore "
+    "be integrated into the project as a facility-family-conditional source: "
+    "rich SRN features for SRN links, not imputed pseudo-coverage for the "
+    "wider local-road network."
+)
+```
+
+```{python}
+#| label: non-srn-link-check
+
+non_srn_links = links_for_coverage[
+    links_for_coverage["srn"].fillna("<missing>").astype(str).ne("Y")
+].copy()
+
+if non_srn_links.empty:
+    print("No non-SRN links found in the Link layer.")
+else:
+    cols = [
+        "linkid",
+        "roadname",
+        "linkcategory",
+        "linkform",
+        "carriageway",
+        "ownership",
+        "srn",
+        "operationalstate",
+        "SHAPE_Length",
+    ]
+    display(
+        non_srn_links[cols]
+        .sort_values(["roadname", "linkcategory", "linkform"])
+        .reset_index(drop=True)
+    )
+```
+
+::: {.callout-note}
+For this project, the key integration consequence is that the Network Model GDB
+does not replace the all-road backbone from OS Open Roads or OSM. It enriches the
+SRN subset with more authoritative geometry, lane, carriageway, grade-separation,
+and restriction features.
+:::
+
+::: {.callout-tip}
+For exposure features such as `lane_km`, remember that the link geometry already
+contains separated carriageways, slip roads, junction arms, and directional
+splits. Avoid applying a second manual two-direction multiplier unless the
+feature definition explicitly requires it.
+:::
+
+## Constraints On Use
+
+These checks are deliberately near the top of the page because they affect
+whether and how this source should be integrated into the modelling pipeline.
+
+```{python}
+#| label: integration-constraints
+
+def active_in_year(df: pd.DataFrame, year: int) -> pd.Series:
+    year_start = pd.Timestamp(year=year, month=1, day=1, tz="UTC")
+    year_end = pd.Timestamp(year=year, month=12, day=31, tz="UTC")
+
+    start = pd.to_datetime(df["startdate"], errors="coerce", utc=True)
+    end = pd.to_datetime(df["enddate"], errors="coerce", utc=True)
+
+    starts_before_year_end = start.isna() | (start <= year_end)
+    ends_after_year_start = end.isna() | (end >= year_start)
+    return starts_before_year_end & ends_after_year_start
+
+years = range(2015, 2025)
+yearly_validity = []
+for year in years:
+    active = links_for_coverage[active_in_year(links_for_coverage, year)]
+    yearly_validity.append(
+        {
+            "year": year,
+            "active_links_by_validity_dates": len(active),
+            "active_link_length_km": active["SHAPE_Length"].sum() / 1000,
+        }
+    )
+
+yearly_validity = pd.DataFrame(yearly_validity)
+
+with fiona.open(gdb_path, layer="Speed_Limit") as src:
+    speed_limit_rows = len(src)
+
+constraints = pd.DataFrame(
+    [
+        {
+            "constraint": "Coverage family",
+            "finding": f"{motorway_or_a_pct:.1f}% of links are motorway or A-road; {srn_y_pct:.1f}% have srn = Y.",
+            "modelling_implication": "Treat as SRN / trunk-road enrichment, not all-road coverage.",
+        },
+        {
+            "constraint": "Validity-date coverage",
+            "finding": (
+                f"{(yearly_validity['active_links_by_validity_dates'] == 0).sum()} "
+                "model years have zero active links under startdate/enddate."
+            ),
+            "modelling_implication": "Do not use validity dates as proof of historical availability without source confirmation.",
+        },
+        {
+            "constraint": "Speed limit",
+            "finding": f"Speed_Limit rows: {speed_limit_rows:,}.",
+            "modelling_implication": "Use another source for speed-limit features if this table is empty.",
+        },
+        {
+            "constraint": "Smart motorway",
+            "finding": (
+                f"Non-missing smartmotorway values: "
+                f"{links_for_coverage['smartmotorway'].notna().sum():,}."
+            ),
+            "modelling_implication": "Do not create a smart_motorway_flag unless values are populated.",
+        },
+        {
+            "constraint": "Constant fields",
+            "finding": (
+                f"ownership unique values: {links_for_coverage['ownership'].nunique(dropna=True)}; "
+                f"operationalstate unique values: {links_for_coverage['operationalstate'].nunique(dropna=True)}."
+            ),
+            "modelling_implication": "Constant fields are useful QA signals but not predictive features.",
+        },
+    ]
+)
+
+display(constraints)
+display(yearly_validity)
+```
+
+::: {.callout-warning}
+The `startdate` and `enddate` fields do not provide reliable historical coverage
+for this project's full 2015-2024 modelling window without additional source
+confirmation. Treat the GDB as a current SRN structural snapshot unless a
+separate historical validity method is established.
+:::
+
+::: {.callout-important}
+The clean integration path is facility-family conditional: use Network Model
+features inside an SRN-specific model or SRN feature branch, and keep non-SRN
+links on the OS Open Roads / OSM feature set. Imputing these authoritative SRN
+fields across the full network would create the same kind of coverage bias as
+sparse OSM-derived features.
+:::
+
+## Source Snapshot
+
+The inventory below is generated from the File Geodatabase at render time.
+
+```{python}
+#| label: layer-inventory
+
+layer_roles = {
+    "Node": "Network topology and junction proximity",
+    "Link": "Main road segment geometry and attributes",
+    "Access_Restriction": "Access restriction descriptions",
+    "Vehicle_Restriction": "Vehicle restriction descriptions",
+    "Turn_Restriction": "Turn movement restrictions",
+    "Street": "Street-level metadata and surface",
+    "Lane": "Lane-level widths and offsets",
+    "Speed_Limit": "Speed limit records if populated",
+    "Access_Restriction_Reference": "Links restrictions to links",
+    "Access_Restriction_Inclusion": "Access inclusion details",
+    "Access_Restriction_Exemption": "Access exemption details",
+    "Junction": "Junction type and naming",
+    "Junction_Reference": "Links junctions to nodes",
+    "Road": "Road name and classification",
+    "Road_Reference": "Links roads to links",
+    "Street_Reference": "Links streets to links",
+    "Turn_Restriction_Reference": "Links turn restrictions to ordered links",
+    "Turn_Restriction_Inclusion": "Turn inclusion details if populated",
+    "Turn_Restriction_Exemption": "Turn exemption details",
+    "Vehicle_Restriction_Reference": "Links vehicle restrictions to links/nodes",
+    "Vehicle_Node_Restriction_Reference": "Vehicle-node restriction references",
+    "Vehicle_Restriction_Inclusion": "Vehicle restriction inclusion details",
+    "Vehicle_Restriction_Exemption": "Vehicle restriction exemption details",
+    "Street_Interest": "Street works interest metadata",
+    "Street_Construction": "Street construction metadata",
+    "Street_Special_Designation": "Street special designation metadata",
+    "Street_Special_Designation_Points": "Point special designations",
+    "Street_Special_Designation_Lines": "Line special designations",
+    "Street_Special_Designation_Polygons": "Polygon special designations",
+}
+
+rows = []
+for layer in fiona.listlayers(gdb_path):
+    with fiona.open(gdb_path, layer=layer) as src:
+        crs = src.crs.to_string() if src.crs else None
+        rows.append(
+            {
+                "layer": layer,
+                "rows": len(src),
+                "crs": crs,
+                "fields": len(src.schema["properties"]),
+                "geometry": src.schema.get("geometry"),
+                "main_use": layer_roles.get(layer, "Review before use"),
+            }
+        )
+
+inventory = pd.DataFrame(rows).sort_values(["rows", "layer"], ascending=[False, True])
+display(inventory)
+```
+
+::: {.callout-note}
+Layers with zero rows should not be dropped from the documentation entirely.
+Their presence is useful because it shows that a concept exists in the schema.
+:::
+
+```{python}
+#| label: empty-layer-summary
+
+empty_layers = inventory.loc[inventory["rows"].eq(0), ["layer", "geometry", "main_use"]]
+
+if empty_layers.empty:
+    print("No empty layers in this GDB extract.")
+else:
+    display(empty_layers)
+```
+
+## Expected Values
+
+Expected values should be checked from the GDB rather than hard-coded into the
+model. The useful fields are mostly categorical domains and linkable keys.
+
+### Core Link Fields
+
+The `Link` layer fields and their project roles are generated below from the
+source schema.
+
+```{python}
+#| label: link-field-roles
+
+link_field_roles = {
+    "linkid": ("Unique link key", "Primary feature table key"),
+    "linkref": ("Human-readable link reference", "Diagnostics and matching"),
+    "linkcategory": ("Road category", "Exposure and risk stratification"),
+    "linkdesc": ("Road description", "Diagnostics"),
+    "linkform": ("Physical or functional link form", "Structural risk feature"),
+    "directionality": ("One-way / two-way status", "Routing and conflict proxy"),
+    "direction": ("Direction description", "Routing and diagnostics"),
+    "numberoflanes": ("Lane count", "Exposure and capacity proxy"),
+    "smartmotorway": ("Smart motorway flag/category", "Availability check before modelling"),
+    "carriageway": ("Carriageway type", "Risk and severity proxy"),
+    "ownership": ("Owning authority/operator", "Governance and coverage"),
+    "startgradeseparation": ("Start grade-separation level", "Junction and conflict proxy"),
+    "endgradeseparation": ("End grade-separation level", "Junction and conflict proxy"),
+    "parentlinkref": ("Parent link reference", "De-duplication / hierarchy"),
+    "srn": ("Strategic Road Network flag/category", "Major-network segmentation"),
+    "startnode": ("From-node key", "Topology"),
+    "endnode": ("To-node key", "Topology"),
+    "operationalstate": ("Operational status", "Filtering and coverage"),
+    "roadname": ("Road name", "Reporting and corridor grouping"),
+    "startdate": ("Valid-from date", "Yearly coverage"),
+    "enddate": ("Valid-to date", "Yearly coverage"),
+    "toid": ("Topographic object identifier", "Cross-dataset matching"),
+    "SHAPE_Length": ("Link length in CRS units", "Length exposure"),
+}
+
+with fiona.open(gdb_path, layer="Link") as src:
+    link_schema = pd.DataFrame(
+        [
+            {"field": field, "source_type": source_type}
+            for field, source_type in src.schema["properties"].items()
+        ]
+    )
+
+link_roles = pd.DataFrame(
+    [
+        {"field": field, "expected_role": role, "model_use": model_use}
+        for field, (role, model_use) in link_field_roles.items()
+    ]
+)
+
+display(link_schema.merge(link_roles, on="field", how="left"))
+```
+
+Key categorical domains to profile:
+
+```text
+linkcategory
+linkform
+directionality
+direction
+smartmotorway
+carriageway
+ownership
+srn
+operationalstate
+```
+
+### Related Table Fields
+
+Useful related fields are checked against the source schema below.
+
+```{python}
+#| label: related-field-roles
+
+related_field_roles = {
+    "Lane": {
+        "fields": ["linkid", "lanenumber", "averagewidth", "minimumwidth", "directionality", "start", "end_"],
+        "expected_use": "Lane count and lane-width summaries",
+    },
+    "Road": {
+        "fields": ["roadid", "roadname", "roadclassification"],
+        "expected_use": "Road class and named-road grouping",
+    },
+    "Road_Reference": {
+        "fields": ["roadid", "linkid"],
+        "expected_use": "Road-to-link join table",
+    },
+    "Street": {
+        "fields": [
+            "usrn",
+            "roadclassification",
+            "streettype",
+            "surface",
+            "operationalstate",
+            "town",
+            "responsibleauthorityname",
+            "administrativearea",
+        ],
+        "expected_use": "Local street classification and authority coverage",
+    },
+    "Street_Reference": {
+        "fields": ["usrn", "linkid"],
+        "expected_use": "Street-to-link join table",
+    },
+    "Junction": {
+        "fields": ["junctionid", "junctiontype", "roadnumber", "junctionnumber", "junctionname"],
+        "expected_use": "Junction categorisation",
+    },
+    "Junction_Reference": {
+        "fields": ["junctionid", "nodeid"],
+        "expected_use": "Junction-to-node relationship",
+    },
+    "Turn_Restriction_Reference": {
+        "fields": ["turnid", "linkid", "applicabledirection", "sequence"],
+        "expected_use": "Turn-complexity features",
+    },
+    "Access_Restriction_Reference": {
+        "fields": ["accessid", "linkid", "applicabledirection", "atposition"],
+        "expected_use": "Access-complexity features",
+    },
+    "Vehicle_Restriction_Reference": {
+        "fields": ["vehicleid", "linkid", "nodeid", "applicabledirection", "atposition"],
+        "expected_use": "Vehicle-restriction features",
+    },
+}
+
+related_rows = []
+for layer, spec in related_field_roles.items():
+    with fiona.open(gdb_path, layer=layer) as src:
+        source_fields = set(src.schema["properties"])
+    for field in spec["fields"]:
+        related_rows.append(
+            {
+                "layer": layer,
+                "field": field,
+                "present_in_schema": field in source_fields,
+                "expected_use": spec["expected_use"],
+            }
+        )
+
+display(pd.DataFrame(related_rows))
+```
+
+### Model-Ready Features
+
+Candidate link-level features:
+
+| Feature | Derivation | Exposure / risk role |
+|---|---|---|
+| `length_km` | `Link.SHAPE_Length / 1000` | Basic road exposure |
+| `lane_count` | `Link.numberoflanes` or count of `Lane` rows | Capacity exposure |
+| `lane_km` | `length_km * lane_count` | Core infrastructure exposure |
+| `avg_lane_width_m` | Mean `Lane.averagewidth` by `linkid` | Geometry quality |
+| `min_lane_width_m` | Min `Lane.minimumwidth` by `linkid` | Narrow-lane risk proxy |
+| `road_category` | `Link.linkcategory` | Exposure and risk stratification |
+| `road_classification` | Joined from `Road` or `Street` | Hierarchy feature |
+| `link_form` | `Link.linkform` | Structural risk proxy |
+| `carriageway_type` | `Link.carriageway` | Severity and capacity proxy |
+| `directionality` | `Link.directionality` | Conflict and routing proxy |
+| `srn_flag` | `Link.srn` | Strategic-network feature |
+| `grade_separation_delta` | `endgradeseparation - startgradeseparation` | Junction structure proxy |
+| `junction_count` | Junction references near `startnode` / `endnode` | Conflict-point proxy |
+| `turn_restrictions_per_km` | Count turn references by `linkid` / `length_km` | Network complexity |
+| `access_restrictions_per_km` | Count access references by `linkid` / `length_km` | Access complexity |
+| `vehicle_restrictions_per_km` | Count vehicle references by `linkid` / `length_km` | Freight / vehicle constraint proxy |
+
+```{python}
+#| label: load-core-layers
+
+links = gpd.read_file(gdb_path, layer="Link")
+nodes = gpd.read_file(gdb_path, layer="Node")
+lanes = gpd.read_file(gdb_path, layer="Lane")
+roads = gpd.read_file(gdb_path, layer="Road")
+road_ref = gpd.read_file(gdb_path, layer="Road_Reference")
+streets = gpd.read_file(gdb_path, layer="Street")
+street_ref = gpd.read_file(gdb_path, layer="Street_Reference")
+junctions = gpd.read_file(gdb_path, layer="Junction")
+junction_ref = gpd.read_file(gdb_path, layer="Junction_Reference")
+turn_ref = gpd.read_file(gdb_path, layer="Turn_Restriction_Reference")
+access_ref = gpd.read_file(gdb_path, layer="Access_Restriction_Reference")
+vehicle_ref = gpd.read_file(gdb_path, layer="Vehicle_Restriction_Reference")
+```
+
+## Completeness Checks
+
+Completeness should be reported at three levels:
+
+1. table coverage: row counts and empty layers,
+2. field coverage: null and blank percentages,
+3. relationship coverage: whether related-table keys resolve back to the core
+   `Link`, `Node`, `Road`, `Street`, and `Junction` tables.
+
+### Table And Field Completeness
+
+```{python}
+#| label: field-completeness
+
+def completeness(df: pd.DataFrame, key: str | None = None) -> pd.DataFrame:
+    out = []
+    n = len(df)
+    for col in df.columns:
+        if col == "geometry":
+            continue
+        s = df[col]
+        missing = s.isna()
+        if pd.api.types.is_string_dtype(s):
+            missing = missing | s.astype("string").str.strip().eq("")
+        out.append(
+            {
+                "field": col,
+                "rows": n,
+                "missing": int(missing.sum()),
+                "complete_pct": round(100 * (1 - missing.mean()), 2) if n else 0,
+                "unique_values": int(s.nunique(dropna=True)),
+                "is_key": col == key,
+            }
+        )
+    return pd.DataFrame(out).sort_values(["complete_pct", "field"])
+
+display(completeness(links, key="linkid"))
+```
+
+Recommended completeness thresholds:
+
+| Check | Expected value |
+|---|---|
+| `Link.linkid` completeness | 100% |
+| `Link.linkid` uniqueness | 100% unique |
+| `Link.geometry` completeness | 100% non-null line geometry |
+| `Link.SHAPE_Length` completeness | 100% and positive |
+| `Link.startnode`, `Link.endnode` completeness | Near 100% |
+| `Lane.linkid` relationship to `Link.linkid` | High, ideally 100% |
+| `Road_Reference.linkid` relationship to `Link.linkid` | High, many-to-one allowed |
+| `Street_Reference.linkid` relationship to `Link.linkid` | High, many-to-one allowed |
+| Optional layers | Check row counts before using as feature dependencies |
+
+```{python}
+#| label: key-checks
+
+checks = {
+    "linkid_missing": links["linkid"].isna().sum(),
+    "linkid_duplicate_rows": links["linkid"].duplicated().sum(),
+    "geometry_missing": links.geometry.isna().sum(),
+    "length_non_positive": (links["SHAPE_Length"] <= 0).sum(),
+    "startnode_missing": links["startnode"].isna().sum(),
+    "endnode_missing": links["endnode"].isna().sum(),
+}
+
+display(pd.Series(checks, name="count").to_frame())
+```
+
+### Relationship Completeness
+
+```{python}
+#| label: relationship-completeness
+
+link_ids = set(links["linkid"].dropna())
+node_ids = set(nodes["nodeid"].dropna())
+road_ids = set(roads["roadid"].dropna())
+street_ids = set(streets["usrn"].dropna())
+junction_ids = set(junctions["junctionid"].dropna())
+
+relationship_checks = pd.DataFrame(
+    [
+        {
+            "relationship": "Lane.linkid -> Link.linkid",
+            "rows": len(lanes),
+            "unmatched": (~lanes["linkid"].isin(link_ids)).sum(),
+        },
+        {
+            "relationship": "Road_Reference.linkid -> Link.linkid",
+            "rows": len(road_ref),
+            "unmatched": (~road_ref["linkid"].isin(link_ids)).sum(),
+        },
+        {
+            "relationship": "Road_Reference.roadid -> Road.roadid",
+            "rows": len(road_ref),
+            "unmatched": (~road_ref["roadid"].isin(road_ids)).sum(),
+        },
+        {
+            "relationship": "Street_Reference.linkid -> Link.linkid",
+            "rows": len(street_ref),
+            "unmatched": (~street_ref["linkid"].isin(link_ids)).sum(),
+        },
+        {
+            "relationship": "Street_Reference.usrn -> Street.usrn",
+            "rows": len(street_ref),
+            "unmatched": (~street_ref["usrn"].isin(street_ids)).sum(),
+        },
+        {
+            "relationship": "Junction_Reference.nodeid -> Node.nodeid",
+            "rows": len(junction_ref),
+            "unmatched": (~junction_ref["nodeid"].isin(node_ids)).sum(),
+        },
+        {
+            "relationship": "Junction_Reference.junctionid -> Junction.junctionid",
+            "rows": len(junction_ref),
+            "unmatched": (~junction_ref["junctionid"].isin(junction_ids)).sum(),
+        },
+        {
+            "relationship": "Link.startnode -> Node.nodeid",
+            "rows": len(links),
+            "unmatched": (~links["startnode"].isin(node_ids)).sum(),
+        },
+        {
+            "relationship": "Link.endnode -> Node.nodeid",
+            "rows": len(links),
+            "unmatched": (~links["endnode"].isin(node_ids)).sum(),
+        },
+    ]
+)
+
+relationship_checks["unmatched_pct"] = (
+    100 * relationship_checks["unmatched"] / relationship_checks["rows"].clip(lower=1)
+).round(2)
+
+display(relationship_checks.sort_values("unmatched_pct", ascending=False))
+```
+
+### Categorical Domain Checks
+
+```{python}
+#| label: categorical-domains
+
+categorical_fields = [
+    "linkcategory",
+    "linkform",
+    "directionality",
+    "direction",
+    "smartmotorway",
+    "carriageway",
+    "ownership",
+    "srn",
+    "operationalstate",
+]
+
+for col in categorical_fields:
+    print(f"\n{col}")
+    display(
+        links[col]
+        .fillna("<missing>")
+        .astype(str)
+        .value_counts(dropna=False)
+        .rename_axis(col)
+        .reset_index(name="rows")
+    )
+```
+
+```{python}
+#| label: categorical-feature-suitability
+
+categorical_suitability = []
+for col in categorical_fields:
+    s = links[col]
+    non_missing = s.notna().sum()
+    unique_non_missing = s.nunique(dropna=True)
+    categorical_suitability.append(
+        {
+            "field": col,
+            "non_missing": non_missing,
+            "non_missing_pct": round(100 * non_missing / len(links), 2),
+            "unique_non_missing": unique_non_missing,
+            "feature_guidance": (
+                "drop: empty"
+                if non_missing == 0
+                else "drop: constant"
+                if unique_non_missing <= 1
+                else "usable after code meaning is resolved"
+            ),
+        }
+    )
+
+display(pd.DataFrame(categorical_suitability))
+```
+
+::: {.callout-warning}
+Several useful-looking fields are coded domains. Do not treat `linkform` or
+`carriageway` as ordinal or self-explanatory until the National Highways / OS
+Highways code meanings have been resolved from source documentation or metadata.
+:::
+
+## Yearly Coverage
+
+The GDB has `startdate` and `enddate` fields on many layers. These should be
+interpreted as feature-validity dates, not traffic observation years.
+
+For annual coverage, mark a feature as active in a year if:
+
+```text
+startdate <= 31 December of that year
+and
+enddate is missing or enddate >= 1 January of that year
+```
+
+This gives a structural-network coverage series by year. It does not replace
+AADF, WebTRIS, or STATS19 year fields.
+
+```{python}
+#| label: yearly-coverage
+
+def active_in_year(df: pd.DataFrame, year: int) -> pd.Series:
+    year_start = pd.Timestamp(year=year, month=1, day=1, tz="UTC")
+    year_end = pd.Timestamp(year=year, month=12, day=31, tz="UTC")
+
+    start = pd.to_datetime(df["startdate"], errors="coerce", utc=True)
+    end = pd.to_datetime(df["enddate"], errors="coerce", utc=True)
+
+    starts_before_year_end = start.isna() | (start <= year_end)
+    ends_after_year_start = end.isna() | (end >= year_start)
+    return starts_before_year_end & ends_after_year_start
+
+years = range(2015, 2025)
+yearly = []
+for year in years:
+    active = links[active_in_year(links, year)].copy()
+    yearly.append(
+        {
+            "year": year,
+            "active_links": len(active),
+            "active_length_km": active["SHAPE_Length"].sum() / 1000,
+            "active_lane_km": (
+                active["SHAPE_Length"]
+                * active["numberoflanes"].fillna(1).clip(lower=1)
+            ).sum()
+            / 1000,
+        }
+    )
+
+yearly_coverage = pd.DataFrame(yearly)
+display(yearly_coverage)
+```
+
+```{python}
+#| label: yearly-coverage-diagnostics
+
+coverage_diagnostics = {
+    "first_year_with_active_links": (
+        yearly_coverage.loc[yearly_coverage["active_links"].gt(0), "year"].min()
+        if yearly_coverage["active_links"].gt(0).any()
+        else None
+    ),
+    "max_active_links": yearly_coverage["active_links"].max(),
+    "years_with_no_active_links": yearly_coverage.loc[
+        yearly_coverage["active_links"].eq(0), "year"
+    ].tolist(),
+}
+
+display(pd.Series(coverage_diagnostics, name="value").to_frame())
+
+if coverage_diagnostics["years_with_no_active_links"]:
+    print(
+        "Some modelling years have no active links under the startdate/enddate "
+        "validity test. Treat this as source validity-date coverage, not as "
+        "proof that the physical road network was absent."
+    )
+```
+
+Additional yearly checks:
+
+- active links by `operationalstate`,
+- active link length by `linkcategory`,
+- links created or retired per year using `startdate` and `enddate`,
+- whether yearly coverage changes materially across the modelling window,
+- whether link identifiers are stable enough to join to annual exposure outputs.
+
+::: {.callout-warning}
+Do not use `created_date` or `last_edited_date` as road-network validity dates.
+Those fields usually describe database editing history rather than when the road
+was open to traffic.
+:::
+
+## Geographic Coverage
+
+Geographic coverage should be reported using both geometry bounds and overlay
+against the project study area.
+
+Useful coverage outputs:
+
+- total link length inside the study area,
+- percentage of links intersecting the study area,
+- link length by local authority, police force, region, or custom grid cell,
+- number of links with missing or invalid geometry,
+- comparison with OS Open Roads or MRDB length by geography,
+- map of links by `linkcategory`, `carriageway`, or `operationalstate`.
+
+```{python}
+#| label: geometry-coverage
+
+links_3857 = links.to_crs(3857)
+
+coverage = {
+    "crs": str(links.crs),
+    "rows": len(links),
+    "geometry_missing": int(links.geometry.isna().sum()),
+    "invalid_geometry": int((~links.geometry.is_valid).sum()),
+    "total_length_km_shape": links["SHAPE_Length"].sum() / 1000,
+    "total_length_km_geometry": links_3857.length.sum() / 1000,
+}
+
+display(pd.Series(coverage, name="value").to_frame())
+display(pd.Series(links_3857.total_bounds, index=["minx", "miny", "maxx", "maxy"]))
+```
+
+```{python}
+#| label: coverage-by-area
+
+# Optional example: replace this with a real project boundary, local authority
+# layer, police force boundary layer, or generated grid before using it.
+boundary_path = _ROOT / "data/external/boundaries/study_area.gpkg"
+boundary_label = "data/external/boundaries/study_area.gpkg"
+
+if not boundary_path.exists():
+    print(f"Boundary file not found, skipping area overlay: {boundary_label}")
+else:
+    areas = gpd.read_file(boundary_path).to_crs(links.crs)
+
+    links_for_overlay = links[
+        ["linkid", "linkcategory", "operationalstate", "geometry"]
+    ].copy()
+    overlay = gpd.overlay(links_for_overlay, areas, how="intersection")
+    overlay["length_km"] = overlay.to_crs(3857).length / 1000
+
+    area_summary = (
+        overlay.groupby("area_name", dropna=False)
+        .agg(
+            links=("linkid", "nunique"),
+            length_km=("length_km", "sum"),
+        )
+        .reset_index()
+        .sort_values("length_km", ascending=False)
+    )
+
+    display(area_summary)
+```
+
+For grid-based coverage:
+
+```text
+1. create a regular grid over the study area,
+2. intersect links with the grid,
+3. sum link length and lane-km per cell,
+4. flag cells with zero or very low coverage,
+5. compare against OS Open Roads, AADF count points, and STATS19 collisions.
+```
+
+## Link-Level Feature Build
+
+The minimum useful output is a single feature table with one row per `linkid`.
+
+```{python}
+#| label: link-feature-build
+
+link_features = links[
+    [
+        "linkid",
+        "linkref",
+        "linkcategory",
+        "linkform",
+        "directionality",
+        "direction",
+        "numberoflanes",
+        "smartmotorway",
+        "carriageway",
+        "ownership",
+        "startgradeseparation",
+        "endgradeseparation",
+        "srn",
+        "startnode",
+        "endnode",
+        "operationalstate",
+        "roadname",
+        "startdate",
+        "enddate",
+        "toid",
+        "SHAPE_Length",
+        "geometry",
+    ]
+].copy()
+
+link_features["length_km"] = link_features["SHAPE_Length"] / 1000
+link_features["lane_count"] = link_features["numberoflanes"].fillna(1).clip(lower=1)
+link_features["lane_km"] = link_features["length_km"] * link_features["lane_count"]
+link_features["grade_separation_delta"] = (
+    link_features["endgradeseparation"] - link_features["startgradeseparation"]
+)
+
+lane_summary = (
+    lanes.groupby("linkid", dropna=False)
+    .agg(
+        lane_rows=("laneid", "count"),
+        avg_lane_width_m=("averagewidth", "mean"),
+        min_lane_width_m=("minimumwidth", "min"),
+    )
+    .reset_index()
+)
+
+turn_summary = turn_ref.groupby("linkid").size().rename("turn_restriction_count").reset_index()
+access_summary = access_ref.groupby("linkid").size().rename("access_restriction_count").reset_index()
+vehicle_summary = vehicle_ref.groupby("linkid").size().rename("vehicle_restriction_count").reset_index()
+
+road_class = (
+    road_ref[["linkid", "roadid"]]
+    .merge(roads[["roadid", "roadclassification"]], on="roadid", how="left")
+    .groupby("linkid")["roadclassification"]
+    .agg(lambda x: "; ".join(sorted(set(x.dropna().astype(str)))))
+    .rename("roadclassification")
+    .reset_index()
+)
+
+for df in [lane_summary, turn_summary, access_summary, vehicle_summary, road_class]:
+    link_features = link_features.merge(df, on="linkid", how="left")
+
+for col in [
+    "turn_restriction_count",
+    "access_restriction_count",
+    "vehicle_restriction_count",
+]:
+    link_features[col] = link_features[col].fillna(0)
+    link_features[f"{col}_per_km"] = link_features[col] / link_features["length_km"].clip(lower=0.001)
+
+display(link_features.head())
+```
+
+## Suggested Exposure Metrics
+
+Use these as interpretable denominators:
+
+| Metric | Formula | Interpretation |
+|---|---|---|
+| Road length exposure | `sum(length_km)` | Physical road supply |
+| Lane-km exposure | `sum(length_km * lane_count)` | Capacity-weighted road supply |
+| Active lane-km by year | `sum(active length_km * lane_count)` | Structural exposure over time |
+| SRN lane-km | `sum(lane_km where srn is populated / true)` | Strategic-network exposure |
+| Junction density | `junction_count / length_km` | Conflict-point exposure |
+| Restriction density | `restriction_count / length_km` | Network complexity exposure |
+
+Recommended baseline:
+
+```text
+infrastructure_exposure = length_km * lane_count
+```
+
+Then stratify by:
+
+```text
+road_category
+road_classification
+carriageway_type
+link_form
+operational_state
+ownership
+geography
+year
+```
+
+## Suggested Risk Features
+
+The GDB supports structural risk features rather than observed risk outcomes.
+
+Useful predictors:
+
+- `road_category`
+- `road_classification`
+- `link_form`
+- `carriageway_type`
+- `directionality`
+- `lane_count`
+- `avg_lane_width_m`
+- `min_lane_width_m`
+- `junction_density_per_km`
+- `turn_restrictions_per_km`
+- `access_restrictions_per_km`
+- `vehicle_restrictions_per_km`
+- `grade_separation_delta`
+- `srn_flag`
+
+Possible proxy formulation:
+
+```text
+structural_risk_score =
+    road_category_weight
+  + link_form_weight
+  + carriageway_weight
+  + junction_density_weight
+  + restriction_density_weight
+  + narrow_lane_weight
+  + grade_separation_weight
+```
+
+For a risk-volume proxy:
+
+```text
+expected_risk_proxy = lane_km * structural_risk_score
+```
+
+For a rate-style proxy:
+
+```text
+structural_risk_rate = structural_risk_score / lane_km
+```
+
+::: {.callout-tip}
+Keep the exposure denominator explicit. A high total-risk segment may simply be
+long, multi-lane, or high-volume. A high risk-rate segment is a different
+question.
+:::
+
+## Good For / Not Good For
+
+Good uses:
+
+- SRN / National Highways motorway and trunk A-road structural features.
+- Authoritative lane count, lane width, carriageway, link form, and link geometry
+  checks on the network subset where the data is populated.
+- Grade-separation, turn-restriction, access-restriction, and
+  vehicle-restriction features that are not available in OS Open Roads or OSM in
+  the same model-ready form.
+- SRN-specific model development or a facility-family feature branch.
+
+Poor uses:
+
+- Full-network exposure on its own.
+- Local-authority A-roads, B-roads, C-roads, residential streets, or other minor
+  roads.
+- Speed-limit, lighting, gradient, curvature, traffic-volume, collision, or
+  temporal-flow modelling without external joins.
+- Pre-2022 historical network validity for a 2015-2024 model unless source
+  validity dates are independently resolved.
+- Global model features imputed across non-SRN links.
+
+## Known Limitations
+
+- Use the availability checks below before depending on optional layers or
+  fields.
+- Validity dates can support source-validity diagnostics, but not annual traffic
+  exposure.
+- Several categorical fields use opaque codes and need source code-list
+  resolution before modelling.
+- Non-spatial related tables may not carry a CRS.
+- Relationship tables are many-to-many in places, so joins need aggregation
+  before merging into a one-row-per-link feature table.
+
+```{python}
+#| label: limitation-availability-checks
+
+availability_checks = inventory.assign(
+    dependency_status=lambda df: df["rows"].gt(0).map(
+        {True: "available in this GDB", False: "not populated in this GDB"}
+    )
+)[["layer", "rows", "geometry", "crs", "dependency_status"]]
+
+display(availability_checks.sort_values(["rows", "layer"], ascending=[True, True]))
+```
+
+```{python}
+#| label: concept-availability-checks
+
+schema_fields = []
+for layer in fiona.listlayers(gdb_path):
+    with fiona.open(gdb_path, layer=layer) as src:
+        for field in src.schema["properties"]:
+            schema_fields.append({"layer": layer, "field": field})
+
+schema_fields = pd.DataFrame(schema_fields)
+field_text = schema_fields["field"].str.lower()
+layer_text = schema_fields["layer"].str.lower()
+
+concept_terms = {
+    "traffic_or_aadt": ["traffic", "aadt", "flow", "volume"],
+    "collision_or_casualty": ["collision", "accident", "casualty", "severity"],
+    "speed": ["speed"],
+    "temporal_observation": ["hour", "day", "month", "year"],
+}
+
+concept_rows = []
+for concept, terms in concept_terms.items():
+    mask = pd.Series(False, index=schema_fields.index)
+    for term in terms:
+        mask = mask | field_text.str.contains(term, regex=False) | layer_text.str.contains(term, regex=False)
+    matches = schema_fields.loc[mask].copy()
+    concept_rows.append(
+        {
+            "concept": concept,
+            "matching_fields": len(matches),
+            "matching_layers": ", ".join(sorted(matches["layer"].unique())),
+            "example_fields": ", ".join(matches["field"].head(8)),
+        }
+    )
+
+display(pd.DataFrame(concept_rows))
+```
+
+## QA Checklist
+
+Before using this source in the model:
+
+- Confirm `Link.linkid` is unique and complete.
+- Confirm `Link.geometry` is valid and non-empty.
+- Confirm CRS for geometry layers and transform before distance comparison if
+  needed.
+- Profile categorical domains for link category, form, carriageway, ownership,
+  SRN, and operational state.
+- Check all related-table `linkid` values resolve to `Link.linkid`.
+- Report empty layers and exclude them from feature dependencies.
+- Build active-link yearly coverage from `startdate` and `enddate`.
+- Overlay links against the project geography and report length/lane-km coverage.
+- Compare link length coverage against OS Open Roads and MRDB where possible.
+- Keep speed, traffic volume, collisions, and weather as external joins.
