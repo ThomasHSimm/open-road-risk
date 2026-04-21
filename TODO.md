@@ -400,7 +400,7 @@ imputation.
 **Decisions already made:**
 - Resample geometry to fixed spacing (10–25m, TBD after vertex-density
   check), compute turning angle at each interior point, summarise per link.
-- Features: `mean_curvature`, `max_curvature`, `sinuosity` (length /
+- Features: `mean_curvature_deg_per_km`, `max_curvature_deg_per_km`, `sinuosity` (length /
   straight-line distance).
 - Before committing: verify vertex density on OS Open Roads per road class.
   If Unclassified is sparsely vertexed, curvature feature will be near-zero
@@ -431,8 +431,8 @@ Then implement the chosen path:
 1. Resample each LineString to 15m spacing (tunable).
 2. Compute turning angle per interior sample point.
 3. Per-link features:
-   - `mean_curvature` (degrees per km)
-   - `max_curvature`
+   - `mean_curvature_deg_per_km`
+   - `max_curvature_deg_per_km`
    - `sinuosity` (`link_length / straight_line_length`)
 4. Add to `network_features.parquet` as new columns.
 5. Report how many links get non-null curvature values and distribution.

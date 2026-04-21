@@ -1,0 +1,437 @@
+---
+title: "Road Curvature from OS Open Roads"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+---
+
+```{python}
+#| label: setup
+#| echo: false
+
+from pathlib import Path
+import sys
+
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+REPO_ROOT = next(
+    path
+    for path in [Path.cwd(), *Path.cwd().parents]
+    if (path / "src" / "road_risk").exists()
+)
+SRC_PATH = str(REPO_ROOT / "src")
+if SRC_PATH in sys.path:
+    sys.path.remove(SRC_PATH)
+sys.path.insert(0, SRC_PATH)
+for module_name in list(sys.modules):
+    if module_name == "road_risk" or module_name.startswith("road_risk."):
+        del sys.modules[module_name]
+
+from road_risk.config import _ROOT as ROOT
+from road_risk.road_curvature import (
+    MAX_CURVATURE_COL,
+    MEDIAN_VERTICES_PER_KM_MIN,
+    MEAN_CURVATURE_COL,
+    P25_VERTICES_PER_KM_MIN,
+    SINUOSITY_COL,
+    SPACING_M,
+    normalise_linestring,
+    resample_linestring,
+    turning_angle_features,
+    vertex_count,
+)
+
+OPENROADS_PATH = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+RANDOM_SEED = 20260421
+N_SAMPLE = 8
+
+pd.set_option("display.max_colwidth", 90)
+plt.rcParams["figure.dpi"] = 120
+```
+
+## Purpose
+
+This page turns the curvature research note into a concrete, reproducible
+inspection of the Open Roads geometry. The aim is not to produce
+engineering-grade curve radius. It is to check whether the centreline geometry
+can support a conservative link-level ranking signal for the collision model.
+
+The background argument is:
+
+- Horizontal curves are a recognised crash-risk factor, especially for
+  roadway-departure crashes.
+- OS Open Roads gives broad coverage and stable enough link geometry for
+  feature engineering, but it is a generalised 1:25,000-scale product.
+- Curvature should therefore be treated as a screening/ranking proxy rather
+  than a survey-grade design measure.
+- The implementation uses a vertex-density gate by road class so sparse
+  geometry is left as missing instead of being silently interpreted as straight.
+
+The full background note is in
+[`docs/notes/deep-research-roadcurvature.md`](../../docs/notes/deep-research-roadcurvature.md).
+
+## Method
+
+For each road link, the curvature module does the following:
+
+1. Load OS Open Roads geometry and reproject it to a metre-based CRS if needed.
+2. Normalise the geometry to a single `LineString`; disjoint `MultiLineString`
+   geometries keep the longest part.
+3. Count original geometry vertices and calculate `vertices_per_km`.
+4. Decide which road classes pass the operational geometry-quality gate:
+   median `vertices_per_km >= 40` and 25th percentile `vertices_per_km >= 20`.
+5. Resample eligible links at 15 m spacing.
+6. Calculate absolute turning angle at each interior resampled point.
+7. Store three features:
+   `mean_curvature_deg_per_km`, `max_curvature_deg_per_km`, and `sinuosity`.
+
+`mean_curvature_deg_per_km` is total absolute turning angle per kilometre of
+link. It is therefore interpretable as “how much the link turns overall”.
+`max_curvature_deg_per_km` is the sharpest local turning-angle density found on
+the resampled line, capped at 10,000 deg/km to suppress single-vertex artefacts.
+`sinuosity` is `link_length / straight_line_distance`, clipped at 5.0 for
+near-closed loop-like geometries.
+
+```{python}
+#| label: load-openroads
+#| echo: true
+
+if not OPENROADS_PATH.exists():
+    raise FileNotFoundError(f"Open Roads parquet not found: {OPENROADS_PATH}")
+
+openroads = gpd.read_parquet(OPENROADS_PATH)
+print(f"Loaded {len(openroads):,} OS Open Roads links from {OPENROADS_PATH.relative_to(ROOT)}")
+print(f"Source CRS: {openroads.crs}")
+```
+
+```{python}
+#| label: prepare-geometry
+#| echo: true
+
+gdf = openroads.copy()
+gdf["geometry"] = gdf.geometry.apply(normalise_linestring)
+gdf = gdf.loc[gdf.geometry.notna()].copy()
+
+if gdf.crs is None:
+    raise ValueError("Input CRS is missing; curvature needs a metric CRS.")
+
+units = (
+    getattr(gdf.crs.axis_info[0], "unit_name", "").lower()
+    if gdf.crs.axis_info
+    else ""
+)
+if "metre" not in units and "meter" not in units:
+    gdf = gdf.to_crs(27700)
+
+gdf["calc_length_m"] = gdf.geometry.length
+gdf = gdf.loc[gdf["calc_length_m"] > 0].copy()
+gdf["vertex_count"] = gdf.geometry.apply(vertex_count)
+gdf["vertices_per_km"] = gdf["vertex_count"] / (gdf["calc_length_m"] / 1000)
+
+print(f"Metric CRS used for curvature: {gdf.crs}")
+print(f"Usable non-empty LineString links: {len(gdf):,}")
+```
+
+## Geometry Quality Gate
+
+The gate is deliberately operational. It is not an OS-published standard; it is
+a guardrail for using 15 m resampling on already-generalised Open Roads
+centreline geometry. Classes that fail the gate should keep curvature as `NaN`
+so sparse linework does not become a false zero-curvature signal.
+
+```{python}
+#| label: vertex-density
+#| echo: true
+
+vertex_summary = (
+    gdf.groupby("road_classification", dropna=False)["vertices_per_km"]
+    .describe()
+    .sort_index()
+)
+
+valid_classes = vertex_summary.index[
+    (vertex_summary["50%"] >= MEDIAN_VERTICES_PER_KM_MIN)
+    & (vertex_summary["25%"] >= P25_VERTICES_PER_KM_MIN)
+].tolist()
+
+strategy = (
+    "all_classes"
+    if set(valid_classes) == set(vertex_summary.index.tolist())
+    else "gated_by_road_classification"
+)
+
+gate_table = vertex_summary.reset_index().rename(
+    columns={
+        "road_classification": "road_class",
+        "50%": "median_vertices_per_km",
+        "25%": "p25_vertices_per_km",
+        "75%": "p75_vertices_per_km",
+    }
+)
+gate_table["passes_gate"] = gate_table["road_class"].isin(valid_classes)
+show_cols = [
+    "road_class",
+    "count",
+    "mean",
+    "p25_vertices_per_km",
+    "median_vertices_per_km",
+    "p75_vertices_per_km",
+    "passes_gate",
+]
+gate_table[show_cols].round(2)
+```
+
+```{python}
+#| label: gate-plot
+#| echo: false
+#| fig-cap: "Original geometry vertex density by road class. Dashed lines show the p25 and median gate thresholds."
+
+plot_gate = gate_table.sort_values("median_vertices_per_km", ascending=True)
+
+fig, ax = plt.subplots(figsize=(10, 5))
+colors = np.where(plot_gate["passes_gate"], "#2b8cbe", "#d95f0e")
+ax.barh(plot_gate["road_class"].astype(str), plot_gate["median_vertices_per_km"], color=colors)
+ax.axvline(MEDIAN_VERTICES_PER_KM_MIN, color="black", linestyle="--", linewidth=1)
+ax.set_xlabel("Median original vertices per km")
+ax.set_ylabel("")
+ax.set_title(f"Coverage strategy: {strategy}")
+ax.grid(axis="x", alpha=0.25)
+plt.tight_layout()
+plt.show()
+```
+
+## Seeded Random Road-Section Sample
+
+The table and plots below use a reproducible random sample from the actual OS
+Open Roads parquet. The sample is restricted to links with at least three
+vertices and length between 30 m and 2 km, so every plotted section has enough
+geometry to inspect. Curvature is calculated for every sampled section for
+diagnostic visibility; the `passes_class_gate` column shows whether production
+code would persist those values or leave them missing.
+
+```{python}
+#| label: sample-links
+#| echo: true
+
+sample_pool = gdf.loc[
+    (gdf["vertex_count"] >= 3)
+    & (gdf["calc_length_m"].between(30, 2000))
+].copy()
+
+sample_links = sample_pool.sample(
+    n=min(N_SAMPLE, len(sample_pool)),
+    random_state=RANDOM_SEED,
+).copy()
+
+feature_rows = []
+for idx, row in sample_links.iterrows():
+    features = turning_angle_features(row.geometry, spacing_m=SPACING_M)
+    feature_rows.append(
+        {
+            "link_id": row["link_id"],
+            MEAN_CURVATURE_COL: features[MEAN_CURVATURE_COL],
+            MAX_CURVATURE_COL: features[MAX_CURVATURE_COL],
+            SINUOSITY_COL: features[SINUOSITY_COL],
+            "passes_class_gate": row["road_classification"] in valid_classes,
+        }
+    )
+
+sample_features = pd.DataFrame(feature_rows)
+sample_links = sample_links.merge(sample_features, on="link_id", how="left")
+
+print(
+    f"Seed {RANDOM_SEED} selected {len(sample_links)} links "
+    f"from {len(sample_pool):,} eligible road sections."
+)
+```
+
+```{python}
+#| label: sample-table
+#| echo: false
+
+sample_table_cols = [
+    "link_id",
+    "road_classification",
+    "form_of_way",
+    "road_name",
+    "start_node",
+    "end_node",
+    "calc_length_m",
+    "vertex_count",
+    "vertices_per_km",
+    "passes_class_gate",
+    MEAN_CURVATURE_COL,
+    MAX_CURVATURE_COL,
+    SINUOSITY_COL,
+]
+sample_table = sample_links[sample_table_cols].copy()
+
+for col in [
+    "calc_length_m",
+    "vertices_per_km",
+    MEAN_CURVATURE_COL,
+    MAX_CURVATURE_COL,
+    SINUOSITY_COL,
+]:
+    sample_table[col] = sample_table[col].round(3)
+
+sample_table.sort_values(MEAN_CURVATURE_COL, ascending=False)
+```
+
+### Sample Section Plots
+
+Black lines are the original OS Open Roads link geometry. Blue points are the
+15 m resampled points used for turning-angle calculation. Red points are the
+start and end nodes.
+
+```{python}
+#| label: sample-plots
+#| echo: false
+#| fig-cap: "Seeded random sample of Open Roads links with original geometry and 15 m resampled points."
+
+n = len(sample_links)
+ncols = 2
+nrows = int(np.ceil(n / ncols))
+fig, axes = plt.subplots(nrows, ncols, figsize=(12, 4.3 * nrows))
+axes = np.atleast_1d(axes).ravel()
+
+for ax, (_, row) in zip(axes, sample_links.iterrows()):
+    coords = np.asarray(row.geometry.coords)
+    resampled = resample_linestring(row.geometry, spacing_m=SPACING_M)
+
+    ax.plot(coords[:, 0], coords[:, 1], color="black", linewidth=2.0, label="Original")
+    ax.scatter(resampled[:, 0], resampled[:, 1], s=14, color="#2b8cbe", label="15 m sample")
+    ax.scatter(
+        [coords[0, 0], coords[-1, 0]],
+        [coords[0, 1], coords[-1, 1]],
+        s=40,
+        color="#d7301f",
+        zorder=3,
+        label="Start/end",
+    )
+    ax.set_aspect("equal", adjustable="box")
+    ax.grid(alpha=0.2)
+    ax.set_title(
+        f"{row['road_classification']} | {row['calc_length_m']:.0f} m | "
+        f"mean {row[MEAN_CURVATURE_COL]:.1f} deg/km"
+    )
+    ax.set_xlabel("Easting (m)")
+    ax.set_ylabel("Northing (m)")
+
+for ax in axes[n:]:
+    ax.axis("off")
+
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="upper center", ncol=3, frameon=False)
+plt.tight_layout(rect=(0, 0, 1, 0.97))
+plt.show()
+```
+
+## Start/End Nodes and Geometry Coordinates
+
+This table exposes the node-level geometry used by the plots. Coordinates are
+in the metric CRS used for curvature calculation, currently British National
+Grid if the source parquet is WGS84.
+
+```{python}
+#| label: node-table
+#| echo: false
+
+node_rows = []
+for _, row in sample_links.iterrows():
+    coords = list(row.geometry.coords)
+    start = coords[0]
+    end = coords[-1]
+    node_rows.extend(
+        [
+            {
+                "link_id": row["link_id"],
+                "node_role": "start",
+                "node_id": row.get("start_node"),
+                "x_m": start[0],
+                "y_m": start[1],
+            },
+            {
+                "link_id": row["link_id"],
+                "node_role": "end",
+                "node_id": row.get("end_node"),
+                "x_m": end[0],
+                "y_m": end[1],
+            },
+        ]
+    )
+
+node_table = pd.DataFrame(node_rows)
+node_table[["x_m", "y_m"]] = node_table[["x_m", "y_m"]].round(3)
+node_table
+```
+
+The next table lists the first few original geometry vertices per sampled road
+section. It is intentionally compact: enough to show the actual coordinate
+sequence, without printing every point for long links.
+
+```{python}
+#| label: vertex-table
+#| echo: false
+
+vertex_rows = []
+for _, row in sample_links.iterrows():
+    for i, xy in enumerate(list(row.geometry.coords)[:6]):
+        vertex_rows.append(
+            {
+                "link_id": row["link_id"],
+                "vertex_ix": i,
+                "x_m": xy[0],
+                "y_m": xy[1],
+            }
+        )
+
+vertex_table = pd.DataFrame(vertex_rows)
+vertex_table[["x_m", "y_m"]] = vertex_table[["x_m", "y_m"]].round(3)
+vertex_table
+```
+
+## How the Curvature Code Works
+
+The production module lives at
+[`src/road_risk/road_curvature.py`](../../src/road_risk/road_curvature.py).
+The key pieces are:
+
+- `normalise_linestring()` handles empty geometry, `LineString`, and
+  `MultiLineString` cases before feature calculation.
+- `ensure_metric_crs()` converts longitude/latitude geometry to EPSG:27700 so
+  spacing and length calculations are in metres.
+- `resample_linestring()` interpolates points every 15 m and keeps the link end
+  point, so short residual segments are still represented.
+- `turning_angle_features()` computes angle changes between consecutive
+  resampled segments, converts those into degrees per kilometre, and returns:
+  `mean_curvature_deg_per_km`, `max_curvature_deg_per_km`, and `sinuosity`.
+- `main()` runs the vertex-density gate by `road_classification`, computes
+  features only for passing classes, writes the columns to
+  `data/features/network_features.parquet`, and writes QA CSV summaries.
+
+The deliberate modelling choice is missingness over false certainty. If a road
+class fails the vertex-density gate, its curvature features stay `NaN` rather
+than being filled with zero. That preserves the distinction between “this link
+is straight in usable geometry” and “the source geometry is too sparse to
+support curvature”.
+
+## Interpretation
+
+For modelling, the expected useful signal is relative rather than absolute:
+links with more turning per kilometre should rank above straighter links. The
+numbers should not be read as design-speed radius or engineering inventory
+values. That limitation is acceptable for a link-level risk model as long as
+the feature is documented, quality-gated, and evaluated against held-out
+collision outcomes before being promoted into the main model feature lists.
