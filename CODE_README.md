@@ -121,7 +121,7 @@ See `docs/internal/data-quality-notes.md` for working detail. Summary:
 
 ## Model Results Summary
 
-See [methodology site](https://thomashsimm.github.io/road_risk_analysis/) for feature lists,
+See [methodology site](https://thomashsimm.github.io/open-road-risk/) for feature lists,
 performance metrics, and validation detail — kept there to avoid documentation drift in this file.
 
 **Stage 1a — AADT Estimator**

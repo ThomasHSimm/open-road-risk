@@ -1,6 +1,6 @@
-# Road Risk Analysis
+# Open Road Risk
 
-Open-source road safety pipeline combining DfT STATS19 collision data, AADF traffic counts,
+Open Road Risk is an open-source road safety pipeline combining DfT STATS19 collision data, AADF traffic counts,
 OS Open Roads network geometry, and OpenStreetMap attributes to produce **exposure-adjusted
 risk scores for every road link across Northern and Central England** — including the ~85%
 of roads without traffic counters.
@@ -46,7 +46,7 @@ with DVSA Annex D fault rates to identify which road characteristics drive test 
 ```bash
 # 1. Clone and install
 git clone <repo>
-cd road-risk-analysis
+cd open-road-risk
 pip install -e ".[dev]"
 
 # 2. Download raw data — see data/README.md for links
@@ -94,7 +94,7 @@ See `data/README.md` for download instructions.
 ## Repo Structure
 
 ```
-road-risk-analysis/
+open-road-risk/
 ├── src/road_risk/
 │   ├── ingest/              # Data ingestion (STATS19, AADF, WebTRIS, MRDB, OS Roads)
 │   ├── model/               # Model package (CLI: python -m road_risk.model)
