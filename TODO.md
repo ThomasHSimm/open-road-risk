@@ -86,7 +86,7 @@ Tracked here so nothing gets lost. Cross off as done.
 - **OSM global retrain without class-tiered imputation** — coverage diagnostic
   (19 April 2026) showed no column × road-class combination reaches 80% coverage.
   Median imputation at 5–16% true coverage injects bias that correlates with road
-  class. See `reports/osm_coverage_summary.md`. Replaced by the road-class-tiered
+  class. See `quarto/analysis/osm-coverage.qmd`. Replaced by the road-class-tiered
   imputation task below.
 
 - **OS MasterMap Highways (RAMI)** — blocked pending OS Data Hub licensing
@@ -170,11 +170,11 @@ Tracked here so nothing gets lost. Cross off as done.
 - [x] OSM enrichment run on full 2.16M-link study area (19 April 2026) — with
       per-county checkpointing, gc.collect() between counties, trimmed slim
       parquets (refactor to avoid OOM after initial failure on North Yorkshire).
-- [x] OSM coverage diagnostic (`reports/osm_coverage_summary.md`, 19 April 2026)
+- [x] OSM coverage diagnostic (`quarto/analysis/osm-coverage.qmd`, 19 April 2026)
       — no column × road-class combination reaches 80% coverage; `lanes` at 4–7%
       on minor roads; `speed_limit_mph` highest at 56% overall but lowest on
       motorways (46%, near-constant where populated).
-- [x] Model inventory (`reports/model_inventory.md`, refreshed 21 April 2026) — durable
+- [x] Model inventory (`quarto/methodology/model-inventory.qmd`, refreshed 21 April 2026) — durable
       baseline of current Stage 2 features, hyperparameters, training rows, and
       DVSA correlation pipeline description.
 - [x] Counted-only AADF filter for Stage 1a (19 April 2026) — CV R² 0.72→0.83,
@@ -216,7 +216,7 @@ lists without necessarily moving headline R².
 
 **Prompt:**
 
-Produce a markdown design doc at reports/eb_shrinkage_design.md, NOT code.
+Produce a Quarto design doc at `quarto/methodology/empirical-bayes-shrinkage.qmd`, NOT code.
 I will review before any implementation.
 
 The doc should cover:
@@ -284,7 +284,7 @@ Add 5-seed GroupShuffleSplit rank stability evaluation to Stage 2.
    - Spearman rank correlation for the full ranked list, each pair; report mean.
    - Per-risk-decile observed collision rate per seed; report std across seeds.
 
-Save to reports/rank_stability.md with a table and short narrative.
+Save to `quarto/analysis/rank-stability.qmd` with a table and short narrative.
 
 Do NOT change the production risk_scores.parquet — keep using seed=42 for
 the canonical output. This evaluation is reported alongside, not replacing.

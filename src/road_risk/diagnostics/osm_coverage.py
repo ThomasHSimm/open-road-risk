@@ -9,8 +9,8 @@ broken down by road_classification and a coarse regional band.
 
 Outputs
 -------
-reports/osm_coverage_by_class.csv   — full table (class × column)
-reports/osm_coverage_summary.md     — narrative highlighting usable / noisy columns
+quarto/analysis/osm-coverage-by-class.csv  — full table (class × column)
+quarto/analysis/osm-coverage.qmd           — narrative highlighting usable / noisy columns
 
 Usage
 -----
@@ -34,9 +34,9 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[3]
 NET_PATH    = ROOT / "data/features/network_features.parquet"
 OR_PATH     = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
-REPORT_DIR  = ROOT / "reports"
-OUT_CSV     = REPORT_DIR / "osm_coverage_by_class.csv"
-OUT_MD      = REPORT_DIR / "osm_coverage_summary.md"
+REPORT_DIR  = ROOT / "quarto" / "analysis"
+OUT_CSV     = REPORT_DIR / "osm-coverage-by-class.csv"
+OUT_QMD     = REPORT_DIR / "osm-coverage.qmd"
 
 OSM_COLUMNS = ["speed_limit_mph", "lanes", "lit", "is_unpaved"]
 NUMERIC_OSM = ["speed_limit_mph", "lanes"]
@@ -184,7 +184,18 @@ def coverage_by_region(df: pd.DataFrame, osm_cols: list) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: list) -> str:
-    lines = ["# OSM Feature Coverage Diagnostic\n"]
+    lines = [
+        "---",
+        'title: "OSM Feature Coverage Diagnostic"',
+        "format:",
+        "  html:",
+        "    toc: true",
+        "    toc-depth: 3",
+        "    number-sections: true",
+        "    page-layout: full",
+        "---",
+        "",
+    ]
 
     # Overall
     lines.append("## Overall coverage\n")
@@ -319,10 +330,10 @@ def main():
     by_class.to_csv(OUT_CSV, index=False)
     print(f"\nFull table written to: {OUT_CSV}")
 
-    # Write markdown
+    # Write Quarto page
     md = build_markdown(by_class, by_region, osm_cols)
-    OUT_MD.write_text(md)
-    print(f"Summary written to: {OUT_MD}")
+    OUT_QMD.write_text(md)
+    print(f"Summary written to: {OUT_QMD}")
 
     # Highlights
     print("\n=== HIGHLIGHTS ===")

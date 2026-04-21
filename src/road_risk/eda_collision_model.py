@@ -15,7 +15,7 @@ Each section answers a specific modelling question:
 
 Usage:
     python eda_collision_model.py
-    python eda_collision_model.py --output-dir reports/eda
+    python eda_collision_model.py --output-dir quarto/analysis/figures/eda
 """
 
 import argparse
@@ -821,7 +821,7 @@ def main(output_dir: Path) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output-dir", default="reports/eda",
+    parser.add_argument("--output-dir", default="quarto/analysis/figures/eda",
                         help="Directory to save PNG figures")
     args = parser.parse_args()
     main(Path(args.output_dir))

@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Empirical Bayes Shrinkage – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS / MIDAS</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/mrdb.html">
+ <span class="dropdown-text">Major Road Database</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/covid-handling.html">
+ <span class="dropdown-text">Handling COVID Years</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/test-routes.html">
+ <span class="dropdown-text">Test Routes: Methodology</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Model Results &amp; SHAP</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/test-routes.html">
+ <span class="dropdown-text">Test Route Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/dvsa-foi-cracknell.html">
+ <span class="dropdown-text">DVSA FOI Findings</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../api-reference/index.html"> 
+<span class="menu-text">API Reference</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link active" data-scroll-target="#motivation"><span class="header-section-number">1</span> 1. Motivation</a></li>
+  <li><a href="#units-and-data-shapes-confirmed-from-collision.py" id="toc-units-and-data-shapes-confirmed-from-collision.py" class="nav-link" data-scroll-target="#units-and-data-shapes-confirmed-from-collision.py"><span class="header-section-number">2</span> 2. Units and data shapes (confirmed from <code>collision.py</code>)</a>
+  <ul class="collapse">
+  <li><a href="#what-predicted_xgb-is" id="toc-what-predicted_xgb-is" class="nav-link" data-scroll-target="#what-predicted_xgb-is"><span class="header-section-number">2.1</span> 2.1 What <code>predicted_xgb</code> is</a></li>
+  <li><a href="#what-collision_count-is" id="toc-what-collision_count-is" class="nav-link" data-scroll-target="#what-collision_count-is"><span class="header-section-number">2.2</span> 2.2 What <code>collision_count</code> is</a></li>
+  <li><a href="#n_years-per-link" id="toc-n_years-per-link" class="nav-link" data-scroll-target="#n_years-per-link"><span class="header-section-number">2.3</span> 2.3 n_years per link</a></li>
+  </ul></li>
+  <li><a href="#mathematical-formulation" id="toc-mathematical-formulation" class="nav-link" data-scroll-target="#mathematical-formulation"><span class="header-section-number">3</span> 3. Mathematical formulation</a>
+  <ul class="collapse">
+  <li><a href="#negative-binomial-prior" id="toc-negative-binomial-prior" class="nav-link" data-scroll-target="#negative-binomial-prior"><span class="header-section-number">3.1</span> 3.1 Negative binomial prior</a></li>
+  <li><a href="#eb-combining-formula-in-totals-hsm-standard-form" id="toc-eb-combining-formula-in-totals-hsm-standard-form" class="nav-link" data-scroll-target="#eb-combining-formula-in-totals-hsm-standard-form"><span class="header-section-number">3.2</span> 3.2 EB combining formula — in totals (HSM standard form)</a></li>
+  <li><a href="#interpretation-of-the-weight" id="toc-interpretation-of-the-weight" class="nav-link" data-scroll-target="#interpretation-of-the-weight"><span class="header-section-number">3.3</span> 3.3 Interpretation of the weight</a></li>
+  <li><a href="#units-consistency-check" id="toc-units-consistency-check" class="nav-link" data-scroll-target="#units-consistency-check"><span class="header-section-number">3.4</span> 3.4 Units consistency check</a></li>
+  </ul></li>
+  <li><a href="#k-estimation" id="toc-k-estimation" class="nav-link" data-scroll-target="#k-estimation"><span class="header-section-number">4</span> 4. k estimation</a></li>
+  <li><a href="#implementation-plan" id="toc-implementation-plan" class="nav-link" data-scroll-target="#implementation-plan"><span class="header-section-number">5</span> 5. Implementation plan</a>
+  <ul class="collapse">
+  <li><a href="#files-touched" id="toc-files-touched" class="nav-link" data-scroll-target="#files-touched"><span class="header-section-number">5.1</span> 5.1 Files touched</a></li>
+  <li><a href="#new-functions-in-collision.py" id="toc-new-functions-in-collision.py" class="nav-link" data-scroll-target="#new-functions-in-collision.py"><span class="header-section-number">5.2</span> 5.2 New functions in <code>collision.py</code></a></li>
+  <li><a href="#changes-to-score_and_save" id="toc-changes-to-score_and_save" class="nav-link" data-scroll-target="#changes-to-score_and_save"><span class="header-section-number">5.3</span> 5.3 Changes to <code>score_and_save()</code></a></li>
+  <li><a href="#what-does-not-change" id="toc-what-does-not-change" class="nav-link" data-scroll-target="#what-does-not-change"><span class="header-section-number">5.4</span> 5.4 What does NOT change</a></li>
+  </ul></li>
+  <li><a href="#validation-plan" id="toc-validation-plan" class="nav-link" data-scroll-target="#validation-plan"><span class="header-section-number">6</span> 6. Validation plan</a>
+  <ul class="collapse">
+  <li><a href="#n_years-distribution" id="toc-n_years-distribution" class="nav-link" data-scroll-target="#n_years-distribution"><span class="header-section-number">6.1</span> 6.1 n_years distribution</a></li>
+  <li><a href="#k-value-and-weight-distribution" id="toc-k-value-and-weight-distribution" class="nav-link" data-scroll-target="#k-value-and-weight-distribution"><span class="header-section-number">6.2</span> 6.2 k value and weight distribution</a></li>
+  <li><a href="#rank-change-distribution" id="toc-rank-change-distribution" class="nav-link" data-scroll-target="#rank-change-distribution"><span class="header-section-number">6.3</span> 6.3 Rank change distribution</a></li>
+  <li><a href="#top-1-list-comparison" id="toc-top-1-list-comparison" class="nav-link" data-scroll-target="#top-1-list-comparison"><span class="header-section-number">6.4</span> 6.4 Top-1% list comparison</a></li>
+  <li><a href="#qualitative-link-level-inspection" id="toc-qualitative-link-level-inspection" class="nav-link" data-scroll-target="#qualitative-link-level-inspection"><span class="header-section-number">6.5</span> 6.5 Qualitative link-level inspection</a></li>
+  </ul></li>
+  <li><a href="#caveats-and-methodological-notes" id="toc-caveats-and-methodological-notes" class="nav-link" data-scroll-target="#caveats-and-methodological-notes"><span class="header-section-number">7</span> 7. Caveats and methodological notes</a>
+  <ul class="collapse">
+  <li><a href="#k-is-borrowed-from-nb-applied-to-xgboost-predictions" id="toc-k-is-borrowed-from-nb-applied-to-xgboost-predictions" class="nav-link" data-scroll-target="#k-is-borrowed-from-nb-applied-to-xgboost-predictions"><span class="header-section-number">7.1</span> 7.1 k is borrowed from NB, applied to XGBoost predictions</a></li>
+  <li><a href="#glm-intercept-bias-does-not-affect-eb" id="toc-glm-intercept-bias-does-not-affect-eb" class="nav-link" data-scroll-target="#glm-intercept-bias-does-not-affect-eb"><span class="header-section-number">7.2</span> 7.2 GLM intercept bias does not affect EB</a></li>
+  <li><a href="#pseudo-r²-comparability-existing-caveat-applies-here-too" id="toc-pseudo-r²-comparability-existing-caveat-applies-here-too" class="nav-link" data-scroll-target="#pseudo-r²-comparability-existing-caveat-applies-here-too"><span class="header-section-number">7.3</span> 7.3 Pseudo-R² comparability (existing caveat, applies here too)</a></li>
+  <li><a href="#n_years-is-currently-uniform-n3" id="toc-n_years-is-currently-uniform-n3" class="nav-link" data-scroll-target="#n_years-is-currently-uniform-n3"><span class="header-section-number">7.4</span> 7.4 n_years is currently uniform (n=3)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Empirical Bayes Shrinkage</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Status:</strong> Design only. No code exists yet.<br>
+<strong>Scope:</strong> v1 implementation for <code>collision.py</code>. Per-family k and cross-fold stability are explicitly out of scope.<br>
+<strong>Reference:</strong> FHWA Highway Safety Manual (2010), Chapter 3, Network Screening.</p>
+<hr>
+<section id="motivation" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="motivation"><span class="header-section-number">1</span> 1. Motivation</h2>
+<p>The current risk percentile ranks links by <code>mean(predicted_xgb)</code> — the XGBoost model’s expected collision count per year, averaged across the three AADF years. This is a model-only ranking: it ignores the observed collision history entirely.</p>
+<p>HSM network screening recommends combining the model prediction (the prior) with observed crash history (the likelihood) using Empirical Bayes (EB) shrinkage. The rationale:</p>
+<ul>
+<li>A link with 1 observed collision in 1 year may have a high raw rate, but the estimate is noisy. EB shrinks it toward the model prediction.</li>
+<li>A link with 10 observed collisions consistently above prediction has strong evidence of elevated risk. EB weights the observation more heavily.</li>
+<li>The weight is determined by the negative binomial dispersion parameter k: high overdispersion (low k) means observed counts are less reliable and shrinkage toward the prior is stronger.</li>
+</ul>
+<hr>
+</section>
+<section id="units-and-data-shapes-confirmed-from-collision.py" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="units-and-data-shapes-confirmed-from-collision.py"><span class="header-section-number">2</span> 2. Units and data shapes (confirmed from <code>collision.py</code>)</h2>
+<p>This section is foundational — getting units wrong silently produces nonsense rankings.</p>
+<section id="what-predicted_xgb-is" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="what-predicted_xgb-is"><span class="header-section-number">2.1</span> 2.1 What <code>predicted_xgb</code> is</h3>
+<p>The XGBoost model is trained with <code>objective="count:poisson"</code> and <code>base_margin = log_offset</code>, where:</p>
+<pre><code>log_offset = log(AADT × link_length_km × 365 / 1e6)</code></pre>
+<p><code>base_margin</code> sets the initial log-prediction in XGBoost’s internal log-space. The model therefore learns the residual log-rate and <code>predict()</code> returns:</p>
+<pre><code>exp(log_offset + f(X)) = AADT × length_km × 365 / 1e6 × exp(f(X))</code></pre>
+<p><code>exp(log_offset)</code> is vehicle-kilometres in millions. Multiplied by <code>exp(f(X))</code> (the learned collision rate per MVKm), the result is the <strong>expected collision count per link-year</strong> — an absolute count, not a rate per vehicle-km.</p>
+<p>At pooling (<code>score_and_save</code>), <code>predicted_xgb</code> is averaged across the three AADF years:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"predicted_xgb"</span>] <span class="op">=</span> df.groupby(<span class="st">"link_id"</span>)[<span class="st">"predicted_xgb"</span>].mean()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>So <code>predicted_xgb</code> in <code>risk_scores.parquet</code> is:</p>
+<blockquote class="blockquote">
+<p><strong>Mean expected collisions per year</strong> (collisions/year; absolute count).</p>
+</blockquote>
+<p>The <code>residual_glm</code> computation in <code>score_and_save</code> confirms this unit interpretation — it uses <code>predicted_glm × n_years</code> (not <code>× vehicle-km</code>) to produce a residual in collision-count units:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"residual_glm"</span>] <span class="op">=</span> pooled[<span class="st">"collision_count"</span>] <span class="op">-</span> pooled[<span class="st">"predicted_glm"</span>] <span class="op">*</span> n_years</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="what-collision_count-is" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="what-collision_count-is"><span class="header-section-number">2.2</span> 2.2 What <code>collision_count</code> is</h3>
+<p><code>collision_count</code> is the <strong>sum of observed collisions across all years</strong> that appear in <code>road_link_annual.parquet</code>. In the current pipeline this is 3 years (2019, 2021, 2023). It is an integer count, consistent with the Poisson target the models were trained on.</p>
+</section>
+<section id="n_years-per-link" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="n_years-per-link"><span class="header-section-number">2.3</span> 2.3 n_years per link</h3>
+<p><code>n_years</code> is computed globally in <code>score_and_save</code> as <code>df["year"].nunique()</code> and currently equals 3 for all links. By design, the base table in <code>build_collision_dataset()</code> is <code>all_links × all_AADF_years</code>, so every link that receives an AADT estimate appears in all three years. In the current pipeline, per-link n_years will always be 3 with no variation.</p>
+<p>Nonetheless, the implementation should compute n_years <strong>per link</strong> (as a groupby count of distinct years in <code>df</code>) rather than using the global constant. This makes the code robust if the set of AADF years changes in future runs, and it produces an informative diagnostic column even when the current value is uniform.</p>
+<hr>
+</section>
+</section>
+<section id="mathematical-formulation" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="mathematical-formulation"><span class="header-section-number">3</span> 3. Mathematical formulation</h2>
+<section id="negative-binomial-prior" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="negative-binomial-prior"><span class="header-section-number">3.1</span> 3.1 Negative binomial prior</h3>
+<p>The EB prior is a negative binomial (NB2) model with the same feature set as the current Poisson GLM. The NB2 variance function is:</p>
+<pre><code>Var(Y) = μ + k × μ²</code></pre>
+<p>where k &gt; 0 is the overdispersion parameter. The NB reduces to Poisson as k → 0. k is fitted on the full link-year table (not the downsampled GLM table) and extracted from <code>result.params['alpha']</code> in statsmodels.</p>
+</section>
+<section id="eb-combining-formula-in-totals-hsm-standard-form" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="eb-combining-formula-in-totals-hsm-standard-form"><span class="header-section-number">3.2</span> 3.2 EB combining formula — in totals (HSM standard form)</h3>
+<p>Define, for each link:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Symbol</th>
+<th>Definition</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>μ</td>
+<td><code>predicted_xgb</code></td>
+<td>collisions/year</td>
+</tr>
+<tr class="even">
+<td>n</td>
+<td><code>n_years</code> (per link)</td>
+<td>years</td>
+</tr>
+<tr class="odd">
+<td>N_pred</td>
+<td>μ × n</td>
+<td>total predicted collisions over study period</td>
+</tr>
+<tr class="even">
+<td>N_obs</td>
+<td><code>collision_count</code></td>
+<td>total observed collisions over study period</td>
+</tr>
+<tr class="odd">
+<td>k</td>
+<td>NB2 overdispersion (<code>alpha</code>)</td>
+<td>dimensionless</td>
+</tr>
+</tbody>
+</table>
+<p>The EB weight (HSM eq. 3-6):</p>
+<pre><code>w = 1 / (1 + k × N_pred)
+  = 1 / (1 + k × μ × n)</code></pre>
+<p>The EB expected crash total over the study period:</p>
+<pre><code>N_EB = w × N_pred + (1 − w) × N_obs
+     = w × (μ × n) + (1 − w) × collision_count</code></pre>
+<p>For ranking across links, convert to a per-year EB rate:</p>
+<pre><code>μ_EB = N_EB / n
+     = w × μ + (1 − w) × (collision_count / n)</code></pre>
+<p><code>risk_percentile_eb</code> is then <code>rank(μ_EB) × 100 / n_links</code>.</p>
+</section>
+<section id="interpretation-of-the-weight" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="interpretation-of-the-weight"><span class="header-section-number">3.3</span> 3.3 Interpretation of the weight</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Condition</th>
+<th>w</th>
+<th>μ_EB behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>High n, high μ (major road, many years)</td>
+<td>Near 0</td>
+<td>Dominated by observed rate</td>
+</tr>
+<tr class="even">
+<td>Low n, low μ (minor road, few collisions)</td>
+<td>Near 1</td>
+<td>Dominated by model prediction</td>
+</tr>
+<tr class="odd">
+<td>High k (high overdispersion)</td>
+<td>Lower</td>
+<td>More weight on observation</td>
+</tr>
+<tr class="even">
+<td>k → 0 (Poisson)</td>
+<td>Near 1</td>
+<td>Converges to model prediction</td>
+</tr>
+</tbody>
+</table>
+<p>This is exactly the desired behaviour: short links with one freak collision are shrunk toward the model prior; consistently high-collision corridors retain their observed rate.</p>
+</section>
+<section id="units-consistency-check" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="units-consistency-check"><span class="header-section-number">3.4</span> 3.4 Units consistency check</h3>
+<p>All quantities in the formula are in <strong>count space</strong> (total collisions), not rate space. The per-year conversion happens only at the final ranking step. This matches HSM standard form and avoids mixing count and rate units inside the weight formula.</p>
+<hr>
+</section>
+</section>
+<section id="k-estimation" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="k-estimation"><span class="header-section-number">4</span> 4. k estimation</h2>
+<p>A single global k is fitted using statsmodels NB2 on the <strong>full link-year table</strong> (18M rows, not the downsampled GLM table). The same feature set as the current Poisson GLM is used, with <code>log_offset</code> as the exposure offset.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>nb_result <span class="op">=</span> sm.GLM(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    y, X,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    family<span class="op">=</span>sm.families.NegativeBinomial(),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    offset<span class="op">=</span>log_offset,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>).fit()</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> nb_result.params[<span class="st">"alpha"</span>]   <span class="co"># overdispersion; matches HSM convention</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Why the full table, not the downsampled GLM table?</strong><br>
+k characterises the overdispersion of collision counts at the true zero rate (~98% zeros). Fitting on the downsampled table (~91% zeros) would produce a biased k that under-states overdispersion, giving EB weights that lean too heavily on observations.</p>
+<p><strong>Memory:</strong> The NB GLM on 18M rows will be materially heavier than the downsampled Poisson GLM. It may require chunked fitting or sparse design matrix construction. This is a known implementation risk; if it OOMs, the fallback is to fit on a stratified 10% sample of the full table (stratified by road class to preserve the zero/positive ratio within each class).</p>
+<p><strong>Per-family k — future work, not scoped here.</strong><br>
+In v1 a single k is applied to all links. Road classes likely have different overdispersion (motorways are more predictable; unclassified rural roads more noisy). Per-family k would require separate NB fits per <code>road_classification</code> and a lookup at scoring time. Deferred.</p>
+<hr>
+</section>
+<section id="implementation-plan" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="implementation-plan"><span class="header-section-number">5</span> 5. Implementation plan</h2>
+<section id="files-touched" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="files-touched"><span class="header-section-number">5.1</span> 5.1 Files touched</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>src/road_risk/model/collision.py</code></td>
+<td>Add <code>fit_nb_dispersion()</code>, <code>compute_eb_scores()</code>, extend <code>score_and_save()</code></td>
+</tr>
+<tr class="even">
+<td><code>src/road_risk/diagnostics/eb_validation.py</code></td>
+<td>New script — validation outputs (see §6)</td>
+</tr>
+<tr class="odd">
+<td><code>data/models/collision_metrics.json</code></td>
+<td>Add <code>nb_k</code> field</td>
+</tr>
+<tr class="even">
+<td><code>data/models/risk_scores.parquet</code></td>
+<td>Add <code>n_years</code>, <code>eb_weight</code>, <code>risk_percentile_eb</code> columns</td>
+</tr>
+</tbody>
+</table>
+<p>No other pipeline files are touched. The Quarto site pages read from <code>risk_scores.parquet</code> and will pick up the new columns automatically.</p>
+</section>
+<section id="new-functions-in-collision.py" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="new-functions-in-collision.py"><span class="header-section-number">5.2</span> 5.2 New functions in <code>collision.py</code></h3>
+<p><strong><code>fit_nb_dispersion(df, glm_features)</code></strong></p>
+<pre><code>Inputs:  full link-year DataFrame df, feature list from GLM
+Returns: float k (overdispersion parameter)
+Writes:  nothing (k is passed to score_and_save)</code></pre>
+<p>Fits statsmodels NB2 on the full table. Logs k and its 95% CI. Falls back to a stratified 10% sample if the design matrix exceeds a configurable memory cap (default 4 GB).</p>
+<p><strong><code>compute_eb_scores(pooled, k)</code></strong></p>
+<pre><code>Inputs:  pooled DataFrame (one row per link), float k
+Returns: pooled DataFrame with added columns:
+           n_years          (int) — years contributing to this link's scores
+           eb_weight        (float) — w = 1 / (1 + k × predicted_xgb × n_years)
+           predicted_eb     (float) — μ_EB per year
+           risk_percentile_eb (float) — rank(predicted_eb) × 100 / n_links</code></pre>
+<p><code>n_years</code> is derived from the pre-pooled <code>df</code> via <code>df.groupby("link_id")["year"].nunique()</code>, then joined onto <code>pooled</code>. This avoids assuming uniformity even if the current value is always 3.</p>
+</section>
+<section id="changes-to-score_and_save" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="changes-to-score_and_save"><span class="header-section-number">5.3</span> 5.3 Changes to <code>score_and_save()</code></h3>
+<p>After the existing pooling and <code>risk_percentile</code> computation, add:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># EB shrinkage</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> fit_nb_dispersion(df, glm_features)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>pooled <span class="op">=</span> compute_eb_scores(pooled, k)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Persist k</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>glm_summary[<span class="st">"nb_k"</span>] <span class="op">=</span> k</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Extend <code>save_cols</code> to include <code>n_years</code>, <code>eb_weight</code>, <code>risk_percentile_eb</code>.</p>
+<p>The existing <code>risk_percentile</code> column is <strong>not removed</strong> — both rankings are saved. Comparison between them is part of the validation.</p>
+</section>
+<section id="what-does-not-change" class="level3" data-number="5.4">
+<h3 data-number="5.4" class="anchored" data-anchor-id="what-does-not-change"><span class="header-section-number">5.4</span> 5.4 What does NOT change</h3>
+<ul>
+<li><code>build_collision_dataset()</code> — no change</li>
+<li><code>train_collision_glm()</code> — no change</li>
+<li><code>train_collision_xgb()</code> — no change</li>
+<li>GLM and XGBoost model artefacts — no change</li>
+<li>Quarto QMD files — read from parquet; will pick up new columns without code changes (though <code>model-results.qmd</code> will need narrative updates after validation)</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="validation-plan" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="validation-plan"><span class="header-section-number">6</span> 6. Validation plan</h2>
+<p>Run as a standalone script <code>src/road_risk/diagnostics/eb_validation.py</code> against the updated <code>risk_scores.parquet</code>. No retraining required.</p>
+<section id="n_years-distribution" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="n_years-distribution"><span class="header-section-number">6.1</span> 6.1 n_years distribution</h3>
+<p>Report the distribution of <code>n_years</code> across all 2.1M links. Expected: all links have n_years = 3 in the current pipeline. If there is any variation, flag the links with n_years &lt; 3 and their road class breakdown — they will have higher w (stronger shrinkage) than typical links.</p>
+</section>
+<section id="k-value-and-weight-distribution" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="k-value-and-weight-distribution"><span class="header-section-number">6.2</span> 6.2 k value and weight distribution</h3>
+<ul>
+<li>Report k, its 95% CI from the NB fit, and what it implies for a typical link:
+<ul>
+<li>At the median predicted_xgb, what is the resulting w?</li>
+<li>At the 95th percentile predicted_xgb, what is w?</li>
+</ul></li>
+<li>Plot the distribution of <code>eb_weight</code> across all links.</li>
+<li>Stratify w by road class — motorways (high μ, low w) vs unclassified (low μ, high w near 1).</li>
+</ul>
+</section>
+<section id="rank-change-distribution" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="rank-change-distribution"><span class="header-section-number">6.3</span> 6.3 Rank change distribution</h3>
+<ul>
+<li>Compute <code>rank_delta = risk_percentile_eb − risk_percentile</code> for every link.</li>
+<li>Report:
+<ul>
+<li>Median |rank_delta|</li>
+<li>90th percentile |rank_delta|</li>
+<li>% of links that move more than 10 percentile points in either direction</li>
+<li>% of links that move more than 25 percentile points</li>
+</ul></li>
+<li>Plot histogram of rank_delta (expect right-skewed: most links barely move; a tail of short/zero-collision links drop sharply).</li>
+</ul>
+</section>
+<section id="top-1-list-comparison" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="top-1-list-comparison"><span class="header-section-number">6.4</span> 6.4 Top-1% list comparison</h3>
+<ul>
+<li>How many links are in top 1% under <code>risk_percentile</code> (should be ~21,700)?</li>
+<li>How many links are in top 1% under <code>risk_percentile_eb</code>?</li>
+<li>How many links are in both? How many enter or exit?</li>
+<li>Stratify entrants and leavers by road class. Are leavers predominantly unclassified/short links? Are entrants major roads where high observed counts were previously being down-weighted by low model predictions?</li>
+</ul>
+</section>
+<section id="qualitative-link-level-inspection" class="level3" data-number="6.5">
+<h3 data-number="6.5" class="anchored" data-anchor-id="qualitative-link-level-inspection"><span class="header-section-number">6.5</span> 6.5 Qualitative link-level inspection</h3>
+<p>Select 5 links that <strong>exit</strong> the top 1% under EB and 5 that <strong>enter</strong>. For each, report:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>road_classification</code></td>
+<td>Road type</td>
+</tr>
+<tr class="even">
+<td><code>link_length_km</code></td>
+<td>Exposure proxy</td>
+</tr>
+<tr class="odd">
+<td><code>estimated_aadt</code></td>
+<td>Traffic volume</td>
+</tr>
+<tr class="even">
+<td><code>collision_count</code></td>
+<td>Observed total (3 years)</td>
+</tr>
+<tr class="odd">
+<td><code>predicted_xgb</code></td>
+<td>Model prior (per year)</td>
+</tr>
+<tr class="even">
+<td><code>eb_weight</code></td>
+<td>Shrinkage applied</td>
+</tr>
+<tr class="odd">
+<td><code>risk_percentile</code></td>
+<td>Old rank</td>
+</tr>
+<tr class="even">
+<td><code>risk_percentile_eb</code></td>
+<td>New rank</td>
+</tr>
+</tbody>
+</table>
+<p>Expected patterns:</p>
+<p><strong>Exits (high old rank, lower new rank):</strong> Short links with one or two collisions but very low AADT — low predicted_xgb means the observed rate is extreme but the model sees little plausible risk. EB pulls rank down toward the prior. Likely unclassified or B road, short, possibly rural.</p>
+<p><strong>Entries (lower old rank, higher new rank):</strong> Links where the model systematically under-predicts but observed counts are persistently high. These links may have attributes that the current model doesn’t represent well (e.g.&nbsp;signalised junction, specific geometry). EB increases weight on observations. Likely A road or urban minor road with repeated collisions.</p>
+<hr>
+</section>
+</section>
+<section id="caveats-and-methodological-notes" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="caveats-and-methodological-notes"><span class="header-section-number">7</span> 7. Caveats and methodological notes</h2>
+<section id="k-is-borrowed-from-nb-applied-to-xgboost-predictions" class="level3" data-number="7.1">
+<h3 data-number="7.1" class="anchored" data-anchor-id="k-is-borrowed-from-nb-applied-to-xgboost-predictions"><span class="header-section-number">7.1</span> 7.1 k is borrowed from NB, applied to XGBoost predictions</h3>
+<p>Standard HSM EB assumes the prior is an NB model, so the NB mean and dispersion parameter k are from the same model and are statistically coherent. We are using an NB dispersion parameter extracted from an auxiliary NB GLM, but applying it to XGBoost predictions as the prior. XGBoost predictions do not come with a natural k — they are point estimates from a Poisson objective with no overdispersion modelling.</p>
+<p>This is a pragmatic approximation. The justification:</p>
+<ul>
+<li>The NB k characterises the overdispersion of collision counts given road features, which is a property of the data-generating process, not of any specific model.</li>
+<li>If the NB GLM and XGBoost both capture systematic variation in mean counts well, their residual overdispersion should be similar.</li>
+<li>Using a single global k is already an approximation — per-link k would require fully Bayesian inference.</li>
+</ul>
+<p>The consequence if k is wrong: the EB weights will be miscalibrated. Too large a k (over-estimated overdispersion) → over-shrinkage toward model prior, suppressing genuine outlier links. Too small a k → under-shrinkage, leaving the ranking closer to a pure rate ranking.</p>
+<p><strong>A cleaner future version</strong> would use predictions from an NB or NB-mixed model directly, so that k and the prior mean come from the same model. This is the strict HSM approach. The current approximation is defensible as a v1 but should be flagged explicitly in any public-facing methodology description.</p>
+</section>
+<section id="glm-intercept-bias-does-not-affect-eb" class="level3" data-number="7.2">
+<h3 data-number="7.2" class="anchored" data-anchor-id="glm-intercept-bias-does-not-affect-eb"><span class="header-section-number">7.2</span> 7.2 GLM intercept bias does not affect EB</h3>
+<p>The decision to shrink toward <code>predicted_xgb</code> (not <code>predicted_glm</code>) sidesteps the GLM zero-downsampling intercept bias described in <code>methodology/feature-engineering.qmd</code>. The NB GLM used only for k estimation is fit on the full table, so its intercept is not biased. If the NB GLM’s intercept still shows any residual bias (due to model misspecification rather than downsampling), this would affect the NB mean but k is relatively insensitive to small intercept shifts compared to the feature coefficients.</p>
+</section>
+<section id="pseudo-r²-comparability-existing-caveat-applies-here-too" class="level3" data-number="7.3">
+<h3 data-number="7.3" class="anchored" data-anchor-id="pseudo-r²-comparability-existing-caveat-applies-here-too"><span class="header-section-number">7.3</span> 7.3 Pseudo-R² comparability (existing caveat, applies here too)</h3>
+<p>The NB pseudo-R² will be computed in-sample on the full table. It is not directly comparable to the XGBoost out-of-sample pseudo-R². Do not use the NB pseudo-R² as a performance claim — it is only needed for k extraction.</p>
+</section>
+<section id="n_years-is-currently-uniform-n3" class="level3" data-number="7.4">
+<h3 data-number="7.4" class="anchored" data-anchor-id="n_years-is-currently-uniform-n3"><span class="header-section-number">7.4</span> 7.4 n_years is currently uniform (n=3)</h3>
+<p>As noted in §2.3, all links have n_years = 3 in the current pipeline. The EB weights will therefore vary only through <code>predicted_xgb</code>, not through differential observation periods. This limits one of EB’s key advantages — giving lower weight to estimates from shorter observation windows. If the AADF years change (e.g.&nbsp;adding 2015–2018 AADF) and different links have different year coverage, n_years variation will matter and the per-link computation will become load-bearing.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Empirical Bayes Shrinkage"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>**Status:** Design only. No code exists yet.  </span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>**Scope:** v1 implementation for <span class="in">`collision.py`</span>. Per-family k and cross-fold</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>stability are explicitly out of scope.  </span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>**Reference:** FHWA Highway Safety Manual (2010), Chapter 3, Network Screening.</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Motivation</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>The current risk percentile ranks links by <span class="in">`mean(predicted_xgb)`</span> — the</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>XGBoost model's expected collision count per year, averaged across the three</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>AADF years. This is a model-only ranking: it ignores the observed collision</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>history entirely.</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>HSM network screening recommends combining the model prediction (the prior)</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>with observed crash history (the likelihood) using Empirical Bayes (EB)</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>shrinkage. The rationale:</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A link with 1 observed collision in 1 year may have a high raw rate, but the</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>  estimate is noisy. EB shrinks it toward the model prediction.</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A link with 10 observed collisions consistently above prediction has strong</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>  evidence of elevated risk. EB weights the observation more heavily.</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The weight is determined by the negative binomial dispersion parameter k:</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>  high overdispersion (low k) means observed counts are less reliable and</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>  shrinkage toward the prior is stronger.</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Units and data shapes (confirmed from `collision.py`)</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>This section is foundational — getting units wrong silently produces nonsense</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>rankings.</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.1 What `predicted_xgb` is</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>The XGBoost model is trained with <span class="in">`objective="count:poisson"`</span> and</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a><span class="in">`base_margin = log_offset`</span>, where:</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="in">log_offset = log(AADT × link_length_km × 365 / 1e6)</span></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="in">`base_margin`</span> sets the initial log-prediction in XGBoost's internal</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>log-space. The model therefore learns the residual log-rate and <span class="in">`predict()`</span></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>returns:</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a><span class="in">exp(log_offset + f(X)) = AADT × length_km × 365 / 1e6 × exp(f(X))</span></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a><span class="in">`exp(log_offset)`</span> is vehicle-kilometres in millions. Multiplied by</span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a><span class="in">`exp(f(X))`</span> (the learned collision rate per MVKm), the result is the</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>**expected collision count per link-year** — an absolute count, not a rate</span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a>per vehicle-km.</span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a>At pooling (<span class="in">`score_and_save`</span>), <span class="in">`predicted_xgb`</span> is averaged across the three</span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a>AADF years:</span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"predicted_xgb"</span>] <span class="op">=</span> df.groupby(<span class="st">"link_id"</span>)[<span class="st">"predicted_xgb"</span>].mean()</span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a>So <span class="in">`predicted_xgb`</span> in <span class="in">`risk_scores.parquet`</span> is:</span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **Mean expected collisions per year** (collisions/year; absolute count).</span></span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a>The <span class="in">`residual_glm`</span> computation in <span class="in">`score_and_save`</span> confirms this unit</span>
+<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a>interpretation — it uses <span class="in">`predicted_glm × n_years`</span> (not <span class="in">`× vehicle-km`</span>) to</span>
+<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a>produce a residual in collision-count units:</span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"residual_glm"</span>] <span class="op">=</span> pooled[<span class="st">"collision_count"</span>] <span class="op">-</span> pooled[<span class="st">"predicted_glm"</span>] <span class="op">*</span> n_years</span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.2 What `collision_count` is</span></span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a><span class="in">`collision_count`</span> is the **sum of observed collisions across all years** that</span>
+<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a>appear in <span class="in">`road_link_annual.parquet`</span>. In the current pipeline this is 3 years</span>
+<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a>(2019, 2021, 2023). It is an integer count, consistent with the Poisson</span>
+<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>target the models were trained on.</span>
+<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.3 n_years per link</span></span>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a><span class="in">`n_years`</span> is computed globally in <span class="in">`score_and_save`</span> as <span class="in">`df["year"].nunique()`</span></span>
+<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a>and currently equals 3 for all links. By design, the base table in</span>
+<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a><span class="in">`build_collision_dataset()`</span> is <span class="in">`all_links × all_AADF_years`</span>, so every link</span>
+<span id="cb13-97"><a href="#cb13-97" aria-hidden="true" tabindex="-1"></a>that receives an AADT estimate appears in all three years. In the current</span>
+<span id="cb13-98"><a href="#cb13-98" aria-hidden="true" tabindex="-1"></a>pipeline, per-link n_years will always be 3 with no variation.</span>
+<span id="cb13-99"><a href="#cb13-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-100"><a href="#cb13-100" aria-hidden="true" tabindex="-1"></a>Nonetheless, the implementation should compute n_years **per link** (as a</span>
+<span id="cb13-101"><a href="#cb13-101" aria-hidden="true" tabindex="-1"></a>groupby count of distinct years in <span class="in">`df`</span>) rather than using the global</span>
+<span id="cb13-102"><a href="#cb13-102" aria-hidden="true" tabindex="-1"></a>constant. This makes the code robust if the set of AADF years changes in</span>
+<span id="cb13-103"><a href="#cb13-103" aria-hidden="true" tabindex="-1"></a>future runs, and it produces an informative diagnostic column even when the</span>
+<span id="cb13-104"><a href="#cb13-104" aria-hidden="true" tabindex="-1"></a>current value is uniform.</span>
+<span id="cb13-105"><a href="#cb13-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-106"><a href="#cb13-106" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-107"><a href="#cb13-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-108"><a href="#cb13-108" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. Mathematical formulation</span></span>
+<span id="cb13-109"><a href="#cb13-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-110"><a href="#cb13-110" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.1 Negative binomial prior</span></span>
+<span id="cb13-111"><a href="#cb13-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-112"><a href="#cb13-112" aria-hidden="true" tabindex="-1"></a>The EB prior is a negative binomial (NB2) model with the same feature set as</span>
+<span id="cb13-113"><a href="#cb13-113" aria-hidden="true" tabindex="-1"></a>the current Poisson GLM. The NB2 variance function is:</span>
+<span id="cb13-114"><a href="#cb13-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-115"><a href="#cb13-115" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-116"><a href="#cb13-116" aria-hidden="true" tabindex="-1"></a><span class="in">Var(Y) = μ + k × μ²</span></span>
+<span id="cb13-117"><a href="#cb13-117" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-118"><a href="#cb13-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-119"><a href="#cb13-119" aria-hidden="true" tabindex="-1"></a>where k &gt; 0 is the overdispersion parameter. The NB reduces to Poisson as</span>
+<span id="cb13-120"><a href="#cb13-120" aria-hidden="true" tabindex="-1"></a>k → 0. k is fitted on the full link-year table (not the downsampled GLM</span>
+<span id="cb13-121"><a href="#cb13-121" aria-hidden="true" tabindex="-1"></a>table) and extracted from <span class="in">`result.params['alpha']`</span> in statsmodels.</span>
+<span id="cb13-122"><a href="#cb13-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-123"><a href="#cb13-123" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.2 EB combining formula — in totals (HSM standard form)</span></span>
+<span id="cb13-124"><a href="#cb13-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-125"><a href="#cb13-125" aria-hidden="true" tabindex="-1"></a>Define, for each link:</span>
+<span id="cb13-126"><a href="#cb13-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-127"><a href="#cb13-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Symbol <span class="pp">|</span> Definition <span class="pp">|</span> Units <span class="pp">|</span></span>
+<span id="cb13-128"><a href="#cb13-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb13-129"><a href="#cb13-129" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> μ <span class="pp">|</span> <span class="in">`predicted_xgb`</span> <span class="pp">|</span> collisions/year <span class="pp">|</span></span>
+<span id="cb13-130"><a href="#cb13-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> n <span class="pp">|</span> <span class="in">`n_years`</span> (per link) <span class="pp">|</span> years <span class="pp">|</span></span>
+<span id="cb13-131"><a href="#cb13-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> N_pred <span class="pp">|</span> μ × n <span class="pp">|</span> total predicted collisions over study period <span class="pp">|</span></span>
+<span id="cb13-132"><a href="#cb13-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> N_obs <span class="pp">|</span> <span class="in">`collision_count`</span> <span class="pp">|</span> total observed collisions over study period <span class="pp">|</span></span>
+<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> k <span class="pp">|</span> NB2 overdispersion (<span class="in">`alpha`</span>) <span class="pp">|</span> dimensionless <span class="pp">|</span></span>
+<span id="cb13-134"><a href="#cb13-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-135"><a href="#cb13-135" aria-hidden="true" tabindex="-1"></a>The EB weight (HSM eq. 3-6):</span>
+<span id="cb13-136"><a href="#cb13-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-137"><a href="#cb13-137" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-138"><a href="#cb13-138" aria-hidden="true" tabindex="-1"></a><span class="in">w = 1 / (1 + k × N_pred)</span></span>
+<span id="cb13-139"><a href="#cb13-139" aria-hidden="true" tabindex="-1"></a><span class="in">  = 1 / (1 + k × μ × n)</span></span>
+<span id="cb13-140"><a href="#cb13-140" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-141"><a href="#cb13-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-142"><a href="#cb13-142" aria-hidden="true" tabindex="-1"></a>The EB expected crash total over the study period:</span>
+<span id="cb13-143"><a href="#cb13-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-144"><a href="#cb13-144" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-145"><a href="#cb13-145" aria-hidden="true" tabindex="-1"></a><span class="in">N_EB = w × N_pred + (1 − w) × N_obs</span></span>
+<span id="cb13-146"><a href="#cb13-146" aria-hidden="true" tabindex="-1"></a><span class="in">     = w × (μ × n) + (1 − w) × collision_count</span></span>
+<span id="cb13-147"><a href="#cb13-147" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-148"><a href="#cb13-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-149"><a href="#cb13-149" aria-hidden="true" tabindex="-1"></a>For ranking across links, convert to a per-year EB rate:</span>
+<span id="cb13-150"><a href="#cb13-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-151"><a href="#cb13-151" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-152"><a href="#cb13-152" aria-hidden="true" tabindex="-1"></a><span class="in">μ_EB = N_EB / n</span></span>
+<span id="cb13-153"><a href="#cb13-153" aria-hidden="true" tabindex="-1"></a><span class="in">     = w × μ + (1 − w) × (collision_count / n)</span></span>
+<span id="cb13-154"><a href="#cb13-154" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-155"><a href="#cb13-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-156"><a href="#cb13-156" aria-hidden="true" tabindex="-1"></a><span class="in">`risk_percentile_eb`</span> is then <span class="in">`rank(μ_EB) × 100 / n_links`</span>.</span>
+<span id="cb13-157"><a href="#cb13-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-158"><a href="#cb13-158" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.3 Interpretation of the weight</span></span>
+<span id="cb13-159"><a href="#cb13-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-160"><a href="#cb13-160" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Condition <span class="pp">|</span> w <span class="pp">|</span> μ_EB behaviour <span class="pp">|</span></span>
+<span id="cb13-161"><a href="#cb13-161" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb13-162"><a href="#cb13-162" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> High n, high μ (major road, many years) <span class="pp">|</span> Near 0 <span class="pp">|</span> Dominated by observed rate <span class="pp">|</span></span>
+<span id="cb13-163"><a href="#cb13-163" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Low n, low μ (minor road, few collisions) <span class="pp">|</span> Near 1 <span class="pp">|</span> Dominated by model prediction <span class="pp">|</span></span>
+<span id="cb13-164"><a href="#cb13-164" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> High k (high overdispersion) <span class="pp">|</span> Lower <span class="pp">|</span> More weight on observation <span class="pp">|</span></span>
+<span id="cb13-165"><a href="#cb13-165" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> k → 0 (Poisson) <span class="pp">|</span> Near 1 <span class="pp">|</span> Converges to model prediction <span class="pp">|</span></span>
+<span id="cb13-166"><a href="#cb13-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-167"><a href="#cb13-167" aria-hidden="true" tabindex="-1"></a>This is exactly the desired behaviour: short links with one freak collision</span>
+<span id="cb13-168"><a href="#cb13-168" aria-hidden="true" tabindex="-1"></a>are shrunk toward the model prior; consistently high-collision corridors</span>
+<span id="cb13-169"><a href="#cb13-169" aria-hidden="true" tabindex="-1"></a>retain their observed rate.</span>
+<span id="cb13-170"><a href="#cb13-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-171"><a href="#cb13-171" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.4 Units consistency check</span></span>
+<span id="cb13-172"><a href="#cb13-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-173"><a href="#cb13-173" aria-hidden="true" tabindex="-1"></a>All quantities in the formula are in **count space** (total collisions), not</span>
+<span id="cb13-174"><a href="#cb13-174" aria-hidden="true" tabindex="-1"></a>rate space. The per-year conversion happens only at the final ranking step.</span>
+<span id="cb13-175"><a href="#cb13-175" aria-hidden="true" tabindex="-1"></a>This matches HSM standard form and avoids mixing count and rate units inside</span>
+<span id="cb13-176"><a href="#cb13-176" aria-hidden="true" tabindex="-1"></a>the weight formula.</span>
+<span id="cb13-177"><a href="#cb13-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-178"><a href="#cb13-178" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-179"><a href="#cb13-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-180"><a href="#cb13-180" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. k estimation</span></span>
+<span id="cb13-181"><a href="#cb13-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-182"><a href="#cb13-182" aria-hidden="true" tabindex="-1"></a>A single global k is fitted using statsmodels NB2 on the **full link-year</span>
+<span id="cb13-183"><a href="#cb13-183" aria-hidden="true" tabindex="-1"></a>table** (18M rows, not the downsampled GLM table). The same feature set as</span>
+<span id="cb13-184"><a href="#cb13-184" aria-hidden="true" tabindex="-1"></a>the current Poisson GLM is used, with <span class="in">`log_offset`</span> as the exposure offset.</span>
+<span id="cb13-185"><a href="#cb13-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-186"><a href="#cb13-186" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb13-187"><a href="#cb13-187" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb13-188"><a href="#cb13-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-189"><a href="#cb13-189" aria-hidden="true" tabindex="-1"></a>nb_result <span class="op">=</span> sm.GLM(</span>
+<span id="cb13-190"><a href="#cb13-190" aria-hidden="true" tabindex="-1"></a>    y, X,</span>
+<span id="cb13-191"><a href="#cb13-191" aria-hidden="true" tabindex="-1"></a>    family<span class="op">=</span>sm.families.NegativeBinomial(),</span>
+<span id="cb13-192"><a href="#cb13-192" aria-hidden="true" tabindex="-1"></a>    offset<span class="op">=</span>log_offset,</span>
+<span id="cb13-193"><a href="#cb13-193" aria-hidden="true" tabindex="-1"></a>).fit()</span>
+<span id="cb13-194"><a href="#cb13-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-195"><a href="#cb13-195" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> nb_result.params[<span class="st">"alpha"</span>]   <span class="co"># overdispersion; matches HSM convention</span></span>
+<span id="cb13-196"><a href="#cb13-196" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-197"><a href="#cb13-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-198"><a href="#cb13-198" aria-hidden="true" tabindex="-1"></a>**Why the full table, not the downsampled GLM table?**  </span>
+<span id="cb13-199"><a href="#cb13-199" aria-hidden="true" tabindex="-1"></a>k characterises the overdispersion of collision counts at the true zero rate</span>
+<span id="cb13-200"><a href="#cb13-200" aria-hidden="true" tabindex="-1"></a>(~98% zeros). Fitting on the downsampled table (~91% zeros) would produce a</span>
+<span id="cb13-201"><a href="#cb13-201" aria-hidden="true" tabindex="-1"></a>biased k that under-states overdispersion, giving EB weights that lean too</span>
+<span id="cb13-202"><a href="#cb13-202" aria-hidden="true" tabindex="-1"></a>heavily on observations.</span>
+<span id="cb13-203"><a href="#cb13-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-204"><a href="#cb13-204" aria-hidden="true" tabindex="-1"></a>**Memory:** The NB GLM on 18M rows will be materially heavier than the</span>
+<span id="cb13-205"><a href="#cb13-205" aria-hidden="true" tabindex="-1"></a>downsampled Poisson GLM. It may require chunked fitting or sparse design</span>
+<span id="cb13-206"><a href="#cb13-206" aria-hidden="true" tabindex="-1"></a>matrix construction. This is a known implementation risk; if it OOMs, the</span>
+<span id="cb13-207"><a href="#cb13-207" aria-hidden="true" tabindex="-1"></a>fallback is to fit on a stratified 10% sample of the full table (stratified</span>
+<span id="cb13-208"><a href="#cb13-208" aria-hidden="true" tabindex="-1"></a>by road class to preserve the zero/positive ratio within each class).</span>
+<span id="cb13-209"><a href="#cb13-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-210"><a href="#cb13-210" aria-hidden="true" tabindex="-1"></a>**Per-family k — future work, not scoped here.**  </span>
+<span id="cb13-211"><a href="#cb13-211" aria-hidden="true" tabindex="-1"></a>In v1 a single k is applied to all links. Road classes likely have different</span>
+<span id="cb13-212"><a href="#cb13-212" aria-hidden="true" tabindex="-1"></a>overdispersion (motorways are more predictable; unclassified rural roads more</span>
+<span id="cb13-213"><a href="#cb13-213" aria-hidden="true" tabindex="-1"></a>noisy). Per-family k would require separate NB fits per <span class="in">`road_classification`</span></span>
+<span id="cb13-214"><a href="#cb13-214" aria-hidden="true" tabindex="-1"></a>and a lookup at scoring time. Deferred.</span>
+<span id="cb13-215"><a href="#cb13-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-216"><a href="#cb13-216" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-217"><a href="#cb13-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-218"><a href="#cb13-218" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Implementation plan</span></span>
+<span id="cb13-219"><a href="#cb13-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-220"><a href="#cb13-220" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.1 Files touched</span></span>
+<span id="cb13-221"><a href="#cb13-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-222"><a href="#cb13-222" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> File <span class="pp">|</span> Change <span class="pp">|</span></span>
+<span id="cb13-223"><a href="#cb13-223" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb13-224"><a href="#cb13-224" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/model/collision.py`</span> <span class="pp">|</span> Add <span class="in">`fit_nb_dispersion()`</span>, <span class="in">`compute_eb_scores()`</span>, extend <span class="in">`score_and_save()`</span> <span class="pp">|</span></span>
+<span id="cb13-225"><a href="#cb13-225" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/diagnostics/eb_validation.py`</span> <span class="pp">|</span> New script — validation outputs (see §6) <span class="pp">|</span></span>
+<span id="cb13-226"><a href="#cb13-226" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data/models/collision_metrics.json`</span> <span class="pp">|</span> Add <span class="in">`nb_k`</span> field <span class="pp">|</span></span>
+<span id="cb13-227"><a href="#cb13-227" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data/models/risk_scores.parquet`</span> <span class="pp">|</span> Add <span class="in">`n_years`</span>, <span class="in">`eb_weight`</span>, <span class="in">`risk_percentile_eb`</span> columns <span class="pp">|</span></span>
+<span id="cb13-228"><a href="#cb13-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-229"><a href="#cb13-229" aria-hidden="true" tabindex="-1"></a>No other pipeline files are touched. The Quarto site pages read from</span>
+<span id="cb13-230"><a href="#cb13-230" aria-hidden="true" tabindex="-1"></a><span class="in">`risk_scores.parquet`</span> and will pick up the new columns automatically.</span>
+<span id="cb13-231"><a href="#cb13-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-232"><a href="#cb13-232" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.2 New functions in `collision.py`</span></span>
+<span id="cb13-233"><a href="#cb13-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-234"><a href="#cb13-234" aria-hidden="true" tabindex="-1"></a>**`fit_nb_dispersion(df, glm_features)`**</span>
+<span id="cb13-235"><a href="#cb13-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-236"><a href="#cb13-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-237"><a href="#cb13-237" aria-hidden="true" tabindex="-1"></a><span class="in">Inputs:  full link-year DataFrame df, feature list from GLM</span></span>
+<span id="cb13-238"><a href="#cb13-238" aria-hidden="true" tabindex="-1"></a><span class="in">Returns: float k (overdispersion parameter)</span></span>
+<span id="cb13-239"><a href="#cb13-239" aria-hidden="true" tabindex="-1"></a><span class="in">Writes:  nothing (k is passed to score_and_save)</span></span>
+<span id="cb13-240"><a href="#cb13-240" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-241"><a href="#cb13-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-242"><a href="#cb13-242" aria-hidden="true" tabindex="-1"></a>Fits statsmodels NB2 on the full table. Logs k and its 95% CI.</span>
+<span id="cb13-243"><a href="#cb13-243" aria-hidden="true" tabindex="-1"></a>Falls back to a stratified 10% sample if the design matrix exceeds a</span>
+<span id="cb13-244"><a href="#cb13-244" aria-hidden="true" tabindex="-1"></a>configurable memory cap (default 4 GB).</span>
+<span id="cb13-245"><a href="#cb13-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-246"><a href="#cb13-246" aria-hidden="true" tabindex="-1"></a>**`compute_eb_scores(pooled, k)`**</span>
+<span id="cb13-247"><a href="#cb13-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-248"><a href="#cb13-248" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-249"><a href="#cb13-249" aria-hidden="true" tabindex="-1"></a><span class="in">Inputs:  pooled DataFrame (one row per link), float k</span></span>
+<span id="cb13-250"><a href="#cb13-250" aria-hidden="true" tabindex="-1"></a><span class="in">Returns: pooled DataFrame with added columns:</span></span>
+<span id="cb13-251"><a href="#cb13-251" aria-hidden="true" tabindex="-1"></a><span class="in">           n_years          (int) — years contributing to this link's scores</span></span>
+<span id="cb13-252"><a href="#cb13-252" aria-hidden="true" tabindex="-1"></a><span class="in">           eb_weight        (float) — w = 1 / (1 + k × predicted_xgb × n_years)</span></span>
+<span id="cb13-253"><a href="#cb13-253" aria-hidden="true" tabindex="-1"></a><span class="in">           predicted_eb     (float) — μ_EB per year</span></span>
+<span id="cb13-254"><a href="#cb13-254" aria-hidden="true" tabindex="-1"></a><span class="in">           risk_percentile_eb (float) — rank(predicted_eb) × 100 / n_links</span></span>
+<span id="cb13-255"><a href="#cb13-255" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-256"><a href="#cb13-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-257"><a href="#cb13-257" aria-hidden="true" tabindex="-1"></a><span class="in">`n_years`</span> is derived from the pre-pooled <span class="in">`df`</span> via</span>
+<span id="cb13-258"><a href="#cb13-258" aria-hidden="true" tabindex="-1"></a><span class="in">`df.groupby("link_id")["year"].nunique()`</span>, then joined onto <span class="in">`pooled`</span>. This</span>
+<span id="cb13-259"><a href="#cb13-259" aria-hidden="true" tabindex="-1"></a>avoids assuming uniformity even if the current value is always 3.</span>
+<span id="cb13-260"><a href="#cb13-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-261"><a href="#cb13-261" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.3 Changes to `score_and_save()`</span></span>
+<span id="cb13-262"><a href="#cb13-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-263"><a href="#cb13-263" aria-hidden="true" tabindex="-1"></a>After the existing pooling and <span class="in">`risk_percentile`</span> computation, add:</span>
+<span id="cb13-264"><a href="#cb13-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-265"><a href="#cb13-265" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb13-266"><a href="#cb13-266" aria-hidden="true" tabindex="-1"></a><span class="co"># EB shrinkage</span></span>
+<span id="cb13-267"><a href="#cb13-267" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> fit_nb_dispersion(df, glm_features)</span>
+<span id="cb13-268"><a href="#cb13-268" aria-hidden="true" tabindex="-1"></a>pooled <span class="op">=</span> compute_eb_scores(pooled, k)</span>
+<span id="cb13-269"><a href="#cb13-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-270"><a href="#cb13-270" aria-hidden="true" tabindex="-1"></a><span class="co"># Persist k</span></span>
+<span id="cb13-271"><a href="#cb13-271" aria-hidden="true" tabindex="-1"></a>glm_summary[<span class="st">"nb_k"</span>] <span class="op">=</span> k</span>
+<span id="cb13-272"><a href="#cb13-272" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-273"><a href="#cb13-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-274"><a href="#cb13-274" aria-hidden="true" tabindex="-1"></a>Extend <span class="in">`save_cols`</span> to include <span class="in">`n_years`</span>, <span class="in">`eb_weight`</span>, <span class="in">`risk_percentile_eb`</span>.</span>
+<span id="cb13-275"><a href="#cb13-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-276"><a href="#cb13-276" aria-hidden="true" tabindex="-1"></a>The existing <span class="in">`risk_percentile`</span> column is **not removed** — both rankings are</span>
+<span id="cb13-277"><a href="#cb13-277" aria-hidden="true" tabindex="-1"></a>saved. Comparison between them is part of the validation.</span>
+<span id="cb13-278"><a href="#cb13-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-279"><a href="#cb13-279" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.4 What does NOT change</span></span>
+<span id="cb13-280"><a href="#cb13-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-281"><a href="#cb13-281" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`build_collision_dataset()`</span> — no change</span>
+<span id="cb13-282"><a href="#cb13-282" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`train_collision_glm()`</span> — no change</span>
+<span id="cb13-283"><a href="#cb13-283" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`train_collision_xgb()`</span> — no change</span>
+<span id="cb13-284"><a href="#cb13-284" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>GLM and XGBoost model artefacts — no change</span>
+<span id="cb13-285"><a href="#cb13-285" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Quarto QMD files — read from parquet; will pick up new columns without</span>
+<span id="cb13-286"><a href="#cb13-286" aria-hidden="true" tabindex="-1"></a>  code changes (though <span class="in">`model-results.qmd`</span> will need narrative updates after</span>
+<span id="cb13-287"><a href="#cb13-287" aria-hidden="true" tabindex="-1"></a>  validation)</span>
+<span id="cb13-288"><a href="#cb13-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-289"><a href="#cb13-289" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-290"><a href="#cb13-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-291"><a href="#cb13-291" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Validation plan</span></span>
+<span id="cb13-292"><a href="#cb13-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-293"><a href="#cb13-293" aria-hidden="true" tabindex="-1"></a>Run as a standalone script <span class="in">`src/road_risk/diagnostics/eb_validation.py`</span></span>
+<span id="cb13-294"><a href="#cb13-294" aria-hidden="true" tabindex="-1"></a>against the updated <span class="in">`risk_scores.parquet`</span>. No retraining required.</span>
+<span id="cb13-295"><a href="#cb13-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-296"><a href="#cb13-296" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.1 n_years distribution</span></span>
+<span id="cb13-297"><a href="#cb13-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-298"><a href="#cb13-298" aria-hidden="true" tabindex="-1"></a>Report the distribution of <span class="in">`n_years`</span> across all 2.1M links. Expected: all</span>
+<span id="cb13-299"><a href="#cb13-299" aria-hidden="true" tabindex="-1"></a>links have n_years = 3 in the current pipeline. If there is any variation,</span>
+<span id="cb13-300"><a href="#cb13-300" aria-hidden="true" tabindex="-1"></a>flag the links with n_years &lt; 3 and their road class breakdown — they will</span>
+<span id="cb13-301"><a href="#cb13-301" aria-hidden="true" tabindex="-1"></a>have higher w (stronger shrinkage) than typical links.</span>
+<span id="cb13-302"><a href="#cb13-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-303"><a href="#cb13-303" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.2 k value and weight distribution</span></span>
+<span id="cb13-304"><a href="#cb13-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-305"><a href="#cb13-305" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report k, its 95% CI from the NB fit, and what it implies for a typical</span>
+<span id="cb13-306"><a href="#cb13-306" aria-hidden="true" tabindex="-1"></a>  link:</span>
+<span id="cb13-307"><a href="#cb13-307" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>At the median predicted_xgb, what is the resulting w?</span>
+<span id="cb13-308"><a href="#cb13-308" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>At the 95th percentile predicted_xgb, what is w?</span>
+<span id="cb13-309"><a href="#cb13-309" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Plot the distribution of <span class="in">`eb_weight`</span> across all links.</span>
+<span id="cb13-310"><a href="#cb13-310" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Stratify w by road class — motorways (high μ, low w) vs unclassified</span>
+<span id="cb13-311"><a href="#cb13-311" aria-hidden="true" tabindex="-1"></a>  (low μ, high w near 1).</span>
+<span id="cb13-312"><a href="#cb13-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-313"><a href="#cb13-313" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.3 Rank change distribution</span></span>
+<span id="cb13-314"><a href="#cb13-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-315"><a href="#cb13-315" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compute <span class="in">`rank_delta = risk_percentile_eb − risk_percentile`</span> for every link.</span>
+<span id="cb13-316"><a href="#cb13-316" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report:</span>
+<span id="cb13-317"><a href="#cb13-317" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Median |rank_delta|</span>
+<span id="cb13-318"><a href="#cb13-318" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>90th percentile |rank_delta|</span>
+<span id="cb13-319"><a href="#cb13-319" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>% of links that move more than 10 percentile points in either direction</span>
+<span id="cb13-320"><a href="#cb13-320" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>% of links that move more than 25 percentile points</span>
+<span id="cb13-321"><a href="#cb13-321" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Plot histogram of rank_delta (expect right-skewed: most links barely</span>
+<span id="cb13-322"><a href="#cb13-322" aria-hidden="true" tabindex="-1"></a>  move; a tail of short/zero-collision links drop sharply).</span>
+<span id="cb13-323"><a href="#cb13-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-324"><a href="#cb13-324" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.4 Top-1% list comparison</span></span>
+<span id="cb13-325"><a href="#cb13-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-326"><a href="#cb13-326" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How many links are in top 1% under <span class="in">`risk_percentile`</span> (should be ~21,700)?</span>
+<span id="cb13-327"><a href="#cb13-327" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How many links are in top 1% under <span class="in">`risk_percentile_eb`</span>?</span>
+<span id="cb13-328"><a href="#cb13-328" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>How many links are in both? How many enter or exit?</span>
+<span id="cb13-329"><a href="#cb13-329" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Stratify entrants and leavers by road class. Are leavers predominantly</span>
+<span id="cb13-330"><a href="#cb13-330" aria-hidden="true" tabindex="-1"></a>  unclassified/short links? Are entrants major roads where high observed</span>
+<span id="cb13-331"><a href="#cb13-331" aria-hidden="true" tabindex="-1"></a>  counts were previously being down-weighted by low model predictions?</span>
+<span id="cb13-332"><a href="#cb13-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-333"><a href="#cb13-333" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.5 Qualitative link-level inspection</span></span>
+<span id="cb13-334"><a href="#cb13-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-335"><a href="#cb13-335" aria-hidden="true" tabindex="-1"></a>Select 5 links that **exit** the top 1% under EB and 5 that **enter**.</span>
+<span id="cb13-336"><a href="#cb13-336" aria-hidden="true" tabindex="-1"></a>For each, report:</span>
+<span id="cb13-337"><a href="#cb13-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-338"><a href="#cb13-338" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Field <span class="pp">|</span> Purpose <span class="pp">|</span></span>
+<span id="cb13-339"><a href="#cb13-339" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb13-340"><a href="#cb13-340" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`road_classification`</span> <span class="pp">|</span> Road type <span class="pp">|</span></span>
+<span id="cb13-341"><a href="#cb13-341" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`link_length_km`</span> <span class="pp">|</span> Exposure proxy <span class="pp">|</span></span>
+<span id="cb13-342"><a href="#cb13-342" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`estimated_aadt`</span> <span class="pp">|</span> Traffic volume <span class="pp">|</span></span>
+<span id="cb13-343"><a href="#cb13-343" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`collision_count`</span> <span class="pp">|</span> Observed total (3 years) <span class="pp">|</span></span>
+<span id="cb13-344"><a href="#cb13-344" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`predicted_xgb`</span> <span class="pp">|</span> Model prior (per year) <span class="pp">|</span></span>
+<span id="cb13-345"><a href="#cb13-345" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`eb_weight`</span> <span class="pp">|</span> Shrinkage applied <span class="pp">|</span></span>
+<span id="cb13-346"><a href="#cb13-346" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile`</span> <span class="pp">|</span> Old rank <span class="pp">|</span></span>
+<span id="cb13-347"><a href="#cb13-347" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile_eb`</span> <span class="pp">|</span> New rank <span class="pp">|</span></span>
+<span id="cb13-348"><a href="#cb13-348" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-349"><a href="#cb13-349" aria-hidden="true" tabindex="-1"></a>Expected patterns:</span>
+<span id="cb13-350"><a href="#cb13-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-351"><a href="#cb13-351" aria-hidden="true" tabindex="-1"></a>**Exits (high old rank, lower new rank):** Short links with one or two</span>
+<span id="cb13-352"><a href="#cb13-352" aria-hidden="true" tabindex="-1"></a>collisions but very low AADT — low predicted_xgb means the observed rate</span>
+<span id="cb13-353"><a href="#cb13-353" aria-hidden="true" tabindex="-1"></a>is extreme but the model sees little plausible risk. EB pulls rank down</span>
+<span id="cb13-354"><a href="#cb13-354" aria-hidden="true" tabindex="-1"></a>toward the prior. Likely unclassified or B road, short, possibly rural.</span>
+<span id="cb13-355"><a href="#cb13-355" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-356"><a href="#cb13-356" aria-hidden="true" tabindex="-1"></a>**Entries (lower old rank, higher new rank):** Links where the model</span>
+<span id="cb13-357"><a href="#cb13-357" aria-hidden="true" tabindex="-1"></a>systematically under-predicts but observed counts are persistently high.</span>
+<span id="cb13-358"><a href="#cb13-358" aria-hidden="true" tabindex="-1"></a>These links may have attributes that the current model doesn't represent</span>
+<span id="cb13-359"><a href="#cb13-359" aria-hidden="true" tabindex="-1"></a>well (e.g. signalised junction, specific geometry). EB increases weight on</span>
+<span id="cb13-360"><a href="#cb13-360" aria-hidden="true" tabindex="-1"></a>observations. Likely A road or urban minor road with repeated collisions.</span>
+<span id="cb13-361"><a href="#cb13-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-362"><a href="#cb13-362" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-363"><a href="#cb13-363" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-364"><a href="#cb13-364" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Caveats and methodological notes</span></span>
+<span id="cb13-365"><a href="#cb13-365" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-366"><a href="#cb13-366" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.1 k is borrowed from NB, applied to XGBoost predictions</span></span>
+<span id="cb13-367"><a href="#cb13-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-368"><a href="#cb13-368" aria-hidden="true" tabindex="-1"></a>Standard HSM EB assumes the prior is an NB model, so the NB mean and</span>
+<span id="cb13-369"><a href="#cb13-369" aria-hidden="true" tabindex="-1"></a>dispersion parameter k are from the same model and are statistically</span>
+<span id="cb13-370"><a href="#cb13-370" aria-hidden="true" tabindex="-1"></a>coherent. We are using an NB dispersion parameter extracted from an</span>
+<span id="cb13-371"><a href="#cb13-371" aria-hidden="true" tabindex="-1"></a>auxiliary NB GLM, but applying it to XGBoost predictions as the prior.</span>
+<span id="cb13-372"><a href="#cb13-372" aria-hidden="true" tabindex="-1"></a>XGBoost predictions do not come with a natural k — they are point estimates</span>
+<span id="cb13-373"><a href="#cb13-373" aria-hidden="true" tabindex="-1"></a>from a Poisson objective with no overdispersion modelling.</span>
+<span id="cb13-374"><a href="#cb13-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-375"><a href="#cb13-375" aria-hidden="true" tabindex="-1"></a>This is a pragmatic approximation. The justification:</span>
+<span id="cb13-376"><a href="#cb13-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-377"><a href="#cb13-377" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The NB k characterises the overdispersion of collision counts given road</span>
+<span id="cb13-378"><a href="#cb13-378" aria-hidden="true" tabindex="-1"></a>  features, which is a property of the data-generating process, not of any</span>
+<span id="cb13-379"><a href="#cb13-379" aria-hidden="true" tabindex="-1"></a>  specific model.</span>
+<span id="cb13-380"><a href="#cb13-380" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If the NB GLM and XGBoost both capture systematic variation in mean counts</span>
+<span id="cb13-381"><a href="#cb13-381" aria-hidden="true" tabindex="-1"></a>  well, their residual overdispersion should be similar.</span>
+<span id="cb13-382"><a href="#cb13-382" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Using a single global k is already an approximation — per-link k would</span>
+<span id="cb13-383"><a href="#cb13-383" aria-hidden="true" tabindex="-1"></a>  require fully Bayesian inference.</span>
+<span id="cb13-384"><a href="#cb13-384" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-385"><a href="#cb13-385" aria-hidden="true" tabindex="-1"></a>The consequence if k is wrong: the EB weights will be miscalibrated. Too</span>
+<span id="cb13-386"><a href="#cb13-386" aria-hidden="true" tabindex="-1"></a>large a k (over-estimated overdispersion) → over-shrinkage toward model</span>
+<span id="cb13-387"><a href="#cb13-387" aria-hidden="true" tabindex="-1"></a>prior, suppressing genuine outlier links. Too small a k → under-shrinkage,</span>
+<span id="cb13-388"><a href="#cb13-388" aria-hidden="true" tabindex="-1"></a>leaving the ranking closer to a pure rate ranking.</span>
+<span id="cb13-389"><a href="#cb13-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-390"><a href="#cb13-390" aria-hidden="true" tabindex="-1"></a>**A cleaner future version** would use predictions from an NB or NB-mixed</span>
+<span id="cb13-391"><a href="#cb13-391" aria-hidden="true" tabindex="-1"></a>model directly, so that k and the prior mean come from the same model. This</span>
+<span id="cb13-392"><a href="#cb13-392" aria-hidden="true" tabindex="-1"></a>is the strict HSM approach. The current approximation is defensible as a v1</span>
+<span id="cb13-393"><a href="#cb13-393" aria-hidden="true" tabindex="-1"></a>but should be flagged explicitly in any public-facing methodology description.</span>
+<span id="cb13-394"><a href="#cb13-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-395"><a href="#cb13-395" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.2 GLM intercept bias does not affect EB</span></span>
+<span id="cb13-396"><a href="#cb13-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-397"><a href="#cb13-397" aria-hidden="true" tabindex="-1"></a>The decision to shrink toward <span class="in">`predicted_xgb`</span> (not <span class="in">`predicted_glm`</span>) sidesteps</span>
+<span id="cb13-398"><a href="#cb13-398" aria-hidden="true" tabindex="-1"></a>the GLM zero-downsampling intercept bias described in</span>
+<span id="cb13-399"><a href="#cb13-399" aria-hidden="true" tabindex="-1"></a><span class="in">`methodology/feature-engineering.qmd`</span>. The NB GLM used only for k estimation</span>
+<span id="cb13-400"><a href="#cb13-400" aria-hidden="true" tabindex="-1"></a>is fit on the full table, so its intercept is not biased. If the NB GLM's</span>
+<span id="cb13-401"><a href="#cb13-401" aria-hidden="true" tabindex="-1"></a>intercept still shows any residual bias (due to model misspecification rather</span>
+<span id="cb13-402"><a href="#cb13-402" aria-hidden="true" tabindex="-1"></a>than downsampling), this would affect the NB mean but k is relatively</span>
+<span id="cb13-403"><a href="#cb13-403" aria-hidden="true" tabindex="-1"></a>insensitive to small intercept shifts compared to the feature coefficients.</span>
+<span id="cb13-404"><a href="#cb13-404" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-405"><a href="#cb13-405" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.3 Pseudo-R² comparability (existing caveat, applies here too)</span></span>
+<span id="cb13-406"><a href="#cb13-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-407"><a href="#cb13-407" aria-hidden="true" tabindex="-1"></a>The NB pseudo-R² will be computed in-sample on the full table. It is not</span>
+<span id="cb13-408"><a href="#cb13-408" aria-hidden="true" tabindex="-1"></a>directly comparable to the XGBoost out-of-sample pseudo-R². Do not use the</span>
+<span id="cb13-409"><a href="#cb13-409" aria-hidden="true" tabindex="-1"></a>NB pseudo-R² as a performance claim — it is only needed for k extraction.</span>
+<span id="cb13-410"><a href="#cb13-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-411"><a href="#cb13-411" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.4 n_years is currently uniform (n=3)</span></span>
+<span id="cb13-412"><a href="#cb13-412" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-413"><a href="#cb13-413" aria-hidden="true" tabindex="-1"></a>As noted in §2.3, all links have n_years = 3 in the current pipeline. The</span>
+<span id="cb13-414"><a href="#cb13-414" aria-hidden="true" tabindex="-1"></a>EB weights will therefore vary only through <span class="in">`predicted_xgb`</span>, not through</span>
+<span id="cb13-415"><a href="#cb13-415" aria-hidden="true" tabindex="-1"></a>differential observation periods. This limits one of EB's key advantages —</span>
+<span id="cb13-416"><a href="#cb13-416" aria-hidden="true" tabindex="-1"></a>giving lower weight to estimates from shorter observation windows. If the</span>
+<span id="cb13-417"><a href="#cb13-417" aria-hidden="true" tabindex="-1"></a>AADF years change (e.g. adding 2015–2018 AADF) and different links have</span>
+<span id="cb13-418"><a href="#cb13-418" aria-hidden="true" tabindex="-1"></a>different year coverage, n_years variation will matter and the per-link</span>
+<span id="cb13-419"><a href="#cb13-419" aria-hidden="true" tabindex="-1"></a>computation will become load-bearing.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
