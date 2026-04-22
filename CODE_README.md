@@ -17,8 +17,6 @@ Status of each module in the pipeline.
 | `model/aadt.py` | ✅ Done | Stage 1a AADT estimator (counted-only CV R² ~0.83), GroupKFold by count_point_id, applied to 2.1M links |
 | `model/timezone_profile.py` | ✅ Done | Stage 1b time-zone fractions (peak/pre-peak/off-peak), GroupKFold by site_id |
 | `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost (R² 0.858); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
-| `dtc/routes.py` | ✅ Done | GPX + Google Maps → NetworkX routing → ordered link sequences; 174 routes, 24 centres |
-| `dtc/analysis.py` | ✅ Done | Per-route features (speed, turns, junctions, risk), DTC aggregation, Pearson correlations vs DVSA Annex D |
 | `app/` | 🔄 In progress | Streamlit risk map — functional, performance tuning ongoing |
 | `db.py` | ⬜ Not started | PostGIS loader |
 
@@ -56,10 +54,6 @@ python src/road_risk/network_features.py --osm
 python -m road_risk.model --stage traffic     # Stage 1a: AADT estimator
 python -m road_risk.model --stage profile     # Stage 1b: time-zone profiles
 python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
-
-# Driving test centre analysis
-python src/road_risk/dtc/routes.py            # process GPX + Google Maps routes
-python src/road_risk/dtc/analysis.py          # per-centre features + correlations
 ```
 
 ---

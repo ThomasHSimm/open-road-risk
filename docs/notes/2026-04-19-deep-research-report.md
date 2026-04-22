@@ -90,7 +90,6 @@ I am treating the unchecked and parked entries as the live TODO backlog. The alr
 | Kaggle dataset | Infrastructure | External reproducibility | Medium | Only after schema stabilises | Low |
 | Risk-normalised output table | Application | Clean publishable result | Easy | Good stakeholder deliverable after ranking stabilises | Medium |
 | Seasonal risk analysis | Application | Use Stage 1b profiles downstream | Medium | After core ranking is stable | Low to medium |
-| DVSA multiple-testing correction | Application | Stop overclaiming route correlations | Easy | Do soon if you are showing those results publicly | High |
 
 ### Strategic modelling queue
 
@@ -115,7 +114,6 @@ I am treating the unchecked and parked entries as the live TODO backlog. The alr
 | OSM global retrain without tiered imputation | Coverage too weak and biased by road class | Correctly parked; leave parked |
 | OS MasterMap Highways / RAMI | Licence ambiguity for portfolio/public use | Correctly parked unless licensing becomes explicit |
 | Common-basis pseudo-R² | Deprioritised in favour of rank stability | Reasonable for public reporting, but revive a **narrow internal** common-basis harness for ablation science |
-| DVSA route data as model feature | Selection bias, tiny coverage, leakage risk | Correctly parked; keep as external validation only |
 | Strava Metro exposure | Not open enough for portfolio output | Correctly parked unless publication constraints change |
 | SCRIM skid resistance | No viable open source found | Correctly parked |
 

@@ -5,16 +5,12 @@ Constructs and returns a folium.Map from a filtered GeoDataFrame.
 No Streamlit calls — pure folium logic, fully testable in isolation.
 """
 
-from __future__ import annotations
-
-import numpy as np
-import pandas as pd
-import geopandas as gpd
 import folium
+import geopandas as gpd
+import pandas as pd
 
-from road_risk.app.colours import compute_colour_column, road_weight
 from config import RISK_PALETTE, TOOLTIP_ALIASES
-
+from road_risk.app.colours import compute_colour_column, road_weight
 
 # Scored roads (have collision model output) — coloured by chosen variable
 # Total rendering budget — motorways + A roads always included fully,
@@ -59,7 +55,6 @@ def _legend_html(
     scale_min: float,
     scale_max: float,
     rank_based: bool,
-    show_dtc: bool,
 ) -> str:
     if rank_based:
         entries = [
@@ -95,15 +90,6 @@ def _legend_html(
 
     no_data_row = ''  # All links scored — no 'no data' legend entry needed
 
-    dtc_row = (
-        '<div style="margin-top:8px;display:flex;align-items:center;">'
-        '  <div style="width:10px;height:10px;border-radius:50%;background:#f5c842;'
-        '              border:1.5px solid white;margin-right:8px;flex-shrink:0;"></div>'
-        '  <span style="font-size:11px;">DVSA test centre</span>'
-        '</div>'
-        if show_dtc else ""
-    )
-
     return f"""
     <div style="position:fixed;bottom:30px;left:30px;z-index:1000;
                 background:rgba(20,22,35,0.90);padding:12px 16px;
@@ -112,7 +98,6 @@ def _legend_html(
         <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{colour_label}</div>
         {rows}
         {no_data_row}
-        {dtc_row}
         {scale_note}
     </div>
     """
@@ -126,8 +111,6 @@ def build_folium_map(
     scale_min: float,
     scale_max: float,
     map_tile: str,
-    dtc: pd.DataFrame | None,
-    show_centres: bool,
     show_legend: bool,
 ) -> tuple[folium.Map, int, int]:
     """
@@ -211,37 +194,12 @@ def build_folium_map(
             name="Road risk",
         ).add_to(m)
 
-    # ---- DVSA test centres ----
-    if show_centres and dtc is not None:
-        centre_group = folium.FeatureGroup(name="DVSA Test Centres")
-        for _, row in dtc.iterrows():
-            pass_rate = row.get("pass", np.nan)
-            n_tests   = row.get("totalTestCount", 0)
-            name      = row.get("name", "Unknown")
-            popup_html = (
-                f"<b>{name}</b><br>"
-                f"Pass rate: <b>{pass_rate:.1%}</b><br>"
-                f"Total tests: {int(n_tests):,}"
-            )
-            folium.CircleMarker(
-                location=[row["latitude"], row["longitude"]],
-                radius=8,
-                color="white",
-                weight=2,
-                fill=True,
-                fill_color="#f5c842",
-                fill_opacity=0.9,
-                tooltip=folium.Tooltip(name, sticky=False),
-                popup=folium.Popup(popup_html, max_width=200),
-            ).add_to(centre_group)
-        centre_group.add_to(m)
-
     # ---- Legend ----
     if show_legend:
         m.get_root().html.add_child(
             folium.Element(
                 _legend_html(colour_label, scale_min, scale_max,
-                             rank_based, show_centres and dtc is not None)
+                             rank_based)
             )
         )
 

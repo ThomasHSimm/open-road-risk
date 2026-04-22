@@ -66,18 +66,11 @@ Tracked here so nothing gets lost. Cross off as done.
 
 ## 🔵 Applications / Demonstrations
 
-- [x] DVSA test route pipeline — `dtc/routes.py` (NetworkX routing, 174 routes,
-  24 centres) + `dtc/analysis.py` (per-centre features, correlations vs Annex D).
-
 - [ ] Risk-normalised output table — "Top 1% highest-risk road segments controlling
   for traffic" as a clean publishable output.
 
 - [ ] Seasonal risk analysis — combine Stage 2 risk scores with Stage 1b temporal
   profiles. Do high-risk roads have worse seasonal variation?
-
-- [ ] DVSA correlations — apply multiple-testing correction (FDR or Bonferroni)
-  given ~3,000+ feature × outcome pairs on 24 centres. Currently reported without
-  adjustment; results should be framed as hypothesis-generating, not confirmatory.
 
 ---
 
@@ -98,12 +91,6 @@ Tracked here so nothing gets lost. Cross off as done.
 - **Common-basis pseudo-R²** — deprioritised in favour of 5-seed rank stability
   (see queued tasks). Pseudo-R² isn't the operationally relevant metric; rank
   stability of the top-1% list is.
-
-- **DVSA test route data as collision model feature** — selection bias risk
-  (routes chosen by DVSA for teachability, not randomness), coverage issue
-  (<1% of network), and structural target-leakage risk. Better used as external
-  validation of the risk score and as its own downstream analysis, not as an
-  input feature.
 
 - **Strava Metro for active travel exposure** — technically free for researchers
   on application but not open data; redistribution of derivatives restricted.
@@ -158,7 +145,7 @@ Tracked here so nothing gets lost. Cross off as done.
 - [x] Study area extended to NW England + Midlands (2,167,557 links, 203,928+ collisions)
 - [x] XGBoost now drives risk_percentile (not GLM) — GroupShuffleSplit by link_id, R² 0.858
 - [x] hgv_proportion added to XGBoost (not GLM — failed 50% coverage threshold)
-- [x] QMD site: eda-traffic, model-results, eda-collisions, test-routes (methodology + analysis)
+- [x] QMD site: eda-traffic, model-results, eda-collisions
 - [x] R² reconciliation (19 April 2026) — fixed stale values in model-results.qmd
       (0.22/0.31 → 0.269/0.858), README.md, CODE_README.md. Added pseudo-R²
       comparability note flagging that GLM in-sample on downsampled set vs
@@ -175,8 +162,7 @@ Tracked here so nothing gets lost. Cross off as done.
       on minor roads; `speed_limit_mph` highest at 56% overall but lowest on
       motorways (46%, near-constant where populated).
 - [x] Model inventory (`quarto/methodology/model-inventory.qmd`, refreshed 21 April 2026) — durable
-      baseline of current Stage 2 features, hyperparameters, training rows, and
-      DVSA correlation pipeline description.
+      baseline of current Stage 2 features, hyperparameters, and training rows.
 - [x] Counted-only AADF filter for Stage 1a (19 April 2026) — CV R² 0.72→0.83,
       local holdout R² 0.776→0.832, spatial holdout R² 0.707→0.788. Dropped
       1,288 count points (9.1%) that are always Estimated across 2015-2024.

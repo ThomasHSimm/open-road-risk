@@ -33,21 +33,6 @@ OR_PATH       = _ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet" 
 NET_PATH      = _ROOT / "data/features/network_features.parquet"                if _ROOT else None
 TEMPORAL_PATH = _ROOT / "data/models/temporal_profiles.parquet"                 if _ROOT else None
 
-_APP_DIR  = Path(__file__).parent
-DTC_PATHS = [
-    _ROOT / "data/raw/dvsa/dtc_summary.csv",          # correct project-root path
-    _APP_DIR / "data/raw/dvsa/dtc_summary.csv",
-    _APP_DIR.parent / "data/raw/dvsa/dtc_summary.csv",
-]
-
-# ---------------------------------------------------------------------------
-# Geographic bounds
-# Widened west to -2.6 to include Manchester-area DTCs (Sale ~-2.33 etc.)
-# ---------------------------------------------------------------------------
-DTC_LON_BOUNDS       = (-2.6, 0.2)
-DTC_LAT_BOUNDS       = (53.2, 54.8)
-DTC_TABLE_LON_BOUNDS = (-2.6, 0.2)
-
 # ---------------------------------------------------------------------------
 # Colour palette (blue → red, 7 stops over 0-100)
 # ---------------------------------------------------------------------------
@@ -88,14 +73,30 @@ DEFAULT_ROAD_WEIGHT = 1.5
 # rank_based=False → value is already an absolute 0-100 percentile
 # ---------------------------------------------------------------------------
 COLOUR_OPTIONS: dict[str, tuple[str, str, bool]] = {
-    "Risk Percentile":        ("risk_percentile",      "Collision risk vs traffic volume",           False),
-    "Excess Risk (residual)": ("residual_glm",         "Observed minus model-predicted collisions",  True),
-    "Traffic Volume (AADT)":  ("estimated_aadt",       "Annual avg daily traffic",                   True),
-    "HGV Proportion":         ("hgv_pct",              "Heavy goods vehicle share of traffic",       True),
-    "Speed Limit":            ("speed_limit",          "Posted speed limit (mph)",                   True),
-    "Network Betweenness":    ("betweenness_relative", "Relative betweenness centrality",            True),
-    "Distance to Major Road": ("dist_to_major_km",     "km to nearest A-road / motorway",            True),
-    "Population Density":     ("pop_density_per_km2",  "People per km²",                             True),
+    "Risk Percentile": (
+        "risk_percentile", "Collision risk vs traffic volume", False,
+    ),
+    "Excess Risk (residual)": (
+        "residual_glm", "Observed minus model-predicted collisions", True,
+    ),
+    "Traffic Volume (AADT)": (
+        "estimated_aadt", "Annual avg daily traffic", True,
+    ),
+    "HGV Proportion": (
+        "hgv_pct", "Heavy goods vehicle share of traffic", True,
+    ),
+    "Speed Limit": (
+        "speed_limit", "Posted speed limit (mph)", True,
+    ),
+    "Network Betweenness": (
+        "betweenness_relative", "Relative betweenness centrality", True,
+    ),
+    "Distance to Major Road": (
+        "dist_to_major_km", "km to nearest A-road / motorway", True,
+    ),
+    "Population Density": (
+        "pop_density_per_km2", "People per km²", True,
+    ),
 }
 
 # ---------------------------------------------------------------------------

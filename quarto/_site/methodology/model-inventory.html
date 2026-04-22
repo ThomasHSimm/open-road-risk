@@ -194,10 +194,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../methodology/covid-handling.html">
  <span class="dropdown-text">Handling COVID Years</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="../methodology/test-routes.html">
- <span class="dropdown-text">Test Routes: Methodology</span></a>
-  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -226,12 +222,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">OSM Coverage</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../analysis/test-routes.html">
- <span class="dropdown-text">Test Route Analysis</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../analysis/dvsa-foi-cracknell.html">
- <span class="dropdown-text">DVSA FOI Findings</span></a>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
   </li>  
     </ul>
   </li>
@@ -272,11 +264,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#glm-poisson-with-log-offset" id="toc-glm-poisson-with-log-offset" class="nav-link" data-scroll-target="#glm-poisson-with-log-offset"><span class="header-section-number">1.2</span> 1.2 GLM — Poisson with log-offset</a></li>
   <li><a href="#xgboost-poisson-with-base_margin-offset" id="toc-xgboost-poisson-with-base_margin-offset" class="nav-link" data-scroll-target="#xgboost-poisson-with-base_margin-offset"><span class="header-section-number">1.3</span> 1.3 XGBoost — Poisson with base_margin offset</a></li>
   <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output"><span class="header-section-number">1.4</span> 1.4 Output</a></li>
-  </ul></li>
-  <li><a href="#dvsa-test-route-analysis-srcroad_riskdtc" id="toc-dvsa-test-route-analysis-srcroad_riskdtc" class="nav-link" data-scroll-target="#dvsa-test-route-analysis-srcroad_riskdtc"><span class="header-section-number">2</span> 2. DVSA Test Route Analysis (<code>src/road_risk/dtc/</code>)</a>
-  <ul class="collapse">
-  <li><a href="#routes.py-what-it-produces" id="toc-routes.py-what-it-produces" class="nav-link" data-scroll-target="#routes.py-what-it-produces"><span class="header-section-number">2.1</span> 2.1 <code>routes.py</code> — What it produces</a></li>
-  <li><a href="#analysis.py-what-it-produces" id="toc-analysis.py-what-it-produces" class="nav-link" data-scroll-target="#analysis.py-what-it-produces"><span class="header-section-number">2.2</span> 2.2 <code>analysis.py</code> — What it produces</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -692,110 +679,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.4" class="anchored" data-anchor-id="output"><span class="header-section-number">1.4</span> 1.4 Output</h3>
 <p><code>data/models/risk_scores.parquet</code> — one row per link. Key columns: <code>predicted_xgb</code> (mean collisions/year), <code>predicted_glm</code>, <code>residual_glm</code>, <code>risk_percentile</code> (XGBoost rank × 100 / n_links), <code>collision_count</code>, <code>estimated_aadt</code>, <code>hgv_proportion</code>, <code>speed_limit_mph</code>, and <code>betweenness_relative</code>. Post-event diagnostic columns such as <code>pct_dark</code>, <code>pct_urban</code>, <code>pct_junction</code>, <code>pct_near_crossing</code>, and <code>mean_speed_limit</code> are excluded from the output contract.</p>
 <hr>
-</section>
-</section>
-<section id="dvsa-test-route-analysis-srcroad_riskdtc" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="dvsa-test-route-analysis-srcroad_riskdtc"><span class="header-section-number">2</span> 2. DVSA Test Route Analysis (<code>src/road_risk/dtc/</code>)</h2>
-<p><strong>This is not a trained model.</strong> It is a two-stage descriptive pipeline: route-to-link conversion followed by Pearson correlation analysis.</p>
-<section id="routes.py-what-it-produces" class="level3" data-number="2.1">
-<h3 data-number="2.1" class="anchored" data-anchor-id="routes.py-what-it-produces"><span class="header-section-number">2.1</span> 2.1 <code>routes.py</code> — What it produces</h3>
-<p>Inputs: GPX files (<code>data/raw/test_routes/*.gpx</code>) and Google Maps waypoint URLs (<code>gmaps_urls.txt</code>).</p>
-<p>Processing: GPX track points → RDP simplification → NetworkX Dijkstra shortest path between consecutive waypoints → ordered list of <code>(link_id, forward_bool)</code> pairs. Google Maps waypoints follow the same routing step after URL decode.</p>
-<p>Output: <code>data/processed/test_routes/routed_routes.parquet</code><br>
-One row per route. Key columns: <code>dtc_name</code>, <code>file_name</code>, <code>source</code> (gpx/gmaps), <code>link_sequence</code> (JSON-serialised list of <code>[link_id, forward]</code> pairs), <code>n_unique_links</code>, <code>route_length_km</code>. No features — just the link sequence.</p>
-<p>Counts from code (runtime values): 174 routes across 24 centres. The code prints these from <code>df["dtc_name"].nunique()</code> at runtime; they are not hardcoded.</p>
-</section>
-<section id="analysis.py-what-it-produces" class="level3" data-number="2.2">
-<h3 data-number="2.2" class="anchored" data-anchor-id="analysis.py-what-it-produces"><span class="header-section-number">2.2</span> 2.2 <code>analysis.py</code> — What it produces</h3>
-<p><strong>Stage A — per-route feature table</strong> (<code>compute_route_features</code>):<br>
-Joins each route’s link sequence to <code>risk_scores.parquet</code> and <code>network_features.parquet</code>, then computes:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Feature group</th>
-<th>Features computed</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Speed environment</td>
-<td><code>mean_speed_est</code>, <code>pct_high_speed</code> (≥40 mph), <code>pct_low_speed</code> (≤30 mph), <code>pct_urban_speed</code> (≤20 mph)</td>
-</tr>
-<tr class="even">
-<td>Junction character</td>
-<td><code>pct_roundabout</code>, <code>n_roundabouts</code>, <code>pct_dual</code>, <code>degree_mean_mean</code>, <code>pct_t_junction</code>, <code>pct_crossroads</code>, <code>pct_complex_junction</code></td>
-</tr>
-<tr class="odd">
-<td>Road class mix</td>
-<td><code>pct_motorway</code>, <code>pct_a_road</code>, <code>pct_b_road</code>, <code>pct_classified_unnumbered</code>, <code>pct_unclassified</code></td>
-</tr>
-<tr class="even">
-<td>Road character</td>
-<td><code>mean_link_length_km</code>, <code>pct_short_links</code> (&lt;0.1 km), <code>pct_long_links</code> (&gt;0.5 km)</td>
-</tr>
-<tr class="odd">
-<td>Network</td>
-<td><code>betweenness_rel_mean</code>, <code>dist_to_major_mean</code>, <code>pop_density_mean</code></td>
-</tr>
-<tr class="even">
-<td>Risk</td>
-<td><code>risk_percentile_mean</code>, <code>risk_percentile_p90</code>, <code>pct_high_risk</code> (≥90th pct), <code>estimated_aadt_mean</code>, <code>residual_glm_mean</code></td>
-</tr>
-<tr class="odd">
-<td>Turns</td>
-<td><code>pct_right_turns</code>, <code>pct_left_turns</code>, <code>pct_straight</code>, <code>pct_u_turns</code>, <code>n_junctions</code>, <code>right_left_ratio</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Stage B — per-DTC aggregation</strong> (<code>aggregate_to_dtc</code>):<br>
-All numeric features are averaged across routes for the same centre. Outputs per-centre route count and source breakdown (n_gpx, n_gmaps).</p>
-<p><strong>Stage C — Pearson correlation analysis</strong> (<code>run_correlations</code>):<br>
-Each per-DTC route feature is correlated (Pearson r, two-sided p-value) against every available outcome column. Centres with fewer than 2 routes are excluded.</p>
-<p>Outcome variables:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Outcome</th>
-<th>Source</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>first_attempt_pass_rate</code></td>
-<td><code>dtc_summary.csv</code></td>
-</tr>
-<tr class="even">
-<td><code>overall_pass_rate</code></td>
-<td><code>dtc_summary.csv</code></td>
-</tr>
-<tr class="odd">
-<td><code>road_fault_index_sd</code> / <code>_minor</code></td>
-<td>Composite mean of 13 road-linked Annex D fault rates</td>
-</tr>
-<tr class="even">
-<td><code>adjusted_difficulty_sd</code> / <code>_minor</code></td>
-<td><code>road_fault_index − aptitude_index</code></td>
-</tr>
-<tr class="odd">
-<td>110+ individual Annex D SD and minor fault rates</td>
-<td><code>annex_d_fault_rates.csv</code></td>
-</tr>
-<tr class="even">
-<td>Manoeuvre fail rates (parallel park, reverse right, etc.)</td>
-<td><code>manoeuvre_fail_rates.csv</code></td>
-</tr>
-</tbody>
-</table>
-<p>Output: <code>data/features/dtc_correlations.csv</code> — one row per (feature × outcome) pair with columns <code>feature</code>, <code>outcome</code>, <code>r</code>, <code>p</code>, <code>sig</code>, <code>n</code>.</p>
-<p><strong>No model is fitted.</strong> There are no hyperparameters, no training/test split, and no predictive output. All findings are exploratory given the small N (≤24 centres).</p>
 
 
 <!-- -->
@@ -1399,58 +1282,7 @@ Each per-DTC route feature is correlated (Pearson r, two-sided p-value) against 
 <span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a><span class="in">`pct_urban`</span>, <span class="in">`pct_junction`</span>, <span class="in">`pct_near_crossing`</span>, and <span class="in">`mean_speed_limit`</span> are</span>
 <span id="cb1-143"><a href="#cb1-143" aria-hidden="true" tabindex="-1"></a>excluded from the output contract.</span>
 <span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. DVSA Test Route Analysis (`src/road_risk/dtc/`)</span></span>
-<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a>**This is not a trained model.** It is a two-stage descriptive pipeline: route-to-link conversion followed by Pearson correlation analysis.</span>
-<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.1 `routes.py` — What it produces</span></span>
-<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a>Inputs: GPX files (<span class="in">`data/raw/test_routes/*.gpx`</span>) and Google Maps waypoint URLs (<span class="in">`gmaps_urls.txt`</span>).</span>
-<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a>Processing: GPX track points → RDP simplification → NetworkX Dijkstra shortest path between consecutive waypoints → ordered list of <span class="in">`(link_id, forward_bool)`</span> pairs. Google Maps waypoints follow the same routing step after URL decode.</span>
-<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a>Output: <span class="in">`data/processed/test_routes/routed_routes.parquet`</span>  </span>
-<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a>One row per route. Key columns: <span class="in">`dtc_name`</span>, <span class="in">`file_name`</span>, <span class="in">`source`</span> (gpx/gmaps), <span class="in">`link_sequence`</span> (JSON-serialised list of <span class="in">`[link_id, forward]`</span> pairs), <span class="in">`n_unique_links`</span>, <span class="in">`route_length_km`</span>. No features — just the link sequence.</span>
-<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a>Counts from code (runtime values): 174 routes across 24 centres. The code prints these from <span class="in">`df["dtc_name"].nunique()`</span> at runtime; they are not hardcoded.</span>
-<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.2 `analysis.py` — What it produces</span></span>
-<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a>**Stage A — per-route feature table** (<span class="in">`compute_route_features`</span>):  </span>
-<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a>Joins each route's link sequence to <span class="in">`risk_scores.parquet`</span> and <span class="in">`network_features.parquet`</span>, then computes:</span>
-<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Feature group <span class="pp">|</span> Features computed <span class="pp">|</span></span>
-<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Speed environment <span class="pp">|</span> <span class="in">`mean_speed_est`</span>, <span class="in">`pct_high_speed`</span> (≥40 mph), <span class="in">`pct_low_speed`</span> (≤30 mph), <span class="in">`pct_urban_speed`</span> (≤20 mph) <span class="pp">|</span></span>
-<span id="cb1-170"><a href="#cb1-170" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Junction character <span class="pp">|</span> <span class="in">`pct_roundabout`</span>, <span class="in">`n_roundabouts`</span>, <span class="in">`pct_dual`</span>, <span class="in">`degree_mean_mean`</span>, <span class="in">`pct_t_junction`</span>, <span class="in">`pct_crossroads`</span>, <span class="in">`pct_complex_junction`</span> <span class="pp">|</span></span>
-<span id="cb1-171"><a href="#cb1-171" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Road class mix <span class="pp">|</span> <span class="in">`pct_motorway`</span>, <span class="in">`pct_a_road`</span>, <span class="in">`pct_b_road`</span>, <span class="in">`pct_classified_unnumbered`</span>, <span class="in">`pct_unclassified`</span> <span class="pp">|</span></span>
-<span id="cb1-172"><a href="#cb1-172" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Road character <span class="pp">|</span> <span class="in">`mean_link_length_km`</span>, <span class="in">`pct_short_links`</span> (&lt;0.1 km), <span class="in">`pct_long_links`</span> (&gt;0.5 km) <span class="pp">|</span></span>
-<span id="cb1-173"><a href="#cb1-173" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Network <span class="pp">|</span> <span class="in">`betweenness_rel_mean`</span>, <span class="in">`dist_to_major_mean`</span>, <span class="in">`pop_density_mean`</span> <span class="pp">|</span></span>
-<span id="cb1-174"><a href="#cb1-174" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Risk <span class="pp">|</span> <span class="in">`risk_percentile_mean`</span>, <span class="in">`risk_percentile_p90`</span>, <span class="in">`pct_high_risk`</span> (≥90th pct), <span class="in">`estimated_aadt_mean`</span>, <span class="in">`residual_glm_mean`</span> <span class="pp">|</span></span>
-<span id="cb1-175"><a href="#cb1-175" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Turns <span class="pp">|</span> <span class="in">`pct_right_turns`</span>, <span class="in">`pct_left_turns`</span>, <span class="in">`pct_straight`</span>, <span class="in">`pct_u_turns`</span>, <span class="in">`n_junctions`</span>, <span class="in">`right_left_ratio`</span> <span class="pp">|</span></span>
-<span id="cb1-176"><a href="#cb1-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-177"><a href="#cb1-177" aria-hidden="true" tabindex="-1"></a>**Stage B — per-DTC aggregation** (<span class="in">`aggregate_to_dtc`</span>):  </span>
-<span id="cb1-178"><a href="#cb1-178" aria-hidden="true" tabindex="-1"></a>All numeric features are averaged across routes for the same centre. Outputs per-centre route count and source breakdown (n_gpx, n_gmaps).</span>
-<span id="cb1-179"><a href="#cb1-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-180"><a href="#cb1-180" aria-hidden="true" tabindex="-1"></a>**Stage C — Pearson correlation analysis** (<span class="in">`run_correlations`</span>):  </span>
-<span id="cb1-181"><a href="#cb1-181" aria-hidden="true" tabindex="-1"></a>Each per-DTC route feature is correlated (Pearson r, two-sided p-value) against every available outcome column. Centres with fewer than 2 routes are excluded.</span>
-<span id="cb1-182"><a href="#cb1-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-183"><a href="#cb1-183" aria-hidden="true" tabindex="-1"></a>Outcome variables:</span>
-<span id="cb1-184"><a href="#cb1-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Outcome <span class="pp">|</span> Source <span class="pp">|</span></span>
-<span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`first_attempt_pass_rate`</span> <span class="pp">|</span> <span class="in">`dtc_summary.csv`</span> <span class="pp">|</span></span>
-<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`overall_pass_rate`</span> <span class="pp">|</span> <span class="in">`dtc_summary.csv`</span> <span class="pp">|</span></span>
-<span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`road_fault_index_sd`</span> / <span class="in">`_minor`</span> <span class="pp">|</span> Composite mean of 13 road-linked Annex D fault rates <span class="pp">|</span></span>
-<span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`adjusted_difficulty_sd`</span> / <span class="in">`_minor`</span> <span class="pp">|</span> <span class="in">`road_fault_index − aptitude_index`</span> <span class="pp">|</span></span>
-<span id="cb1-191"><a href="#cb1-191" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 110+ individual Annex D SD and minor fault rates <span class="pp">|</span> <span class="in">`annex_d_fault_rates.csv`</span> <span class="pp">|</span></span>
-<span id="cb1-192"><a href="#cb1-192" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Manoeuvre fail rates (parallel park, reverse right, etc.) <span class="pp">|</span> <span class="in">`manoeuvre_fail_rates.csv`</span> <span class="pp">|</span></span>
-<span id="cb1-193"><a href="#cb1-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-194"><a href="#cb1-194" aria-hidden="true" tabindex="-1"></a>Output: <span class="in">`data/features/dtc_correlations.csv`</span> — one row per (feature × outcome) pair with columns <span class="in">`feature`</span>, <span class="in">`outcome`</span>, <span class="in">`r`</span>, <span class="in">`p`</span>, <span class="in">`sig`</span>, <span class="in">`n`</span>.</span>
-<span id="cb1-195"><a href="#cb1-195" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-196"><a href="#cb1-196" aria-hidden="true" tabindex="-1"></a>**No model is fitted.** There are no hyperparameters, no training/test split, and no predictive output. All findings are exploratory given the small N (≤24 centres).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>---</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

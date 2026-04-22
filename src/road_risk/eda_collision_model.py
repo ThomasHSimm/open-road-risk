@@ -11,7 +11,6 @@ Each section answers a specific modelling question:
   Section 3  — Frequency vs severity decoupling: two-target justification
   Section 4  — Lane / flow intensity: does distributing flow across lanes change risk?
   Section 5  — Residual diagnostics: where does the pooled model under/over-predict?
-  Section 6  — DTC route features: extends your existing notebook
 
 Usage:
     python eda_collision_model.py
@@ -22,8 +21,8 @@ import argparse
 import logging
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -41,10 +40,6 @@ RISK_PATH    = ROOT / "data/models/risk_scores.parquet"
 RLA_PATH     = ROOT / "data/features/road_link_annual.parquet"
 NET_PATH     = ROOT / "data/features/network_features.parquet"
 OR_PATH      = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
-DTC_FEAT     = ROOT / "data/features/dtc_route_features.parquet"
-DTC_CORR     = ROOT / "data/features/dtc_correlations.csv"
-DTC_OUT      = ROOT / "data/raw/dvsa/dtc_summary.csv"
-ANNEX_D      = ROOT / "data/raw/dvsa/annex_d_fault_rates.csv"
 
 # ---------------------------------------------------------------------------
 # Style
@@ -112,18 +107,6 @@ def load_data() -> dict:
         import geopandas as gpd
         data["or"] = gpd.read_parquet(OR_PATH).drop(columns=["geometry"])
         logger.info(f"  openroads: {len(data['or']):,} links")
-
-    if DTC_FEAT.exists():
-        data["dtc_feat"] = pd.read_parquet(DTC_FEAT)
-    if DTC_CORR.exists():
-        data["dtc_corr"] = pd.read_csv(DTC_CORR)
-    if DTC_OUT.exists():
-        data["dtc_out"] = pd.read_csv(DTC_OUT).rename(
-            columns={"name": "dtc_name",
-                     "pass": "overall_pass_rate",
-                     "isFirstAttempt": "first_attempt_pass_rate"})
-    if ANNEX_D.exists():
-        data["annex_d"] = pd.read_csv(ANNEX_D)
 
     return data
 
@@ -531,11 +514,14 @@ def section4_lanes(data: dict, output_dir: Path) -> None:
     # 4b: collision rate by lane count (box)
     ax = axes[1]
     lane_vals = sorted(df["lanes"].unique())
-    lane_vals = [l for l in lane_vals if df[df["lanes"] == l]["collision_count"].sum() > 0]
+    lane_vals = [
+        lane for lane in lane_vals
+        if df[df["lanes"] == lane]["collision_count"].sum() > 0
+    ]
     data_by_lane = [
-        df.loc[(df["lanes"] == l) & (df["collision_count"] > 0), "collision_rate"]
+        df.loc[(df["lanes"] == lane) & (df["collision_count"] > 0), "collision_rate"]
         .clip(upper=df["collision_rate"].quantile(0.99)).values
-        for l in lane_vals
+        for lane in lane_vals
     ]
     if data_by_lane:
         bp = ax.boxplot(data_by_lane, patch_artist=True, showfliers=False,
@@ -544,7 +530,7 @@ def section4_lanes(data: dict, output_dir: Path) -> None:
             patch.set_facecolor("#3b82f6")
             patch.set_alpha(0.7)
         ax.set_xticks(range(1, len(lane_vals) + 1))
-        ax.set_xticklabels([str(int(l)) for l in lane_vals])
+        ax.set_xticklabels([str(int(lane)) for lane in lane_vals])
         ax.set_yscale("log")
     ax.set_xlabel("Number of lanes")
     ax.set_ylabel("Collision rate (per M veh-km)")
@@ -603,7 +589,7 @@ def section5_residuals(data: dict, output_dir: Path) -> None:
     mean_resid = df.groupby("road_classification")["log_residual"].mean()
     mean_resid = mean_resid.reindex(road_order).dropna()
     colours = ["#ef4444" if v > 0 else "#3b82f6" for v in mean_resid.values]
-    bars = ax.barh(mean_resid.index, mean_resid.values, color=colours)
+    ax.barh(mean_resid.index, mean_resid.values, color=colours)
     ax.axvline(0, color="black", linewidth=0.8, linestyle="--")
     ax.set_xlabel("Mean log(observed+1 / predicted+1)")
     ax.set_title("Residuals by road type\n(red = under-predicted, blue = over-predicted)")
@@ -643,90 +629,6 @@ def section5_residuals(data: dict, output_dir: Path) -> None:
 
     plt.tight_layout()
     savefig(fig, output_dir, "05_residuals")
-
-
-# ---------------------------------------------------------------------------
-# Section 6 — DTC route features (extends your notebook)
-# ---------------------------------------------------------------------------
-
-def section6_dtc(data: dict, output_dir: Path) -> None:
-    logger.info("Section 6: DTC route features")
-
-    if "dtc_feat" not in data:
-        logger.warning("  dtc_route_features.parquet not found — skipping")
-        return
-
-    features = data["dtc_feat"].copy()
-
-    # Merge outcomes
-    df = features.copy()
-    if "dtc_out" in data:
-        df = df.merge(
-            data["dtc_out"][["dtc_name", "first_attempt_pass_rate",
-                              "overall_pass_rate"]].dropna(),
-            on="dtc_name", how="inner"
-        )
-
-    if "annex_d" in data:
-        ann = data["annex_d"]
-        ann_cols = [c for c in ann.columns if c.endswith("_rate")]
-        df = df.merge(ann[["name"] + ann_cols],
-                      left_on="dtc_name", right_on="name", how="left").drop(
-            columns=["name"], errors="ignore")
-
-    fig, axes = plt.subplots(2, 3, figsize=(16, 10))
-    fig.suptitle("Section 6 — DTC route features vs test outcomes",
-                 fontsize=13, fontweight="bold")
-
-    def scatter_with_r(ax, x_col, y_col, xlabel, ylabel, title):
-        if x_col not in df.columns or y_col not in df.columns:
-            ax.text(0.5, 0.5, "Data unavailable", ha="center", va="center",
-                    transform=ax.transAxes)
-            ax.set_title(title)
-            return
-        sub = df[[x_col, y_col, "dtc_name"]].dropna()
-        if len(sub) < 4:
-            return
-        ax.scatter(sub[x_col], sub[y_col], s=60, alpha=0.8, color="#2563eb",
-                   zorder=3)
-        for _, row in sub.iterrows():
-            ax.annotate(row["dtc_name"].split("(")[0].strip()[:12],
-                        (row[x_col], row[y_col]),
-                        fontsize=6, alpha=0.6,
-                        xytext=(3, 3), textcoords="offset points")
-        r, p = stats.pearsonr(sub[x_col], sub[y_col])
-        sig = "**" if p < 0.01 else ("*" if p < 0.05 else "")
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_title(f"{title}\nr={r:.2f}{sig} (n={len(sub)})")
-        # Regression line
-        m, b = np.polyfit(sub[x_col], sub[y_col], 1)
-        x_line = np.linspace(sub[x_col].min(), sub[x_col].max(), 50)
-        ax.plot(x_line, m * x_line + b, "r--", alpha=0.5, linewidth=1)
-
-    scatter_with_r(axes[0, 0], "pct_dual", "first_attempt_pass_rate",
-                   "% dual carriageway", "First attempt pass rate",
-                   "Dual carriageway vs pass rate")
-    scatter_with_r(axes[0, 1], "risk_percentile_mean", "first_attempt_pass_rate",
-                   "Mean risk percentile", "First attempt pass rate",
-                   "Collision risk vs pass rate")
-    scatter_with_r(axes[0, 2], "estimated_aadt_mean", "first_attempt_pass_rate",
-                   "Mean AADT on route", "First attempt pass rate",
-                   "Traffic volume vs pass rate")
-    scatter_with_r(axes[1, 0], "pct_dual", "sd_junctions_turning_left_rate",
-                   "% dual carriageway",
-                   "Junction turn-left serious fault rate",
-                   "Dual carriageway vs turn-left faults")
-    scatter_with_r(axes[1, 1], "estimated_aadt_mean",
-                   "sd_response_to_signs_traffic_lights_rate",
-                   "Mean AADT", "Traffic light fault rate",
-                   "Traffic volume vs traffic light faults")
-    scatter_with_r(axes[1, 2], "pct_short_links", "reverse_park_fail_rate",
-                   "% short links (dense urban)", "Reverse park fail rate",
-                   "Urban density vs reverse park")
-
-    plt.tight_layout()
-    savefig(fig, output_dir, "06_dtc_outcomes")
 
 
 # ---------------------------------------------------------------------------
@@ -813,7 +715,6 @@ def main(output_dir: Path) -> None:
     section3_severity(data, output_dir)
     section4_lanes(data, output_dir)
     section5_residuals(data, output_dir)
-    section6_dtc(data, output_dir)
     section7_risk_profile(data, output_dir)
 
     logger.info(f"Done — {len(list(output_dir.glob('*.png')))} figures in {output_dir}")

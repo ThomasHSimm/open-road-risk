@@ -223,10 +223,6 @@ window.Quarto = {
     <a class="dropdown-item" href="../methodology/covid-handling.html">
  <span class="dropdown-text">Handling COVID Years</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="../methodology/test-routes.html">
- <span class="dropdown-text">Test Routes: Methodology</span></a>
-  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -255,12 +251,8 @@ window.Quarto = {
  <span class="dropdown-text">OSM Coverage</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../analysis/test-routes.html">
- <span class="dropdown-text">Test Route Analysis</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../analysis/dvsa-foi-cracknell.html">
- <span class="dropdown-text">DVSA FOI Findings</span></a>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
   </li>  
     </ul>
   </li>
@@ -801,7 +793,6 @@ collision_rate_per_mvkm = collision_count / (vehicle_km / 1e6)</code></pre>
 <ul>
 <li><code>features.py</code> — rate calculation, log-transforms, temporal features, lag features.</li>
 <li><code>model/collision.py</code> — regression on <code>collision_rate_per_mvkm</code>.</li>
-<li><code>ingest_test_routes.py</code> — applies the same densification and nearest-neighbour logic to snap DVSA GPX routes, using <code>_densify_links</code> imported directly from <code>snap.py</code>.</li>
 </ul>
 
 
@@ -1729,10 +1720,7 @@ collision_rate_per_mvkm = collision_count / (vehicle_km / 1e6)</code></pre>
 <span id="cb3-466"><a href="#cb3-466" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-467"><a href="#cb3-467" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`features.py`</span> — rate calculation, log-transforms, temporal features,</span>
 <span id="cb3-468"><a href="#cb3-468" aria-hidden="true" tabindex="-1"></a>  lag features.</span>
-<span id="cb3-469"><a href="#cb3-469" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`model/collision.py`</span> — regression on <span class="in">`collision_rate_per_mvkm`</span>.</span>
-<span id="cb3-470"><a href="#cb3-470" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`ingest_test_routes.py`</span> — applies the same densification and</span>
-<span id="cb3-471"><a href="#cb3-471" aria-hidden="true" tabindex="-1"></a>  nearest-neighbour logic to snap DVSA GPX routes, using</span>
-<span id="cb3-472"><a href="#cb3-472" aria-hidden="true" tabindex="-1"></a>  <span class="in">`_densify_links`</span> imported directly from <span class="in">`snap.py`</span>.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb3-469"><a href="#cb3-469" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`model/collision.py`</span> — regression on <span class="in">`collision_rate_per_mvkm`</span>.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

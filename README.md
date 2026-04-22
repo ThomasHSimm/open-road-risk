@@ -34,11 +34,6 @@ the GLM (pseudo-R² 0.251, in-sample on downsampled training set) provides
 interpretable coefficients and diagnostic residuals. Note: the two pseudo-R² values
 are not computed on a common evaluation set and are not directly comparable.
 
-**Driving test route analysis**  
-Routes from 24 DVSA test centres (174 routes, Google Maps + GPX) are snapped to the
-road network and scored. Per-centre risk and road-environment features are correlated
-with DVSA Annex D fault rates to identify which road characteristics drive test outcomes.
-
 ---
 
 ## Quick Start
@@ -67,10 +62,6 @@ python src/road_risk/network_features.py --osm   # graph + OSM features (~25 min
 python -m road_risk.model --stage traffic     # Stage 1a: AADT estimator
 python -m road_risk.model --stage profile     # Stage 1b: time-zone profiles
 python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
-
-# Optional: driving test route analysis
-python src/road_risk/dtc/routes.py            # snap GPX/Google Maps routes
-python src/road_risk/dtc/analysis.py          # per-centre features + correlations
 ```
 
 ---
@@ -102,9 +93,6 @@ open-road-risk/
 │   │   ├── aadt.py          # Stage 1a: AADT estimator
 │   │   ├── timezone_profile.py  # Stage 1b: time-zone fractions
 │   │   └── collision.py     # Stage 2: Poisson GLM + XGBoost
-│   ├── dtc/                 # Driving test centre analysis
-│   │   ├── routes.py        # GPX/Google Maps → link sequences (NetworkX)
-│   │   └── analysis.py      # Per-route features, DTC aggregation, correlations
 │   ├── app/                 # Streamlit risk map app
 │   ├── config.py            # YAML loader, paths
 │   ├── clean.py             # Coordinate validation, COVID flags
@@ -133,7 +121,6 @@ open-road-risk/
 | AADT estimator CV R² | ~0.83 (counted-only AADF rows) |
 | Poisson GLM pseudo-R² | 0.251 (in-sample, downsampled training set) |
 | XGBoost pseudo-R² | 0.858 |
-| DTC routes processed | 174 across 24 centres |
 
 ---
 

@@ -223,10 +223,6 @@ window.Quarto = {
     <a class="dropdown-item" href="../methodology/covid-handling.html">
  <span class="dropdown-text">Handling COVID Years</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="../methodology/test-routes.html">
- <span class="dropdown-text">Test Routes: Methodology</span></a>
-  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -255,12 +251,8 @@ window.Quarto = {
  <span class="dropdown-text">OSM Coverage</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../analysis/test-routes.html">
- <span class="dropdown-text">Test Route Analysis</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../analysis/dvsa-foi-cracknell.html">
- <span class="dropdown-text">DVSA FOI Findings</span></a>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
   </li>  
     </ul>
   </li>
@@ -859,7 +851,6 @@ Warning
 <p><code>risk_scores.parquet</code> feeds into:</p>
 <ul>
 <li><strong>Application layer</strong> — ranking, mapping, and exploratory UIs.</li>
-<li><strong>Test route scoring</strong> (<code>ingest_test_routes.py</code>) — each DVSA GPX route is snapped to road links and the per-link percentile + residual is aggregated along the route.</li>
 <li><strong>Residual analysis</strong> — identifying links with large positive residuals for review and investigation.</li>
 </ul>
 
@@ -1790,11 +1781,8 @@ Warning
 <span id="cb2-468"><a href="#cb2-468" aria-hidden="true" tabindex="-1"></a><span class="in">`risk_scores.parquet`</span> feeds into:</span>
 <span id="cb2-469"><a href="#cb2-469" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-470"><a href="#cb2-470" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Application layer** — ranking, mapping, and exploratory UIs.</span>
-<span id="cb2-471"><a href="#cb2-471" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Test route scoring** (<span class="in">`ingest_test_routes.py`</span>) — each DVSA GPX route</span>
-<span id="cb2-472"><a href="#cb2-472" aria-hidden="true" tabindex="-1"></a>  is snapped to road links and the per-link percentile + residual is</span>
-<span id="cb2-473"><a href="#cb2-473" aria-hidden="true" tabindex="-1"></a>  aggregated along the route.</span>
-<span id="cb2-474"><a href="#cb2-474" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Residual analysis** — identifying links with large positive residuals</span>
-<span id="cb2-475"><a href="#cb2-475" aria-hidden="true" tabindex="-1"></a>  for review and investigation.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb2-471"><a href="#cb2-471" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Residual analysis** — identifying links with large positive residuals</span>
+<span id="cb2-472"><a href="#cb2-472" aria-hidden="true" tabindex="-1"></a>  for review and investigation.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

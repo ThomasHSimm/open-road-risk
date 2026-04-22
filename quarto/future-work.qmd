@@ -144,48 +144,6 @@ severity treatments per class.
 
 ---
 
-### DVSA test routes as external validation
-
-**What it is:** Use the existing DVSA test route data and Annex D fault
-rates as an external validation signal for the Stage 2 risk model,
-rather than as a model feature. Test whether high-risk links (by Stage
-2 risk percentile) correlate with high-fault-rate routes (by Annex D),
-across the 174 routes and 24 centres.
-
-**Why it's interesting:** Two independent data-generating processes
-(STATS19 collisions and DVSA driver-test faults) agreeing would be
-external corroboration that the model captures something real about
-road difficulty. Disagreement is also informative: identifies where
-the model's risk signal doesn't transfer to learner-driver difficulty,
-which is a legitimate finding about what the model does and doesn't
-capture. Parked as a model *feature* (selection bias, coverage <1%,
-target-leakage risk) but usable as a *validation* signal.
-
-**Why not now:** Current DVSA correlation pipeline already exists in
-`src/road_risk/dtc/analysis.py` and runs Pearson correlations of
-per-route features against Annex D outcomes. Adding risk-percentile-as-
-validation is a small extension rather than a new system. Queued below
-larger structural work because the validation value comes from the
-Stage 2 model being settled — running it before EB shrinkage and
-facility-family split changes just means redoing it after.
-
-**Good starting point for someone else:**
-- Extend `dtc/analysis.py` to correlate per-route `risk_percentile_mean`
-  and `risk_percentile_p90` against the Annex D fault index and pass
-  rates.
-- Apply multiple-testing correction (already on main TODO — correlating
-  one validation feature against 110+ Annex D outcomes produces
-  spurious significance without correction).
-- Report as a methodology section on the Quarto site: "Stage 2 risk
-  percentile correlates with DVSA-observed route difficulty at r = X
-  across 24 centres (FDR-adjusted)."
-
-**Related:** If the correlation is weak, it doesn't invalidate the
-model — it just means "expert-driver crash risk" and "learner-driver
-fault rate" measure different things, which is unsurprising.
-
----
-
 ### Fatal-only collision modelling
 
 **What it is:** Train a separate Stage 2 model with `fatal_count` as
@@ -304,45 +262,6 @@ exposure.
   motorcycle-collision target.
 - Report ranking, top-1% list, and compare against the main risk
   ranking to identify motorcycle-specific hotspots.
-
----
-
-### HGV enforcement site coverage analysis
-
-**What it is:** Use STATS19 HGV-involved collision data to map where
-HGV risk concentrates on the network, then compare against DVSA's
-current HGV enforcement stop sites to test whether enforcement is
-positioned at the highest-HGV-risk locations.
-
-**Why it's interesting:** DVSA has operational control over HGV
-enforcement siting. A data-driven view of whether enforcement geography
-matches risk geography is directly actionable — either it validates
-current placement, or it identifies mismatches worth investigating.
-This is a specific, concrete use-case for an agency that already has
-a mandate and an operational lever. It's also a natural extension of
-the DVSA test-route work already in the project.
-
-**Primary stakeholder:** DVSA.
-
-**Why not now:** Requires DVSA HGV stop-site locations, which the
-project doesn't currently have. May be obtainable via FOI or direct
-request, or partially available in DVSA's published enforcement data.
-Data-availability investigation is the first step.
-
-**Good starting point for someone else:**
-- Investigate whether DVSA publishes HGV enforcement stop locations.
-  If not, consider an FOI request, or scope analysis to published
-  enforcement statistics at regional grain.
-- Compute HGV-involved-collision-rate per link using STATS19 vehicle
-  records and existing HGV proportion data from AADF.
-- Map rate against stop-site locations (or aggregate by local authority
-  / road if stop-site data is coarser).
-- Report coverage: what proportion of HGV risk is near enforcement,
-  what proportion isn't.
-
-**Related:** Extends the DVSA test-route analysis already in the
-project. Same stakeholder (DVSA), same type of operational question
-("is your activity placed where the data suggests it should be?").
 
 ---
 

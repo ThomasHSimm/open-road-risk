@@ -9,16 +9,11 @@ returned_objects in st_folium), so build_map_gdf only fires on real filter
 changes.
 """
 
-from pathlib import Path
-
 import geopandas as gpd
 import pandas as pd
 import streamlit as st
 
-from config import (
-    RISK_PATH, OR_PATH, NET_PATH, TEMPORAL_PATH, DTC_PATHS,
-    DTC_LON_BOUNDS, DTC_LAT_BOUNDS,
-)
+from config import NET_PATH, OR_PATH, RISK_PATH, TEMPORAL_PATH
 
 # risk_scores.parquet is now one row per link_id (pooled across years).
 # No year column, no aggregation needed.
@@ -60,20 +55,6 @@ def load_temporal() -> pd.DataFrame | None:
     if TEMPORAL_PATH is None or not TEMPORAL_PATH.exists():
         return None
     return pd.read_parquet(TEMPORAL_PATH)
-
-
-@st.cache_data
-def load_dtc() -> pd.DataFrame | None:
-    for p in DTC_PATHS:
-        if Path(p).exists():
-            dtc = pd.read_csv(p)
-            lat_min, lat_max = DTC_LAT_BOUNDS
-            lon_min, lon_max = DTC_LON_BOUNDS
-            return dtc[
-                dtc["latitude"].between(lat_min, lat_max) &
-                dtc["longitude"].between(lon_min, lon_max)
-            ].copy()
-    return None
 
 
 # ---------------------------------------------------------------------------

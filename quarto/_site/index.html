@@ -194,10 +194,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="./methodology/covid-handling.html">
  <span class="dropdown-text">Handling COVID Years</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="./methodology/test-routes.html">
- <span class="dropdown-text">Test Routes: Methodology</span></a>
-  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -226,12 +222,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">OSM Coverage</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./analysis/test-routes.html">
- <span class="dropdown-text">Test Route Analysis</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./analysis/dvsa-foi-cracknell.html">
- <span class="dropdown-text">DVSA FOI Findings</span></a>
+    <a class="dropdown-item" href="./analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
   </li>  
     </ul>
   </li>
@@ -313,7 +305,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>raw collision counts are misleading without traffic context.</p>
 </blockquote>
 <p>A road with ten reported collisions may be unusually dangerous if it carries very little traffic, or relatively safe if it carries very high traffic volumes. To compare roads fairly, collisions need to be interpreted relative to <strong>exposure</strong>.</p>
-<p>This project combines open road network, traffic, and collision datasets to estimate risk at road-link level and extend that logic to applications such as route comparison and driving test route analysis.</p>
+<p>This project combines open road network, traffic, and collision datasets to estimate risk at road-link level and support network screening, corridor comparison, and safety analysis.</p>
 </section>
 <section id="why-this-matters" class="level2">
 <h2 class="anchored" data-anchor-id="why-this-matters">Why this matters</h2>
@@ -405,13 +397,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>estimated traffic exposure for uncounted roads</li>
 <li>link-level risk scores across the network</li>
 <li>residual or excess-risk views showing where observed risk is higher than expected</li>
-<li>route-level summaries for applied use cases</li>
+<li>corridor- and area-level summaries for applied use cases</li>
 </ul>
 </section>
 <section id="current-scope" class="level2">
 <h2 class="anchored" data-anchor-id="current-scope">Current scope</h2>
 <p>The project began as a Yorkshire pilot and is being used to test whether an open-data workflow can support full-network safety performance modelling.</p>
-<p>It is intended as: - a methodological prototype - a decision-support and analysis tool - a basis for more focused applications such as driving test route difficulty</p>
+<p>It is intended as: - a methodological prototype - a decision-support and analysis tool - a basis for more focused applications such as corridor screening and local safety prioritisation</p>
 <p>It is <strong>not</strong>: - a real-time traffic management system - a causal intervention model - a definitive national risk product without wider validation</p>
 </section>
 <section id="known-limitations" class="level2">
@@ -911,7 +903,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>A road with ten reported collisions may be unusually dangerous if it carries very little traffic, or relatively safe if it carries very high traffic volumes. To compare roads fairly, collisions need to be interpreted relative to **exposure**.</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>This project combines open road network, traffic, and collision datasets to estimate risk at road-link level and extend that logic to applications such as route comparison and driving test route analysis.</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>This project combines open road network, traffic, and collision datasets to estimate risk at road-link level and support network screening, corridor comparison, and safety analysis.</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">## Why this matters</span></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
@@ -961,7 +953,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>estimated traffic exposure for uncounted roads</span>
 <span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>link-level risk scores across the network</span>
 <span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>residual or excess-risk views showing where observed risk is higher than expected</span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>route-level summaries for applied use cases</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>corridor- and area-level summaries for applied use cases</span>
 <span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="fu">## Current scope</span></span>
 <span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a></span>
@@ -970,7 +962,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>It is intended as:</span>
 <span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>a methodological prototype</span>
 <span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>a decision-support and analysis tool</span>
-<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>a basis for more focused applications such as driving test route difficulty</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>a basis for more focused applications such as corridor screening and local safety prioritisation</span>
 <span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>It is **not**:</span>
 <span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>a real-time traffic management system</span>

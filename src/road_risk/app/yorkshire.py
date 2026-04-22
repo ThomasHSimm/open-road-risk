@@ -23,13 +23,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 import streamlit as st
 from streamlit_folium import st_folium
 
-from config import (
-    TILE_OPTIONS, COLOUR_OPTIONS, YEAR_OPTIONS,
-    DTC_TABLE_LON_BOUNDS, RISK_PATH,
-)
-from data import load_dtc, load_temporal, build_map_gdf
+from config import COLOUR_OPTIONS, RISK_PATH, TILE_OPTIONS, YEAR_OPTIONS
+from data import build_map_gdf, load_temporal
 from road_risk.app.map_builder import build_folium_map
-
 
 # ---------------------------------------------------------------------------
 # Page config — must be the first Streamlit call in the module
@@ -55,7 +51,12 @@ _CSS = """
         margin: 6px 0;
         border-left: 3px solid #e05252;
     }
-    .metric-card .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+    .metric-card .label {
+        font-size: 11px;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
     .metric-card .value { font-size: 22px; font-weight: 600; color: #f0f0f0; }
     .metric-card .sub   { font-size: 12px; color: #aaa; margin-top: 2px; }
     h1 { font-size: 1.6rem !important; }
@@ -138,7 +139,6 @@ def _build_sidebar() -> dict:
         scale_min, scale_max = color_range
 
         st.divider()
-        show_centres = st.toggle("Show DVSA test centres", value=True)
         show_legend  = st.toggle("Show legend", value=True)
 
         st.divider()
@@ -162,7 +162,6 @@ def _build_sidebar() -> dict:
         rank_based=rank_based,
         scale_min=scale_min,
         scale_max=scale_max,
-        show_centres=show_centres,
         show_legend=show_legend,
     )
 
@@ -170,7 +169,7 @@ def _build_sidebar() -> dict:
 # ---------------------------------------------------------------------------
 # Info panel helper — shows clicked road details + seasonality chart
 # ---------------------------------------------------------------------------
-def _render_info_panel(map_data: dict, map_gdf, dtc, show_centres: bool) -> None:
+def _render_info_panel(map_data: dict, map_gdf) -> None:
     st.subheader("Road details")
 
     temporal_df = load_temporal()
@@ -191,7 +190,11 @@ def _render_info_panel(map_data: dict, map_gdf, dtc, show_centres: bool) -> None
 
         st.markdown(f"### {road_name}")
         st.write(f"**Class:** {road_class} &nbsp;|&nbsp; **Risk %ile:** {risk_pct}")
-        st.write(f"**AADT:** {int(aadt):,} veh/day &nbsp;|&nbsp; **Collisions:** {int(collisions)} &nbsp;|&nbsp; **Fatals:** {fatals}")
+        st.write(
+            f"**AADT:** {int(aadt):,} veh/day &nbsp;|&nbsp; "
+            f"**Collisions:** {int(collisions)} &nbsp;|&nbsp; "
+            f"**Fatals:** {fatals}"
+        )
 
         if hgv is not None:
             st.write(f"**HGV:** {float(hgv)*100:.1f}% &nbsp;|&nbsp; "
@@ -242,21 +245,6 @@ def _render_info_panel(map_data: dict, map_gdf, dtc, show_centres: bool) -> None
         hide_index=True,
     )
 
-    if show_centres and dtc is not None:
-        st.divider()
-        st.subheader("Test centres")
-        lon_min, lon_max = DTC_TABLE_LON_BOUNDS
-        tbl = dtc[dtc["longitude"].between(lon_min, lon_max)].copy()
-        tbl = tbl[["name", "pass", "totalTestCount"]].sort_values("pass")
-        tbl["pass"] = (tbl["pass"] * 100).round(1).astype(str) + "%"
-        st.dataframe(
-            tbl.rename(columns={"name": "Centre", "pass": "Pass rate",
-                                 "totalTestCount": "Tests"}),
-            use_container_width=True,
-            hide_index=True,
-            height=250,
-        )
-
 
 # ---------------------------------------------------------------------------
 # Main application function
@@ -275,7 +263,6 @@ def main() -> None:
 
     # ---- Load data ----
     years_tuple = tuple(sorted(cfg["selected_years"]))
-    dtc         = load_dtc()
     map_gdf     = build_map_gdf(years_tuple, tuple(cfg["road_classes"]), cfg["min_percentile"])
 
     if map_gdf is None:
@@ -287,7 +274,10 @@ def main() -> None:
         return
 
     if len(map_gdf) == 0:
-        st.warning("No links match the current filters. Try loosening the risk tier or road class selection.")
+        st.warning(
+            "No links match the current filters. "
+            "Try loosening the risk tier or road class selection."
+        )
         return
 
     # Graceful fallback if chosen colour column isn't in the data yet
@@ -353,8 +343,6 @@ def main() -> None:
             scale_min=cfg["scale_min"],
             scale_max=cfg["scale_max"],
             map_tile=cfg["map_tile"],
-            dtc=dtc,
-            show_centres=cfg["show_centres"],
             show_legend=cfg["show_legend"],
         )
 
@@ -376,7 +364,7 @@ def main() -> None:
         )
 
     with info_col:
-        _render_info_panel(map_data, map_gdf, dtc, cfg["show_centres"])
+        _render_info_panel(map_data, map_gdf)
 
     # ---- Road classification breakdown ----
     st.divider()
