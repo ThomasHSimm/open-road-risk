@@ -64,7 +64,7 @@ LSOA (Dec 2021) EW Population Weighted Centroids V4
 - `lsoa_dist_m` (float) — distance in metres from LSOA centroid
 - `coords_valid` (bool) — False if outside GB bounds OR coords_suspect
 
-**Code location:** `src/road_risk/clean.py` → `_validate_lsoa_coords()`
+**Code location:** `src/road_risk/clean_join/clean.py` → `_validate_lsoa_coords()`
 
 ---
 
@@ -98,7 +98,7 @@ Road numbers are manually entered by the attending officer. Errors include:
 **Decision:**
 Road number is used as a low-weight (10%) scoring input in `snap_weighted()`
 rather than a primary join key. Weight is set to `W_NUMBER = 0.10` in
-`src/road_risk/snap.py`. The DfT themselves do not perform road network
+`src/road_risk/clean_join/snap.py`. The DfT themselves do not perform road network
 matching in published STATS19 data — coordinates are the primary spatial
 reference.
 
@@ -106,7 +106,7 @@ reference.
 matching as a *future* priority, confirming it has not been done in official
 publications.
 
-**Code location:** `src/road_risk/snap.py` → `W_NUMBER = 0.10`
+**Code location:** `src/road_risk/clean_join/snap.py` → `W_NUMBER = 0.10`
 
 ---
 
@@ -115,7 +115,7 @@ publications.
 **Achieved snap rate:** ~99.8% of current study-area collisions successfully
 snap to OS Open Roads links before the quality-score filter.
 
-**Method:** `snap_weighted()` in `src/road_risk/snap.py`
+**Method:** `snap_weighted()` in `src/road_risk/clean_join/snap.py`
 - KD-tree built on road geometry densified at 25m intervals (~3.9M points)
 - Top K=20 candidate links within 500m search radius per collision
 - Composite scoring across 4 dimensions: spatial distance (40%), road
@@ -137,7 +137,7 @@ Major roads (motorways, A roads) have near-complete coverage. Minor roads and
 unclassified roads have sparse coverage.
 
 **Handling:** AADF features are NaN for links beyond 2km from any count point.
-The 2km cap is set in `src/road_risk/join.py → build_road_features()`.
+The 2km cap is set in `src/road_risk/clean_join/join.py → build_road_features()`.
 
 ---
 

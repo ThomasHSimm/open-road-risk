@@ -33,10 +33,10 @@ Feature 4 — Population density (LSOA join)
 
 Usage
 -----
-    python src/road_risk/network_features.py
+    python src/road_risk/features/network.py
 
     Or from model.py:
-        from road_risk.network_features import build_network_features
+        from road_risk.features.network import build_network_features
         features_df = build_network_features(openroads)
 """
 
@@ -616,14 +616,16 @@ def fetch_osm_features(
         logger.warning(
             f"Found {len(pbf_files)} .osm.pbf files but osmnx cannot read pbf directly.\n"
             f"Convert first with osmium:\n"
-            f"  for f in data/raw/osm/*.osm.pbf; do osmium cat \"$f\" -o \"${{f%.osm.pbf}}.osm\"; done"
+            "  for f in data/raw/osm/*.osm.pbf; do\n"
+            "      osmium cat \"$f\" -o \"${f%.osm.pbf}.osm\"\n"
+            "  done"
         )
         return pd.DataFrame({"link_id": openroads["link_id"]})
     else:
         logger.warning(
             f"No .osm or .osm.pbf files found in {osm_dir}\n"
             f"Download from: https://download.geofabrik.de/europe/great-britain/england/\n"
-            f"Then convert: for f in data/raw/osm/*.osm.pbf; do osmium cat \"$f\" -o \"${{f%.osm.pbf}}.osm\"; done"
+            "Then convert .osm.pbf files with osmium before rerunning."
         )
         return pd.DataFrame({"link_id": openroads["link_id"]})
 
@@ -636,8 +638,10 @@ def fetch_osm_features(
     # --- Attribute parsers --------------------------------------------------
 
     def parse_speed(val):
-        if isinstance(val, list): val = val[0]
-        if pd.isna(val): return np.nan
+        if isinstance(val, list):
+            val = val[0]
+        if pd.isna(val):
+            return np.nan
         s = str(val).split(";")[0].replace("mph", "").replace("km/h", "").strip()
         try:
             v = float(s)
@@ -646,25 +650,36 @@ def fetch_osm_features(
             return np.nan
 
     def parse_lanes(val):
-        if isinstance(val, list): val = val[0]
-        if pd.isna(val): return np.nan
+        if isinstance(val, list):
+            val = val[0]
+        if pd.isna(val):
+            return np.nan
         try:
             return int(str(val).split(";")[0].strip())
         except (ValueError, AttributeError):
             return np.nan
 
     def parse_lit(val):
-        if isinstance(val, list): val = val[0]
-        if pd.isna(val): return np.nan
+        if isinstance(val, list):
+            val = val[0]
+        if pd.isna(val):
+            return np.nan
         s = str(val).lower()
-        return True  if s in ("yes", "1", "true")  else \
-               False if s in ("no",  "0", "false") else np.nan
+        if s in ("yes", "1", "true"):
+            return True
+        if s in ("no", "0", "false"):
+            return False
+        return np.nan
 
     def parse_surface(val):
-        if isinstance(val, list): val = val[0]
-        if pd.isna(val): return np.nan
+        if isinstance(val, list):
+            val = val[0]
+        if pd.isna(val):
+            return np.nan
         v = str(val).lower().split(";")[0].strip()
-        return float(v in ("unpaved", "gravel", "dirt", "grass", "ground", "sand", "compacted"))
+        return float(
+            v in ("unpaved", "gravel", "dirt", "grass", "ground", "sand", "compacted")
+        )
 
     # --- Per-county loop ----------------------------------------------------
 
@@ -702,10 +717,19 @@ def fetch_osm_features(
             slim = gpd.GeoDataFrame(
                 {
                     "speed_limit_mph": speed,
-                    "lanes_parsed":    edges.get("lanes",   pd.Series(dtype=object, index=edges.index)).apply(parse_lanes),
-                    "lit":             edges.get("lit",     pd.Series(dtype=object, index=edges.index)).apply(parse_lit),
-                    "is_unpaved":      edges.get("surface", pd.Series(dtype=object, index=edges.index)).apply(parse_surface),
-                    "geometry":        edges["geometry"].values,
+                    "lanes_parsed": edges.get(
+                        "lanes",
+                        pd.Series(dtype=object, index=edges.index),
+                    ).apply(parse_lanes),
+                    "lit": edges.get(
+                        "lit",
+                        pd.Series(dtype=object, index=edges.index),
+                    ).apply(parse_lit),
+                    "is_unpaved": edges.get(
+                        "surface",
+                        pd.Series(dtype=object, index=edges.index),
+                    ).apply(parse_surface),
+                    "geometry": edges["geometry"].values,
                 },
                 geometry="geometry",
                 crs="EPSG:4326",
@@ -776,7 +800,7 @@ def fetch_osm_features(
 
     n_speed = result["speed_limit_mph"].notna().sum()
     n_lanes = result["lanes"].notna().sum()
-    n_lit   = (result["lit"] == True).sum()
+    n_lit = result["lit"].fillna(False).sum()
     logger.info(
         f"  OSM features matched: "
         f"speed={n_speed:,} ({n_speed/len(result):.1%}), "
@@ -918,7 +942,10 @@ def main() -> None:
     )
     parser.add_argument(
         "--osm", action="store_true",
-        help="Include OSM features (speed limit, lanes, lit, surface). Requires osmnx. Adds ~10 mins."
+        help=(
+            "Include OSM features (speed limit, lanes, lit, surface). "
+            "Requires osmnx. Adds ~10 mins."
+        )
     )
     args = parser.parse_args()
 

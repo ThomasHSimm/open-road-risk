@@ -3,7 +3,7 @@ import math
 import numpy as np
 from shapely.geometry import LineString, MultiLineString
 
-from road_risk.road_curvature import (
+from road_risk.features.road_curvature import (
     MAX_CURVATURE_COL,
     MEAN_CURVATURE_COL,
     SINUOSITY_COL,

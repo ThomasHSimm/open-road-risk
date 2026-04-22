@@ -27,7 +27,7 @@ downstream in join.py.
 
 Usage
 -----
-    from road_risk.snap import snap_weighted, snap_quick, compare_snaps
+    from road_risk.clean_join.snap import snap_weighted, snap_quick, compare_snaps
 
     snapped_w = snap_weighted(collisions, openroads)
     snapped_q = snap_quick(collisions, openroads, cap_m=500)
@@ -35,7 +35,6 @@ Usage
 """
 
 import logging
-from pathlib import Path
 
 import geopandas as gpd
 import numpy as np
@@ -701,9 +700,9 @@ def main() -> None:
     print(f"  Quick matched    : {(snapped_q['snap_method']=='spatial').sum():,} "
           f"({(snapped_q['snap_method']=='spatial').mean():.1%})")
     print(f"\n  Agreement rate   : {comp['agree'].mean():.1%}")
-    print(f"\n  Weighted score distribution:")
+    print("\n  Weighted score distribution:")
     print(snapped_w["snap_score"].describe().round(3))
-    print(f"\n  Score by road classification:")
+    print("\n  Score by road classification:")
     joined = snapped_w.merge(
         openroads[["link_id", "road_classification", "form_of_way"]],
         on="link_id", how="left"

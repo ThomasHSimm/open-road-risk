@@ -428,7 +428,8 @@ def clean_webtris(df: pd.DataFrame) -> pd.DataFrame:
     if "site_id" in df.columns and df.columns.tolist().count("site_id") > 1:
         df = df.loc[:, ~df.columns.duplicated(keep="first")]
 
-    logger.info(f"  Year column set — unique years: {sorted(df['year'].dropna().unique()) if 'year' in df.columns else 'missing'}")
+    years = sorted(df["year"].dropna().unique()) if "year" in df.columns else "missing"
+    logger.info(f"  Year column set — unique years: {years}")
 
     # Filter to target years
     year_col = "year" if "year" in df.columns else None
@@ -743,10 +744,10 @@ def main() -> None:
     Load all processed parquets, clean each source, and save to
     data/processed/<source>/  as *_clean.parquet files.
     """
-    from road_risk.ingest.ingest_stats19 import load_stats19
-    from road_risk.ingest.ingest_aadf import load_aadf, aggregate_bidirectional
+
+    from road_risk.ingest.ingest_aadf import aggregate_bidirectional, load_aadf
     from road_risk.ingest.ingest_mrdb import load_mrdb
-    import glob
+    from road_risk.ingest.ingest_stats19 import load_stats19
 
     logging.basicConfig(
         level=logging.INFO,
@@ -787,7 +788,10 @@ def main() -> None:
             sites["site_id"] = sites["site_id"].astype(webtris_clean["site_id"].dtype)
             webtris_clean = webtris_clean.merge(sites, on="site_id", how="left")
             n_with_coords = webtris_clean["latitude"].notna().sum()
-            logger.info(f"  Site coordinates attached: {n_with_coords:,} / {len(webtris_clean):,} rows")
+            logger.info(
+                f"  Site coordinates attached: {n_with_coords:,} / "
+                f"{len(webtris_clean):,} rows"
+            )
         else:
             logger.warning("sites.parquet not found — WebTRIS lat/lon will be missing")
 

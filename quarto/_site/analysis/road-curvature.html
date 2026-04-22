@@ -1170,7 +1170,7 @@ Usable non-empty LineString links: 2,167,557</code></pre>
 </section>
 <section id="how-the-curvature-code-works" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="how-the-curvature-code-works"><span class="header-section-number">6</span> How the Curvature Code Works</h2>
-<p>The production module lives at <a href="../../src/road_risk/road_curvature.py"><code>src/road_risk/road_curvature.py</code></a>. The key pieces are:</p>
+<p>The production module lives at <a href="../../src/road_risk/features/road_curvature.py"><code>src/road_risk/features/road_curvature.py</code></a>. The key pieces are:</p>
 <ul>
 <li><code>normalise_linestring()</code> handles empty geometry, <code>LineString</code>, and <code>MultiLineString</code> cases before feature calculation.</li>
 <li><code>ensure_metric_crs()</code> converts longitude/latitude geometry to EPSG:27700 so spacing and length calculations are in metres.</li>
@@ -1682,7 +1682,7 @@ Usable non-empty LineString links: 2,167,557</code></pre>
 <span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>        <span class="kw">del</span> sys.modules[module_name]</span>
 <span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT <span class="im">as</span> ROOT</span>
-<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.road_curvature <span class="im">import</span> (</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.features.road_curvature <span class="im">import</span> (</span>
 <span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>    MAX_CURVATURE_COL,</span>
 <span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>    MEDIAN_VERTICES_PER_KM_MIN,</span>
 <span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    MEAN_CURVATURE_COL,</span>
@@ -2048,7 +2048,7 @@ Usable non-empty LineString links: 2,167,557</code></pre>
 <span id="cb8-425"><a href="#cb8-425" aria-hidden="true" tabindex="-1"></a><span class="fu">## How the Curvature Code Works</span></span>
 <span id="cb8-426"><a href="#cb8-426" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-427"><a href="#cb8-427" aria-hidden="true" tabindex="-1"></a>The production module lives at</span>
-<span id="cb8-428"><a href="#cb8-428" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">`src/road_risk/road_curvature.py`</span><span class="co">](../../src/road_risk/road_curvature.py)</span>.</span>
+<span id="cb8-428"><a href="#cb8-428" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">`src/road_risk/features/road_curvature.py`</span><span class="co">](../../src/road_risk/features/road_curvature.py)</span>.</span>
 <span id="cb8-429"><a href="#cb8-429" aria-hidden="true" tabindex="-1"></a>The key pieces are:</span>
 <span id="cb8-430"><a href="#cb8-430" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-431"><a href="#cb8-431" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`normalise_linestring()`</span> handles empty geometry, <span class="in">`LineString`</span>, and</span>

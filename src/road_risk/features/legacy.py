@@ -1,6 +1,6 @@
 """
-features.py
------------
+features/legacy.py
+------------------
 Feature engineering for the road risk model.
 
 Transforms road_link_annual.parquet (output of join.py) into a model-ready
@@ -32,17 +32,16 @@ Output: data/features/model_features.parquet
 """
 
 import logging
+import warnings
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from road_risk.config import _ROOT, cfg
-import warnings
-
 
 warnings.warn(
-    "features.py is not part of the current pipeline. "
+    "features/legacy.py is not part of the current pipeline. "
     "The collision model builds its own feature table in model/collision.py. "
     "Running this directly will produce a biased training table (collision-positive links only).",
     DeprecationWarning,
@@ -563,28 +562,28 @@ def main() -> None:
     print("\n=== Feature table summary ===")
     print(f"  Rows     : {len(df):,}")
     print(f"  Columns  : {df.shape[1]}")
-    print(f"\n  Target coverage:")
+    print("\n  Target coverage:")
     print(f"    has_rate       : {df['has_rate'].sum():,} ({df['has_rate'].mean():.1%})")
     print(f"    has_aadf       : {df['has_aadf'].sum():,} ({df['has_aadf'].mean():.1%})")
     print(f"    has_webtris    : {df['has_webtris'].sum():,} ({df['has_webtris'].mean():.1%})")
     print(f"    has_lag1       : {df['collision_rate_lag1'].notna().sum():,} "
           f"({df['collision_rate_lag1'].notna().mean():.1%})")
-    print(f"\n  Collision rate (where available):")
+    print("\n  Collision rate (where available):")
     rate = df.loc[df['has_rate'], 'collision_rate_per_mvkm']
     print(f"    Median : {rate.median():.4f} per M veh-km")
     print(f"    Mean   : {rate.mean():.4f}")
     print(f"    Std    : {rate.std():.4f}")
     print(f"    p99    : {rate.quantile(0.99):.4f}")
-    print(f"\n  Feature missingness (>5% missing):")
+    print("\n  Feature missingness (>5% missing):")
     miss = df.isna().mean()
     high_miss = miss[miss > 0.05].sort_values(ascending=False)
     if len(high_miss):
         print(high_miss.map("{:.1%}".format).to_string())
     else:
         print("    None")
-    print(f"\n  Period breakdown:")
+    print("\n  Period breakdown:")
     print(df['period'].value_counts().to_string())
-    print(f"\n  Road classification breakdown:")
+    print("\n  Road classification breakdown:")
     # road_class_ordinal back to name for readability
     ordinal_to_name = {v: k for k, v in ROAD_CLASS_ORDINAL.items()}
     print(df['road_class_ordinal'].map(ordinal_to_name).value_counts().to_string())

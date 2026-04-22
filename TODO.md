@@ -72,6 +72,11 @@ Tracked here so nothing gets lost. Cross off as done.
 - [ ] Seasonal risk analysis — combine Stage 2 risk scores with Stage 1b temporal
   profiles. Do high-risk roads have worse seasonal variation?
 
+- [ ] Stage 1b integration decision — keep `timezone_profiles.parquet` as a
+  separate temporal output for now, then run an ablation before using time-zone
+  fractions as Stage 2 exposure weights. This prevents the current all-day risk
+  ranking and future temporal-risk ranking from being mixed accidentally.
+
 ---
 
 ## ⚪ Parked (investigated, deprioritised — with reason)

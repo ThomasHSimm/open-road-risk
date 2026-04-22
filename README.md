@@ -69,10 +69,10 @@ for f in data/raw/osm/*.osm.pbf; do
 done
 
 # 5. Run pipeline in order
-python src/road_risk/clean.py
-python src/road_risk/snap.py
-python src/road_risk/join.py
-python src/road_risk/network_features.py --osm   # graph + OSM features (~25 mins first run)
+python src/road_risk/clean_join/clean.py
+python src/road_risk/clean_join/snap.py
+python src/road_risk/clean_join/join.py
+python src/road_risk/features/network.py --osm   # graph + OSM features (~25 mins first run)
 
 python -m road_risk.model --stage traffic     # Stage 1a: AADT estimator
 python -m road_risk.model --stage profile     # Stage 1b: time-zone profiles
@@ -102,20 +102,25 @@ Large raw files are not tracked in git.
 ```
 open-road-risk/
 ├── src/road_risk/
-│   ├── ingest/              # Data ingestion (STATS19, AADF, WebTRIS, MRDB, OS Roads)
-│   ├── model/               # Model package (CLI: python -m road_risk.model)
+│   ├── ingest/              # Source ingestion (STATS19, AADF, WebTRIS, MRDB, OS Roads)
+│   ├── clean_join/          # Cleaned source tables, collision snapping, annual joins
+│   │   ├── clean.py         # Coordinate validation, COVID flags, WebTRIS aggregation
+│   │   ├── snap.py          # Collision -> road link snapping (weighted multi-criteria)
+│   │   └── join.py          # Build road_link x year feature table
+│   ├── features/            # Link-level feature builders and legacy feature helper
+│   │   ├── network.py       # Graph centrality, OSM attributes, population density
+│   │   ├── road_curvature.py  # Curvature features from Open Roads geometry
+│   │   ├── road_terrain.py  # Grade features from OS Terrain 50
+│   │   └── legacy.py        # Deprecated old model feature table builder
+│   ├── model/               # Modelling package (CLI: python -m road_risk.model)
 │   │   ├── main.py          # --stage traffic|profile|collision|all
 │   │   ├── aadt.py          # Stage 1a: AADT estimator
 │   │   ├── timezone_profile.py  # Stage 1b: time-zone fractions
 │   │   └── collision.py     # Stage 2: Poisson GLM + XGBoost
 │   ├── app/                 # Streamlit risk map app
 │   ├── config.py            # YAML loader, paths
-│   ├── clean.py             # Coordinate validation, COVID flags
-│   ├── snap.py              # Collision → road link snapping (weighted multi-criteria)
-│   ├── join.py              # Build road_link × year feature table
-│   ├── network_features.py  # Graph centrality, OSM attributes, population density
-│   ├── road_curvature.py    # Link-level curvature features from Open Roads geometry
-│   └── road_terrain.py      # Link-level grade features from OS Terrain 50
+│   ├── diagnostics/         # Focused QA scripts
+│   └── eda_collision_model.py
 ├── quarto/                  # Documentation site (Quarto)
 ├── data/
 │   ├── raw/                 # Source files — never modified, not in git

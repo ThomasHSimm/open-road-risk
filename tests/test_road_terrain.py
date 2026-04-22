@@ -7,7 +7,7 @@ from rasterio.io import MemoryFile
 from rasterio.transform import from_origin
 from shapely.geometry import Point
 
-from road_risk.road_terrain import (
+from road_risk.features.road_terrain import (
     apply_structure_fallback,
     bilinear_sample_band,
     compute_grade_features,

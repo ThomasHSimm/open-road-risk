@@ -9,11 +9,11 @@ Status of each module in the pipeline.
 | `ingest/ingest_aadf.py` | ✅ Done | Reads from zip, bidirectional aggregation, bbox filter (replaces region filter), parquet cache |
 | `ingest/ingest_webtris.py` | ✅ Done | WebTRIS API, annual reports, per-site-year chunk saves, study-area bbox |
 | `ingest/ingest_openroads.py` | ✅ Done | OS Open Roads GeoPackage, study area bbox, road_name_clean + street_name_clean |
-| `clean.py` | ✅ Done | LSOA validation, COVID flag, target year filters. Lat/lon used for spatial work; current raw BNG fields cross-check cleanly |
-| `snap.py` | ✅ Done | Weighted multi-criteria snap + quick snap, densified geometry KD-tree, ~99.8% match rate |
-| `join.py` | ✅ Done | road_link × year table, AADF join, WebTRIS join, snap quality filter (score ≥ 0.6), STATS19 contextual aggregates kept as diagnostics only (excluded from Stage 2 features) |
-| `network_features.py` | ✅ Done | Betweenness, degree, dist_to_major, pop_density, betweenness_relative, OSM speed/lanes/surface/lit |
-| `features.py` | ✅ Done (legacy) | Deprecated — collision.py builds its own feature table. Self-deprecates on import. |
+| `clean_join/clean.py` | ✅ Done | LSOA validation, COVID flag, target year filters. Lat/lon used for spatial work; current raw BNG fields cross-check cleanly |
+| `clean_join/snap.py` | ✅ Done | Weighted multi-criteria snap + quick snap, densified geometry KD-tree, ~99.8% match rate |
+| `clean_join/join.py` | ✅ Done | road_link × year table, AADF join, WebTRIS join, snap quality filter (score ≥ 0.6), STATS19 contextual aggregates kept as diagnostics only (excluded from Stage 2 features) |
+| `features/network.py` | ✅ Done | Betweenness, degree, dist_to_major, pop_density, betweenness_relative, OSM speed/lanes/surface/lit |
+| `features/legacy.py` | ✅ Done (legacy) | Deprecated — collision.py builds its own feature table. Self-deprecates on import. |
 | `model/aadt.py` | ✅ Done | Stage 1a AADT estimator (counted-only CV R² ~0.83), GroupKFold by count_point_id, applied to 2.1M links |
 | `model/timezone_profile.py` | ✅ Done | Stage 1b time-zone fractions (peak/pre-peak/off-peak), GroupKFold by site_id |
 | `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost (R² 0.858); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
@@ -39,17 +39,17 @@ for f in data/raw/osm/*.osm.pbf; do
 done
 
 # 3. Clean
-python src/road_risk/clean.py
+python src/road_risk/clean_join/clean.py
 
 # 4. Snap collisions to road links
-python src/road_risk/snap.py
+python src/road_risk/clean_join/snap.py
 
 # 5. Join — build road_link × year feature table
-python src/road_risk/join.py
+python src/road_risk/clean_join/join.py
 
 # 6. Network features — run with --osm to include speed/lanes/lit/surface in one pass
 #    Re-running with --osm on an existing non-OSM cache auto-triggers recompute
-python src/road_risk/network_features.py --osm
+python src/road_risk/features/network.py --osm
 
 # 7. Models
 python -m road_risk.model --stage traffic     # Stage 1a: AADT estimator
@@ -106,10 +106,10 @@ See `docs/internal/data-quality-notes.md` for working detail. Summary:
 | Value | File | Derivable from? |
 |---|---|---|
 | Police force codes 12/13/14/16 | `config/settings.yaml`, `ingest_stats19.py` | DfT data guide Excel — `police_force` field |
-| HGV vehicle types {19,20,21} | `join.py` | DfT data guide Excel — `vehicle_type` field |
-| Road class scores (1=Motorway etc) | `snap.py` | DfT data guide Excel — `first_road_class` field |
-| Junction detail codes | `snap.py` | DfT data guide Excel — `junction_detail` field |
-| COVID years {2020, 2021} | `clean.py`, `model.py` | Domain knowledge — not in Excel |
+| HGV vehicle types {19,20,21} | `clean_join/join.py` | DfT data guide Excel — `vehicle_type` field |
+| Road class scores (1=Motorway etc) | `clean_join/snap.py` | DfT data guide Excel — `first_road_class` field |
+| Junction detail codes | `clean_join/snap.py` | DfT data guide Excel — `junction_detail` field |
+| COVID years {2020, 2021} | `clean_join/clean.py`, `model.py` | Domain knowledge — not in Excel |
 | Study-area bbox BNG | `config/settings.yaml`, `ingest_openroads.py` | Spatial — not in Excel |
 
 ---

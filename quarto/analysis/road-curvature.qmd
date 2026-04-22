@@ -39,7 +39,7 @@ for module_name in list(sys.modules):
         del sys.modules[module_name]
 
 from road_risk.config import _ROOT as ROOT
-from road_risk.road_curvature import (
+from road_risk.features.road_curvature import (
     MAX_CURVATURE_COL,
     MEDIAN_VERTICES_PER_KM_MIN,
     MEAN_CURVATURE_COL,
@@ -405,7 +405,7 @@ vertex_table
 ## How the Curvature Code Works
 
 The production module lives at
-[`src/road_risk/road_curvature.py`](../../src/road_risk/road_curvature.py).
+[`src/road_risk/features/road_curvature.py`](../../src/road_risk/features/road_curvature.py).
 The key pieces are:
 
 - `normalise_linestring()` handles empty geometry, `LineString`, and

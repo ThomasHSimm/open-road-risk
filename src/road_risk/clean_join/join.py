@@ -313,7 +313,7 @@ def build_road_features(
     -------
     DataFrame at link_id × year grain with traffic features.
     """
-    logger.info(f"Building road features (OpenRoads × AADF × WebTRIS) — spatial joins")
+    logger.info("Building road features (OpenRoads × AADF × WebTRIS) — spatial joins")
 
     # --- WebTRIS → AADF spatial join ----------------------------------------
     if webtris is not None and not webtris.empty:
@@ -480,15 +480,14 @@ def _attach_webtris_to_aadf(
     Both datasets have lat/lon. The join is done per year so a 2019 WebTRIS
     reading only attaches to the 2019 AADF row.
     """
-    wt_cols = [c for c in WEBTRIS_FEATURE_COLS if c in webtris.columns]
-    wt = webtris[wt_cols].copy()
-
     if "latitude" not in webtris.columns or "longitude" not in webtris.columns:
         logger.warning(
             "WebTRIS data has no lat/lon — cannot spatial-join to AADF. "
             "WebTRIS features will be missing."
         )
         return aadf
+
+    wt_cols = [c for c in WEBTRIS_FEATURE_COLS if c in webtris.columns]
 
     wt_gdf = gpd.GeoDataFrame(
         webtris,
@@ -690,7 +689,7 @@ def build_road_link_annual(
 
     # --- COVID flag ---------------------------------------------------------
     if "is_covid" not in result.columns:
-        from road_risk.clean import COVID_YEARS
+        from road_risk.clean_join.clean import COVID_YEARS
 
         result["is_covid"] = result["year"].isin(COVID_YEARS)
 
@@ -766,14 +765,14 @@ def main() -> None:
         )
 
     # --- Run pipeline -------------------------------------------------------
-    # Prefer snap.py weighted output if it exists — it uses multi-criteria
+    # Prefer clean_join/snap.py weighted output if it exists — it uses multi-criteria
     # scoring (spatial + road class + junction + road number) and is more
     # accurate than the attribute+spatial fallback in snap_collisions_to_roads().
     snapped_w_path = processed / "stats19/snapped_weighted.parquet"
     if snapped_w_path.exists():
         logger.info(
             "Step 1: Loading pre-computed snapped_weighted.parquet "
-            "(run snap.py to regenerate)"
+            "(run clean_join/snap.py to regenerate)"
         )
         collisions_snapped = pd.read_parquet(snapped_w_path)
     else:
@@ -801,7 +800,7 @@ def main() -> None:
             f"  Mean % attribute-snapped: {result['pct_attribute_snapped'].mean():.1%}"
         )
     if "road_classification" in result.columns:
-        print(f"\n  Road classification breakdown:")
+        print("\n  Road classification breakdown:")
         print(
             result.groupby("road_classification")["collision_count"].sum().to_string()
         )

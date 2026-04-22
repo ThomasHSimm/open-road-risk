@@ -19,7 +19,7 @@ Usage
 Prerequisites
 -------------
 Run network_features.py with the --osm flag first:
-    python src/road_risk/network_features.py --osm --force
+    python src/road_risk/features/network.py --osm --force
 
 The script will exit early with a clear message if OSM columns are absent.
 """
@@ -56,7 +56,7 @@ def load_data():
     if not NET_PATH.exists():
         sys.exit(
             f"ERROR: {NET_PATH} not found.\n"
-            "Run: python src/road_risk/network_features.py --force first."
+            "Run: python src/road_risk/features/network.py --force first."
         )
 
     print(f"Loading network features from {NET_PATH.name} ...")
@@ -74,7 +74,7 @@ def load_data():
             "The file has only graph/population features:\n"
             f"  {list(net.columns)}\n\n"
             "Re-run network_features.py with the --osm flag to add OSM enrichment:\n"
-            "  python src/road_risk/network_features.py --osm --force\n\n"
+            "  python src/road_risk/features/network.py --osm --force\n\n"
             "Source OSM files are present in data/raw/osm/ — the run takes ~15 mins."
         )
 
@@ -83,7 +83,7 @@ def load_data():
         print(f"  Proceeding with available columns: {present}\n")
 
     # Load road geometry for road_classification and region
-    print(f"Loading OpenRoads for road_classification ...")
+    print("Loading OpenRoads for road_classification ...")
     try:
         import geopandas as gpd
         or_gdf = gpd.read_parquet(OR_PATH)
@@ -94,7 +94,13 @@ def load_data():
         or_df["latitude"] = centroids.y
     except Exception as e:
         print(f"  WARNING: Could not load geometry ({e}). Road class / region unavailable.")
-        or_df = pd.DataFrame({"link_id": net["link_id"], "road_classification": "Unknown", "latitude": np.nan})
+        or_df = pd.DataFrame(
+            {
+                "link_id": net["link_id"],
+                "road_classification": "Unknown",
+                "latitude": np.nan,
+            }
+        )
 
     merged = net.merge(or_df, on="link_id", how="left")
     merged["road_classification"] = (
@@ -235,7 +241,16 @@ def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: li
         lines.append("## Value distributions (populated rows only)\n")
         for col in num_cols:
             sub = by_class[by_class["column"] == col].copy()
-            dist_cols = ["road_class", "n_filled", "n_distinct", "min", "q25", "median", "q75", "max"]
+            dist_cols = [
+                "road_class",
+                "n_filled",
+                "n_distinct",
+                "min",
+                "q25",
+                "median",
+                "q75",
+                "max",
+            ]
             available = [c for c in dist_cols if c in sub.columns]
             lines.append(f"### {col}\n")
             lines.append(sub[available].to_markdown(index=False))
@@ -252,8 +267,13 @@ def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: li
         lines.append(high.sort_values("pct_coverage", ascending=False).to_markdown(index=False))
     lines.append("\n")
 
-    lines.append("### Columns with <20% coverage by road class (imputation would invent most values)\n")
-    low = by_class[by_class["pct_coverage"] < 20][["road_class", "column", "pct_coverage", "n_links", "n_filled"]]
+    lines.append(
+        "### Columns with <20% coverage by road class "
+        "(imputation would invent most values)\n"
+    )
+    low = by_class[by_class["pct_coverage"] < 20][
+        ["road_class", "column", "pct_coverage", "n_links", "n_filled"]
+    ]
     if low.empty:
         lines.append("_No column × road-class combination is below 20% coverage._\n")
     else:
@@ -339,7 +359,10 @@ def main():
     print("\n=== HIGHLIGHTS ===")
     high = by_class[by_class["pct_coverage"] >= 80]
     if not high.empty:
-        print("Usable as-is (≥80%):  ", list(high[["column","road_class"]].itertuples(index=False, name=None)))
+        print(
+            "Usable as-is (≥80%):  ",
+            list(high[["column", "road_class"]].itertuples(index=False, name=None)),
+        )
     else:
         print("No column × class combination reaches 80%")
 
