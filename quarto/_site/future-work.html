@@ -145,7 +145,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li>
     <a class="dropdown-item" href="./data-sources/webtris.html">
- <span class="dropdown-text">WebTRIS / MIDAS</span></a>
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./data-sources/network-model-gdb.html">
@@ -270,9 +270,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#theme-2-vehicle-type-specific-analyses" id="toc-theme-2-vehicle-type-specific-analyses" class="nav-link" data-scroll-target="#theme-2-vehicle-type-specific-analyses"><span class="header-section-number">4</span> Theme 2: Vehicle-type-specific analyses</a>
   <ul class="collapse">
   <li><a href="#motorcycle-specific-risk-layer" id="toc-motorcycle-specific-risk-layer" class="nav-link" data-scroll-target="#motorcycle-specific-risk-layer"><span class="header-section-number">4.1</span> Motorcycle-specific risk layer</a></li>
-  <li><a href="#hgv-enforcement-site-coverage-analysis" id="toc-hgv-enforcement-site-coverage-analysis" class="nav-link" data-scroll-target="#hgv-enforcement-site-coverage-analysis"><span class="header-section-number">4.2</span> HGV enforcement site coverage analysis</a></li>
-  <li><a href="#cyclist-and-pedestrian-risk-without-direct-exposure" id="toc-cyclist-and-pedestrian-risk-without-direct-exposure" class="nav-link" data-scroll-target="#cyclist-and-pedestrian-risk-without-direct-exposure"><span class="header-section-number">4.3</span> Cyclist and pedestrian risk without direct exposure</a></li>
-  <li><a href="#vehicle-mix-as-risk-modifier" id="toc-vehicle-mix-as-risk-modifier" class="nav-link" data-scroll-target="#vehicle-mix-as-risk-modifier"><span class="header-section-number">4.4</span> Vehicle mix as risk modifier</a></li>
+  <li><a href="#cyclist-and-pedestrian-risk-without-direct-exposure" id="toc-cyclist-and-pedestrian-risk-without-direct-exposure" class="nav-link" data-scroll-target="#cyclist-and-pedestrian-risk-without-direct-exposure"><span class="header-section-number">4.2</span> Cyclist and pedestrian risk without direct exposure</a></li>
+  <li><a href="#vehicle-mix-as-risk-modifier" id="toc-vehicle-mix-as-risk-modifier" class="nav-link" data-scroll-target="#vehicle-mix-as-risk-modifier"><span class="header-section-number">4.3</span> Vehicle mix as risk modifier</a></li>
   </ul></li>
   <li><a href="#cross-theme-note" id="toc-cross-theme-note" class="nav-link" data-scroll-target="#cross-theme-note"><span class="header-section-number">5</span> Cross-theme note</a></li>
   </ul>
@@ -371,18 +370,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Good starting point for someone else:</strong> - Use <code>two_wheeled_motor_vehicles</code> from AADF as a motorcycle-specific exposure proxy at count-point grain; let Stage 1a predict motorcycle AADT for all links. - Subset STATS19 to collisions with at least one motorcycle casualty or vehicle. - Fit a parallel Stage 2 model with motorcycle-AADT offset and motorcycle-collision target. - Report ranking, top-1% list, and compare against the main risk ranking to identify motorcycle-specific hotspots.</p>
 <hr>
 </section>
-<section id="hgv-enforcement-site-coverage-analysis" class="level3" data-number="4.2">
-<h3 data-number="4.2" class="anchored" data-anchor-id="hgv-enforcement-site-coverage-analysis"><span class="header-section-number">4.2</span> HGV enforcement site coverage analysis</h3>
-<p><strong>What it is:</strong> Use STATS19 HGV-involved collision data to map where HGV risk concentrates on the network, then compare against DVSA’s current HGV enforcement stop sites to test whether enforcement is positioned at the highest-HGV-risk locations.</p>
-<p><strong>Why it’s interesting:</strong> DVSA has operational control over HGV enforcement siting. A data-driven view of whether enforcement geography matches risk geography is directly actionable — either it validates current placement, or it identifies mismatches worth investigating. This is a specific, concrete use-case for an agency that already has a mandate and an operational lever.</p>
-<p><strong>Primary stakeholder:</strong> DVSA.</p>
-<p><strong>Why not now:</strong> Requires DVSA HGV stop-site locations, which the project doesn’t currently have. May be obtainable via FOI or direct request, or partially available in DVSA’s published enforcement data. Data-availability investigation is the first step.</p>
-<p><strong>Good starting point for someone else:</strong> - Investigate whether DVSA publishes HGV enforcement stop locations. If not, consider an FOI request, or scope analysis to published enforcement statistics at regional grain. - Compute HGV-involved-collision-rate per link using STATS19 vehicle records and existing HGV proportion data from AADF. - Map rate against stop-site locations (or aggregate by local authority / road if stop-site data is coarser). - Report coverage: what proportion of HGV risk is near enforcement, what proportion isn’t.</p>
-<p><strong>Related:</strong> Same stakeholder (DVSA), same type of operational question: is safety activity placed where the data suggests it should be?</p>
-<hr>
-</section>
-<section id="cyclist-and-pedestrian-risk-without-direct-exposure" class="level3" data-number="4.3">
-<h3 data-number="4.3" class="anchored" data-anchor-id="cyclist-and-pedestrian-risk-without-direct-exposure"><span class="header-section-number">4.3</span> Cyclist and pedestrian risk without direct exposure</h3>
+<section id="cyclist-and-pedestrian-risk-without-direct-exposure" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="cyclist-and-pedestrian-risk-without-direct-exposure"><span class="header-section-number">4.2</span> Cyclist and pedestrian risk without direct exposure</h3>
 <p><strong>What it is:</strong> Produce risk rankings for cyclist and pedestrian casualties despite not having direct active-travel exposure data. Use motor-vehicle AADT as the denominator with the caveat that this measures “cyclist casualty rate per motor-vehicle-km” rather than “cyclist casualty rate per cyclist-km” — still operationally useful for identifying hotspots, but conceptually different from the main ranking.</p>
 <p><strong>Why it’s interesting:</strong> Vision Zero and active-travel policy priorities target vulnerable road users. The aggregate risk ranking doesn’t surface cyclist or pedestrian hotspots clearly because those casualties are a small fraction of total injuries. A dedicated ranking would make cyclist and pedestrian risk concentration visible to policy audiences.</p>
 <p><strong>Why not now:</strong> Without cyclist/pedestrian exposure data, the denominator is imperfect. Strava Metro is parked in <code>TODO.md</code> on licensing grounds. DfT publishes some LSOA-level active travel statistics that could improve the denominator but aren’t in the pipeline. Analysis is scoped but caveats matter.</p>
@@ -390,8 +379,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Related:</strong> Links to the parked Strava Metro entry in <code>TODO.md</code> — if that ever becomes available, this analysis becomes the use case.</p>
 <hr>
 </section>
-<section id="vehicle-mix-as-risk-modifier" class="level3" data-number="4.4">
-<h3 data-number="4.4" class="anchored" data-anchor-id="vehicle-mix-as-risk-modifier"><span class="header-section-number">4.4</span> Vehicle mix as risk modifier</h3>
+<section id="vehicle-mix-as-risk-modifier" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="vehicle-mix-as-risk-modifier"><span class="header-section-number">4.3</span> Vehicle mix as risk modifier</h3>
 <p><strong>What it is:</strong> Test whether the mix of vehicles on a road (already captured as <code>hgv_proportion</code>) modifies risk for other vehicle types. Do cars have higher collision rates on links with high HGV share? Do motorcycles have different risk profiles on roads with heavier traffic mix?</p>
 <p><strong>Why it’s interesting:</strong> Vehicle-mix effects are mentioned in crash- frequency literature but the project currently treats <code>hgv_proportion</code> as a single feature for aggregate risk. A subgroup analysis would test whether the feature behaves differently by casualty-vehicle type, with implications for intervention design (segregation, speed differentials).</p>
 <p><strong>Why not now:</strong> Subgroup analyses on rare-event data are statistically demanding. Likely requires facility-family split to be in place so that within-family HGV-mix effects can be estimated without confounding by road class.</p>
@@ -1133,131 +1122,94 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-265"><a href="#cb1-265" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-266"><a href="#cb1-266" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-267"><a href="#cb1-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-268"><a href="#cb1-268" aria-hidden="true" tabindex="-1"></a><span class="fu">### HGV enforcement site coverage analysis</span></span>
+<span id="cb1-268"><a href="#cb1-268" aria-hidden="true" tabindex="-1"></a><span class="fu">### Cyclist and pedestrian risk without direct exposure</span></span>
 <span id="cb1-269"><a href="#cb1-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-270"><a href="#cb1-270" aria-hidden="true" tabindex="-1"></a>**What it is:** Use STATS19 HGV-involved collision data to map where</span>
-<span id="cb1-271"><a href="#cb1-271" aria-hidden="true" tabindex="-1"></a>HGV risk concentrates on the network, then compare against DVSA's</span>
-<span id="cb1-272"><a href="#cb1-272" aria-hidden="true" tabindex="-1"></a>current HGV enforcement stop sites to test whether enforcement is</span>
-<span id="cb1-273"><a href="#cb1-273" aria-hidden="true" tabindex="-1"></a>positioned at the highest-HGV-risk locations.</span>
-<span id="cb1-274"><a href="#cb1-274" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-275"><a href="#cb1-275" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** DVSA has operational control over HGV</span>
-<span id="cb1-276"><a href="#cb1-276" aria-hidden="true" tabindex="-1"></a>enforcement siting. A data-driven view of whether enforcement geography</span>
-<span id="cb1-277"><a href="#cb1-277" aria-hidden="true" tabindex="-1"></a>matches risk geography is directly actionable — either it validates</span>
-<span id="cb1-278"><a href="#cb1-278" aria-hidden="true" tabindex="-1"></a>current placement, or it identifies mismatches worth investigating.</span>
-<span id="cb1-279"><a href="#cb1-279" aria-hidden="true" tabindex="-1"></a>This is a specific, concrete use-case for an agency that already has</span>
-<span id="cb1-280"><a href="#cb1-280" aria-hidden="true" tabindex="-1"></a>a mandate and an operational lever.</span>
-<span id="cb1-281"><a href="#cb1-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-282"><a href="#cb1-282" aria-hidden="true" tabindex="-1"></a>**Primary stakeholder:** DVSA.</span>
-<span id="cb1-283"><a href="#cb1-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-284"><a href="#cb1-284" aria-hidden="true" tabindex="-1"></a>**Why not now:** Requires DVSA HGV stop-site locations, which the</span>
-<span id="cb1-285"><a href="#cb1-285" aria-hidden="true" tabindex="-1"></a>project doesn't currently have. May be obtainable via FOI or direct</span>
-<span id="cb1-286"><a href="#cb1-286" aria-hidden="true" tabindex="-1"></a>request, or partially available in DVSA's published enforcement data.</span>
-<span id="cb1-287"><a href="#cb1-287" aria-hidden="true" tabindex="-1"></a>Data-availability investigation is the first step.</span>
-<span id="cb1-288"><a href="#cb1-288" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-289"><a href="#cb1-289" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
-<span id="cb1-290"><a href="#cb1-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Investigate whether DVSA publishes HGV enforcement stop locations.</span>
-<span id="cb1-291"><a href="#cb1-291" aria-hidden="true" tabindex="-1"></a>  If not, consider an FOI request, or scope analysis to published</span>
-<span id="cb1-292"><a href="#cb1-292" aria-hidden="true" tabindex="-1"></a>  enforcement statistics at regional grain.</span>
-<span id="cb1-293"><a href="#cb1-293" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compute HGV-involved-collision-rate per link using STATS19 vehicle</span>
-<span id="cb1-294"><a href="#cb1-294" aria-hidden="true" tabindex="-1"></a>  records and existing HGV proportion data from AADF.</span>
-<span id="cb1-295"><a href="#cb1-295" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Map rate against stop-site locations (or aggregate by local authority</span>
-<span id="cb1-296"><a href="#cb1-296" aria-hidden="true" tabindex="-1"></a>  / road if stop-site data is coarser).</span>
-<span id="cb1-297"><a href="#cb1-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report coverage: what proportion of HGV risk is near enforcement,</span>
-<span id="cb1-298"><a href="#cb1-298" aria-hidden="true" tabindex="-1"></a>  what proportion isn't.</span>
-<span id="cb1-299"><a href="#cb1-299" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-300"><a href="#cb1-300" aria-hidden="true" tabindex="-1"></a>**Related:** Same stakeholder (DVSA), same type of operational question:</span>
-<span id="cb1-301"><a href="#cb1-301" aria-hidden="true" tabindex="-1"></a>is safety activity placed where the data suggests it should be?</span>
-<span id="cb1-302"><a href="#cb1-302" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-303"><a href="#cb1-303" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-270"><a href="#cb1-270" aria-hidden="true" tabindex="-1"></a>**What it is:** Produce risk rankings for cyclist and pedestrian</span>
+<span id="cb1-271"><a href="#cb1-271" aria-hidden="true" tabindex="-1"></a>casualties despite not having direct active-travel exposure data. Use</span>
+<span id="cb1-272"><a href="#cb1-272" aria-hidden="true" tabindex="-1"></a>motor-vehicle AADT as the denominator with the caveat that this</span>
+<span id="cb1-273"><a href="#cb1-273" aria-hidden="true" tabindex="-1"></a>measures "cyclist casualty rate per motor-vehicle-km" rather than</span>
+<span id="cb1-274"><a href="#cb1-274" aria-hidden="true" tabindex="-1"></a>"cyclist casualty rate per cyclist-km" — still operationally useful</span>
+<span id="cb1-275"><a href="#cb1-275" aria-hidden="true" tabindex="-1"></a>for identifying hotspots, but conceptually different from the main</span>
+<span id="cb1-276"><a href="#cb1-276" aria-hidden="true" tabindex="-1"></a>ranking.</span>
+<span id="cb1-277"><a href="#cb1-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-278"><a href="#cb1-278" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Vision Zero and active-travel policy</span>
+<span id="cb1-279"><a href="#cb1-279" aria-hidden="true" tabindex="-1"></a>priorities target vulnerable road users. The aggregate risk ranking</span>
+<span id="cb1-280"><a href="#cb1-280" aria-hidden="true" tabindex="-1"></a>doesn't surface cyclist or pedestrian hotspots clearly because those</span>
+<span id="cb1-281"><a href="#cb1-281" aria-hidden="true" tabindex="-1"></a>casualties are a small fraction of total injuries. A dedicated ranking</span>
+<span id="cb1-282"><a href="#cb1-282" aria-hidden="true" tabindex="-1"></a>would make cyclist and pedestrian risk concentration visible to policy</span>
+<span id="cb1-283"><a href="#cb1-283" aria-hidden="true" tabindex="-1"></a>audiences.</span>
+<span id="cb1-284"><a href="#cb1-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-285"><a href="#cb1-285" aria-hidden="true" tabindex="-1"></a>**Why not now:** Without cyclist/pedestrian exposure data, the</span>
+<span id="cb1-286"><a href="#cb1-286" aria-hidden="true" tabindex="-1"></a>denominator is imperfect. Strava Metro is parked in <span class="in">`TODO.md`</span> on</span>
+<span id="cb1-287"><a href="#cb1-287" aria-hidden="true" tabindex="-1"></a>licensing grounds. DfT publishes some LSOA-level active travel</span>
+<span id="cb1-288"><a href="#cb1-288" aria-hidden="true" tabindex="-1"></a>statistics that could improve the denominator but aren't in the</span>
+<span id="cb1-289"><a href="#cb1-289" aria-hidden="true" tabindex="-1"></a>pipeline. Analysis is scoped but caveats matter.</span>
+<span id="cb1-290"><a href="#cb1-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-291"><a href="#cb1-291" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-292"><a href="#cb1-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Subset STATS19 collisions to those with pedestrian or cyclist</span>
+<span id="cb1-293"><a href="#cb1-293" aria-hidden="true" tabindex="-1"></a>  casualties.</span>
+<span id="cb1-294"><a href="#cb1-294" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use motor-vehicle AADT as interim exposure, with explicit methodology</span>
+<span id="cb1-295"><a href="#cb1-295" aria-hidden="true" tabindex="-1"></a>  note that this measures motor-vehicle-adjusted rate, not per-active-</span>
+<span id="cb1-296"><a href="#cb1-296" aria-hidden="true" tabindex="-1"></a>  traveller rate.</span>
+<span id="cb1-297"><a href="#cb1-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fit parallel Stage 2 models for cyclist-casualty-rate and</span>
+<span id="cb1-298"><a href="#cb1-298" aria-hidden="true" tabindex="-1"></a>  pedestrian-casualty-rate.</span>
+<span id="cb1-299"><a href="#cb1-299" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If DfT LSOA-level active travel statistics can be joined, improve</span>
+<span id="cb1-300"><a href="#cb1-300" aria-hidden="true" tabindex="-1"></a>  the denominator and report comparison.</span>
+<span id="cb1-301"><a href="#cb1-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-302"><a href="#cb1-302" aria-hidden="true" tabindex="-1"></a>**Related:** Links to the parked Strava Metro entry in <span class="in">`TODO.md`</span> — if</span>
+<span id="cb1-303"><a href="#cb1-303" aria-hidden="true" tabindex="-1"></a>that ever becomes available, this analysis becomes the use case.</span>
 <span id="cb1-304"><a href="#cb1-304" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-305"><a href="#cb1-305" aria-hidden="true" tabindex="-1"></a><span class="fu">### Cyclist and pedestrian risk without direct exposure</span></span>
+<span id="cb1-305"><a href="#cb1-305" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-306"><a href="#cb1-306" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-307"><a href="#cb1-307" aria-hidden="true" tabindex="-1"></a>**What it is:** Produce risk rankings for cyclist and pedestrian</span>
-<span id="cb1-308"><a href="#cb1-308" aria-hidden="true" tabindex="-1"></a>casualties despite not having direct active-travel exposure data. Use</span>
-<span id="cb1-309"><a href="#cb1-309" aria-hidden="true" tabindex="-1"></a>motor-vehicle AADT as the denominator with the caveat that this</span>
-<span id="cb1-310"><a href="#cb1-310" aria-hidden="true" tabindex="-1"></a>measures "cyclist casualty rate per motor-vehicle-km" rather than</span>
-<span id="cb1-311"><a href="#cb1-311" aria-hidden="true" tabindex="-1"></a>"cyclist casualty rate per cyclist-km" — still operationally useful</span>
-<span id="cb1-312"><a href="#cb1-312" aria-hidden="true" tabindex="-1"></a>for identifying hotspots, but conceptually different from the main</span>
-<span id="cb1-313"><a href="#cb1-313" aria-hidden="true" tabindex="-1"></a>ranking.</span>
+<span id="cb1-307"><a href="#cb1-307" aria-hidden="true" tabindex="-1"></a><span class="fu">### Vehicle mix as risk modifier</span></span>
+<span id="cb1-308"><a href="#cb1-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-309"><a href="#cb1-309" aria-hidden="true" tabindex="-1"></a>**What it is:** Test whether the mix of vehicles on a road (already</span>
+<span id="cb1-310"><a href="#cb1-310" aria-hidden="true" tabindex="-1"></a>captured as <span class="in">`hgv_proportion`</span>) modifies risk for other vehicle types.</span>
+<span id="cb1-311"><a href="#cb1-311" aria-hidden="true" tabindex="-1"></a>Do cars have higher collision rates on links with high HGV share? Do</span>
+<span id="cb1-312"><a href="#cb1-312" aria-hidden="true" tabindex="-1"></a>motorcycles have different risk profiles on roads with heavier traffic</span>
+<span id="cb1-313"><a href="#cb1-313" aria-hidden="true" tabindex="-1"></a>mix?</span>
 <span id="cb1-314"><a href="#cb1-314" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-315"><a href="#cb1-315" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Vision Zero and active-travel policy</span>
-<span id="cb1-316"><a href="#cb1-316" aria-hidden="true" tabindex="-1"></a>priorities target vulnerable road users. The aggregate risk ranking</span>
-<span id="cb1-317"><a href="#cb1-317" aria-hidden="true" tabindex="-1"></a>doesn't surface cyclist or pedestrian hotspots clearly because those</span>
-<span id="cb1-318"><a href="#cb1-318" aria-hidden="true" tabindex="-1"></a>casualties are a small fraction of total injuries. A dedicated ranking</span>
-<span id="cb1-319"><a href="#cb1-319" aria-hidden="true" tabindex="-1"></a>would make cyclist and pedestrian risk concentration visible to policy</span>
-<span id="cb1-320"><a href="#cb1-320" aria-hidden="true" tabindex="-1"></a>audiences.</span>
-<span id="cb1-321"><a href="#cb1-321" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-322"><a href="#cb1-322" aria-hidden="true" tabindex="-1"></a>**Why not now:** Without cyclist/pedestrian exposure data, the</span>
-<span id="cb1-323"><a href="#cb1-323" aria-hidden="true" tabindex="-1"></a>denominator is imperfect. Strava Metro is parked in <span class="in">`TODO.md`</span> on</span>
-<span id="cb1-324"><a href="#cb1-324" aria-hidden="true" tabindex="-1"></a>licensing grounds. DfT publishes some LSOA-level active travel</span>
-<span id="cb1-325"><a href="#cb1-325" aria-hidden="true" tabindex="-1"></a>statistics that could improve the denominator but aren't in the</span>
-<span id="cb1-326"><a href="#cb1-326" aria-hidden="true" tabindex="-1"></a>pipeline. Analysis is scoped but caveats matter.</span>
-<span id="cb1-327"><a href="#cb1-327" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-328"><a href="#cb1-328" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
-<span id="cb1-329"><a href="#cb1-329" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Subset STATS19 collisions to those with pedestrian or cyclist</span>
-<span id="cb1-330"><a href="#cb1-330" aria-hidden="true" tabindex="-1"></a>  casualties.</span>
-<span id="cb1-331"><a href="#cb1-331" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use motor-vehicle AADT as interim exposure, with explicit methodology</span>
-<span id="cb1-332"><a href="#cb1-332" aria-hidden="true" tabindex="-1"></a>  note that this measures motor-vehicle-adjusted rate, not per-active-</span>
-<span id="cb1-333"><a href="#cb1-333" aria-hidden="true" tabindex="-1"></a>  traveller rate.</span>
-<span id="cb1-334"><a href="#cb1-334" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fit parallel Stage 2 models for cyclist-casualty-rate and</span>
-<span id="cb1-335"><a href="#cb1-335" aria-hidden="true" tabindex="-1"></a>  pedestrian-casualty-rate.</span>
-<span id="cb1-336"><a href="#cb1-336" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If DfT LSOA-level active travel statistics can be joined, improve</span>
-<span id="cb1-337"><a href="#cb1-337" aria-hidden="true" tabindex="-1"></a>  the denominator and report comparison.</span>
-<span id="cb1-338"><a href="#cb1-338" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-339"><a href="#cb1-339" aria-hidden="true" tabindex="-1"></a>**Related:** Links to the parked Strava Metro entry in <span class="in">`TODO.md`</span> — if</span>
-<span id="cb1-340"><a href="#cb1-340" aria-hidden="true" tabindex="-1"></a>that ever becomes available, this analysis becomes the use case.</span>
-<span id="cb1-341"><a href="#cb1-341" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-342"><a href="#cb1-342" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-343"><a href="#cb1-343" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-344"><a href="#cb1-344" aria-hidden="true" tabindex="-1"></a><span class="fu">### Vehicle mix as risk modifier</span></span>
-<span id="cb1-345"><a href="#cb1-345" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-346"><a href="#cb1-346" aria-hidden="true" tabindex="-1"></a>**What it is:** Test whether the mix of vehicles on a road (already</span>
-<span id="cb1-347"><a href="#cb1-347" aria-hidden="true" tabindex="-1"></a>captured as <span class="in">`hgv_proportion`</span>) modifies risk for other vehicle types.</span>
-<span id="cb1-348"><a href="#cb1-348" aria-hidden="true" tabindex="-1"></a>Do cars have higher collision rates on links with high HGV share? Do</span>
-<span id="cb1-349"><a href="#cb1-349" aria-hidden="true" tabindex="-1"></a>motorcycles have different risk profiles on roads with heavier traffic</span>
-<span id="cb1-350"><a href="#cb1-350" aria-hidden="true" tabindex="-1"></a>mix?</span>
-<span id="cb1-351"><a href="#cb1-351" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-352"><a href="#cb1-352" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Vehicle-mix effects are mentioned in crash-</span>
-<span id="cb1-353"><a href="#cb1-353" aria-hidden="true" tabindex="-1"></a>frequency literature but the project currently treats <span class="in">`hgv_proportion`</span></span>
-<span id="cb1-354"><a href="#cb1-354" aria-hidden="true" tabindex="-1"></a>as a single feature for aggregate risk. A subgroup analysis would test</span>
-<span id="cb1-355"><a href="#cb1-355" aria-hidden="true" tabindex="-1"></a>whether the feature behaves differently by casualty-vehicle type, with</span>
-<span id="cb1-356"><a href="#cb1-356" aria-hidden="true" tabindex="-1"></a>implications for intervention design (segregation, speed differentials).</span>
-<span id="cb1-357"><a href="#cb1-357" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-358"><a href="#cb1-358" aria-hidden="true" tabindex="-1"></a>**Why not now:** Subgroup analyses on rare-event data are statistically</span>
-<span id="cb1-359"><a href="#cb1-359" aria-hidden="true" tabindex="-1"></a>demanding. Likely requires facility-family split to be in place so that</span>
-<span id="cb1-360"><a href="#cb1-360" aria-hidden="true" tabindex="-1"></a>within-family HGV-mix effects can be estimated without confounding by</span>
-<span id="cb1-361"><a href="#cb1-361" aria-hidden="true" tabindex="-1"></a>road class.</span>
-<span id="cb1-362"><a href="#cb1-362" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-363"><a href="#cb1-363" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
-<span id="cb1-364"><a href="#cb1-364" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After facility-family split is in place, fit interaction terms</span>
-<span id="cb1-365"><a href="#cb1-365" aria-hidden="true" tabindex="-1"></a>  between <span class="in">`hgv_proportion`</span> and casualty-vehicle-type (car, motorcycle,</span>
-<span id="cb1-366"><a href="#cb1-366" aria-hidden="true" tabindex="-1"></a>  cyclist) in the Stage 2 model.</span>
-<span id="cb1-367"><a href="#cb1-367" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report whether interactions are meaningful, per family.</span>
-<span id="cb1-368"><a href="#cb1-368" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If motorcycle × HGV-proportion interaction is significant, that's a</span>
-<span id="cb1-369"><a href="#cb1-369" aria-hidden="true" tabindex="-1"></a>  policy-relevant finding (motorcycle safety on HGV-heavy routes).</span>
-<span id="cb1-370"><a href="#cb1-370" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-371"><a href="#cb1-371" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-372"><a href="#cb1-372" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-373"><a href="#cb1-373" aria-hidden="true" tabindex="-1"></a><span class="fu">## Cross-theme note</span></span>
-<span id="cb1-374"><a href="#cb1-374" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-375"><a href="#cb1-375" aria-hidden="true" tabindex="-1"></a>The ideas above are not independent. Several natural combinations:</span>
-<span id="cb1-376"><a href="#cb1-376" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-377"><a href="#cb1-377" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorcycle × weather** — motorcycle crash risk is known to be</span>
-<span id="cb1-378"><a href="#cb1-378" aria-hidden="true" tabindex="-1"></a>  highly weather-sensitive. Combining the motorcycle-specific risk</span>
-<span id="cb1-379"><a href="#cb1-379" aria-hidden="true" tabindex="-1"></a>  layer with weather warning analysis would produce a parallel ranking</span>
-<span id="cb1-380"><a href="#cb1-380" aria-hidden="true" tabindex="-1"></a>  that's likely more actionable than either alone.</span>
-<span id="cb1-381"><a href="#cb1-381" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**HGV enforcement × vehicle-mix** — HGV risk distribution combined</span>
-<span id="cb1-382"><a href="#cb1-382" aria-hidden="true" tabindex="-1"></a>  with vehicle-mix-as-risk-modifier would identify links where HGV</span>
-<span id="cb1-383"><a href="#cb1-383" aria-hidden="true" tabindex="-1"></a>  enforcement protects not just the HGV crash rate but also other</span>
-<span id="cb1-384"><a href="#cb1-384" aria-hidden="true" tabindex="-1"></a>  vehicle types affected by HGV presence.</span>
-<span id="cb1-385"><a href="#cb1-385" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**VRU-weighted × cyclist/pedestrian layers** — these are closely</span>
-<span id="cb1-386"><a href="#cb1-386" aria-hidden="true" tabindex="-1"></a>  related target reframings. The VRU-weighted version produces a</span>
-<span id="cb1-387"><a href="#cb1-387" aria-hidden="true" tabindex="-1"></a>  single composite ranking; the cyclist/pedestrian layers produce</span>
-<span id="cb1-388"><a href="#cb1-388" aria-hidden="true" tabindex="-1"></a>  separate rankings per casualty type. Both are defensible depending</span>
-<span id="cb1-389"><a href="#cb1-389" aria-hidden="true" tabindex="-1"></a>  on stakeholder.</span>
-<span id="cb1-390"><a href="#cb1-390" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-391"><a href="#cb1-391" aria-hidden="true" tabindex="-1"></a>These combinations are documented here rather than as separate entries</span>
-<span id="cb1-392"><a href="#cb1-392" aria-hidden="true" tabindex="-1"></a>because each needs the component analyses in place first.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb1-315"><a href="#cb1-315" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Vehicle-mix effects are mentioned in crash-</span>
+<span id="cb1-316"><a href="#cb1-316" aria-hidden="true" tabindex="-1"></a>frequency literature but the project currently treats <span class="in">`hgv_proportion`</span></span>
+<span id="cb1-317"><a href="#cb1-317" aria-hidden="true" tabindex="-1"></a>as a single feature for aggregate risk. A subgroup analysis would test</span>
+<span id="cb1-318"><a href="#cb1-318" aria-hidden="true" tabindex="-1"></a>whether the feature behaves differently by casualty-vehicle type, with</span>
+<span id="cb1-319"><a href="#cb1-319" aria-hidden="true" tabindex="-1"></a>implications for intervention design (segregation, speed differentials).</span>
+<span id="cb1-320"><a href="#cb1-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-321"><a href="#cb1-321" aria-hidden="true" tabindex="-1"></a>**Why not now:** Subgroup analyses on rare-event data are statistically</span>
+<span id="cb1-322"><a href="#cb1-322" aria-hidden="true" tabindex="-1"></a>demanding. Likely requires facility-family split to be in place so that</span>
+<span id="cb1-323"><a href="#cb1-323" aria-hidden="true" tabindex="-1"></a>within-family HGV-mix effects can be estimated without confounding by</span>
+<span id="cb1-324"><a href="#cb1-324" aria-hidden="true" tabindex="-1"></a>road class.</span>
+<span id="cb1-325"><a href="#cb1-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-326"><a href="#cb1-326" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-327"><a href="#cb1-327" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After facility-family split is in place, fit interaction terms</span>
+<span id="cb1-328"><a href="#cb1-328" aria-hidden="true" tabindex="-1"></a>  between <span class="in">`hgv_proportion`</span> and casualty-vehicle-type (car, motorcycle,</span>
+<span id="cb1-329"><a href="#cb1-329" aria-hidden="true" tabindex="-1"></a>  cyclist) in the Stage 2 model.</span>
+<span id="cb1-330"><a href="#cb1-330" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report whether interactions are meaningful, per family.</span>
+<span id="cb1-331"><a href="#cb1-331" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If motorcycle × HGV-proportion interaction is significant, that's a</span>
+<span id="cb1-332"><a href="#cb1-332" aria-hidden="true" tabindex="-1"></a>  policy-relevant finding (motorcycle safety on HGV-heavy routes).</span>
+<span id="cb1-333"><a href="#cb1-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-334"><a href="#cb1-334" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-335"><a href="#cb1-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-336"><a href="#cb1-336" aria-hidden="true" tabindex="-1"></a><span class="fu">## Cross-theme note</span></span>
+<span id="cb1-337"><a href="#cb1-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-338"><a href="#cb1-338" aria-hidden="true" tabindex="-1"></a>The ideas above are not independent. Several natural combinations:</span>
+<span id="cb1-339"><a href="#cb1-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-340"><a href="#cb1-340" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorcycle × weather** — motorcycle crash risk is known to be</span>
+<span id="cb1-341"><a href="#cb1-341" aria-hidden="true" tabindex="-1"></a>  highly weather-sensitive. Combining the motorcycle-specific risk</span>
+<span id="cb1-342"><a href="#cb1-342" aria-hidden="true" tabindex="-1"></a>  layer with weather warning analysis would produce a parallel ranking</span>
+<span id="cb1-343"><a href="#cb1-343" aria-hidden="true" tabindex="-1"></a>  that's likely more actionable than either alone.</span>
+<span id="cb1-344"><a href="#cb1-344" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**HGV enforcement × vehicle-mix** — HGV risk distribution combined</span>
+<span id="cb1-345"><a href="#cb1-345" aria-hidden="true" tabindex="-1"></a>  with vehicle-mix-as-risk-modifier would identify links where HGV</span>
+<span id="cb1-346"><a href="#cb1-346" aria-hidden="true" tabindex="-1"></a>  enforcement protects not just the HGV crash rate but also other</span>
+<span id="cb1-347"><a href="#cb1-347" aria-hidden="true" tabindex="-1"></a>  vehicle types affected by HGV presence.</span>
+<span id="cb1-348"><a href="#cb1-348" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**VRU-weighted × cyclist/pedestrian layers** — these are closely</span>
+<span id="cb1-349"><a href="#cb1-349" aria-hidden="true" tabindex="-1"></a>  related target reframings. The VRU-weighted version produces a</span>
+<span id="cb1-350"><a href="#cb1-350" aria-hidden="true" tabindex="-1"></a>  single composite ranking; the cyclist/pedestrian layers produce</span>
+<span id="cb1-351"><a href="#cb1-351" aria-hidden="true" tabindex="-1"></a>  separate rankings per casualty type. Both are defensible depending</span>
+<span id="cb1-352"><a href="#cb1-352" aria-hidden="true" tabindex="-1"></a>  on stakeholder.</span>
+<span id="cb1-353"><a href="#cb1-353" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-354"><a href="#cb1-354" aria-hidden="true" tabindex="-1"></a>These combinations are documented here rather than as separate entries</span>
+<span id="cb1-355"><a href="#cb1-355" aria-hidden="true" tabindex="-1"></a>because each needs the component analyses in place first.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

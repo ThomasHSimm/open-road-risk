@@ -7,7 +7,7 @@ Status of each module in the pipeline.
 | `config.py` | ✅ Done | YAML loader, `_ROOT`, path helpers |
 | `ingest/ingest_stats19.py` | ✅ Done | Loads 1979-latest CSVs, multi-force filter, pre-filters vehicle/casualty by collision index |
 | `ingest/ingest_aadf.py` | ✅ Done | Reads from zip, bidirectional aggregation, bbox filter (replaces region filter), parquet cache |
-| `ingest/ingest_webtris.py` | ✅ Done | WebTRIS API, annual reports, per-site-year chunk saves, extended bbox for NW England |
+| `ingest/ingest_webtris.py` | ✅ Done | WebTRIS API, annual reports, per-site-year chunk saves, study-area bbox |
 | `ingest/ingest_openroads.py` | ✅ Done | OS Open Roads GeoPackage, study area bbox, road_name_clean + street_name_clean |
 | `clean.py` | ✅ Done | LSOA validation, COVID flag, target year filters. Lat/lon used for spatial work; current raw BNG fields cross-check cleanly |
 | `snap.py` | ✅ Done | Weighted multi-criteria snap + quick snap, densified geometry KD-tree, ~99.8% match rate |
@@ -25,13 +25,14 @@ Status of each module in the pipeline.
 ## Pipeline Run Order
 
 ```bash
-# 1. Ingest — download raw files first (see data/README.md)
+# 1. Ingest — download raw files into data/raw/ first
 python src/road_risk/ingest/ingest_stats19.py
 python src/road_risk/ingest/ingest_aadf.py
 python src/road_risk/ingest/ingest_webtris.py   # slow — ~60 mins
+python src/road_risk/ingest/ingest_mrdb.py
 python src/road_risk/ingest/ingest_openroads.py
 
-# 2. Convert OSM pbf files (download county files from Geofabrik first)
+# 2. Convert OSM pbf files (download study-area county files from Geofabrik first)
 #    https://download.geofabrik.de/europe/great-britain/england/
 for f in data/raw/osm/*.osm.pbf; do
     osmium cat "$f" -o "${f%.osm.pbf}.osm"
@@ -62,10 +63,10 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 
 See `docs/internal/data-quality-notes.md` for working detail. Summary:
 
-- **STATS19 police force code bug (fixed April 2026)** — `config/settings.yaml`
-  previously used codes 4–7 (Lancashire/Merseyside/GM/Cheshire) instead of 12–16
-  (Yorkshire). All pipeline outputs before this fix used NW England data.
-  Codes are now documented with a derivation snippet using the DfT data guide Excel.
+- **STATS19 police force code bug (fixed April 2026)** — the original Yorkshire
+  pilot accidentally used codes 4–7 (Lancashire/Merseyside/GM/Cheshire) instead
+  of 12, 13, 14, and 16. The current project has expanded beyond Yorkshire, and
+  `config/settings.yaml` now intentionally lists the full multi-force study area.
 
 - **STATS19 coordinate handling** — spatial snapping uses `latitude`/`longitude`.
   A previous notebook suspected a Yorkshire BNG grid-square error, but a direct
@@ -109,7 +110,7 @@ See `docs/internal/data-quality-notes.md` for working detail. Summary:
 | Road class scores (1=Motorway etc) | `snap.py` | DfT data guide Excel — `first_road_class` field |
 | Junction detail codes | `snap.py` | DfT data guide Excel — `junction_detail` field |
 | COVID years {2020, 2021} | `clean.py`, `model.py` | Domain knowledge — not in Excel |
-| Yorkshire bbox BNG | `ingest_openroads.py` | Spatial — not in Excel |
+| Study-area bbox BNG | `config/settings.yaml`, `ingest_openroads.py` | Spatial — not in Excel |
 
 ---
 
@@ -136,7 +137,7 @@ performance metrics, and validation detail — kept there to avoid documentation
 |---|---|---|
 | STATS19 collisions | `data/raw/stats19/` | Northern/Central England 2015–2024 |
 | AADF traffic counts | `data/raw/aadf/` | Study area 2015–2024 |
-| WebTRIS sensor data | `data/raw/webtris/` | Motorways/trunk 2019, 2021, 2023 |
+| WebTRIS sensor data | `data/raw/webtris/` | National Highways sensors, target years 2019, 2021, 2023 |
 | OS Open Roads | `data/raw/shapefiles/oproad_gb.gpkg` | Study area + 20km buffer |
 | MRDB | `data/raw/shapefiles/MRDB_2024_published.shp` | Study area major roads |
 | OSM pbf files | `data/raw/osm/*.osm` | County files from Geofabrik (see `data/raw/osm/`) |

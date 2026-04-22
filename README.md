@@ -1,13 +1,14 @@
 # Open Road Risk
 
-Open Road Risk is an open-source road safety pipeline combining DfT STATS19 collision data, AADF traffic counts,
-OS Open Roads network geometry, and OpenStreetMap attributes to produce **exposure-adjusted
-risk scores for every road link across Northern and Central England** — including the ~85%
-of roads without traffic counters.
+Open Road Risk is an open-source road safety pipeline combining DfT STATS19
+collision data, AADF traffic counts, OS Open Roads geometry, WebTRIS sensor
+data, and OpenStreetMap attributes to produce **exposure-adjusted risk scores
+for every road link across a Northern and Central England study area** —
+including the large share of roads without direct traffic counters.
 
-**Current geography:** Yorkshire, NW England, Midlands (expanding)  
-**Time range:** 2015–2024  
-**Grain:** OS Open Roads link × year (2,167,557 links)
+- **Current geography:** Yorkshire, NW England, North East, Midlands, and parts of East England
+- **Time range:** 2015–2024
+- **Network size:** 2,167,557 OS Open Roads links; model stages expand this to link × year rows
 
 ---
 
@@ -17,13 +18,19 @@ of roads without traffic counters.
 Predicts AADT (annual average daily traffic) for all 2.1M road links using a gradient
 boosting model trained on AADF count points. Fills coverage gaps on minor/unclassified
 roads where DfT has no measured counts. The current training run uses directly Counted
-AADF rows only across 2015-2024. CV R² ~0.83 with features including network
-centrality, OSM speed limits, population density, HGV proportion, and betweenness.
+AADF rows only across 2015-2024. CV R² ~0.83 with features including road class,
+location, link length, HGV proportion, network position, population density, and
+available OSM attributes.
 
 **Stage 1b — Time-zone profiles**  
-Estimates daily traffic shape (peak / pre-peak / off-peak fractions) for every road
-link using WebTRIS sensor data as training. Supports per-hour flow reconstruction and
-future temporal exposure weighting in the collision model.
+Uses WebTRIS National Highways sensor reports to learn within-day traffic
+shape (peak / pre-peak / off-peak fractions). The cleaned WebTRIS table is
+sparse by design: current local data has 15,011 site × year rows from 5,948
+sensor sites for 2019, 2021, and 2023. The profile model then applies those
+learned fractions to all links using estimated AADT and network features,
+producing `timezone_profiles.parquet`. These profiles are currently a
+separate output for temporal analysis and future exposure weighting; they are
+not part of the current Stage 2 collision feature set.
 
 **Stage 2 — Collision risk model**  
 Poisson GLM + XGBoost predicting collision counts per link per year.
@@ -44,16 +51,24 @@ git clone <repo>
 cd open-road-risk
 pip install -e ".[dev]"
 
-# 2. Download raw data — see data/README.md for links
-#    Required: STATS19 CSV, AADF zip, OS Open Roads GeoPackage, MRDB, OSM pbf files
+# 2. Download raw data into data/raw/
+#    Required: STATS19 CSV, AADF zip, OS Open Roads GeoPackage,
+#    WebTRIS data or API access, OSM pbf files, and MRDB.
 
-# 3. Convert OSM pbf files (download Yorkshire counties from Geofabrik first)
+# 3. Ingest source files
+python src/road_risk/ingest/ingest_stats19.py
+python src/road_risk/ingest/ingest_aadf.py
+python src/road_risk/ingest/ingest_webtris.py   # slow if pulling from API
+python src/road_risk/ingest/ingest_mrdb.py
+python src/road_risk/ingest/ingest_openroads.py
+
+# 4. Convert OSM pbf files (download study-area county files from Geofabrik first)
 sudo apt install osmium-tool
 for f in data/raw/osm/*.osm.pbf; do
     osmium cat "$f" -o "${f%.osm.pbf}.osm"
 done
 
-# 4. Run pipeline in order
+# 5. Run pipeline in order
 python src/road_risk/clean.py
 python src/road_risk/snap.py
 python src/road_risk/join.py
@@ -74,11 +89,11 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 | AADF by direction | DfT | Count point / year | GB — major + some minor |
 | OS Open Roads | Ordnance Survey | Road link geometry | GB |
 | Major Road Database (MRDB) | DfT / OS | Road geometry | GB |
-| WebTRIS / MIDAS | National Highways | Site / month | Motorways + trunk A-roads |
+| WebTRIS sensor reports | National Highways | Site / month, cleaned to site × year | National Highways network; current pull uses 2019, 2021, 2023 |
 | OpenStreetMap | OSM contributors | Road edge | GB — speed, lanes, surface |
 | LSOA population + area | ONS | LSOA 2021 | England & Wales |
 
-See `data/README.md` for download instructions.
+Large raw files are not tracked in git.
 
 ---
 
@@ -98,7 +113,9 @@ open-road-risk/
 │   ├── clean.py             # Coordinate validation, COVID flags
 │   ├── snap.py              # Collision → road link snapping (weighted multi-criteria)
 │   ├── join.py              # Build road_link × year feature table
-│   └── network_features.py  # Graph centrality, OSM attributes, population density
+│   ├── network_features.py  # Graph centrality, OSM attributes, population density
+│   ├── road_curvature.py    # Link-level curvature features from Open Roads geometry
+│   └── road_terrain.py      # Link-level grade features from OS Terrain 50
 ├── quarto/                  # Documentation site (Quarto)
 ├── data/
 │   ├── raw/                 # Source files — never modified, not in git
@@ -126,11 +143,12 @@ open-road-risk/
 
 ## Key Data Quality Notes
 
-- **STATS19 force code bug (fixed April 2026)** — `config/settings.yaml` previously
-  used police_force codes 4–7 (Lancashire, Merseyside, Greater Manchester, Cheshire)
-  instead of the correct Yorkshire codes 12–16. This caused the entire pipeline to load
-  NW England data. Now fixed and documented in `config/settings.yaml` with instructions
-  to re-derive codes from the DfT data guide Excel.
+- **STATS19 force-code selection bug (fixed April 2026)** — the original
+  Yorkshire pilot accidentally used police-force codes 4–7
+  (Lancashire, Merseyside, Greater Manchester, Cheshire) instead of the
+  Yorkshire codes 12, 13, 14, and 16. The current project has since expanded
+  beyond Yorkshire, and `config/settings.yaml` now intentionally lists the full
+  multi-force study area.
 
 - **Snap rate ~99.8%** — achieved in the current full-area run after the force
   code fix and weighted snap. Previous 40.6% ceiling was because NW England
@@ -145,9 +163,7 @@ open-road-risk/
   unpaved/surface flag 16.2%. The current Stage 2 run includes OSM speed in both
   GLM and XGBoost; sparse OSM attributes are imputed or used only where present.
 
-Detailed working notes are currently kept in
-`docs/internal/data-quality-notes.md` and can be promoted back into the Quarto
-site once the relevant code paths are clearer.
+Detailed working notes are kept in `docs/internal/data-quality-notes.md`.
 
 ---
 
@@ -175,11 +191,16 @@ Compatible with ESRI/ArcGIS workflows via GeoPackage output. PostGIS backend for
 
 ## Requirements
 
-```
-geopandas, pandas, numpy, scikit-learn, networkx, scipy, pyproj
-statsmodels    # Stage 2 Poisson GLM
-xgboost        # Stage 2 XGBoost
-osmnx          # OSM network features
-osmium-tool    # CLI — convert pbf to osm (apt install osmium-tool)
-streamlit      # App (optional)
-```
+Python dependencies are declared in `pyproject.toml`. The main groups are:
+
+- Data/geospatial: `pandas`, `geopandas`, `pyarrow`, `shapely`, `pyproj`,
+  `rasterio`, `numpy`, `scipy`
+- WebTRIS/API/progress: `pytris`, `requests`, `tqdm`
+- Modelling: `scikit-learn`, `statsmodels`, `xgboost`, `shap`,
+  `imbalanced-learn`
+- Network/OSM: `networkx`, `osmnx`
+- Visualisation/app: `matplotlib`, `seaborn`, `plotly`, `folium`,
+  `streamlit`, `streamlit-folium`, `contextily`
+
+The OSM conversion step also needs the system CLI `osmium-tool`
+(`sudo apt install osmium-tool` on Ubuntu/Debian).

@@ -129,8 +129,8 @@ raw_webtris        = _ROOT / "data" / "raw"       / "webtris"
 processed_webtris  = _ROOT / "data" / "processed" / "webtris"
 
 sites_path           = raw_webtris / "sites.parquet"
-processed_candidates = sorted(processed_webtris.glob("webtris_yorkshire*.parquet"))
-webtris_path         = processed_candidates[-1] if processed_candidates else None
+clean_webtris_path   = processed_webtris / "webtris_clean.parquet"
+webtris_path         = clean_webtris_path if clean_webtris_path.exists() else None
 time_webtris_path    = processed_webtris / "webtris_study_area.parquet"
 
 print("sites file exists      :", os.path.isfile(sites_path))
@@ -150,10 +150,10 @@ if not webtris.empty and "_pull_year" in webtris.columns and "year" not in webtr
     webtris = webtris.rename(columns={"_pull_year": "year"})
 
 # Resolve column name variants between ingest and clean outputs
-COL_FLOW    = next((c for c in ["adt24hour",                   "mean_daily_flow"]          if c in webtris.columns), None)
-COL_WD_FLOW = next((c for c in ["awt24hour",                   "mean_weekday_flow"]         if c in webtris.columns), None)
-COL_LV      = next((c for c in ["adt24largevehiclepercentage", "large_vehicle_pct"]         if c in webtris.columns), None)
-COL_LV_WD   = next((c for c in ["awt24largevehiclepercentage", "large_vehicle_weekday_pct"] if c in webtris.columns), None)
+COL_FLOW    = next((c for c in ["adt24hour",                   "mean_daily_flow",          "all_flow"]        if c in webtris.columns), None)
+COL_WD_FLOW = next((c for c in ["awt24hour",                   "mean_weekday_flow",        "weekday_flow"]    if c in webtris.columns), None)
+COL_LV      = next((c for c in ["adt24largevehiclepercentage", "large_vehicle_pct",        "hgv_pct"]         if c in webtris.columns), None)
+COL_LV_WD   = next((c for c in ["awt24largevehiclepercentage", "large_vehicle_weekday_pct", "hgv_weekday_pct"] if c in webtris.columns), None)
 
 # WebTRIS API often returns object dtype — convert once here
 if not webtris.empty:
@@ -612,27 +612,28 @@ plot_webtris_site_exposure(
 WebTRIS annual report columns follow the pattern **`[a][d/w]t[hours][metric]`**:
 `a` = average, `d` = all days, `w` = weekday, `t` = traffic, hours = window length.
 
-| Column | Description | Used in model |
-|--------|-------------|---------------|
-| `adt24hour` | Mean daily flow, all days, 24h | `mean_daily_flow` → `log_daily_flow` |
-| `awt24hour` | Mean daily flow, weekdays, 24h | `mean_weekday_flow` |
-| `adt24largevehiclepercentage` | Large vehicle share, all days | `large_vehicle_pct` → `hgv_pct_best` |
-| `awt24largevehiclepercentage` | Large vehicle share, weekdays | `large_vehicle_weekday_pct` |
-| `adt12hour`, `adt16hour`, etc. | Flow in N-hour window | Not currently used |
+| Raw report field | Clean field | Meaning |
+|---|---|---|
+| `adt24hour` | `all_flow` | Mean daily flow, all days, 24h |
+| `awt24hour` | `weekday_flow` | Mean daily flow, weekdays, 24h |
+| `adt24largevehiclepercentage` | `hgv_pct` | Large vehicle share, all days |
+| `awt24largevehiclepercentage` | `hgv_weekday_pct` | Large vehicle share, weekdays |
+| `adt12hour`, `adt16hour`, etc. | `all_flow_12h`, `all_flow_16h`, etc. | Flow in N-hour window |
 
 ::: {.callout-note}
 ## What better features could look like
 
-The current model uses annual averages at all-day grain. Richer features would
-require additional data pulls:
+The current profile model uses annual and N-hour aggregates rather than raw
+15-minute sensor traces. Richer features would require additional data pulls:
 
 - **Time-of-day** — `pull_site_year_daily()` in `ingest_webtris.py` fetches
   15-minute interval data. Peak-hour flow, AM/PM ratios, and night-time HGV
   share could all be derived from it. Each site-year requires ~176 API requests
   so this is practical only for a targeted sample of sites.
-- **Weekday-stratified HGV risk** — `large_vehicle_weekday_pct` is already in the
-  feature table but not used separately. If risk is being modelled for weekday
-  conditions specifically, this is a better input than the all-day figure.
+- **Weekday-stratified HGV risk** — `hgv_weekday_pct` is already in the
+  cleaned table but not used as a separate Stage 2 feature. If risk is being
+  modelled for weekday conditions specifically, this is a better input than the
+  all-day figure.
 - **Peak/off-peak ratio** — the 12h/16h/18h windows in `time_webtris` approximate
   the core operating day. A peak/off-peak ratio would separate commuter corridors
   from 24-hour freight routes, which likely have different risk profiles.
@@ -670,8 +671,8 @@ source, not a processing error.
   70–80% of flow occurs in the core working day.
 - Sparse year sampling means trends between sampled years are not directly
   observable.
-- The 2020 COVID year is not in the pull — the flow drop is only visible as the
-  gap between adjacent years.
+- The sparse pull uses 2019, 2021, and 2023. This captures one COVID-period
+  year but not the full 2020 shock or year-by-year recovery.
 
 ---
 
@@ -679,8 +680,10 @@ source, not a processing error.
 
 WebTRIS outputs feed into:
 
-- traffic exposure modelling (`join.py` → `road_link_annual.parquet`)
-- collision risk via `large_vehicle_pct` and `hgv_pct_best` in `features.py`
+- temporal profile modelling (`model/timezone_profile.py` →
+  `timezone_profiles.parquet`)
+- diagnostic / optional traffic context in `join.py`; the current Stage 2
+  collision model does not use WebTRIS as a direct full-network predictor
 
 ---
 
