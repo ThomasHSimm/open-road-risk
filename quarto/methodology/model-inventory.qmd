@@ -9,7 +9,7 @@ format:
 ---
 
 **Date:** April 2026  
-**Status:** Refreshed against the current Stage 2 artefacts on 21 April 2026.  
+**Status:** Refreshed against the current Stage 2 artefacts on 24 April 2026.  
 **Canonical metrics source:** `data/models/collision_metrics.json`
 
 ---
@@ -21,9 +21,9 @@ format:
 | Item | Value | Source |
 |---|---|---|
 | Link-year modelling table | 21,675,570 rows | `xgb.n_train + xgb.n_test` |
-| GLM complete-case rows before downsampling | 10,892,180 rows | `glm.n_full` |
-| GLM training rows (after downsampling) | 2,465,287 | `glm.n_obs` |
-| GLM positive rows (collision > 0) | 224,117 | `glm.n_pos` |
+| GLM complete-case rows before downsampling | 18,302,830 rows | `glm.n_full` |
+| GLM training rows (after downsampling) | 3,967,414 | `glm.n_obs` |
+| GLM positive rows (collision > 0) | 360,674 | `glm.n_pos` |
 | XGBoost training rows | 17,340,450 | `xgb.n_train` |
 | XGBoost test rows | 4,335,120 | `xgb.n_test` |
 
@@ -59,23 +59,24 @@ on the full ~21.7M-row table with zeros filled to 0.
 | 15 | `betweenness_relative` | Network |
 | 16 | `dist_to_major_km` | Network |
 | 17 | `pop_density_per_km2` | Network |
-| 18 | `speed_limit_mph` | OSM |
+| 18 | `speed_limit_mph_effective` | Speed limit |
 | 19 | `lanes_imputed` | OSM, imputed |
 | 20 | `is_unpaved_imputed` | OSM, imputed |
 
 **Not in current trained GLM:** `hgv_proportion` and `lit`. The current
-`network_features.parquet` is OSM-enriched: `speed_limit_mph` clears the >50%
-coverage threshold and enters directly, while lower-coverage `lanes` and
-`is_unpaved` enter as median-imputed GLM features.
+`network_features.parquet` is OSM-enriched: `speed_limit_mph_effective` is the
+modelled speed-limit feature, while raw `speed_limit_mph` is retained only as
+provenance. Lower-coverage `lanes` and `is_unpaved` enter as median-imputed GLM
+features.
 
 **Metrics:**
 
 | Metric | Value |
 |---|---|
-| Pseudo-R² | 0.2513 (in-sample on downsampled training set) |
-| Deviance | 856,999 |
-| Null deviance | 1,144,655 |
-| AIC | 1,322,161 |
+| Pseudo-R² | 0.3013 (in-sample on downsampled training set) |
+| Deviance | 1,376,539 |
+| Null deviance | 1,970,118 |
+| AIC | 2,126,878 |
 | Converged | Yes |
 
 ### 1.3 XGBoost — Poisson with base_margin offset
@@ -114,32 +115,38 @@ coverage threshold and enters directly, while lower-coverage `lanes` and
 | 17 | `betweenness_relative` | Network | same |
 | 18 | `dist_to_major_km` | Network | same |
 | 19 | `pop_density_per_km2` | Network | same |
-| 20 | `speed_limit_mph` | OSM | same |
+| 20 | `speed_limit_mph_effective` | Speed limit | same |
 | 21 | `lanes` | OSM | raw in XGBoost |
 | 22 | `is_unpaved` | OSM | raw in XGBoost |
 
 XGBoost receives `estimated_aadt` as a raw feature in addition to the log-offset (XGBoost can exploit non-linear interactions with exposure that the offset constrains in the GLM). `hgv_proportion` was included in XGBoost because its coverage threshold is simply `if col in df.columns` (no percentage check); it was present at training time.
-The current XGBoost run also includes OSM speed, lanes, and unpaved/surface flag
-features. `lit` is present in `network_features.parquet` but is not currently in
-the trained feature list.
+The current XGBoost run includes effective speed, lanes, and unpaved/surface
+flag features. Raw `speed_limit_mph` is retained as provenance but is not in the
+trained feature list. `lit` is present in `network_features.parquet` but is not
+currently in the trained feature list.
 
 **Metrics:**
 
 | Metric | Value |
 |---|---|
-| Pseudo-R² | 0.8577 (out-of-sample, held-out test set) |
-| Test deviance | 104,384 |
+| Pseudo-R² | 0.8575 (out-of-sample, held-out test set) |
+| Test deviance | 104,503 |
 
-**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are also from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, and OSM feature enrichment; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.
+**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, and tiered speed-limit imputation; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.
 
 ### 1.4 Output
 
 `data/models/risk_scores.parquet` — one row per link. Key columns:
 `predicted_xgb` (mean collisions/year), `predicted_glm`, `residual_glm`,
 `risk_percentile` (XGBoost rank × 100 / n_links), `collision_count`,
-`estimated_aadt`, `hgv_proportion`, `speed_limit_mph`, and
-`betweenness_relative`. Post-event diagnostic columns such as `pct_dark`,
-`pct_urban`, `pct_junction`, `pct_near_crossing`, and `mean_speed_limit` are
-excluded from the output contract.
+`estimated_aadt`, `hgv_proportion`, `speed_limit_mph_effective`, raw
+`speed_limit_mph`, and `betweenness_relative`. Post-event diagnostic columns
+such as `pct_dark`, `pct_urban`, `pct_junction`, `pct_near_crossing`, and
+`mean_speed_limit` are excluded from the output contract.
+
+The effective-speed retrain retained 2,167,557 scored links and 21,676 top-1%
+links. Compared with the pre-effective-speed `risk_scores.parquet`, Spearman
+rank correlation across all links was 0.9962 and top-1% Jaccard overlap was
+0.9512.
 
 ---

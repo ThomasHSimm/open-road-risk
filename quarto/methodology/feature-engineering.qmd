@@ -114,15 +114,23 @@ links are edges, road-link endpoints are nodes, and link length is the shortest
 path weight. These features are intended to capture network position rather
 than raw latitude/longitude.
 
-| Feature | Definition | Interpretation |
-|---|---|---|
-| `degree_mean` | Mean graph degree of the link's start and end nodes | Local junction complexity; higher values usually mean denser urban or interchange structure |
-| `betweenness` | Approximate node betweenness centrality, averaged across the link's start and end nodes | Through-route importance; higher values mean the link sits near many shortest paths through the road graph |
-| `betweenness_relative` | `log1p(betweenness / mean betweenness for the same road_classification)` | Within-road-class centrality; distinguishes unusually central A-roads from ordinary A-roads, rather than just rediscovering road class |
-| `dist_to_major_km` | Graph distance from the link to the nearest Motorway or A-road node | Feeder-network position; lower values mean closer to the major-road network |
-| `pop_density_per_km2` | LSOA population density joined to the link centroid | Local demand / urbanisation proxy |
-| `ruc_class` | ONS 2021 Rural-Urban Classification code joined via the same nearest-LSOA-centroid assignment | Categorical settlement-context feature at LSOA grain |
-| `ruc_urban_rural` | Top-level Urban/Rural split derived from `ruc_class` | Coarser settlement-context feature for simpler modelling or reporting |
+| Feature | Definition | Interpretation | Used by |
+|---|---|---|---|
+| `degree_mean` | Mean graph degree of the link's start and end nodes | Local junction complexity; higher values usually mean denser urban or interchange structure | Stage 1a, Stage 2 |
+| `betweenness` | Approximate node betweenness centrality, averaged across the link's start and end nodes | Through-route importance; higher values mean the link sits near many shortest paths through the road graph | Stage 1a, Stage 2 |
+| `betweenness_relative` | `log1p(betweenness / mean betweenness for the same road_classification)` | Within-road-class centrality; distinguishes unusually central A-roads from ordinary A-roads, rather than just rediscovering road class | Stage 1a, Stage 2 |
+| `dist_to_major_km` | Graph distance from the link to the nearest Motorway or A-road node | Feeder-network position; lower values mean closer to the major-road network | Stage 1a, Stage 2 |
+| `pop_density_per_km2` | LSOA population density joined to the link centroid | Local demand / urbanisation proxy | Stage 1a, Stage 2 |
+| `ruc_class` | ONS 2021 Rural-Urban Classification code joined via the same nearest-LSOA-centroid assignment | Categorical settlement-context feature at LSOA grain | OSM imputation / Stage 2 context (pending) |
+| `ruc_urban_rural` | Top-level Urban/Rural split derived from `ruc_class` | Coarser settlement-context feature for simpler modelling or reporting | OSM imputation / Stage 2 context (pending) |
+| `speed_limit_mph` | Raw OSM-tagged speed limit only | Sparse direct observation of signed / mapped speed limits | Retained as provenance; not modelled in current Stage 2 |
+| `speed_limit_mph_effective` | `speed_limit_mph` when present, else UK legal-default lookup by `road_classification` × `ruc_urban_rural` | Fuller-coverage speed-limit proxy | Stage 2 model feature |
+| `speed_limit_source` | Audit label for whether the effective speed came from OSM or a lookup tier | Per-link provenance for speed-limit assignment | Audit only |
+
+The current Stage 1a AADT path uses the numeric network/context features above,
+but not the RUC columns. Those are listed here because they are generated in
+the broader link-level feature stack and are intended for downstream use rather
+than the current AADT estimator.
 
 Raw `betweenness` is heavily right-skewed and strongly related to road class:
 motorways and A-roads are central partly by definition. `betweenness_relative`
@@ -154,6 +162,66 @@ in this pipeline version.
 Because the ONS RUC source is E+W only, links that would map to Scottish or
 Northern Irish small-area codes have `NaN` for both `ruc_class` and
 `ruc_urban_rural`.
+
+**RUC 2021 coding.** The file used is the 6-class 2021 variant. Codes are
+`UN1`, `UF1`, `RSN1`, `RSF1`, `RLN1`, `RLF1`, where `U`-prefix indicates Urban
+and `R`-prefix indicates Rural. The binary `ruc_urban_rural` is derived by
+prefix: `U` -> Urban, `R` -> Rural.
+
+**Coverage.** Across the current study area, 15.5% of links (~336k) have `NaN`
+for RUC. Investigation showed two mechanisms:
+
+- Scottish border-area links (~3% of the network, concentrated above 55.0° N)
+  cannot be assigned because ONS RUC is E+W only.
+- The remaining nulls are long, sparse, edge-of-study-area rural links whose
+  centroids fall more than 2 km from any E+W LSOA centroid. Missingness
+  correlates strongly with link length (8% null for links under 100m, 66% null
+  for links over 1km).
+
+**Interpreting Urban vs Rural.** RUC classifies the LSOA a link falls into, not
+the character of the road itself. An Unclassified residential street in an
+urban LSOA is Urban even where it looks locally like a quiet side road; a
+village high street in a rural LSOA is Rural. In this study area, 82% of
+Unclassified roads are Urban because dense residential street networks in
+cities dominate the Unclassified link count. This is a feature of LSOA-grain
+classification, not a classification error.
+
+### Tiered speed-limit defaults
+
+The network feature stack now keeps **raw** and **lookup-filled** speed-limit
+columns separate. `speed_limit_mph` remains the raw OSM-tagged-only field.
+`speed_limit_mph_effective` is the fuller-coverage version created by using raw
+OSM where present, then applying UK legal speed-limit defaults via
+`road_classification` × `ruc_urban_rural` where OSM is missing. The audit field
+`speed_limit_source` records which path each link took, and the boolean
+`speed_limit_mph_imputed` marks whether the effective value came from the lookup
+rather than a raw OSM tag.
+
+The lookup hierarchy is deliberately simple and deterministic:
+
+- Motorway = 70 mph
+- A-road dual carriageway = 70 mph
+- A-road trunk (non-dual) = 70 mph
+- A-road single carriageway = 60 mph
+- B-road Urban = 30 mph
+- B-road Rural = 60 mph
+- Minor roads (`Unclassified`, `Not Classified`, `Classified Unnumbered`, `Unknown`) Urban = 30 mph
+- Minor roads (`Unclassified`, `Not Classified`, `Classified Unnumbered`, `Unknown`) Rural = 60 mph
+
+This is a feature-engineering layer, not a claim that the inferred value is the
+observed signed limit on every road. The lookup supplies the legal default in
+the absence of an OSM tag, so it will miss local exceptions such as 20 mph
+zones, signed 40 mph urban arterials, or rural 50 mph sections. It therefore
+represents the legal maximum implied by road type and settlement context, not
+necessarily the true enforced limit on that segment.
+
+No extra fallback is applied where `ruc_urban_rural` is missing. The broader
+RUC-missing tail is still about 15.5% of links, but only the subset with **both**
+missing raw OSM speed and missing `ruc_urban_rural` stays unresolved in
+`speed_limit_mph_effective`. In the current build that unresolved subset is
+about 189k links (8.7% of the network). Those links are labelled
+`speed_limit_source = "null_no_ruc"` and remain unresolved until a broader
+geography-compatible context layer is added.
 
 ### Validation: `GroupKFold` by count point
 
@@ -225,8 +293,8 @@ Every row has:
 - **Link length:** `log_link_length_km`
 - **Temporal:** `is_covid`, `year_norm`
 - **Network (when available):** `degree_mean`, `betweenness`,
-  `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph`, `lanes`,
-  `is_unpaved`
+  `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph_effective`,
+  `lanes`, `is_unpaved`; raw `speed_limit_mph` is retained as provenance
 - **Targets:** `collision_count`, `fatal_count`, `serious_count`
 
 ### Post-event diagnostics are excluded from Stage 2 features
@@ -383,7 +451,7 @@ Condensed view of which columns reach the model and how they're used.
 | Road structure | `road_class_ord`, `form_of_way_ord`, 7 binary flags | GLM + XGB | Ordinals + flags for interaction capture |
 | Link length | `log_link_length_km` | GLM + XGB | Captures non-exposure length effects |
 | Temporal | `is_covid`, `year_norm` | GLM + XGB | Training-only; pooled away in scoring |
-| Network | `degree_mean`, `betweenness`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph`, `lanes`, `is_unpaved` | GLM + XGB (when available) | OSM-enriched where present; sparse OSM attributes use coverage-based imputation |
+| Network | `degree_mean`, `betweenness`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph_effective`, `lanes`, `is_unpaved` | GLM + XGB | OSM-enriched where present; current models use `speed_limit_mph_effective`, with raw `speed_limit_mph` retained only as provenance |
 | AADT raw | `estimated_aadt` | XGB only | Also in offset; XGB can use both |
 
 ---
@@ -399,23 +467,25 @@ Reported pseudo-R² reflects out-of-link performance, not in-sample fit.
 
 ### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}
 
-The current GLM pseudo-R² (0.251) and XGBoost pseudo-R² (0.858) are computed on
+The current GLM pseudo-R² (0.301) and XGBoost pseudo-R² (0.858) are computed on
 different row subsets with different null models. **They are not directly
 comparable.**
 
 | | GLM | XGBoost |
 |---|---|---|
 | Evaluation set | In-sample (downsampled training table) | Out-of-sample (held-out 20% of links) |
-| Rows | ~2.47M (all positives + 1:10 zero sample) | ~4.34M (true link-year distribution) |
+| Rows | ~3.97M (all positives + 1:10 zero sample) | ~4.34M (true link-year distribution) |
 | Zero rate in eval set | ~91% (downsampled) | ~98% (real distribution) |
 | Null model | Intercept-only Poisson on downsampled set | `y_test.mean()` on the real test set |
 
-The reported Stage 2 metrics were generated after both the counted-only Stage
-1a filter and the Stage 2 post-event provenance guard were applied. The earlier
-0.269 GLM pseudo-R² figure referenced a prior training run without these changes
-and is not directly comparable. No ablation was run to attribute the delta to a
-single change; subsequent methodology work uses a five-seed evaluation harness
-to make such attributions possible.
+The current Stage 2 metrics reflect the state after four correctness-focused
+changes landed: the counted-only Stage 1a AADF filter, the Stage 2 post-event
+provenance guard, OSM network feature enrichment, and tiered speed-limit
+imputation using UK legal defaults with `ruc_urban_rural` context. These were
+shipped to improve methodological correctness rather than to optimise
+pseudo-R², and attribution of changes across them was not formally ablated.
+Future feature and modelling work will be evaluated using a five-seed rank
+stability harness (see TODO), against the current metrics as baseline.
 
 Because the GLM null model sees an artificially balanced zero rate, it is
 easier to beat — the true 98% zero rate would produce a higher null deviance
@@ -423,7 +493,7 @@ and a lower pseudo-R² for the same model. Because XGBoost is evaluated on
 the real held-out distribution against that harder null, its 0.858 is the
 more conservative and honest metric.
 
-The practical implication: the 0.251 vs 0.858 gap overstates the genuine
+The practical implication: the 0.301 vs 0.858 gap overstates the genuine
 predictive lift of XGBoost over the GLM. A fair comparison would require
 both models evaluated on the same held-out set against the same null model.
 This has not been done; recomputing both on a common evaluation set is a
@@ -457,14 +527,36 @@ or a hurdle model may be required.
 
 ### OSM and network feature availability
 
-The current Stage 2 run is OSM-enriched: `speed_limit_mph` is included in both
-the GLM and XGBoost feature lists, while `lanes` and `is_unpaved` are used by
-XGBoost and median-imputed for the GLM. Coverage remains incomplete rather than
-uniformly absent: `speed_limit_mph` is populated for 56.4% of scored links
-overall and 59.4% of Unclassified links, so it is not mostly missing on
-Unclassified roads but still leaves a large missing-value tail. The tiered OSM
-imputation task is retained because posted speed, lane, and surface tags remain
-class-conditional and uneven.
+The current Stage 2 run is OSM-enriched: `speed_limit_mph_effective` is included
+in both the GLM and XGBoost feature lists, while raw `speed_limit_mph` is
+retained in the scored output as provenance. `lanes` and `is_unpaved` are used
+by XGBoost and median-imputed for the GLM. Coverage remains class-conditional
+and uneven, but the speed-limit coverage edge case described below has been
+resolved by tiered imputation.
+
+### GLM training-set size under OSM coverage
+
+The GLM feature-selection rule uses any column with **>50% coverage** directly,
+then applies `.dropna()` to the assembled feature matrix. The previous raw OSM
+`speed_limit_mph` feature had 56.4% coverage, barely cleared that threshold,
+and reduced the GLM training table to **10,892,180** complete-case link-years.
+Replacing it with `speed_limit_mph_effective` resolved that threshold issue:
+the current retrain uses **18,302,830** complete-case link-years before GLM
+zero-downsampling, then **3,967,414** rows after the 1:10 positive-to-zero
+sample. The remaining complete-case loss is dominated by other network/context
+coverage, especially the RUC-related population/context tail.
+
+XGBoost is unaffected by this GLM threshold because `train_collision_xgb()`
+fills missing values with 0 rather than dropping rows. The Stage 2 base table
+remains **21,675,570** link-years, with the current grouped split yielding
+`xgb.n_train = 17,340,450` (80% of the full table). The production ranking
+therefore still covers all **2,167,557** links.
+
+The effective-speed retrain left the final rank surface stable relative to the
+raw-speed baseline: Spearman rank correlation across all links was **0.9962**,
+and the top-1% Jaccard overlap was **0.9512** (21,134 shared links out of
+22,218 in the union). The feature swap changed local ordering but did not
+materially reshuffle the highest-risk set.
 
 The pipeline also reduces feature count if `network_features.parquet` is
 missing, producing lower-quality scores without an obvious downstream signal.

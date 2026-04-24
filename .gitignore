@@ -19,11 +19,12 @@ data/models/**
 !data/processed/.gitkeep
 !data/features/.gitkeep
 !data/external/.gitkeep
+!data/provenance/**
 
 # Reports (generated artefacts)
 reports/**
 !reports/.gitkeep
-!reports/*.md
+!reports/**/*.md
 
 # Notebooks — exploratory/local; durable narratives should live in Quarto/docs
 *.ipynb
@@ -35,6 +36,7 @@ docs/.quarto/
 docs/quarto/_site/
 docs/quarto/.quarto/
 /.quarto/
+docs/notes_notgit/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -70,3 +72,13 @@ quarto/_freeze/
 .mcp.json
 
 CLAUDE.md
+
+# pytest coverage artefacts
+.coverage
+.coverage.*
+htmlcov/
+
+# data types
+*.parquet
+*.pkl
+*.joblib

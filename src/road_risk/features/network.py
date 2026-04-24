@@ -117,6 +117,7 @@ LSOA_POP_PATH  = _ROOT / "data/raw/stats19/lsoa_population.csv"
 RUC_PATH       = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
 OUTPUT_PATH    = _ROOT / "data/features/network_features.parquet"
 RUC_PROV_PATH  = _ROOT / "data/features/ruc_provenance.json"
+SPEED_LIMIT_PROV_PATH = _ROOT / "data/features/speed_limit_effective_provenance.json"
 
 # Betweenness centrality sample size — higher = more accurate, slower
 # 500 gives a good approximation in ~2-3 minutes for Yorkshire
@@ -128,6 +129,96 @@ POP_JOIN_CAP_M = 2000
 # Road classifications that count as "major"
 MAJOR_CLASSES = {"Motorway", "A Road"}
 RUC_REQUIRED_COLUMNS = ["LSOA21CD", "RUC21CD", "RUC21NM"]
+MINOR_ROAD_CLASSES = {
+    "Unclassified",
+    "Not Classified",
+    "Classified Unnumbered",
+    "Unknown",
+}
+SPEED_LIMIT_SOURCE_ORDER = [
+    "osm",
+    "lookup_motorway",
+    "lookup_a_road_dual",
+    "lookup_a_road_trunk",
+    "lookup_a_road_single",
+    "lookup_b_road_urban",
+    "lookup_b_road_rural",
+    "lookup_minor_urban",
+    "lookup_minor_rural",
+    "null_no_ruc",
+]
+SPEED_LIMIT_LOOKUP_RULES = [
+    {
+        "priority": 1,
+        "condition": "speed_limit_mph notna",
+        "speed_limit_mph_effective": "speed_limit_mph",
+        "speed_limit_source": "osm",
+        "speed_limit_mph_imputed": False,
+    },
+    {
+        "priority": 2,
+        "condition": 'road_classification == "Motorway"',
+        "speed_limit_mph_effective": 70,
+        "speed_limit_source": "lookup_motorway",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 3,
+        "condition": 'road_classification == "A Road" and is_dual',
+        "speed_limit_mph_effective": 70,
+        "speed_limit_source": "lookup_a_road_dual",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 4,
+        "condition": 'road_classification == "A Road" and is_trunk and not is_dual',
+        "speed_limit_mph_effective": 70,
+        "speed_limit_source": "lookup_a_road_trunk",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 5,
+        "condition": 'road_classification == "A Road"',
+        "speed_limit_mph_effective": 60,
+        "speed_limit_source": "lookup_a_road_single",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 6,
+        "condition": 'road_classification == "B Road" and ruc_urban_rural == "Urban"',
+        "speed_limit_mph_effective": 30,
+        "speed_limit_source": "lookup_b_road_urban",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 7,
+        "condition": 'road_classification == "B Road" and ruc_urban_rural == "Rural"',
+        "speed_limit_mph_effective": 60,
+        "speed_limit_source": "lookup_b_road_rural",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 8,
+        "condition": "minor road class and ruc_urban_rural == Urban",
+        "speed_limit_mph_effective": 30,
+        "speed_limit_source": "lookup_minor_urban",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 9,
+        "condition": "minor road class and ruc_urban_rural == Rural",
+        "speed_limit_mph_effective": 60,
+        "speed_limit_source": "lookup_minor_rural",
+        "speed_limit_mph_imputed": True,
+    },
+    {
+        "priority": 10,
+        "condition": "speed_limit_mph isna and ruc_urban_rural isna",
+        "speed_limit_mph_effective": None,
+        "speed_limit_source": "null_no_ruc",
+        "speed_limit_mph_imputed": False,
+    },
+]
 
 
 def get_script_git_sha() -> str:
@@ -241,6 +332,158 @@ def write_ruc_provenance(features: pd.DataFrame) -> None:
     with open(RUC_PROV_PATH, "w", encoding="utf-8") as f:
         json.dump(provenance, f, indent=2)
     logger.info(f"Wrote RUC provenance to {RUC_PROV_PATH}")
+
+
+def _speed_limit_source_counts(series: pd.Series) -> dict[str, int]:
+    counts = (
+        pd.Categorical(series, categories=SPEED_LIMIT_SOURCE_ORDER)
+        .value_counts(dropna=False)
+    )
+    return {
+        str(label): int(count)
+        for label, count in counts.items()
+        if pd.notna(label) and int(count) > 0
+    }
+
+
+def apply_speed_limit_effective_lookup(
+    features: pd.DataFrame,
+    openroads: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Add lookup-filled speed-limit columns without modifying raw OSM values.
+
+    The lookup uses raw OSM `speed_limit_mph` when present, otherwise falls back
+    to legal-default tiers keyed by road classification, dual/trunk status, and
+    `ruc_urban_rural`. Links without RUC remain NaN with source `null_no_ruc`.
+    """
+    required_feature_cols = {"link_id", "speed_limit_mph", "ruc_urban_rural"}
+    missing_feature_cols = required_feature_cols.difference(features.columns)
+    if missing_feature_cols:
+        raise ValueError(
+            "apply_speed_limit_effective_lookup() missing feature columns: "
+            f"{sorted(missing_feature_cols)}"
+        )
+
+    required_openroads_cols = {"link_id", "road_classification", "form_of_way", "is_trunk"}
+    missing_openroads_cols = required_openroads_cols.difference(openroads.columns)
+    if missing_openroads_cols:
+        raise ValueError(
+            "apply_speed_limit_effective_lookup() missing openroads columns: "
+            f"{sorted(missing_openroads_cols)}"
+        )
+
+    meta = openroads.loc[
+        :,
+        ["link_id", "road_classification", "form_of_way", "is_trunk"],
+    ].copy()
+    meta["is_dual"] = meta["form_of_way"].isin(
+        ["Dual Carriageway", "Collapsed Dual Carriageway"]
+    )
+
+    df = features.merge(meta, on="link_id", how="left", validate="one_to_one")
+    raw_speed = pd.to_numeric(df["speed_limit_mph"], errors="coerce")
+
+    effective = pd.Series(pd.NA, index=df.index, dtype="Int64")
+    source = pd.Series(pd.NA, index=df.index, dtype="string")
+    imputed = pd.Series(False, index=df.index, dtype=bool)
+
+    def assign(mask: pd.Series, value, label: str, *, imputed_flag: bool) -> None:
+        pending = mask & source.isna()
+        if not pending.any():
+            return
+        if value == "raw":
+            effective.loc[pending] = raw_speed.loc[pending].round().astype("Int64")
+        elif value is None:
+            effective.loc[pending] = pd.NA
+        else:
+            effective.loc[pending] = int(value)
+        source.loc[pending] = label
+        imputed.loc[pending] = imputed_flag
+
+    minor_mask = df["road_classification"].isin(MINOR_ROAD_CLASSES)
+
+    assign(raw_speed.notna(), "raw", "osm", imputed_flag=False)
+    assign(df["road_classification"].eq("Motorway"), 70, "lookup_motorway", imputed_flag=True)
+    assign(
+        df["road_classification"].eq("A Road") & df["is_dual"].fillna(False),
+        70,
+        "lookup_a_road_dual",
+        imputed_flag=True,
+    )
+    assign(
+        df["road_classification"].eq("A Road")
+        & df["is_trunk"].fillna(False)
+        & ~df["is_dual"].fillna(False),
+        70,
+        "lookup_a_road_trunk",
+        imputed_flag=True,
+    )
+    assign(df["road_classification"].eq("A Road"), 60, "lookup_a_road_single", imputed_flag=True)
+    assign(
+        df["road_classification"].eq("B Road") & df["ruc_urban_rural"].eq("Urban"),
+        30,
+        "lookup_b_road_urban",
+        imputed_flag=True,
+    )
+    assign(
+        df["road_classification"].eq("B Road") & df["ruc_urban_rural"].eq("Rural"),
+        60,
+        "lookup_b_road_rural",
+        imputed_flag=True,
+    )
+    assign(
+        minor_mask & df["ruc_urban_rural"].eq("Urban"),
+        30,
+        "lookup_minor_urban",
+        imputed_flag=True,
+    )
+    assign(
+        minor_mask & df["ruc_urban_rural"].eq("Rural"),
+        60,
+        "lookup_minor_rural",
+        imputed_flag=True,
+    )
+    assign(raw_speed.isna() & df["ruc_urban_rural"].isna(), None, "null_no_ruc", imputed_flag=False)
+
+    if source.isna().any():
+        unresolved = int(source.isna().sum())
+        raise ValueError(
+            f"Speed-limit lookup left {unresolved:,} links without a source label. "
+            "Check road classification coverage and lookup rules."
+        )
+
+    result = features.copy()
+    result["speed_limit_mph_effective"] = effective.astype("Int64")
+    result["speed_limit_mph_imputed"] = imputed
+    result["speed_limit_source"] = source.astype("string")
+    return result
+
+
+def write_speed_limit_effective_provenance(features: pd.DataFrame) -> None:
+    if "speed_limit_source" not in features.columns:
+        return
+
+    n_links_total = int(len(features))
+    n_non_null = int(features["speed_limit_mph_effective"].notna().sum())
+    coverage_pct = (100.0 * n_non_null / n_links_total) if n_links_total else 0.0
+    source_counts = _speed_limit_source_counts(features["speed_limit_source"])
+
+    provenance = {
+        "script_path": str(Path(__file__).resolve()),
+        "git_sha": get_script_git_sha(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
+        "lookup_rules": SPEED_LIMIT_LOOKUP_RULES,
+        "n_links_total": n_links_total,
+        "speed_limit_source_counts": source_counts,
+        "coverage_pct": coverage_pct,
+        "n_null_no_ruc": int(source_counts.get("null_no_ruc", 0)),
+    }
+
+    SPEED_LIMIT_PROV_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(SPEED_LIMIT_PROV_PATH, "w", encoding="utf-8") as f:
+        json.dump(provenance, f, indent=2)
+    logger.info("Wrote speed-limit provenance to %s", SPEED_LIMIT_PROV_PATH)
 
 
 # ---------------------------------------------------------------------------
@@ -995,12 +1238,19 @@ def build_network_features(
         degree_mean, betweenness, betweenness_relative,
         dist_to_major_km, pop_density_per_km2,
         ruc_class, ruc_urban_rural,
-        [speed_limit_mph, lanes, lit, is_unpaved]  ← if include_osm=True
+        [speed_limit_mph, speed_limit_mph_effective,
+         speed_limit_mph_imputed, speed_limit_source,
+         lanes, lit, is_unpaved]  ← if include_osm=True
     """
     required_cols = {"ruc_class", "ruc_urban_rural"}
     if output_path.exists() and not force_recompute:
         cached = pd.read_parquet(output_path)
         osm_cols = {"speed_limit_mph", "lanes", "lit", "is_unpaved"}
+        speed_limit_effective_cols = {
+            "speed_limit_mph_effective",
+            "speed_limit_mph_imputed",
+            "speed_limit_source",
+        }
         missing_required = required_cols.difference(cached.columns)
         if missing_required:
             logger.info(
@@ -1011,6 +1261,21 @@ def build_network_features(
             logger.info(
                 "Cache exists but has no OSM columns — recomputing with OSM features."
             )
+        elif include_osm and speed_limit_effective_cols.difference(cached.columns):
+            logger.info(
+                "Cache exists but is missing effective speed-limit columns — "
+                "augmenting cached parquet."
+            )
+            openroads_meta = pd.read_parquet(
+                openroads_path,
+                columns=["link_id", "road_classification", "form_of_way", "is_trunk"],
+            )
+            cached = apply_speed_limit_effective_lookup(cached, openroads_meta)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            cached.to_parquet(output_path, index=False)
+            write_ruc_provenance(cached)
+            write_speed_limit_effective_provenance(cached)
+            return cached
         else:
             logger.info(f"Loading cached network features from {output_path}")
             return cached
@@ -1057,6 +1322,7 @@ def build_network_features(
     if include_osm:
         osm = fetch_osm_features(openroads, force_recompute=force_recompute)
         features = features.merge(osm, on="link_id", how="left")
+        features = apply_speed_limit_effective_lookup(features, openroads)
     else:
         logger.info(
             "  OSM features skipped (use --osm flag to include). "
@@ -1098,6 +1364,7 @@ def build_network_features(
     features.to_parquet(output_path, index=False)
     logger.info(f"Saved network features to {output_path} ({len(features):,} rows)")
     write_ruc_provenance(features)
+    write_speed_limit_effective_provenance(features)
 
     return features
 

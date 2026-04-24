@@ -30,9 +30,14 @@ Tracked here so nothing gets lost. Cross off as done.
 
 ## 🟡 Medium Priority — Model
 
+- [ ] Review: given consistent ranking stability across feature additions
+  (Jaccard >0.95 each time), consider whether further feature work has
+  diminishing returns vs prioritising structural modelling changes (EB
+  shrinkage, facility-family split) sooner in the queue.
+
 - [ ] Drop raw `betweenness` from GLM — coefficient is −8 which dominates the
-  coefficient chart and is a multicollinearity symptom. Keep `betweenness_relative`
-  which is the cleaner feature. XGBoost handles both fine via tree splits.
+      coefficient chart and is a multicollinearity symptom. Keep `betweenness_relative`
+      which is the cleaner feature. XGBoost handles both fine via tree splits.
 
 - [ ] Validate AADT estimates on WebTRIS motorway corridors — compare predicted vs
   measured flow on M62/M1 as sense check. Currently evaluated only on AADF holdout.
@@ -186,6 +191,23 @@ Tracked here so nothing gets lost. Cross off as done.
 - [x] ~~Download additional AADF years~~ — stale; AADF ingest already loads full
       2015-2024 range. Real issue was counted-vs-estimated, now handled by the
       counted-only filter.
+- [x] Stage 2 retrain using `speed_limit_mph_effective` (Session 2, 24 April 2026) —
+      GLM `n_full` recovered to 18,302,830 as predicted (matches pre-OSM baseline
+      exactly); GLM pseudo-R² 0.251 → 0.301 on larger cleaner training set; XGBoost
+      pseudo-R² unchanged at 0.858; top-1% Jaccard 0.951 with previous run, Spearman
+      0.996. Ranking essentially stable across change; GLM improvement is real but
+      contained to diagnostic outputs not the production ranking. Methodology page
+      and model inventory updated.
+- [x] OSM tiered speed-limit imputation (Session 1, 24 April 2026) — added
+      `speed_limit_mph_effective`, `speed_limit_mph_imputed`, and
+      `speed_limit_source` columns to `network_features.parquet`. Coverage
+      91.27% (1.98M / 2.17M links), up from raw OSM's 56.4%. UK legal defaults
+      applied via `road_classification × ruc_urban_rural` lookup. Raw
+      `speed_limit_mph` preserved unchanged as OSM-tagged-only. Methodology
+      documented. See `reports/speed_limit_effective_verification.md` for full
+      verification including 100 spot-check rows with OSM URLs.
+- [x] `.coverage` and `htmlcov/` already ignored in root `.gitignore` — no
+      additional housekeeping change needed.
 
 ---
 

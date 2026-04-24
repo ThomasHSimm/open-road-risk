@@ -230,7 +230,7 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         "hgv_proportion",
         "degree_mean", "betweenness", "betweenness_relative",
         "dist_to_major_km", "pop_density_per_km2",
-        "speed_limit_mph", "lanes", "is_unpaved",
+        "speed_limit_mph_effective", "lanes", "is_unpaved",
     ]
 
     feature_cols = list(core_cols)
@@ -327,7 +327,7 @@ def train_collision_xgb(df: pd.DataFrame) -> tuple:
         "hgv_proportion",
         "degree_mean", "betweenness", "betweenness_relative",
         "dist_to_major_km", "pop_density_per_km2",
-        "speed_limit_mph", "lanes", "is_unpaved",
+        "speed_limit_mph_effective", "lanes", "is_unpaved",
     ]:
         if col in df.columns:
             feature_cols.append(col)
@@ -454,7 +454,8 @@ def score_and_save(
         "predicted_xgb":   "mean",
     }
     # Include optional pre-collision attributes if present.
-    for col in ["hgv_proportion", "speed_limit_mph", "betweenness_relative",
+    for col in ["hgv_proportion", "speed_limit_mph", "speed_limit_mph_effective",
+                "betweenness_relative",
                 "road_classification"]:
         if col in df.columns:
             pool_agg[col] = "first"
@@ -490,7 +491,8 @@ def score_and_save(
         "estimated_aadt", "predicted_glm", "predicted_xgb",
         "residual_glm", "risk_percentile",
         "road_classification",
-        "hgv_proportion", "speed_limit_mph", "betweenness_relative",
+        "hgv_proportion", "speed_limit_mph_effective", "speed_limit_mph",
+        "betweenness_relative",
     ]
     final_cols = [c for c in save_cols if c in pooled.columns]
     pooled[final_cols].to_parquet(MODELS / "risk_scores.parquet", index=False)
