@@ -121,12 +121,39 @@ than raw latitude/longitude.
 | `betweenness_relative` | `log1p(betweenness / mean betweenness for the same road_classification)` | Within-road-class centrality; distinguishes unusually central A-roads from ordinary A-roads, rather than just rediscovering road class |
 | `dist_to_major_km` | Graph distance from the link to the nearest Motorway or A-road node | Feeder-network position; lower values mean closer to the major-road network |
 | `pop_density_per_km2` | LSOA population density joined to the link centroid | Local demand / urbanisation proxy |
+| `ruc_class` | ONS 2021 Rural-Urban Classification code joined via the same nearest-LSOA-centroid assignment | Categorical settlement-context feature at LSOA grain |
+| `ruc_urban_rural` | Top-level Urban/Rural split derived from `ruc_class` | Coarser settlement-context feature for simpler modelling or reporting |
 
 Raw `betweenness` is heavily right-skewed and strongly related to road class:
 motorways and A-roads are central partly by definition. `betweenness_relative`
 therefore exists as the safer modelling version when the question is "is this
 link unusually central compared with its peers?" rather than "is this road a
 major road?".
+
+### Rural-Urban Classification (RUC)
+
+`ruc_class` and `ruc_urban_rural` come from the ONS 2021 Rural-Urban
+Classification at LSOA grain for **England and Wales only**. The link-level
+assignment inherits the existing `pop_density_per_km2` pipeline: each road link
+is matched to the **nearest LSOA centroid** within the same 2 km cap, then the
+RUC code is joined by `LSOA21CD`.
+
+This is a deliberate decadal-stability choice. The modelling window runs from
+2015 to 2024, but RUC is treated as structurally slow-moving, so a single 2021
+classification avoids an artificial boundary discontinuity at 2021 while still
+capturing broad urban/rural context across the full period.
+
+The inherited limitation is that nearest-centroid assignment is an
+approximation, not a polygon-in-polygon spatial overlay. A small number of
+links near LSOA boundaries may therefore be assigned to a neighbouring LSOA,
+with the main risk concentrated around urban/rural transition edges where
+classification changes across the boundary. A polygon containment join would be
+more accurate, but that is a separate infrastructure change and is not pursued
+in this pipeline version.
+
+Because the ONS RUC source is E+W only, links that would map to Scottish or
+Northern Irish small-area codes have `NaN` for both `ruc_class` and
+`ruc_urban_rural`.
 
 ### Validation: `GroupKFold` by count point
 

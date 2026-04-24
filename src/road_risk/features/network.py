@@ -31,6 +31,11 @@ Feature 4 — Population density (LSOA join)
                    populationandmigration/populationestimates/datasets/
                    lowersuperoutputareamidyearpopulationestimates
 
+Feature 5 — Rural-Urban Classification (LSOA join)
+    ONS 2021 Rural-Urban Classification attached via the same nearest-centroid
+    LSOA assignment used for population density. Adds the raw class code and a
+    derived Urban/Rural split.
+
 Usage
 -----
     python src/road_risk/features/network.py
@@ -41,10 +46,13 @@ Usage
 """
 
 import gc
+import json
 import logging
 import shutil
+import subprocess
 import threading
 import time
+from datetime import UTC, datetime
 from pathlib import Path
 
 import geopandas as gpd
@@ -106,7 +114,9 @@ PROCESSED      = _ROOT / "data/processed"
 OPENROADS_PATH = PROCESSED / "shapefiles/openroads_yorkshire.parquet"
 LSOA_CENT_PATH = _ROOT / "data/raw/stats19/lsoa_centroids.csv"
 LSOA_POP_PATH  = _ROOT / "data/raw/stats19/lsoa_population.csv"
+RUC_PATH       = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
 OUTPUT_PATH    = _ROOT / "data/features/network_features.parquet"
+RUC_PROV_PATH  = _ROOT / "data/features/ruc_provenance.json"
 
 # Betweenness centrality sample size — higher = more accurate, slower
 # 500 gives a good approximation in ~2-3 minutes for Yorkshire
@@ -117,6 +127,120 @@ POP_JOIN_CAP_M = 2000
 
 # Road classifications that count as "major"
 MAJOR_CLASSES = {"Motorway", "A Road"}
+RUC_REQUIRED_COLUMNS = ["LSOA21CD", "RUC21CD", "RUC21NM"]
+
+
+def get_script_git_sha() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+def load_ruc_lookup(ruc_path: Path = RUC_PATH) -> pd.DataFrame:
+    """
+    Load the ONS 2021 Rural-Urban Classification lookup keyed by LSOA21CD.
+
+    Fails fast with a clear message if the source file is missing or malformed.
+    """
+    if not ruc_path.exists():
+        raise FileNotFoundError(
+            f"RUC CSV not found at {ruc_path}. Expected columns: "
+            f"{', '.join(RUC_REQUIRED_COLUMNS)}."
+        )
+
+    header = pd.read_csv(ruc_path, nrows=0, encoding="utf-8-sig")
+    missing = [col for col in RUC_REQUIRED_COLUMNS if col not in header.columns]
+    if missing:
+        raise ValueError(
+            f"RUC CSV at {ruc_path} is missing required columns: {missing}. "
+            f"Found columns: {header.columns.tolist()}."
+        )
+
+    ruc = pd.read_csv(
+        ruc_path,
+        usecols=RUC_REQUIRED_COLUMNS,
+        encoding="utf-8-sig",
+    ).copy()
+    ruc["LSOA21CD"] = ruc["LSOA21CD"].astype("string").str.strip()
+    ruc["RUC21CD"] = ruc["RUC21CD"].astype("string").str.strip().str.upper()
+    ruc["RUC21NM"] = ruc["RUC21NM"].astype("string").str.strip()
+
+    dupes = int(ruc["LSOA21CD"].duplicated().sum())
+    if dupes:
+        raise ValueError(
+            f"RUC CSV at {ruc_path} contains {dupes:,} duplicate LSOA21CD rows; "
+            "expected one row per LSOA."
+        )
+
+    logger.info(
+        "  Loaded %s RUC rows with %s unique classes",
+        f"{len(ruc):,}",
+        f"{ruc['RUC21CD'].nunique(dropna=True):,}",
+    )
+    return ruc
+
+
+def derive_ruc_urban_rural(ruc_class: pd.Series) -> pd.Series:
+    """
+    Collapse detailed RUC codes into an Urban/Rural top-level split.
+
+    Supports both the 8-class A1..E2 coding described in the task brief and the
+    2021 source variant observed in the supplied ONS CSV (UN1/UF1/RSN1/...).
+    """
+    urban_8 = {"A1", "B1", "C1", "C2"}
+    rural_8 = {"D1", "D2", "E1", "E2"}
+
+    def _map_one(value):
+        if pd.isna(value):
+            return pd.NA
+        code = str(value).strip().upper()
+        if code in urban_8 or code.startswith("U"):
+            return "Urban"
+        if code in rural_8 or code.startswith("R"):
+            return "Rural"
+        return pd.NA
+
+    return ruc_class.map(_map_one).astype("string")
+
+
+def write_ruc_provenance(features: pd.DataFrame) -> None:
+    def _counts(series: pd.Series) -> dict[str, int]:
+        counts = (
+            series.astype("object")
+            .where(series.notna(), "NaN")
+            .value_counts(dropna=False)
+            .sort_index()
+        )
+        return {str(k): int(v) for k, v in counts.items()}
+
+    n_links_total = int(len(features))
+    n_links_with_ruc = int(features["ruc_class"].notna().sum())
+    coverage_pct = (100.0 * n_links_with_ruc / n_links_total) if n_links_total else 0.0
+
+    provenance = {
+        "script_path": str(Path(__file__).resolve()),
+        "git_sha": get_script_git_sha(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
+        "ruc_source": "ONS 2021 RUC at LSOA grain, E+W, geoportal.statistics.gov.uk",
+        "n_links_total": n_links_total,
+        "n_links_with_ruc": n_links_with_ruc,
+        "coverage_pct": coverage_pct,
+        "ruc_urban_rural_distribution": _counts(features["ruc_urban_rural"]),
+        "ruc_class_distribution": _counts(features["ruc_class"]),
+    }
+
+    RUC_PROV_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(RUC_PROV_PATH, "w", encoding="utf-8") as f:
+        json.dump(provenance, f, indent=2)
+    logger.info(f"Wrote RUC provenance to {RUC_PROV_PATH}")
 
 
 # ---------------------------------------------------------------------------
@@ -322,7 +446,8 @@ def compute_population_density(
     lsoa_cent_path: Path = LSOA_CENT_PATH,
     lsoa_pop_path: Path = LSOA_POP_PATH,
     cap_m: float = POP_JOIN_CAP_M,
-) -> pd.Series:
+    return_lsoa_assignment: bool = False,
+):
     """
     Compute population density (people/km²) for each road link by joining
     to the nearest LSOA centroid within cap_m metres.
@@ -340,13 +465,28 @@ def compute_population_density(
     -------
     Series indexed by link_id with pop_density_per_km2 values.
     NaN where no LSOA centroid within cap_m metres.
+
+    If return_lsoa_assignment=True, also returns a second Series containing the
+    assigned LSOA21CD from the same nearest-centroid join.
     """
     if not lsoa_cent_path.exists():
         logger.warning(
             f"LSOA centroids not found at {lsoa_cent_path} — "
             "population density feature will be NaN"
         )
-        return pd.Series(np.nan, index=openroads["link_id"], name="pop_density_per_km2")
+        density = pd.Series(
+            np.nan,
+            index=openroads["link_id"],
+            name="pop_density_per_km2",
+        )
+        if return_lsoa_assignment:
+            assignment = pd.Series(
+                pd.array([pd.NA] * len(openroads), dtype="string"),
+                index=openroads["link_id"],
+                name="lsoa21cd_assigned",
+            )
+            return density, assignment
+        return density
 
     # --- Load LSOA centroids (BNG x, y) ------------------------------------
     lsoa_cent = pd.read_csv(
@@ -472,6 +612,8 @@ def compute_population_density(
     tree = cKDTree(lsoa_xy)
     dists, indices = tree.query(road_xy, k=1, distance_upper_bound=cap_m)
     valid = dists < cap_m
+    assigned_codes = np.full(len(road_xy), pd.NA, dtype=object)
+    assigned_codes[valid] = lsoa_cent["LSOA21CD"].values[indices[valid]]
 
     if use_density:
         pop_values = lsoa_cent["pop_density"].values
@@ -493,6 +635,14 @@ def compute_population_density(
         f"  pop_density_per_km2: {n_valid:,} / {len(openroads):,} links matched "
         f"(median={s.median():.0f})"
     )
+    if return_lsoa_assignment:
+        assignment = pd.Series(
+            assigned_codes,
+            index=openroads["link_id"],
+            name="lsoa21cd_assigned",
+            dtype="string",
+        )
+        return s, assignment
     return s
 
 
@@ -844,12 +994,20 @@ def build_network_features(
     DataFrame with columns:
         degree_mean, betweenness, betweenness_relative,
         dist_to_major_km, pop_density_per_km2,
+        ruc_class, ruc_urban_rural,
         [speed_limit_mph, lanes, lit, is_unpaved]  ← if include_osm=True
     """
+    required_cols = {"ruc_class", "ruc_urban_rural"}
     if output_path.exists() and not force_recompute:
         cached = pd.read_parquet(output_path)
         osm_cols = {"speed_limit_mph", "lanes", "lit", "is_unpaved"}
-        if include_osm and not osm_cols.intersection(cached.columns):
+        missing_required = required_cols.difference(cached.columns)
+        if missing_required:
+            logger.info(
+                "Cache exists but is missing required RUC columns %s — recomputing.",
+                sorted(missing_required),
+            )
+        elif include_osm and not osm_cols.intersection(cached.columns):
             logger.info(
                 "Cache exists but has no OSM columns — recomputing with OSM features."
             )
@@ -862,6 +1020,10 @@ def build_network_features(
         openroads = gpd.read_parquet(openroads_path)
         logger.info(f"  {len(openroads):,} links loaded")
 
+    logger.info(f"Loading RUC lookup from {RUC_PATH}")
+    ruc_lookup = load_ruc_lookup()
+    ruc_by_lsoa = ruc_lookup.set_index("LSOA21CD")["RUC21CD"]
+
     # Build graph
     G = build_graph(openroads)
 
@@ -869,7 +1031,12 @@ def build_network_features(
     degree      = compute_node_degree(G, openroads)
     betweenness = compute_betweenness(G, openroads, k=betweenness_k)
     dist_major  = compute_dist_to_major(G, openroads)
-    pop_density = compute_population_density(openroads)
+    pop_density, lsoa_assignment = compute_population_density(
+        openroads,
+        return_lsoa_assignment=True,
+    )
+    ruc_class = lsoa_assignment.map(ruc_by_lsoa).astype("string")
+    ruc_urban_rural = derive_ruc_urban_rural(ruc_class)
 
     # Combine base features
     features = pd.DataFrame({
@@ -878,6 +1045,8 @@ def build_network_features(
         "betweenness":         betweenness.values,
         "dist_to_major_km":    dist_major.values,
         "pop_density_per_km2": pop_density.values,
+        "ruc_class":           ruc_class.values,
+        "ruc_urban_rural":     ruc_urban_rural.values,
     })
 
     # Betweenness relative to road class
@@ -907,11 +1076,20 @@ def build_network_features(
                 f"True={vals.sum():.0f} ({vals.mean():.1%}), "
                 f"nulls={features[col].isna().sum():,}"
             )
-        else:
+        elif pd.api.types.is_numeric_dtype(vals):
             logger.info(
                 f"  {col:28s}: median={vals.median():.4f}, "
                 f"p25={vals.quantile(0.25):.4f}, "
                 f"p75={vals.quantile(0.75):.4f}, "
+                f"nulls={features[col].isna().sum():,}"
+            )
+        else:
+            top_counts = vals.astype(str).value_counts().head(3)
+            top_text = ", ".join(
+                f"{label}={count:,}" for label, count in top_counts.items()
+            )
+            logger.info(
+                f"  {col:28s}: top={top_text}, "
                 f"nulls={features[col].isna().sum():,}"
             )
 
@@ -919,6 +1097,7 @@ def build_network_features(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     features.to_parquet(output_path, index=False)
     logger.info(f"Saved network features to {output_path} ({len(features):,} rows)")
+    write_ruc_provenance(features)
 
     return features
 
@@ -949,11 +1128,14 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    features = build_network_features(
-        betweenness_k=args.k,
-        force_recompute=args.force,
-        include_osm=args.osm,
-    )
+    try:
+        features = build_network_features(
+            betweenness_k=args.k,
+            force_recompute=args.force,
+            include_osm=args.osm,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        raise SystemExit(str(exc)) from exc
 
     print("\n=== Network features ===")
     print(features.describe().round(4).to_string())

@@ -168,6 +168,14 @@ Tracked here so nothing gets lost. Cross off as done.
       motorways (46%, near-constant where populated).
 - [x] Model inventory (`quarto/methodology/model-inventory.qmd`, refreshed 21 April 2026) — durable
       baseline of current Stage 2 features, hyperparameters, and training rows.
+- [x] Stage 2 base-table size investigation (23 April 2026) — 40% reduction
+      in GLM n_full (18.3M → 10.9M) traced to OSM speed_limit_mph at 56.4%
+      coverage crossing the 50% direct-use threshold in train_collision_glm(),
+      causing dropna cascade. Not caused by counted-only AADF filter. XGBoost
+      n_train unchanged (uses fillna=0), production risk_percentile ranking
+      unaffected. See reports/stage2_base_table_investigation.md. Short-term
+      fix: raise coverage threshold to 80%. Long-term fix: OSM tiered
+      imputation (already queued).
 - [x] Counted-only AADF filter for Stage 1a (19 April 2026) — CV R² 0.72→0.83,
       local holdout R² 0.776→0.832, spatial holdout R² 0.707→0.788. Dropped
       1,288 count points (9.1%) that are always Estimated across 2015-2024.
@@ -391,6 +399,12 @@ The doc should cover:
 
 **Context:** Current OSM coverage (`speed_limit_mph` 56%, `lanes` 7%,
 `is_unpaved` 16%) is too low for global inclusion as-is. Median imputation
+
+**Additional context (23 April 2026):** OSM speed_limit_mph at 56.4%
+coverage is currently causing GLM training-set shrinkage to 10.9M rows
+due to coverage-threshold edge case in train_collision_glm(). Tiered
+imputation will restore full coverage and eliminate the issue. See
+reports/stage2_base_table_investigation.md.
 injects bias. Tiered imputation by road class (UK legal defaults) with
 explicit `_imputed` flags may rescue these features for A-roads and B-roads
 where coverage is moderate. Expectation: the feature becomes *not broken* on
@@ -663,25 +677,21 @@ network_features.parquet. Retrain Stage 2 and report.]
 
 ### ONS Rural-Urban LSOA classification
 
-**Context:** Cleaner urban/rural split than population density alone.
-Needed for OSM imputation defaults (rural 60 mph vs urban 30 mph on
-unclassified roads) and itself a useful model feature. Pairs with the
-OSM tiered imputation task above — effectively a prerequisite if we
-want imputation defaults to be rural/urban aware.
+- [x] ONS Rural-Urban Classification (2021) added to `network_features.parquet`
+  (23 April 2026) — 84.51% link coverage, 6-class 2021 scheme (`UN1`, `UF1`,
+  `RSN1`, `RSF1`, `RLN1`, `RLF1`) preserved from source; derived binary
+  `ruc_urban_rural` shows 74% urban / 26% rural across non-null links,
+  consistent with the study area. `pop_density_per_km2` unchanged.
+  Nearest-centroid limitation documented in methodology page. See
+  `data/features/ruc_provenance.json`.
 
-**Decisions already made:**
-- ONS Rural-Urban Classification 2011 (or newer if released) at LSOA.
-- Universal coverage, free, no licensing.
-- Use as both a feature and as the urban/rural flag for OSM imputation.
-
-**Prompt:**
-[Draft as a small task. Download ONS RUC at LSOA, join via existing spatial
-infrastructure, add as a categorical feature, use to drive OSM imputation
-defaults in the OSM tiered imputation task.]
-
-**Expected outcomes:**
-- Small direct contribution as a feature.
-- Larger indirect contribution by improving OSM imputation quality.
+- [ ] Investigate 335,692 links (15.5%) with no LSOA-derived features
+  (both `pop_density_per_km2` and `ruc_*` columns `NaN`). Likely
+  boundary/coastal links where nearest-centroid lookup fails. These links are
+  the same set driving GLM training-set shrinkage (`n_full` 18.3M → 10.9M
+  before OSM). Low priority but worth understanding — may be resolvable by
+  spatial-join fallback or threshold adjustment in the LSOA assignment
+  function.
 
 ---
 
