@@ -116,8 +116,8 @@ LSOA_CENT_PATH = _ROOT / "data/raw/stats19/lsoa_centroids.csv"
 LSOA_POP_PATH  = _ROOT / "data/raw/stats19/lsoa_population.csv"
 RUC_PATH       = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
 OUTPUT_PATH    = _ROOT / "data/features/network_features.parquet"
-RUC_PROV_PATH  = _ROOT / "data/features/ruc_provenance.json"
-SPEED_LIMIT_PROV_PATH = _ROOT / "data/features/speed_limit_effective_provenance.json"
+RUC_PROV_PATH  = _ROOT / "data/provenance/ruc_provenance.json"
+SPEED_LIMIT_PROV_PATH = _ROOT / "data/provenance/speed_limit_effective_provenance.json"
 
 # Betweenness centrality sample size — higher = more accurate, slower
 # 500 gives a good approximation in ~2-3 minutes for Yorkshire

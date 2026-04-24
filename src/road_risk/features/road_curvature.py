@@ -66,7 +66,7 @@ INPUT_CANDIDATES = [
 ]
 OUTPUT_PATH = _ROOT / "data/features/network_features.parquet"
 SUMMARY_DIR = _ROOT / "data/features"
-PROVENANCE_PATH = SUMMARY_DIR / "curvature_provenance.json"
+PROVENANCE_PATH = _ROOT / "data/provenance/curvature_provenance.json"
 SPACING_M = 15.0
 VALIDATION_SPACING_M = 5.0
 SINUOSITY_MAX = 5.0

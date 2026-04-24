@@ -143,3 +143,7 @@ performance metrics, and validation detail — kept there to avoid documentation
 | OSM pbf files | `data/raw/osm/*.osm` | County files from Geofabrik (see `data/raw/osm/`) |
 | LSOA population + area | `data/raw/stats19/lsoa_*.csv` | England & Wales 2021 |
 | DfT data guide Excel | `data/raw/stats19/dft-road-casualty-*-data-guide-2024.xlsx` | Code lookups |
+
+### Provenance convention
+
+Per-task provenance JSONs (audit trail for feature-engineering and data-generation steps) live in `data/provenance/`. This directory is committable (see `.gitignore` allow-list); `data/features/` and other `data/` subdirectories are not. Write new provenance to `data/provenance/<task_name>_provenance.json`.

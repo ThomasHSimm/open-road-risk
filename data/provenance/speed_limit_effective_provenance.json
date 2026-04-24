@@ -1,0 +1,92 @@
+{
+  "script_path": "/home/tsispace/Documents/GitHub/open-road-risk/src/road_risk/features/network.py",
+  "git_sha": "d40b20739049b5e459af0cc4dbae7dee49902c77",
+  "timestamp_utc": "2026-04-24T21:29:38.295158+00:00",
+  "lookup_rules": [
+    {
+      "priority": 1,
+      "condition": "speed_limit_mph notna",
+      "speed_limit_mph_effective": "speed_limit_mph",
+      "speed_limit_source": "osm",
+      "speed_limit_mph_imputed": false
+    },
+    {
+      "priority": 2,
+      "condition": "road_classification == \"Motorway\"",
+      "speed_limit_mph_effective": 70,
+      "speed_limit_source": "lookup_motorway",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 3,
+      "condition": "road_classification == \"A Road\" and is_dual",
+      "speed_limit_mph_effective": 70,
+      "speed_limit_source": "lookup_a_road_dual",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 4,
+      "condition": "road_classification == \"A Road\" and is_trunk and not is_dual",
+      "speed_limit_mph_effective": 70,
+      "speed_limit_source": "lookup_a_road_trunk",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 5,
+      "condition": "road_classification == \"A Road\"",
+      "speed_limit_mph_effective": 60,
+      "speed_limit_source": "lookup_a_road_single",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 6,
+      "condition": "road_classification == \"B Road\" and ruc_urban_rural == \"Urban\"",
+      "speed_limit_mph_effective": 30,
+      "speed_limit_source": "lookup_b_road_urban",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 7,
+      "condition": "road_classification == \"B Road\" and ruc_urban_rural == \"Rural\"",
+      "speed_limit_mph_effective": 60,
+      "speed_limit_source": "lookup_b_road_rural",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 8,
+      "condition": "minor road class and ruc_urban_rural == Urban",
+      "speed_limit_mph_effective": 30,
+      "speed_limit_source": "lookup_minor_urban",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 9,
+      "condition": "minor road class and ruc_urban_rural == Rural",
+      "speed_limit_mph_effective": 60,
+      "speed_limit_source": "lookup_minor_rural",
+      "speed_limit_mph_imputed": true
+    },
+    {
+      "priority": 10,
+      "condition": "speed_limit_mph isna and ruc_urban_rural isna",
+      "speed_limit_mph_effective": null,
+      "speed_limit_source": "null_no_ruc",
+      "speed_limit_mph_imputed": false
+    }
+  ],
+  "n_links_total": 2167557,
+  "speed_limit_source_counts": {
+    "osm": 1223082,
+    "lookup_motorway": 2203,
+    "lookup_a_road_dual": 11360,
+    "lookup_a_road_trunk": 6612,
+    "lookup_a_road_single": 51532,
+    "lookup_b_road_urban": 20253,
+    "lookup_b_road_rural": 11382,
+    "lookup_minor_urban": 485384,
+    "lookup_minor_rural": 166583,
+    "null_no_ruc": 189166
+  },
+  "coverage_pct": 91.27284772672645,
+  "n_null_no_ruc": 189166
+}

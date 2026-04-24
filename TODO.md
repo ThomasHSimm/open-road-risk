@@ -30,10 +30,11 @@ Tracked here so nothing gets lost. Cross off as done.
 
 ## 🟡 Medium Priority — Model
 
-- [ ] Review: given consistent ranking stability across feature additions
-  (Jaccard >0.95 each time), consider whether further feature work has
-  diminishing returns vs prioritising structural modelling changes (EB
-  shrinkage, facility-family split) sooner in the queue.
+- [ ] Consider: given consistent rank stability across feature additions
+  (Jaccard >0.95 on each of RUC, tiered imputation), future feature work
+  has diminishing returns on ranking vs structural modelling changes (EB
+  shrinkage, facility-family split). Re-evaluate priority after 5-seed
+  harness quantifies seed-level noise.
 
 - [ ] Drop raw `betweenness` from GLM — coefficient is −8 which dominates the
       coefficient chart and is a multicollinearity symptom. Keep `betweenness_relative`
@@ -66,6 +67,12 @@ Tracked here so nothing gets lost. Cross off as done.
   (STATS19 CSV, OS Open Roads GeoPackage, AADF zip, OSM pbf files, MRDB).
 
 - [ ] Kaggle dataset — upload processed parquets so others can skip ingest/clean/snap.
+
+- [ ] Provenance directory restructure (small session) — move
+  `curvature_provenance.json`, `ruc_provenance.json`,
+  `speed_limit_effective_provenance.json` from `data/features/` to
+  `data/provenance/`. Update code paths that write these. gitignore
+  already allow-lists the directory.
 
 ---
 
@@ -191,21 +198,15 @@ Tracked here so nothing gets lost. Cross off as done.
 - [x] ~~Download additional AADF years~~ — stale; AADF ingest already loads full
       2015-2024 range. Real issue was counted-vs-estimated, now handled by the
       counted-only filter.
-- [x] Stage 2 retrain using `speed_limit_mph_effective` (Session 2, 24 April 2026) —
-      GLM `n_full` recovered to 18,302,830 as predicted (matches pre-OSM baseline
-      exactly); GLM pseudo-R² 0.251 → 0.301 on larger cleaner training set; XGBoost
-      pseudo-R² unchanged at 0.858; top-1% Jaccard 0.951 with previous run, Spearman
-      0.996. Ranking essentially stable across change; GLM improvement is real but
-      contained to diagnostic outputs not the production ranking. Methodology page
-      and model inventory updated.
-- [x] OSM tiered speed-limit imputation (Session 1, 24 April 2026) — added
-      `speed_limit_mph_effective`, `speed_limit_mph_imputed`, and
-      `speed_limit_source` columns to `network_features.parquet`. Coverage
-      91.27% (1.98M / 2.17M links), up from raw OSM's 56.4%. UK legal defaults
-      applied via `road_classification × ruc_urban_rural` lookup. Raw
-      `speed_limit_mph` preserved unchanged as OSM-tagged-only. Methodology
-      documented. See `reports/speed_limit_effective_verification.md` for full
-      verification including 100 spot-check rows with OSM URLs.
+- [x] OSM tiered speed-limit imputation + Stage 2 retrain (24 April 2026) —
+      `speed_limit_mph_effective` replaces raw OSM-only feature in model. Coverage
+      91.27% (1.98M / 2.17M links) via `road_classification × ruc_urban_rural` lookup;
+      raw `speed_limit_mph` preserved as OSM-tagged-only. GLM `n_full` recovered to
+      18.3M (matches pre-OSM baseline), GLM pseudo-R² 0.251 → 0.301, XGBoost
+      unchanged at 0.858. Top-1% Jaccard 0.951, Spearman 0.996 — ranking essentially
+      stable. Methodology page and model inventory updated.
+- [x] Methodology Feature summary table verified (24 April 2026) — Network row
+      correctly references `speed_limit_mph_effective` not `speed_limit_mph`.
 - [x] `.coverage` and `htmlcov/` already ignored in root `.gitignore` — no
       additional housekeeping change needed.
 

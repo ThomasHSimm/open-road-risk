@@ -333,6 +333,56 @@ road class.
 
 ---
 
+## Theme 3: Structural modelling changes
+
+Major refactors of the Stage 2 modelling approach — not feature additions,
+but changes to the grain, structure, or estimation method of the core model.
+
+---
+
+### Temporal disaggregation of Stage 2
+
+**What it is:** Move Stage 2 from link × year grain to link × year ×
+time-bucket grain (e.g. month, day-of-week × hour block). Would use
+Stage 1b temporal profiles as exposure-modifier infrastructure. Major
+refactor of the collision model; not a feature addition.
+
+**Why it's interesting:** Crash risk varies sharply by time of day
+and day of week in ways the current annual model cannot represent.
+Friday evenings and Saturday nights carry disproportionate risk; peak
+commute hours concentrate motorway collisions; school-run windows
+concentrate urban collisions near schools. A temporally disaggregated
+model would produce rankings that identify *when* a link is risky,
+not just which links are risky overall.
+
+**Why not now:** Multi-session refactor requiring (a) Stage 1b to
+move from diagnostic to production output, (b) temporal joins to be
+rebuilt in Stage 2, (c) potentially different modelling approach
+entirely (hierarchical Poisson with time random effects, or
+stratified per time-bucket model). Also: today's rank stability work
+suggests the current model has largely saturated what link-level
+features can explain — temporal is a plausible candidate for
+meaningful predictive lift beyond the current ceiling, but sizing
+that claim requires research.
+
+**Good starting point for someone else:**
+
+- Deep-research pass on temporal disaggregation approaches in UK
+  road safety literature. Specifically: how other STATS19-based
+  analyses have handled time-of-day effects at link grain; whether
+  hierarchical modelling or stratified models are preferred; what
+  sample-size constraints per time-bucket apply.
+- Scope out what Stage 1b would need to produce to feed temporal
+  Stage 2.
+- Design doc before implementation. Temporal work is methodology-
+  heavy enough that a prompt can't carry it.
+
+**Related:** Would pair naturally with weather warning analysis
+(above) — temporal grain is the natural level for weather effects
+to manifest.
+
+---
+
 ## Cross-theme note
 
 The ideas above are not independent. Several natural combinations:

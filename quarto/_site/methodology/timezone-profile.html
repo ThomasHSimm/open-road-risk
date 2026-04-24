@@ -371,7 +371,7 @@ window.Quarto = {
 </section>
 <section id="data-and-model-setup" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="data-and-model-setup"><span class="header-section-number">3</span> Data and model setup</h2>
-<div id="130f3921" class="cell" data-execution_count="1">
+<div id="07df17e2" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -404,7 +404,7 @@ Profile estimates      : 21,675,570 rows</code></pre>
 <section id="training-data-webtris-time-zone-fractions" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="training-data-webtris-time-zone-fractions"><span class="header-section-number">4</span> Training data: WebTRIS time-zone fractions</h2>
 <p>The profile model is trained on WebTRIS sensors — National Highways sites on motorways and major A-roads. For each site×year, the four time-band fractions are computed from the measured flow windows and used as prediction targets.</p>
-<div id="0c55d265" class="cell" data-execution_count="2">
+<div id="b4c11513" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>wt <span class="op">=</span> webtris[webtris[<span class="st">"all_flow"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
@@ -433,7 +433,7 @@ min        0.500         0.040            0.000         0.005
 max        0.933         0.318            0.182         0.251</code></pre>
 </div>
 </div>
-<div id="c52e1498" class="cell" data-execution_count="3">
+<div id="2546c36a" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
@@ -458,7 +458,7 @@ max        0.933         0.318            0.182         0.251</code></pre>
 </div>
 </div>
 </div>
-<div id="1fdae9c6" class="cell" data-execution_count="4">
+<div id="33f83d6c" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Peak–offpeak ratio (measured sites):"</span>)</span>
@@ -556,7 +556,7 @@ Note
 </section>
 <section id="estimated-profiles-across-the-full-network" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="estimated-profiles-across-the-full-network"><span class="header-section-number">6</span> Estimated profiles across the full network</h2>
-<div id="67d88f5e" class="cell" data-execution_count="5">
+<div id="b16b8fe2" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
@@ -583,7 +583,7 @@ min          0.724         0.071            0.016         0.010               3.
 max          0.893         0.155            0.037         0.117              44.320</code></pre>
 </div>
 </div>
-<div id="ce1b2e57" class="cell" data-execution_count="6">
+<div id="30c37f10" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
@@ -615,7 +615,7 @@ max          0.893         0.155            0.037         0.117              44.
 <section id="profile-variation-by-road-class" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="profile-variation-by-road-class"><span class="header-section-number">7</span> Profile variation by road class</h2>
 <p>Roads with different functions show distinct daily profiles. Motorways have high peak fractions (commuter + freight); rural unclassified roads have flatter profiles. The model captures this through road classification and network betweenness.</p>
-<div id="75d58dbf" class="cell" data-execution_count="7">
+<div id="dc188b55" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty <span class="kw">and</span> road_class_col:</span>
@@ -671,7 +671,7 @@ Motorway                   0.786         0.053               7.346</code></pre>
 <section id="reconstructed-per-hour-flows" class="level2" data-number="8">
 <h2 data-number="8" class="anchored" data-anchor-id="reconstructed-per-hour-flows"><span class="header-section-number">8</span> Reconstructed per-hour flows</h2>
 <p>Using Stage 1a AADT estimates and Stage 1b fractions, per-hour flow rates can be computed for any link in the network.</p>
-<div id="2f14506c" class="cell" data-execution_count="8">
+<div id="c8bdb483" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>

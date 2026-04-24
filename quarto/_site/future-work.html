@@ -273,7 +273,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#cyclist-and-pedestrian-risk-without-direct-exposure" id="toc-cyclist-and-pedestrian-risk-without-direct-exposure" class="nav-link" data-scroll-target="#cyclist-and-pedestrian-risk-without-direct-exposure"><span class="header-section-number">4.2</span> Cyclist and pedestrian risk without direct exposure</a></li>
   <li><a href="#vehicle-mix-as-risk-modifier" id="toc-vehicle-mix-as-risk-modifier" class="nav-link" data-scroll-target="#vehicle-mix-as-risk-modifier"><span class="header-section-number">4.3</span> Vehicle mix as risk modifier</a></li>
   </ul></li>
-  <li><a href="#cross-theme-note" id="toc-cross-theme-note" class="nav-link" data-scroll-target="#cross-theme-note"><span class="header-section-number">5</span> Cross-theme note</a></li>
+  <li><a href="#theme-3-structural-modelling-changes" id="toc-theme-3-structural-modelling-changes" class="nav-link" data-scroll-target="#theme-3-structural-modelling-changes"><span class="header-section-number">5</span> Theme 3: Structural modelling changes</a>
+  <ul class="collapse">
+  <li><a href="#temporal-disaggregation-of-stage-2" id="toc-temporal-disaggregation-of-stage-2" class="nav-link" data-scroll-target="#temporal-disaggregation-of-stage-2"><span class="header-section-number">5.1</span> Temporal disaggregation of Stage 2</a></li>
+  </ul></li>
+  <li><a href="#cross-theme-note" id="toc-cross-theme-note" class="nav-link" data-scroll-target="#cross-theme-note"><span class="header-section-number">6</span> Cross-theme note</a></li>
   </ul>
 </nav>
     </div>
@@ -388,8 +392,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 </section>
 </section>
-<section id="cross-theme-note" class="level2" data-number="5">
-<h2 data-number="5" class="anchored" data-anchor-id="cross-theme-note"><span class="header-section-number">5</span> Cross-theme note</h2>
+<section id="theme-3-structural-modelling-changes" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="theme-3-structural-modelling-changes"><span class="header-section-number">5</span> Theme 3: Structural modelling changes</h2>
+<p>Major refactors of the Stage 2 modelling approach — not feature additions, but changes to the grain, structure, or estimation method of the core model.</p>
+<hr>
+<section id="temporal-disaggregation-of-stage-2" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="temporal-disaggregation-of-stage-2"><span class="header-section-number">5.1</span> Temporal disaggregation of Stage 2</h3>
+<p><strong>What it is:</strong> Move Stage 2 from link × year grain to link × year × time-bucket grain (e.g.&nbsp;month, day-of-week × hour block). Would use Stage 1b temporal profiles as exposure-modifier infrastructure. Major refactor of the collision model; not a feature addition.</p>
+<p><strong>Why it’s interesting:</strong> Crash risk varies sharply by time of day and day of week in ways the current annual model cannot represent. Friday evenings and Saturday nights carry disproportionate risk; peak commute hours concentrate motorway collisions; school-run windows concentrate urban collisions near schools. A temporally disaggregated model would produce rankings that identify <em>when</em> a link is risky, not just which links are risky overall.</p>
+<p><strong>Why not now:</strong> Multi-session refactor requiring (a) Stage 1b to move from diagnostic to production output, (b) temporal joins to be rebuilt in Stage 2, (c) potentially different modelling approach entirely (hierarchical Poisson with time random effects, or stratified per time-bucket model). Also: today’s rank stability work suggests the current model has largely saturated what link-level features can explain — temporal is a plausible candidate for meaningful predictive lift beyond the current ceiling, but sizing that claim requires research.</p>
+<p><strong>Good starting point for someone else:</strong></p>
+<ul>
+<li>Deep-research pass on temporal disaggregation approaches in UK road safety literature. Specifically: how other STATS19-based analyses have handled time-of-day effects at link grain; whether hierarchical modelling or stratified models are preferred; what sample-size constraints per time-bucket apply.</li>
+<li>Scope out what Stage 1b would need to produce to feed temporal Stage 2.</li>
+<li>Design doc before implementation. Temporal work is methodology- heavy enough that a prompt can’t carry it.</li>
+</ul>
+<p><strong>Related:</strong> Would pair naturally with weather warning analysis (above) — temporal grain is the natural level for weather effects to manifest.</p>
+<hr>
+</section>
+</section>
+<section id="cross-theme-note" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="cross-theme-note"><span class="header-section-number">6</span> Cross-theme note</h2>
 <p>The ideas above are not independent. Several natural combinations:</p>
 <ul>
 <li><strong>Motorcycle × weather</strong> — motorcycle crash risk is known to be highly weather-sensitive. Combining the motorcycle-specific risk layer with weather warning analysis would produce a parallel ranking that’s likely more actionable than either alone.</li>
@@ -1190,26 +1213,76 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-333"><a href="#cb1-333" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-334"><a href="#cb1-334" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-335"><a href="#cb1-335" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-336"><a href="#cb1-336" aria-hidden="true" tabindex="-1"></a><span class="fu">## Cross-theme note</span></span>
+<span id="cb1-336"><a href="#cb1-336" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme 3: Structural modelling changes</span></span>
 <span id="cb1-337"><a href="#cb1-337" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-338"><a href="#cb1-338" aria-hidden="true" tabindex="-1"></a>The ideas above are not independent. Several natural combinations:</span>
-<span id="cb1-339"><a href="#cb1-339" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-340"><a href="#cb1-340" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorcycle × weather** — motorcycle crash risk is known to be</span>
-<span id="cb1-341"><a href="#cb1-341" aria-hidden="true" tabindex="-1"></a>  highly weather-sensitive. Combining the motorcycle-specific risk</span>
-<span id="cb1-342"><a href="#cb1-342" aria-hidden="true" tabindex="-1"></a>  layer with weather warning analysis would produce a parallel ranking</span>
-<span id="cb1-343"><a href="#cb1-343" aria-hidden="true" tabindex="-1"></a>  that's likely more actionable than either alone.</span>
-<span id="cb1-344"><a href="#cb1-344" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**HGV enforcement × vehicle-mix** — HGV risk distribution combined</span>
-<span id="cb1-345"><a href="#cb1-345" aria-hidden="true" tabindex="-1"></a>  with vehicle-mix-as-risk-modifier would identify links where HGV</span>
-<span id="cb1-346"><a href="#cb1-346" aria-hidden="true" tabindex="-1"></a>  enforcement protects not just the HGV crash rate but also other</span>
-<span id="cb1-347"><a href="#cb1-347" aria-hidden="true" tabindex="-1"></a>  vehicle types affected by HGV presence.</span>
-<span id="cb1-348"><a href="#cb1-348" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**VRU-weighted × cyclist/pedestrian layers** — these are closely</span>
-<span id="cb1-349"><a href="#cb1-349" aria-hidden="true" tabindex="-1"></a>  related target reframings. The VRU-weighted version produces a</span>
-<span id="cb1-350"><a href="#cb1-350" aria-hidden="true" tabindex="-1"></a>  single composite ranking; the cyclist/pedestrian layers produce</span>
-<span id="cb1-351"><a href="#cb1-351" aria-hidden="true" tabindex="-1"></a>  separate rankings per casualty type. Both are defensible depending</span>
-<span id="cb1-352"><a href="#cb1-352" aria-hidden="true" tabindex="-1"></a>  on stakeholder.</span>
-<span id="cb1-353"><a href="#cb1-353" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-354"><a href="#cb1-354" aria-hidden="true" tabindex="-1"></a>These combinations are documented here rather than as separate entries</span>
-<span id="cb1-355"><a href="#cb1-355" aria-hidden="true" tabindex="-1"></a>because each needs the component analyses in place first.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb1-338"><a href="#cb1-338" aria-hidden="true" tabindex="-1"></a>Major refactors of the Stage 2 modelling approach — not feature additions,</span>
+<span id="cb1-339"><a href="#cb1-339" aria-hidden="true" tabindex="-1"></a>but changes to the grain, structure, or estimation method of the core model.</span>
+<span id="cb1-340"><a href="#cb1-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-341"><a href="#cb1-341" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-342"><a href="#cb1-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-343"><a href="#cb1-343" aria-hidden="true" tabindex="-1"></a><span class="fu">### Temporal disaggregation of Stage 2</span></span>
+<span id="cb1-344"><a href="#cb1-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-345"><a href="#cb1-345" aria-hidden="true" tabindex="-1"></a>**What it is:** Move Stage 2 from link × year grain to link × year ×</span>
+<span id="cb1-346"><a href="#cb1-346" aria-hidden="true" tabindex="-1"></a>time-bucket grain (e.g. month, day-of-week × hour block). Would use</span>
+<span id="cb1-347"><a href="#cb1-347" aria-hidden="true" tabindex="-1"></a>Stage 1b temporal profiles as exposure-modifier infrastructure. Major</span>
+<span id="cb1-348"><a href="#cb1-348" aria-hidden="true" tabindex="-1"></a>refactor of the collision model; not a feature addition.</span>
+<span id="cb1-349"><a href="#cb1-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-350"><a href="#cb1-350" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Crash risk varies sharply by time of day</span>
+<span id="cb1-351"><a href="#cb1-351" aria-hidden="true" tabindex="-1"></a>and day of week in ways the current annual model cannot represent.</span>
+<span id="cb1-352"><a href="#cb1-352" aria-hidden="true" tabindex="-1"></a>Friday evenings and Saturday nights carry disproportionate risk; peak</span>
+<span id="cb1-353"><a href="#cb1-353" aria-hidden="true" tabindex="-1"></a>commute hours concentrate motorway collisions; school-run windows</span>
+<span id="cb1-354"><a href="#cb1-354" aria-hidden="true" tabindex="-1"></a>concentrate urban collisions near schools. A temporally disaggregated</span>
+<span id="cb1-355"><a href="#cb1-355" aria-hidden="true" tabindex="-1"></a>model would produce rankings that identify *when* a link is risky,</span>
+<span id="cb1-356"><a href="#cb1-356" aria-hidden="true" tabindex="-1"></a>not just which links are risky overall.</span>
+<span id="cb1-357"><a href="#cb1-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-358"><a href="#cb1-358" aria-hidden="true" tabindex="-1"></a>**Why not now:** Multi-session refactor requiring (a) Stage 1b to</span>
+<span id="cb1-359"><a href="#cb1-359" aria-hidden="true" tabindex="-1"></a>move from diagnostic to production output, (b) temporal joins to be</span>
+<span id="cb1-360"><a href="#cb1-360" aria-hidden="true" tabindex="-1"></a>rebuilt in Stage 2, (c) potentially different modelling approach</span>
+<span id="cb1-361"><a href="#cb1-361" aria-hidden="true" tabindex="-1"></a>entirely (hierarchical Poisson with time random effects, or</span>
+<span id="cb1-362"><a href="#cb1-362" aria-hidden="true" tabindex="-1"></a>stratified per time-bucket model). Also: today's rank stability work</span>
+<span id="cb1-363"><a href="#cb1-363" aria-hidden="true" tabindex="-1"></a>suggests the current model has largely saturated what link-level</span>
+<span id="cb1-364"><a href="#cb1-364" aria-hidden="true" tabindex="-1"></a>features can explain — temporal is a plausible candidate for</span>
+<span id="cb1-365"><a href="#cb1-365" aria-hidden="true" tabindex="-1"></a>meaningful predictive lift beyond the current ceiling, but sizing</span>
+<span id="cb1-366"><a href="#cb1-366" aria-hidden="true" tabindex="-1"></a>that claim requires research.</span>
+<span id="cb1-367"><a href="#cb1-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-368"><a href="#cb1-368" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-369"><a href="#cb1-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-370"><a href="#cb1-370" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Deep-research pass on temporal disaggregation approaches in UK</span>
+<span id="cb1-371"><a href="#cb1-371" aria-hidden="true" tabindex="-1"></a>  road safety literature. Specifically: how other STATS19-based</span>
+<span id="cb1-372"><a href="#cb1-372" aria-hidden="true" tabindex="-1"></a>  analyses have handled time-of-day effects at link grain; whether</span>
+<span id="cb1-373"><a href="#cb1-373" aria-hidden="true" tabindex="-1"></a>  hierarchical modelling or stratified models are preferred; what</span>
+<span id="cb1-374"><a href="#cb1-374" aria-hidden="true" tabindex="-1"></a>  sample-size constraints per time-bucket apply.</span>
+<span id="cb1-375"><a href="#cb1-375" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Scope out what Stage 1b would need to produce to feed temporal</span>
+<span id="cb1-376"><a href="#cb1-376" aria-hidden="true" tabindex="-1"></a>  Stage 2.</span>
+<span id="cb1-377"><a href="#cb1-377" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Design doc before implementation. Temporal work is methodology-</span>
+<span id="cb1-378"><a href="#cb1-378" aria-hidden="true" tabindex="-1"></a>  heavy enough that a prompt can't carry it.</span>
+<span id="cb1-379"><a href="#cb1-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-380"><a href="#cb1-380" aria-hidden="true" tabindex="-1"></a>**Related:** Would pair naturally with weather warning analysis</span>
+<span id="cb1-381"><a href="#cb1-381" aria-hidden="true" tabindex="-1"></a>(above) — temporal grain is the natural level for weather effects</span>
+<span id="cb1-382"><a href="#cb1-382" aria-hidden="true" tabindex="-1"></a>to manifest.</span>
+<span id="cb1-383"><a href="#cb1-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-384"><a href="#cb1-384" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-385"><a href="#cb1-385" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-386"><a href="#cb1-386" aria-hidden="true" tabindex="-1"></a><span class="fu">## Cross-theme note</span></span>
+<span id="cb1-387"><a href="#cb1-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-388"><a href="#cb1-388" aria-hidden="true" tabindex="-1"></a>The ideas above are not independent. Several natural combinations:</span>
+<span id="cb1-389"><a href="#cb1-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-390"><a href="#cb1-390" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorcycle × weather** — motorcycle crash risk is known to be</span>
+<span id="cb1-391"><a href="#cb1-391" aria-hidden="true" tabindex="-1"></a>  highly weather-sensitive. Combining the motorcycle-specific risk</span>
+<span id="cb1-392"><a href="#cb1-392" aria-hidden="true" tabindex="-1"></a>  layer with weather warning analysis would produce a parallel ranking</span>
+<span id="cb1-393"><a href="#cb1-393" aria-hidden="true" tabindex="-1"></a>  that's likely more actionable than either alone.</span>
+<span id="cb1-394"><a href="#cb1-394" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**HGV enforcement × vehicle-mix** — HGV risk distribution combined</span>
+<span id="cb1-395"><a href="#cb1-395" aria-hidden="true" tabindex="-1"></a>  with vehicle-mix-as-risk-modifier would identify links where HGV</span>
+<span id="cb1-396"><a href="#cb1-396" aria-hidden="true" tabindex="-1"></a>  enforcement protects not just the HGV crash rate but also other</span>
+<span id="cb1-397"><a href="#cb1-397" aria-hidden="true" tabindex="-1"></a>  vehicle types affected by HGV presence.</span>
+<span id="cb1-398"><a href="#cb1-398" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**VRU-weighted × cyclist/pedestrian layers** — these are closely</span>
+<span id="cb1-399"><a href="#cb1-399" aria-hidden="true" tabindex="-1"></a>  related target reframings. The VRU-weighted version produces a</span>
+<span id="cb1-400"><a href="#cb1-400" aria-hidden="true" tabindex="-1"></a>  single composite ranking; the cyclist/pedestrian layers produce</span>
+<span id="cb1-401"><a href="#cb1-401" aria-hidden="true" tabindex="-1"></a>  separate rankings per casualty type. Both are defensible depending</span>
+<span id="cb1-402"><a href="#cb1-402" aria-hidden="true" tabindex="-1"></a>  on stakeholder.</span>
+<span id="cb1-403"><a href="#cb1-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-404"><a href="#cb1-404" aria-hidden="true" tabindex="-1"></a>These combinations are documented here rather than as separate entries</span>
+<span id="cb1-405"><a href="#cb1-405" aria-hidden="true" tabindex="-1"></a>because each needs the component analyses in place first.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">
