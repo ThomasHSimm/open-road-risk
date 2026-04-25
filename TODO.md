@@ -225,6 +225,20 @@ Tracked here so nothing gets lost. Cross off as done.
       18.3M (matches pre-OSM baseline), GLM pseudo-R² 0.251 → 0.301, XGBoost
       unchanged at 0.858. Top-1% Jaccard 0.951, Spearman 0.996 — ranking essentially
       stable. Methodology page and model inventory updated.
+- [x] [DONE] Investigate and resolve 335,692 links (15.5%) with no
+      LSOA-derived features — characterised as boundary/coastal/peripheral,
+      biased toward minor/rural `road_function`, and 99% outside the active
+      `road_link_annual` network. Filled via two-stage approach: 238,507 links
+      (71%) by nearest LSOA centroid within 5 km; 97,185 links (29%) with
+      rural-default fallback. `speed_limit_mph_effective` recomputed from new
+      RUC values. Audit columns `ruc_imputed`, `ruc_fill_method`, and
+      `ruc_nearest_lsoa21cd` added. Practical impact of rural-default fallback:
+      993 active modelled links (~0.05% of network) carry the default rather
+      than spatially inferred values. 1,194 links remain incomplete on
+      `dist_to_major_km` (separate gap, not LSOA-derived; deferred). Reports:
+      `reports/ruc_fill.md`, `reports/ruc_fill_verification.md`. Provenance:
+      `data/provenance/ruc_fill_provenance.json`. Backup:
+      `data/features/network_features_pre_ruc_fill.parquet`.
 - [x] Methodology Feature summary table verified (24 April 2026) — Network row
       correctly references `speed_limit_mph_effective` not `speed_limit_mph`.
 - [x] `.coverage` and `htmlcov/` already ignored in root `.gitignore` — no
@@ -670,14 +684,6 @@ network_features.parquet. Retrain Stage 2 and report.]
   consistent with the study area. `pop_density_per_km2` unchanged.
   Nearest-centroid limitation documented in methodology page. See
   `data/features/ruc_provenance.json`.
-
-- [ ] Investigate 335,692 links (15.5%) with no LSOA-derived features
-  (both `pop_density_per_km2` and `ruc_*` columns `NaN`). Likely
-  boundary/coastal links where nearest-centroid lookup fails. These links are
-  the same set driving GLM training-set shrinkage (`n_full` 18.3M → 10.9M
-  before OSM). Low priority but worth understanding — may be resolvable by
-  spatial-join fallback or threshold adjustment in the LSOA assignment
-  function.
 
 ---
 

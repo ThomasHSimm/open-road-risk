@@ -1,0 +1,206 @@
+{
+  "script_path": "ad hoc diagnostic/fill executed from Codex shell",
+  "git_sha": "1174aef1f3ca6d2b470dab486e73bf145953cd33",
+  "timestamp_utc": "2026-04-25T18:55:05.901109+00:00",
+  "method_used": "hybrid_nearest_lsoa_centroid_5km_then_rural_default",
+  "spatial_cap_m": 5000.0,
+  "fallback_method": "ruc_urban_rural=Rural, ruc_class=RURAL_DEFAULT, pop_density_per_km2=pre_fill_rural_median",
+  "rural_median_pop_density_per_km2": 174.25623236124176,
+  "n_links_filled": 335692,
+  "n_links_filled_spatial": 238507,
+  "n_links_filled_fallback": 97185,
+  "n_links_remaining_null_after_fill": {
+    "ruc_class": 0,
+    "ruc_urban_rural": 0,
+    "pop_density_per_km2": 0,
+    "speed_limit_mph_effective": 0
+  },
+  "median_assignment_distance_m_all_targets": 3379.3517995141947,
+  "median_assignment_distance_m_spatial_only": 2850.6194152414246,
+  "fill_distance_distribution": [
+    {
+      "population": "all_filled",
+      "n_links": 335692,
+      "min_m": 2000.0035135166975,
+      "p25_m": 2554.318346338906,
+      "median_m": 3379.3517995141947,
+      "p75_m": 5839.594484117209,
+      "p95_m": 100075.24015054732,
+      "max_m": 117578.41104476538
+    },
+    {
+      "population": "spatial_5km",
+      "n_links": 238507,
+      "min_m": 2000.0035135166975,
+      "p25_m": 2378.5896980454363,
+      "median_m": 2850.6194152414246,
+      "p75_m": 3529.624636564322,
+      "p95_m": 4528.381945242089,
+      "max_m": 4999.874810366754
+    },
+    {
+      "population": "fallback_tail",
+      "n_links": 97185,
+      "min_m": 5000.000202489141,
+      "p25_m": 7250.524057204945,
+      "median_m": 29194.840797197186,
+      "p75_m": 80354.39384319005,
+      "p95_m": 111057.64601631227,
+      "max_m": 117578.41104476538
+    }
+  ],
+  "distance_threshold_coverage": [
+    {
+      "threshold_m": 1000,
+      "count_within_or_equal": 0,
+      "pct_no_lsoa": 0.0
+    },
+    {
+      "threshold_m": 2000,
+      "count_within_or_equal": 0,
+      "pct_no_lsoa": 0.0
+    },
+    {
+      "threshold_m": 3000,
+      "count_within_or_equal": 134607,
+      "pct_no_lsoa": 40.09836397650227
+    },
+    {
+      "threshold_m": 5000,
+      "count_within_or_equal": 238507,
+      "pct_no_lsoa": 71.04935476567806
+    },
+    {
+      "threshold_m": 10000,
+      "count_within_or_equal": 271268,
+      "pct_no_lsoa": 80.80859835801866
+    },
+    {
+      "threshold_m": 25000,
+      "count_within_or_equal": 282257,
+      "pct_no_lsoa": 84.08213481405575
+    },
+    {
+      "threshold_m": 50000,
+      "count_within_or_equal": 303136,
+      "pct_no_lsoa": 90.30182429131466
+    },
+    {
+      "threshold_m": 100000,
+      "count_within_or_equal": 318868,
+      "pct_no_lsoa": 94.98826305065357
+    },
+    {
+      "threshold_m": 125000,
+      "count_within_or_equal": 335692,
+      "pct_no_lsoa": 100.0
+    }
+  ],
+  "data_fingerprint_pre_fill": {
+    "path": "data/features/network_features.parquet",
+    "sha256": "08e00b335a184366aaaa0fcd3c5e339a25f6189f4115894b6237ce5ef06bc310",
+    "size_bytes": 115388757,
+    "mtime_ns": 1777066178013283877,
+    "row_count": 2167557,
+    "columns": [
+      "link_id",
+      "degree_mean",
+      "betweenness",
+      "dist_to_major_km",
+      "pop_density_per_km2",
+      "ruc_class",
+      "ruc_urban_rural",
+      "betweenness_relative",
+      "speed_limit_mph",
+      "lanes",
+      "lit",
+      "is_unpaved",
+      "speed_limit_mph_effective",
+      "speed_limit_mph_imputed",
+      "speed_limit_source"
+    ]
+  },
+  "data_fingerprint_backup": {
+    "path": "data/features/network_features_pre_ruc_fill.parquet",
+    "sha256": "08e00b335a184366aaaa0fcd3c5e339a25f6189f4115894b6237ce5ef06bc310",
+    "size_bytes": 115388757,
+    "mtime_ns": 1777143145722183915,
+    "row_count": 2167557,
+    "columns": [
+      "link_id",
+      "degree_mean",
+      "betweenness",
+      "dist_to_major_km",
+      "pop_density_per_km2",
+      "ruc_class",
+      "ruc_urban_rural",
+      "betweenness_relative",
+      "speed_limit_mph",
+      "lanes",
+      "lit",
+      "is_unpaved",
+      "speed_limit_mph_effective",
+      "speed_limit_mph_imputed",
+      "speed_limit_source"
+    ]
+  },
+  "data_fingerprint_post_fill": {
+    "path": "data/features/network_features.parquet",
+    "sha256": "851ef37a6494594dd82ef1e4751b2129c3b5b232250540eae8b84901b35a89d2",
+    "size_bytes": 118995501,
+    "mtime_ns": 1777143305822993108,
+    "row_count": 2167557,
+    "columns": [
+      "link_id",
+      "degree_mean",
+      "betweenness",
+      "dist_to_major_km",
+      "pop_density_per_km2",
+      "ruc_class",
+      "ruc_urban_rural",
+      "betweenness_relative",
+      "speed_limit_mph",
+      "lanes",
+      "lit",
+      "is_unpaved",
+      "speed_limit_mph_effective",
+      "speed_limit_mph_imputed",
+      "speed_limit_source",
+      "ruc_imputed",
+      "ruc_fill_method",
+      "ruc_nearest_lsoa21cd",
+      "ruc_nearest_lsoa_centroid_distance_m"
+    ]
+  },
+  "stage2_selected_complete_case_features": [
+    "degree_mean",
+    "betweenness",
+    "betweenness_relative",
+    "dist_to_major_km",
+    "pop_density_per_km2",
+    "speed_limit_mph_effective"
+  ],
+  "stage2_training_counts_pre_fill": {
+    "total_links": 2167557,
+    "complete_case_links": 1830283,
+    "incomplete_case_links": 337274,
+    "complete_case_link_years_before_downsample": 18302830,
+    "no_lsoa_complete_case_links": 0,
+    "no_lsoa_dropped_links": 335692,
+    "no_lsoa_complete_case_link_years": 0,
+    "no_lsoa_dropped_link_years": 3356920,
+    "with_lsoa_complete_case_links": 1830283,
+    "with_lsoa_dropped_links": 1582,
+    "with_lsoa_complete_case_link_years": 18302830,
+    "with_lsoa_dropped_link_years": 15820
+  },
+  "stage2_training_counts_post_fill": {
+    "total_links": 2167557,
+    "complete_case_links": 2164781,
+    "incomplete_case_links": 2776,
+    "complete_case_link_years_before_downsample": 21647810,
+    "no_lsoa_original_complete_case_links_after_fill": 334498,
+    "no_lsoa_original_remaining_incomplete_links_after_fill": 1194,
+    "with_lsoa_original_remaining_incomplete_links_after_fill": 1582
+  }
+}

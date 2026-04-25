@@ -1,0 +1,571 @@
+---
+title: "Facility-Family Split"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    page-layout: full
+---
+
+**Status:** Design only. Implementation sessions follow after review.
+**Scope:** v1 facility-family split for Stage 2 XGBoost risk ranking.
+**Primary code path:** `src/road_risk/model/collision.py`, with additive
+wrappers and diagnostics.
+**Reference model:** FHWA Highway Safety Manual (HSM) safety performance
+functions are explicitly site-type specific.
+
+---
+
+## 0. Status and scope
+
+This document specifies the v1 facility-family split for Stage 2 XGBoost
+collision-risk ranking. It is a design document only: no production scoring
+path, model artefact, or data table should change until this design has been
+reviewed and an implementation session is opened.
+
+The v1 scope is deliberately narrow:
+
+- define the four facility families used for Stage 2 modelling;
+- train separate XGBoost Poisson models by family;
+- stitch per-family predictions into a network-wide ranking;
+- also expose within-family rankings;
+- evaluate against the existing global Stage 2 XGBoost baseline.
+
+The GLM remains global in v1. Empirical Bayes shrinkage remains unchanged in
+v1. Per-family EB dispersion, per-family hyperparameter tuning, and
+hierarchical/partial-pooling models are deferred.
+
+---
+
+## 1. Motivation
+
+Stage 2 currently trains one global XGBoost Poisson model across all road links.
+That model sees road class, form of way, trunk status, primary status, exposure,
+network centrality, population density, speed-limit, lane, and surface proxies,
+but it still has to learn one response surface across very different traffic
+environments.
+
+There are two convergent reasons to split the model by facility family.
+
+First, the HSM/FHWA safety-performance-function precedent is site-type
+specific. The motivation is not only that different road families have
+different baseline collision levels; it is that the exposure-to-risk curve can
+have a different shape across facility types. A motorway, a trunk A-road, an
+urban local road, and a rural minor road do not merely differ by intercept.
+They differ in access control, junction density, speed environment, pedestrian
+and cyclist exposure, maintenance regime, and the kinds of conflict that
+produce collisions.
+
+Second, EB session 1 found independent evidence that one global dispersion
+summary is fragile. In `reports/eb_dispersion.md`, binned method-of-moments
+NB2 dispersion values vary by about 3,400x across the predicted-risk range,
+monotonically falling from low- to high-prediction bins. That finding does not
+prove a family split will help, but it is a strong warning that a single global
+mean/dispersion structure is leaving systematic structure on the table.
+`quarto/methodology/empirical-bayes-shrinkage.qmd` records this as a v2
+motivation for per-family or per-bin k; facility-family modelling attacks the
+corresponding mean-model problem first.
+
+The operational hypothesis is:
+
+- per-family XGBoost models improve calibration within families, especially
+  on motorways, where the current global model has a known mean residual of
+  about -3.3;
+- per-family predictions are easier to interpret operationally because each
+  model is fitted within a more coherent road environment;
+- headline rank stability may improve modestly, but large improvement is not
+  guaranteed because seed-induced churn near narrow top-k thresholds is a
+  separate mechanism.
+
+---
+
+## 2. Family definitions
+
+The v1 family definitions are taken from
+`docs/internal/family-definition-rationale.md`. That document contains the
+decision history and reasoning; this section summarises the frozen definitions
+rather than re-deriving them.
+
+| Family | Definition | Study-area links | Active links in `road_link_annual.parquet` |
+|---|---|---:|---:|
+| Motorway | `road_function == "Motorway"` | 4,084 | 2,279 |
+| Trunk A-road | `road_function == "A Road"` and `is_trunk == True` | 16,011 | 5,465 |
+| Other-Urban | neither of the above and `ruc_urban_rural == "Urban"` | 1,366,925 | 177,296 |
+| Other-Rural | neither of the above and `ruc_urban_rural == "Rural"` | 780,537 | 48,564 |
+| **Total** | exactly one family per link | 2,167,557 | 233,604 |
+
+The family assignment columns come from two existing sources:
+
+- `road_function` and `is_trunk` from OS Open Roads metadata, already used by
+  `build_collision_dataset()`;
+- `ruc_urban_rural` from post-fill `data/features/network_features.parquet`.
+
+The recent RUC fill resolved the previous 335,692-link no-LSOA gap. About
+336k links have `ruc_imputed = True`, but only 993 links in the rural-default
+fallback population appear in `road_link_annual.parquet`. Family assignment is
+therefore complete for all active modelled links, and the practical modelling
+impact of the rural default is small. The fill is documented in
+`reports/ruc_fill.md` and verified in `reports/ruc_fill_verification.md`.
+
+`form_of_way` and `is_primary` stay as features within each family. They are
+not used to define v1 families.
+
+---
+
+## 3. Per-family modelling approach
+
+### 3.1 Separate XGBoost models, one per family
+
+v1 trains one XGBoost Poisson regressor per family. Each model is fitted on
+the link-year rows belonging to links in that family. The wrapper should reuse
+the current `train_collision_xgb()` path in
+`src/road_risk/model/collision.py` rather than creating a second training
+implementation.
+
+The v1 XGBoost settings are the same as the current global model:
+
+| Parameter | v1 value |
+|---|---:|
+| `objective` | `count:poisson` |
+| `n_estimators` | 500 |
+| `max_depth` | 6 |
+| `learning_rate` | 0.05 |
+| `subsample` | 0.8 |
+| `colsample_bytree` | 0.8 |
+| `n_jobs` | 1 |
+
+The exposure offset is unchanged:
+
+```python
+base_margin = log_offset
+log_offset = log(estimated_aadt * link_length_km * 365 / 1e6)
+```
+
+The train/test split is also unchanged in principle: use
+`GroupShuffleSplit` by `link_id`, but apply it within each family. All years
+for a link remain in one split. The seed controls both the split
+`random_state` and the XGBoost `random_state`, matching the current global
+rank-stability harness.
+
+The feature list is the same as the current global `train_collision_xgb()`
+feature list. Some existing features will be constant or nearly constant in
+particular families. For example, `is_motorway` is constant in the motorway
+family, `is_trunk` is constant in the trunk A family, and the assignment
+columns `road_function` and `ruc_urban_rural` are family-constant by
+definition even where they are attached for diagnostics rather than used as
+raw XGBoost features. This is wasteful but simple: XGBoost will not split on
+zero-variance features. Per-family feature pruning is a v2 candidate if v1
+works and the extra cleanup is worth the complexity.
+
+The motorway family is small, about 4k links and roughly 40k link-years before
+held-out splitting. `n_estimators=500` may overfit on that population. The
+5-seed evaluation should surface this if it happens, especially as
+motorway-specific pseudo-R2 volatility or top-k instability. v2 candidates
+include reduced `n_estimators`, early stopping, or partial pooling across
+motorway and trunk A families.
+
+### 3.2 What does NOT change
+
+The v1 family split does not change:
+
+- GLM training, which remains global and unchanged from the current pipeline;
+- XGBoost hyperparameters, which are kept fixed across families;
+- the pseudo-R2 definition;
+- EB shrinkage, including the persisted global positive-event-weighted k;
+- the canonical `data/models/risk_scores.parquet` output until per-family
+  evaluation is reviewed.
+
+---
+
+## 4. Operational outputs: both global and per-family rankings
+
+The family split should produce two new ranking surfaces while preserving the
+current global ranking for comparison.
+
+### 4.1 Global stitched ranking
+
+Each family model produces `predicted_xgb_family` for its own family link-year
+rows. Those predictions are pooled to one row per link using the same unit as
+the current `score_collision_models()` path:
+
+```text
+predicted_xgb_family = mean expected collisions per link-year
+```
+
+The stitching procedure is:
+
+1. score link-years within each family model;
+2. pool to one row per link, taking mean `predicted_xgb_family` across years;
+3. concatenate all four family outputs;
+4. rank `predicted_xgb_family` across all links to produce
+   `risk_percentile_family`.
+
+This network-wide stitched ranking has the same operational semantics as the
+current `risk_percentile`: it answers, "where does this link sit in the whole
+network?" The current `risk_percentile` remains unchanged and should be
+available side-by-side.
+
+Per-family Poisson XGBoost with the same exposure offset should, in principle,
+produce predictions on the same expected-collisions-per-link-year scale across
+families. The stitched ranking is therefore meaningful in principle. In
+practice, family boundaries can create ranking discontinuities if the
+family-level models are calibrated differently. Section 6.3 makes that an
+explicit validation diagnostic rather than an assumption.
+
+### 4.2 Per-family rankings
+
+Each family also produces `risk_percentile_within_family`, ranked only within
+that family. This is a different operational object from the stitched ranking.
+"Top 1% of motorways for traffic-management intervention" and "top 1% of
+rural minor/local roads for road-safety partnership work" are not the same
+screening question.
+
+The eventual scored output should include:
+
+| Column | Meaning |
+|---|---|
+| `family` | one of `motorway`, `trunk_a`, `other_urban`, `other_rural` |
+| `risk_percentile` | current global-model percentile, unchanged |
+| `predicted_xgb_family` | per-family model prediction, pooled to link grain |
+| `risk_percentile_family` | global stitched percentile from per-family models |
+| `risk_percentile_within_family` | percentile within the link's family |
+
+The current production `risk_percentile` stays unchanged until v1 evaluation
+supports adoption of either new ranking surface.
+
+---
+
+## 5. Implementation design
+
+This is a design document only. The implementation should be small, additive,
+and reviewable. The first implementation pass should not modify the existing
+global training path: `train_collision_xgb()` stays as-is, and the new family
+module wraps it.
+
+### 5.1 Proposed file structure
+
+| File | Change |
+|---|---|
+| `src/road_risk/model/collision.py` | Add helper to assign family from Open Roads and network-feature columns. |
+| `src/road_risk/model/family_split.py` | New module: `train_family_xgb()`, `score_family_xgb()`, `stitch_predictions()`, family assignment logic. |
+| `src/road_risk/diagnostics/family_evaluation.py` | New diagnostic: per-family and combined evaluation, comparison against global baseline. |
+| `src/road_risk/model/rank_stability.py` | Extend to optionally run per-family evaluation. |
+| `data/models/family/seed_<N>/<family>.parquet` | New per-seed per-family score outputs. |
+| `data/models/risk_scores_family.parquet` | Eventually: scored output with both new ranking columns. |
+| `data/provenance/family_split_provenance.json` | New provenance for per-family training run. |
+
+### 5.2 Family assignment
+
+Add a vectorised `assign_family()` helper that takes columns
+`road_function`, `is_trunk`, and `ruc_urban_rural`, and returns one of:
+
+- `motorway`
+- `trunk_a`
+- `other_urban`
+- `other_rural`
+
+The precedence is:
+
+```python
+if road_function == "Motorway":
+    return "motorway"
+if road_function == "A Road" and is_trunk:
+    return "trunk_a"
+if ruc_urban_rural == "Urban":
+    return "other_urban"
+if ruc_urban_rural == "Rural":
+    return "other_rural"
+raise ValueError  # should not happen post-RUC-fill
+```
+
+The implementation should verify that every link in
+`road_link_annual.parquet` maps to exactly one family, and that the full
+scored network has zero unknown-family rows.
+
+### 5.3 Per-family training loop
+
+The wrapper should be intentionally thin:
+
+```python
+def train_family_xgb(df, family, seed=42):
+    family_df = df[df["family"] == family]
+    return train_collision_xgb(family_df, seed=seed)
+```
+
+`train_collision_xgb()` is called per family without changing its internals.
+The wrapper is responsible for filtering, row-count checks, logging, and
+provenance.
+
+### 5.4 Stitching and scoring
+
+The scoring helper should mirror `score_collision_models()` but use the
+per-family XGBoost models:
+
+```python
+def score_family_xgb(network_df, models_by_family):
+    predictions = []
+    for family, model in models_by_family.items():
+        family_df = network_df[network_df["family"] == family].copy()
+        family_df["predicted_xgb_family"] = model.predict(...)
+        predictions.append(family_df)
+    scored = pd.concat(predictions)
+    return pool_family_predictions(scored)
+```
+
+Pooling should keep the same link-level semantics as current Stage 2:
+
+| Column | Aggregation |
+|---|---|
+| `collision_count` | sum across years |
+| `fatal_count` | sum across years |
+| `serious_count` | sum across years |
+| `estimated_aadt` | mean across years |
+| `predicted_xgb_family` | mean across years |
+| `family` | first; must be constant by `link_id` |
+
+Then compute:
+
+```python
+pooled["risk_percentile_family"] = (
+    pooled["predicted_xgb_family"].rank(pct=True) * 100
+)
+pooled["risk_percentile_within_family"] = (
+    pooled.groupby("family")["predicted_xgb_family"].rank(pct=True) * 100
+)
+```
+
+Exact top-k set selection should use deterministic sorting:
+`predicted_xgb_family desc, link_id asc`.
+
+---
+
+## 6. Validation plan
+
+Validation decides whether the family split should be adopted, kept as a
+diagnostic, or deferred.
+
+### 6.1 Headline metrics: global stitched vs current global
+
+Compare `risk_percentile_family` against the current global
+`risk_percentile`.
+
+Report:
+
+- pseudo-R2 on held-out link-years using stitched family predictions;
+- 5-seed Jaccard at k = 100, 1,000, 10,000, and top-1%;
+- Spearman rank correlation between `risk_percentile_family` and current
+  `risk_percentile`;
+- top-1% entrant/leaver counts and road-family breakdown.
+
+The headline question is whether the stitched ranking improves on the global
+model's headline metrics. The pre-run hypothesis is modest improvement in
+stability, because each model has less within-family structural variation to
+learn, and small change in pseudo-R2.
+
+### 6.2 Per-family metrics
+
+For each family, report:
+
+- pseudo-R2 on held-out link-years within the family;
+- mean residual on training and held-out link-years;
+- observed vs predicted by family risk decile;
+- 5-seed Jaccard on family-specific top-k sets.
+
+Per-family top-k thresholds should scale with family size:
+
+| Family | Suggested thresholds |
+|---|---|
+| Motorway | top 25, top 50, top 100, top 10% |
+| Trunk A-road | top 50, top 100, top 500, top 10% |
+| Other-Urban | top 100, top 1,000, top 10,000, top 1% |
+| Other-Rural | top 100, top 1,000, top 10,000, top 1% |
+
+For motorway, top-1% is only about 40 links and will be noisy. A top-10%
+diagnostic is more meaningful for that family.
+
+The pre-run hypothesis is that motorway and trunk A families show the largest
+improvement in mean residual over the global model. Other-Urban and
+Other-Rural may show smaller improvement because the global model already has
+many of the relevant road-function, RUC, and exposure signals.
+
+### 6.3 Family-boundary discontinuity check
+
+Stitching per-family predictions can produce ranking discontinuities if
+family-level calibration differs.
+
+Diagnostics:
+
+1. Compute the `predicted_xgb_family` value at the top-1% threshold within
+   each family. Are the family thresholds similar, or does one family require
+   much larger predicted counts to enter its own top 1%?
+2. Around the global stitched top-1% threshold, sample 100 adjacent link pairs
+   where the link just above and just below the boundary are in different
+   families. Compare their predicted values. Small gaps indicate a smooth
+   stitched ranking; large gaps indicate a calibration discontinuity.
+3. Repeat the adjacent-pair check at the global top-1000 and top-10,000
+   thresholds, because narrow operational lists are most sensitive to
+   discontinuities.
+
+The pre-run hypothesis is that small discontinuities are likely. Large
+discontinuities would make the stitched ranking operationally questionable,
+even if within-family rankings are useful.
+
+### 6.4 5-seed harness extension
+
+The existing `src/road_risk/model/rank_stability.py` harness runs seeds
+42-46 against the global model and writes `data/models/rank_stability/seed_<N>.parquet`.
+Extend it with an optional per-family mode.
+
+For each seed:
+
+1. build the same Stage 2 base table;
+2. assign family;
+3. train four XGBoost models, one per family;
+4. write per-family score files to
+   `data/models/family/seed_<N>/<family>.parquet`;
+5. write a stitched score file to
+   `data/models/family/seed_<N>/stitched.parquet`;
+6. compute pairwise Jaccard and Spearman for the stitched ranking;
+7. compute family-specific Jaccard for each family.
+
+The output report should be `reports/family_rank_stability.md`, following the
+same structure as `reports/rank_stability.md`.
+
+Runtime expectation: per-family training is faster per model because each
+family has fewer rows, but the total job is 4 families x 5 seeds = 20 training
+runs. Total runtime is plausibly comparable to the existing global 5-seed run,
+around several hours. The eventual implementation prompt should treat this as
+a "leave it running" job.
+
+### 6.5 Comparison against global baseline
+
+The evaluation report should compare:
+
+| Model surface | Metrics |
+|---|---|
+| Current global XGBoost | pseudo-R2, 5-seed Jaccard at each k, Spearman, calibration |
+| Per-family stitched | same headline metrics |
+| Per-family within-family | pseudo-R2, residuals, calibration, family-scaled top-k Jaccard |
+
+Use the existing global baseline from `reports/rank_stability.md`:
+
+| Metric | Current global result |
+|---|---:|
+| pseudo-R2 mean across 5 seeds | 0.859041 |
+| pseudo-R2 std across 5 seeds | 0.001411 |
+| top-1% Jaccard mean | 0.918494 |
+| top-1% Jaccard min | 0.907843 |
+| Spearman mean | 0.998106 |
+| Spearman min | 0.997841 |
+
+Adoption criterion: recommend the per-family approach if either:
+
+- headline stitched metrics improve materially; or
+- per-family diagnostics reveal patterned residuals that the global model was
+  missing, even if the headline stitched gain is modest.
+
+If neither condition holds, document the split as evaluated and not adopted.
+
+---
+
+## 7. Caveats
+
+### 7.1 Imputed RUC for about 1k active links
+
+The RUC fill assigned about 336k links with `ruc_imputed = True`. Most are
+outside `road_link_annual.parquet`. The practical rural-default fallback impact
+is 993 active modelled links, about 0.05% of the 2.17M-link network. These
+links land in Other-Rural. The impact is small, but output documentation should
+keep `ruc_imputed` and `ruc_fill_method` visible for audit.
+
+### 7.2 Motorway family size
+
+The motorway family has 4,084 links. That is small for XGBoost with the
+current global hyperparameters. The 5-seed evaluation should surface
+motorway-specific instability if the model overfits. v2 candidates include
+reduced `n_estimators`, early stopping, or partial pooling with trunk A-road.
+
+### 7.3 Stitched ranking calibration
+
+Per-family Poisson XGBoost with the same exposure offset should produce
+comparable predictions across families, but calibration can still differ. The
+section 6.3 discontinuity diagnostic is mandatory. If calibration differs
+materially, the stitched ranking should not be adopted; only within-family
+rankings should be reported.
+
+### 7.4 Per-family EB k is deferred to v2
+
+Current EB shrinkage uses one global positive-event-weighted k. With
+per-family models, per-family k is the natural pairing because each family
+may have its own dispersion structure. EB session 1's non-constant dispersion
+finding suggests this is likely. It is deferred to v2 so the mean-model split
+can be evaluated cleanly first.
+
+### 7.5 Intersections / roundabouts not separated
+
+`form_of_way == "Roundabout"` links remain inside their parent family for v1.
+HSM treats intersections as separate site types, so a separate intersection or
+roundabout family is methodologically plausible. It is deferred because it
+would bundle another family-definition decision into v1. Promote it only if
+v1 residuals show form-of-way patterning.
+
+### 7.6 GLM unchanged, XGBoost-only split
+
+Per-family GLM is not implemented in v1. The current global GLM, with pseudo-R2
+around 0.301 after speed-limit imputation, remains a diagnostic baseline.
+Per-family GLM is a v2 extension if interpretability by family becomes
+important.
+
+---
+
+## 8. Out of scope for v1
+
+- Hyperparameter tuning per family.
+- Per-family feature pruning.
+- Per-family EB k.
+- Hierarchical or partial-pooling models.
+- Roundabout or intersection family.
+- Per-family GLM.
+- NHNM integration.
+
+NHNM integration depends on this work landing first and should remain a
+separate later design.
+
+---
+
+## 9. Expected outcomes
+
+These are hypotheses to compare against v1 results, not pass/fail thresholds.
+
+| Outcome | Pre-run expectation |
+|---|---|
+| Headline pseudo-R2 | approximately unchanged around 0.86, or slightly improved |
+| Stitched top-1% 5-seed Jaccard | approximately unchanged or marginally improved relative to current 0.918 |
+| Motorway mean residual | significantly closer to zero than the current global mean residual around -3.3 |
+| Other-Urban / Other-Rural metrics | roughly comparable to global, because the global model already has many relevant signals |
+| Family-boundary discontinuity | some discontinuity is likely; small is acceptable, large is a warning against stitched ranking adoption |
+
+The most valuable positive result would be not just a higher headline pseudo-R2,
+but clearer family-specific calibration and residual behaviour.
+
+---
+
+## 10. Implementation sessions plan
+
+Anticipated implementation split:
+
+1. **Session 1: Family assignment, per-family training, and stitching.**
+   Produce `risk_scores_family.parquet` for seed 42 only. Do not modify
+   production `risk_scores.parquet`.
+2. **Session 2: Single-run validation.** Compute family-boundary diagnostics,
+   per-family pseudo-R2 and residuals, and compare seed-42 stitched output
+   against the current global baseline.
+3. **Session 3: 5-seed family rank stability.** Extend `rank_stability.py`,
+   run 20 family models, and produce `reports/family_rank_stability.md`.
+4. **Session 4: Adoption decision.** Decide whether to adopt stitched ranking,
+   within-family ranking only, both, or neither. Update methodology docs and
+   downstream output contracts accordingly.
+
+Plausible clock time is two to three weeks including reviews, with several
+hours of agent/runtime for the multi-seed evaluation.
