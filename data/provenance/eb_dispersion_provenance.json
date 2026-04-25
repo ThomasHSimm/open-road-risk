@@ -1,0 +1,681 @@
+{
+  "bin_merge_actions": [
+    {
+      "action": "accumulated",
+      "initial_bin": 0,
+      "n_link_years": 1083777,
+      "n_positive": 18
+    },
+    {
+      "action": "accumulated",
+      "initial_bin": 1,
+      "n_link_years": 1083779,
+      "n_positive": 45
+    },
+    {
+      "action": "closed_merged_retained_bin",
+      "initial_bin": 2,
+      "n_link_years": 1083775,
+      "n_positive": 90,
+      "retained_bin_index": 0,
+      "source_initial_bins": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "action": "accumulated",
+      "initial_bin": 3,
+      "n_link_years": 1083783,
+      "n_positive": 95
+    },
+    {
+      "action": "closed_merged_retained_bin",
+      "initial_bin": 4,
+      "n_link_years": 1083774,
+      "n_positive": 131,
+      "retained_bin_index": 1,
+      "source_initial_bins": [
+        3,
+        4
+      ]
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 5,
+      "n_link_years": 1083778,
+      "n_positive": 140,
+      "retained_bin_index": 2
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 6,
+      "n_link_years": 1083783,
+      "n_positive": 208,
+      "retained_bin_index": 3
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 7,
+      "n_link_years": 1083778,
+      "n_positive": 245,
+      "retained_bin_index": 4
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 8,
+      "n_link_years": 1083779,
+      "n_positive": 290,
+      "retained_bin_index": 5
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 9,
+      "n_link_years": 1083778,
+      "n_positive": 365,
+      "retained_bin_index": 6
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 10,
+      "n_link_years": 1083779,
+      "n_positive": 470,
+      "retained_bin_index": 7
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 11,
+      "n_link_years": 1083776,
+      "n_positive": 602,
+      "retained_bin_index": 8
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 12,
+      "n_link_years": 1083781,
+      "n_positive": 738,
+      "retained_bin_index": 9
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 13,
+      "n_link_years": 1083778,
+      "n_positive": 972,
+      "retained_bin_index": 10
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 14,
+      "n_link_years": 1083778,
+      "n_positive": 1281,
+      "retained_bin_index": 11
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 15,
+      "n_link_years": 1083780,
+      "n_positive": 1732,
+      "retained_bin_index": 12
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 16,
+      "n_link_years": 1083777,
+      "n_positive": 2651,
+      "retained_bin_index": 13
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 17,
+      "n_link_years": 1083779,
+      "n_positive": 4350,
+      "retained_bin_index": 14
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 18,
+      "n_link_years": 1083779,
+      "n_positive": 9104,
+      "retained_bin_index": 15
+    },
+    {
+      "action": "closed_retained_bin",
+      "initial_bin": 19,
+      "n_link_years": 1083779,
+      "n_positive": 367728,
+      "retained_bin_index": 16
+    }
+  ],
+  "bin_merge_rule_applied": "Started with quantile bins by predicted_xgb; walked adjacent bins from low to high prediction, accumulating until each retained bin had at least 10000 link-years and 100 positive-collision link-years; merged any trailing low-count bin into the previous retained bin.",
+  "data_fingerprint": {
+    "aadt_estimates": {
+      "columns": [
+        "link_id",
+        "year",
+        "estimated_aadt"
+      ],
+      "mtime_ns": 1776723242093710535,
+      "path": "data/models/aadt_estimates.parquet",
+      "row_count": 21675570,
+      "size_bytes": 816490081
+    },
+    "collision_metrics": {
+      "mtime_ns": 1777068483076641045,
+      "path": "data/models/collision_metrics.json",
+      "size_bytes": 1396
+    },
+    "collision_xgb_model": {
+      "mtime_ns": 1777068481634670160,
+      "path": "data/models/collision_xgb.json",
+      "size_bytes": 3795409
+    },
+    "constructed_link_year_table": {
+      "columns": [
+        "link_id",
+        "year",
+        "road_classification",
+        "form_of_way",
+        "link_length_km",
+        "is_trunk",
+        "is_primary",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
+        "slight_count",
+        "casualty_count",
+        "hgv_proportion",
+        "estimated_aadt",
+        "log_offset",
+        "road_class_ord",
+        "form_of_way_ord",
+        "is_motorway",
+        "is_a_road",
+        "is_slip_road",
+        "is_roundabout",
+        "is_dual",
+        "is_covid",
+        "year_norm",
+        "log_link_length",
+        "degree_mean",
+        "betweenness",
+        "dist_to_major_km",
+        "pop_density_per_km2",
+        "ruc_class",
+        "ruc_urban_rural",
+        "betweenness_relative",
+        "speed_limit_mph",
+        "lanes",
+        "lit",
+        "is_unpaved",
+        "speed_limit_mph_effective",
+        "speed_limit_mph_imputed",
+        "speed_limit_source"
+      ],
+      "n_links": 2167557,
+      "row_count": 21675570,
+      "years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "network_features": {
+      "columns": [
+        "link_id",
+        "degree_mean",
+        "betweenness",
+        "dist_to_major_km",
+        "pop_density_per_km2",
+        "ruc_class",
+        "ruc_urban_rural",
+        "betweenness_relative",
+        "speed_limit_mph",
+        "lanes",
+        "lit",
+        "is_unpaved",
+        "speed_limit_mph_effective",
+        "speed_limit_mph_imputed",
+        "speed_limit_source"
+      ],
+      "mtime_ns": 1777066178013283877,
+      "path": "data/features/network_features.parquet",
+      "row_count": 2167557,
+      "size_bytes": 115388757
+    },
+    "openroads": {
+      "columns": [
+        "link_id",
+        "road_classification",
+        "road_function",
+        "form_of_way",
+        "road_number",
+        "road_name",
+        "link_length_m",
+        "is_trunk",
+        "is_primary",
+        "start_node",
+        "end_node",
+        "geometry",
+        "link_length_km",
+        "road_name_clean",
+        "street_name_clean"
+      ],
+      "mtime_ns": 1776019873898665162,
+      "path": "data/processed/shapefiles/openroads_yorkshire.parquet",
+      "row_count": 2167557,
+      "size_bytes": 392911115
+    },
+    "road_link_annual": {
+      "columns": [
+        "link_id",
+        "year",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
+        "slight_count",
+        "casualty_count",
+        "hgv_collision_count",
+        "mean_vehicles_per_collision",
+        "pct_attribute_snapped",
+        "pct_dark",
+        "pct_urban",
+        "pct_junction",
+        "pct_near_crossing",
+        "mean_speed_limit",
+        "count_point_id",
+        "road_type",
+        "latitude",
+        "longitude",
+        "link_length_km",
+        "all_motor_vehicles",
+        "all_hgvs",
+        "hgv_proportion",
+        "lgv_proportion",
+        "cars_proportion",
+        "heavy_vehicle_prop",
+        "estimation_method",
+        "is_covid",
+        "site_id",
+        "all_flow",
+        "weekday_flow",
+        "weekend_flow",
+        "hgv_pct",
+        "hgv_weekday_pct",
+        "flow_ph_peak",
+        "flow_ph_prepeak",
+        "flow_ph_preoffpeak",
+        "flow_ph_offpeak",
+        "hgv_ph_peak",
+        "hgv_ph_prepeak",
+        "hgv_ph_preoffpeak",
+        "hgv_ph_offpeak",
+        "peak_offpeak_ratio",
+        "aadf_snap_distance_m",
+        "aadf_join_method",
+        "road_name_clean",
+        "road_classification",
+        "road_function",
+        "form_of_way",
+        "is_trunk",
+        "is_primary",
+        "collision_rate_per_mvkm"
+      ],
+      "mtime_ns": 1776548449693590028,
+      "path": "data/features/road_link_annual.parquet",
+      "row_count": 391255,
+      "size_bytes": 27932375
+    }
+  },
+  "dropped_negative_k_bin_count": 0,
+  "dropped_negative_k_bin_fraction": 0.0,
+  "dropped_negative_k_bins": [],
+  "git_sha": "e4f77c5484d1ff9f8ca6ccf557af782f0ad8db39",
+  "initial_bin_definitions": [
+    {
+      "initial_bin_index": 0,
+      "predicted_xgb_lower": 7.003843620623229e-07,
+      "predicted_xgb_upper": 5.832291208207607e-05
+    },
+    {
+      "initial_bin_index": 1,
+      "predicted_xgb_lower": 5.832291208207607e-05,
+      "predicted_xgb_upper": 8.335224265465513e-05
+    },
+    {
+      "initial_bin_index": 2,
+      "predicted_xgb_lower": 8.335224265465513e-05,
+      "predicted_xgb_upper": 0.00010749386274255812
+    },
+    {
+      "initial_bin_index": 3,
+      "predicted_xgb_lower": 0.00010749386274255812,
+      "predicted_xgb_upper": 0.00013367584615480154
+    },
+    {
+      "initial_bin_index": 4,
+      "predicted_xgb_lower": 0.00013367584615480154,
+      "predicted_xgb_upper": 0.00016324401076417416
+    },
+    {
+      "initial_bin_index": 5,
+      "predicted_xgb_lower": 0.00016324401076417416,
+      "predicted_xgb_upper": 0.00019776239059865475
+    },
+    {
+      "initial_bin_index": 6,
+      "predicted_xgb_lower": 0.00019776239059865475,
+      "predicted_xgb_upper": 0.0002386259293416515
+    },
+    {
+      "initial_bin_index": 7,
+      "predicted_xgb_lower": 0.0002386259293416515,
+      "predicted_xgb_upper": 0.0002878224477171898
+    },
+    {
+      "initial_bin_index": 8,
+      "predicted_xgb_lower": 0.0002878224477171898,
+      "predicted_xgb_upper": 0.0003484650223981589
+    },
+    {
+      "initial_bin_index": 9,
+      "predicted_xgb_lower": 0.0003484650223981589,
+      "predicted_xgb_upper": 0.00042527218465693295
+    },
+    {
+      "initial_bin_index": 10,
+      "predicted_xgb_lower": 0.00042527218465693295,
+      "predicted_xgb_upper": 0.0005255518917692828
+    },
+    {
+      "initial_bin_index": 11,
+      "predicted_xgb_lower": 0.0005255518917692828,
+      "predicted_xgb_upper": 0.0006595255108550191
+    },
+    {
+      "initial_bin_index": 12,
+      "predicted_xgb_lower": 0.0006595255108550191,
+      "predicted_xgb_upper": 0.0008442738879239185
+    },
+    {
+      "initial_bin_index": 13,
+      "predicted_xgb_lower": 0.0008442738879239185,
+      "predicted_xgb_upper": 0.0011079355608671904
+    },
+    {
+      "initial_bin_index": 14,
+      "predicted_xgb_lower": 0.0011079355608671904,
+      "predicted_xgb_upper": 0.001509299036115408
+    },
+    {
+      "initial_bin_index": 15,
+      "predicted_xgb_lower": 0.001509299036115408,
+      "predicted_xgb_upper": 0.0021543076727539292
+    },
+    {
+      "initial_bin_index": 16,
+      "predicted_xgb_lower": 0.0021543076727539292,
+      "predicted_xgb_upper": 0.0033303573727607727
+    },
+    {
+      "initial_bin_index": 17,
+      "predicted_xgb_lower": 0.0033303573727607727,
+      "predicted_xgb_upper": 0.005867880303412676
+    },
+    {
+      "initial_bin_index": 18,
+      "predicted_xgb_lower": 0.005867880303412676,
+      "predicted_xgb_upper": 0.014413465512916477
+    },
+    {
+      "initial_bin_index": 19,
+      "predicted_xgb_lower": 0.014413465512916477,
+      "predicted_xgb_upper": 20.33243179321289
+    }
+  ],
+  "k": 146.4409836783152,
+  "k_alt_median": 82.436849950631,
+  "k_alt_positive_weighted": 3.0743216774170383,
+  "k_bin": [
+    {
+      "bin_index": 0,
+      "k_bin": 273.19539520804125,
+      "mean_y": 4.736521750630742e-05,
+      "n_link_years": 3251331,
+      "n_positive": 153,
+      "predicted_xgb_lower": 7.003843620623229e-07,
+      "predicted_xgb_upper": 0.00010749376087915152,
+      "source_initial_bins": [
+        0,
+        1,
+        2
+      ],
+      "var_y": 4.797812149382071e-05
+    },
+    {
+      "bin_index": 1,
+      "k_bin": 405.21073397224427,
+      "mean_y": 0.00010657159188893303,
+      "n_link_years": 2167557,
+      "n_positive": 226,
+      "predicted_xgb_lower": 0.00010749386274255812,
+      "predicted_xgb_upper": 0.00016324386524502188,
+      "source_initial_bins": [
+        3,
+        4
+      ],
+      "var_y": 0.00011117377450099262
+    },
+    {
+      "bin_index": 2,
+      "k_bin": 213.99989989731148,
+      "mean_y": 0.00013102314311602562,
+      "n_link_years": 1083778,
+      "n_positive": 140,
+      "predicted_xgb_lower": 0.00016324401076417416,
+      "predicted_xgb_upper": 0.00019776220142375678,
+      "source_initial_bins": [
+        5
+      ],
+      "var_y": 0.0001346968931004049
+    },
+    {
+      "bin_index": 3,
+      "k_bin": 97.30716461466328,
+      "mean_y": 0.00019376572616473963,
+      "n_link_years": 1083783,
+      "n_positive": 208,
+      "predicted_xgb_lower": 0.00019776239059865475,
+      "predicted_xgb_upper": 0.00023862571106292307,
+      "source_initial_bins": [
+        6
+      ],
+      "var_y": 0.00019741913890201668
+    },
+    {
+      "bin_index": 4,
+      "k_bin": 70.06103925549947,
+      "mean_y": 0.0002279064531666079,
+      "n_link_years": 1083778,
+      "n_positive": 245,
+      "predicted_xgb_lower": 0.0002386259293416515,
+      "predicted_xgb_upper": 0.0002878221857827157,
+      "source_initial_bins": [
+        7
+      ],
+      "var_y": 0.00023154551822567553
+    },
+    {
+      "bin_index": 5,
+      "k_bin": 172.1785965970016,
+      "mean_y": 0.0002731184125176812,
+      "n_link_years": 1083779,
+      "n_positive": 290,
+      "predicted_xgb_lower": 0.0002878224477171898,
+      "predicted_xgb_upper": 0.00034846484777517617,
+      "source_initial_bins": [
+        8
+      ],
+      "var_y": 0.00028596184546087367
+    },
+    {
+      "bin_index": 6,
+      "k_bin": 124.30954353589543,
+      "mean_y": 0.0003432437270363488,
+      "n_link_years": 1083778,
+      "n_positive": 365,
+      "predicted_xgb_lower": 0.0003484650223981589,
+      "predicted_xgb_upper": 0.00042527198093011975,
+      "source_initial_bins": [
+        9
+      ],
+      "var_y": 0.000357889412059439
+    },
+    {
+      "bin_index": 7,
+      "k_bin": 102.05816791502353,
+      "mean_y": 0.0004438174203412319,
+      "n_link_years": 1083779,
+      "n_positive": 470,
+      "predicted_xgb_lower": 0.00042527218465693295,
+      "predicted_xgb_upper": 0.0005255516152828932,
+      "source_initial_bins": [
+        10
+      ],
+      "var_y": 0.0004639202159674914
+    },
+    {
+      "bin_index": 8,
+      "k_bin": 133.4638642167676,
+      "mean_y": 0.0005739193338844927,
+      "n_link_years": 1083776,
+      "n_positive": 602,
+      "predicted_xgb_lower": 0.0005255519063211977,
+      "predicted_xgb_upper": 0.0006595252198167145,
+      "source_initial_bins": [
+        11
+      ],
+      "var_y": 0.0006178801154984418
+    },
+    {
+      "bin_index": 9,
+      "k_bin": 82.436849950631,
+      "mean_y": 0.0006975579014579514,
+      "n_link_years": 1083781,
+      "n_positive": 738,
+      "predicted_xgb_lower": 0.0006595255108550191,
+      "predicted_xgb_upper": 0.0008442735415883362,
+      "source_initial_bins": [
+        12
+      ],
+      "var_y": 0.0007376706030988741
+    },
+    {
+      "bin_index": 10,
+      "k_bin": 82.03442462988747,
+      "mean_y": 0.0009310024746765482,
+      "n_link_years": 1083778,
+      "n_positive": 972,
+      "predicted_xgb_lower": 0.0008442739490419626,
+      "predicted_xgb_upper": 0.001107934513129294,
+      "source_initial_bins": [
+        13
+      ],
+      "var_y": 0.001002107092605814
+    },
+    {
+      "bin_index": 11,
+      "k_bin": 63.847839485463844,
+      "mean_y": 0.0012281112921650006,
+      "n_link_years": 1083778,
+      "n_positive": 1281,
+      "predicted_xgb_lower": 0.0011079355608671904,
+      "predicted_xgb_upper": 0.001509298337623477,
+      "source_initial_bins": [
+        14
+      ],
+      "var_y": 0.001324410265091553
+    },
+    {
+      "bin_index": 12,
+      "k_bin": 60.91967624273031,
+      "mean_y": 0.0016737714296259389,
+      "n_link_years": 1083780,
+      "n_positive": 1732,
+      "predicted_xgb_lower": 0.001509299036115408,
+      "predicted_xgb_upper": 0.0021543074399232864,
+      "source_initial_bins": [
+        15
+      ],
+      "var_y": 0.0018444385604691168
+    },
+    {
+      "bin_index": 13,
+      "k_bin": 50.80891190605061,
+      "mean_y": 0.002594629707033827,
+      "n_link_years": 1083777,
+      "n_positive": 2651,
+      "predicted_xgb_lower": 0.0021543086040765047,
+      "predicted_xgb_upper": 0.0033303541131317616,
+      "source_initial_bins": [
+        16
+      ],
+      "var_y": 0.002936680551390528
+    },
+    {
+      "bin_index": 14,
+      "k_bin": 29.409101782744976,
+      "mean_y": 0.004273934076965876,
+      "n_link_years": 1083779,
+      "n_positive": 4350,
+      "predicted_xgb_lower": 0.0033303573727607727,
+      "predicted_xgb_upper": 0.005867874715477228,
+      "source_initial_bins": [
+        17
+      ],
+      "var_y": 0.004811135802125061
+    },
+    {
+      "bin_index": 15,
+      "k_bin": 15.859316447520456,
+      "mean_y": 0.008999989850329265,
+      "n_link_years": 1083779,
+      "n_positive": 9104,
+      "predicted_xgb_lower": 0.005867880303412676,
+      "predicted_xgb_upper": 0.014413442462682724,
+      "source_initial_bins": [
+        18
+      ],
+      "var_y": 0.010284591585176936
+    },
+    {
+      "bin_index": 16,
+      "k_bin": 0.1185657913856876,
+      "mean_y": 0.39318809462076676,
+      "n_link_years": 1083779,
+      "n_positive": 367728,
+      "predicted_xgb_lower": 0.014413484372198582,
+      "predicted_xgb_upper": 20.33243179321289,
+      "source_initial_bins": [
+        19
+      ],
+      "var_y": 0.41151799577713083
+    }
+  ],
+  "method": "method_of_moments",
+  "n_bins_after_merge": 17,
+  "n_bins_after_negative_drop": 17,
+  "n_bins_initial": 20,
+  "n_link_years_total": 21675570,
+  "n_positive_total": 391255,
+  "negative_k_bin_fail_threshold": 0.25,
+  "script_path": "src/road_risk/model/eb_dispersion.py",
+  "timestamp_utc": "2026-04-25T13:20:30.145411+00:00"
+}
