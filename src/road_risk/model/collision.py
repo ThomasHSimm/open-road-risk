@@ -303,7 +303,7 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
     return result, feature_cols, summary
 
 
-def train_collision_xgb(df: pd.DataFrame) -> tuple:
+def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
     """
     Fit XGBoost Poisson regression. Returns model, features, metrics.
     """
@@ -314,7 +314,7 @@ def train_collision_xgb(df: pd.DataFrame) -> tuple:
 
     from sklearn.model_selection import GroupShuffleSplit
 
-    logger.info("Fitting XGBoost Poisson model ...")
+    logger.info(f"Fitting XGBoost Poisson model (seed={seed}) ...")
 
     feature_cols = [
         "road_class_ord", "form_of_way_ord",
@@ -353,7 +353,7 @@ def train_collision_xgb(df: pd.DataFrame) -> tuple:
         n_estimators=500, max_depth=6,
         learning_rate=0.05, subsample=0.8,
         colsample_bytree=0.8,
-        random_state=RANDOM_STATE, n_jobs=-1, verbosity=0,
+        random_state=seed, n_jobs=1, verbosity=0,  # pin for cross-machine reproducibility
     )
 
     # GroupShuffleSplit by link_id: all years for a given link stay in one
@@ -361,7 +361,7 @@ def train_collision_xgb(df: pd.DataFrame) -> tuple:
     # A random row split is optimistic because repeated-year rows for the
     # same link leak network structure across the split boundary.
     groups = df["link_id"].values
-    gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=RANDOM_STATE)
+    gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=seed)
     idx_train, idx_test = next(gss.split(X, y, groups=groups))
     X_train, X_test = X.iloc[idx_train], X.iloc[idx_test]
     y_train, y_test = y.iloc[idx_train], y.iloc[idx_test]
@@ -395,7 +395,7 @@ def train_collision_xgb(df: pd.DataFrame) -> tuple:
     metrics = {
         "n_train": len(X_train), "n_test": len(X_test),
         "pseudo_r2": float(pseudo_r2), "deviance": float(deviance),
-        "features": feature_cols,
+        "features": feature_cols, "seed": int(seed), "n_jobs": 1,
     }
 
     logger.info(
@@ -407,14 +407,13 @@ def train_collision_xgb(df: pd.DataFrame) -> tuple:
     return model, feature_cols, metrics
 
 
-def score_and_save(
+def score_collision_models(
     glm_result, xgb_model,
     glm_features: list, xgb_features: list,
-    glm_summary: dict, xgb_metrics: dict,
     df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Apply both models to full dataset, pool across years, save risk_scores.parquet.
+    Apply both models to full dataset and pool across years.
 
     Pooling logic:
     - collision_count : sum across years (total observed)
@@ -480,12 +479,6 @@ def score_and_save(
         f"  Links in top 1% risk: {(pooled['risk_percentile'] >= 99).sum():,}"
     )
 
-    # Save
-    MODELS.mkdir(parents=True, exist_ok=True)
-
-    glm_result.save(str(MODELS / "collision_glm.pkl"))
-    xgb_model.save_model(str(MODELS / "collision_xgb.json"))
-
     save_cols = [
         "link_id", "collision_count", "fatal_count", "serious_count",
         "estimated_aadt", "predicted_glm", "predicted_xgb",
@@ -495,11 +488,29 @@ def score_and_save(
         "betweenness_relative",
     ]
     final_cols = [c for c in save_cols if c in pooled.columns]
-    pooled[final_cols].to_parquet(MODELS / "risk_scores.parquet", index=False)
-    logger.info(
-        f"  Saved risk scores: {len(pooled):,} links "
-        f"(no year dimension — pooled across {n_years} years)"
-    )
+
+    return pooled[final_cols]
+
+
+def score_and_save(
+    glm_result, xgb_model,
+    glm_features: list, xgb_features: list,
+    glm_summary: dict, xgb_metrics: dict,
+    df: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Apply both models to full dataset, pool across years, save risk_scores.parquet.
+    """
+    pooled = score_collision_models(glm_result, xgb_model, glm_features, xgb_features, df)
+
+    # Save
+    MODELS.mkdir(parents=True, exist_ok=True)
+
+    glm_result.save(str(MODELS / "collision_glm.pkl"))
+    xgb_model.save_model(str(MODELS / "collision_xgb.json"))
+
+    pooled.to_parquet(MODELS / "risk_scores.parquet", index=False)
+    logger.info(f"  Saved risk scores: {len(pooled):,} links")
 
     with open(MODELS / "collision_metrics.json", "w") as f:
         json.dump({"glm": glm_summary, "xgb": xgb_metrics}, f, indent=2)

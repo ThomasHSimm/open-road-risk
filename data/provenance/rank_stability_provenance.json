@@ -1,0 +1,262 @@
+{
+  "actual_per_seed_row_counts": {
+    "42": 2167557,
+    "43": 2167557,
+    "44": 2167557,
+    "45": 2167557,
+    "46": 2167557
+  },
+  "expected_row_count": 2167557,
+  "git_sha": "05c181fed5d074c5d7e54cb2227a252f95df69c7",
+  "glm_features": [
+    "road_class_ord",
+    "form_of_way_ord",
+    "is_motorway",
+    "is_a_road",
+    "is_slip_road",
+    "is_roundabout",
+    "is_dual",
+    "is_trunk",
+    "is_primary",
+    "log_link_length",
+    "is_covid",
+    "year_norm",
+    "degree_mean",
+    "betweenness",
+    "betweenness_relative",
+    "dist_to_major_km",
+    "pop_density_per_km2",
+    "speed_limit_mph_effective",
+    "lanes_imputed",
+    "is_unpaved_imputed"
+  ],
+  "glm_pseudo_r2": 0.30129078341322035,
+  "glm_retrained": false,
+  "n_jobs": 1,
+  "n_jobs_setting_confirmed": true,
+  "n_test": {
+    "42": 4335120,
+    "43": 4335120,
+    "44": 4335120,
+    "45": 4335120,
+    "46": 4335120
+  },
+  "n_train": {
+    "42": 17340450,
+    "43": 17340450,
+    "44": 17340450,
+    "45": 17340450,
+    "46": 17340450
+  },
+  "per_seed_pseudo_r2": {
+    "42": 0.8575163466711959,
+    "43": 0.8587361326589147,
+    "44": 0.8613347830619882,
+    "45": 0.8585142407786172,
+    "46": 0.8591023834868632
+  },
+  "production_risk_scores_before": {
+    "columns": [
+      "link_id",
+      "collision_count",
+      "fatal_count",
+      "serious_count",
+      "estimated_aadt",
+      "predicted_glm",
+      "predicted_xgb",
+      "residual_glm",
+      "risk_percentile",
+      "road_classification",
+      "hgv_proportion",
+      "speed_limit_mph_effective",
+      "speed_limit_mph",
+      "betweenness_relative"
+    ],
+    "mtime_ns": 1777068483027642035,
+    "path": "data/models/risk_scores.parquet",
+    "row_count": 2167557,
+    "size_bytes": 161647320
+  },
+  "script_path": "src/road_risk/model/rank_stability.py",
+  "seeds_used": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "summary_statistics": {
+    "jaccard": {
+      "100": {
+        "mean": 0.9032059247856534,
+        "min": 0.8691588785046729,
+        "pairs": {
+          "42-43": 0.9047619047619048,
+          "42-44": 0.9047619047619048,
+          "42-45": 0.8691588785046729,
+          "42-46": 0.9047619047619048,
+          "43-44": 0.9230769230769231,
+          "43-45": 0.8867924528301887,
+          "43-46": 0.941747572815534,
+          "44-45": 0.9047619047619048,
+          "44-46": 0.9230769230769231,
+          "45-46": 0.8691588785046729
+        }
+      },
+      "1000": {
+        "mean": 0.8933248749940799,
+        "min": 0.863932898415657,
+        "pairs": {
+          "42-43": 0.9138755980861244,
+          "42-44": 0.863932898415657,
+          "42-45": 0.8939393939393939,
+          "42-46": 0.8957345971563981,
+          "43-44": 0.8885741265344664,
+          "43-45": 0.8975332068311196,
+          "43-46": 0.9047619047619048,
+          "44-45": 0.8744142455482662,
+          "44-46": 0.8975332068311196,
+          "45-46": 0.9029495718363464
+        }
+      },
+      "10000": {
+        "mean": 0.9271423164999384,
+        "min": 0.9193857965451055,
+        "pairs": {
+          "42-43": 0.9329274185754325,
+          "42-44": 0.9193857965451055,
+          "42-45": 0.9262255610131946,
+          "42-46": 0.925483777799172,
+          "43-44": 0.9243721735783701,
+          "43-45": 0.9290123456790124,
+          "43-46": 0.9301293186643506,
+          "44-45": 0.9243721735783701,
+          "44-46": 0.9306882903755189,
+          "45-46": 0.9288263091908574
+        }
+      },
+      "21675": {
+        "mean": 0.9184935580864064,
+        "min": 0.9078426194877212,
+        "pairs": {
+          "42-43": 0.9221389615572207,
+          "42-44": 0.9078426194877212,
+          "42-45": 0.9161067892503536,
+          "42-46": 0.9177173191771731,
+          "43-44": 0.9147526501766784,
+          "43-45": 0.9246137453383058,
+          "43-46": 0.918311354987167,
+          "44-45": 0.9172084383707045,
+          "44-46": 0.9252120619976019,
+          "45-46": 0.921031640521138
+        }
+      }
+    },
+    "per_decile_calibration_mean": {
+      "1": 4.456624038088911e-05,
+      "10": 0.1934360294524719,
+      "2": 8.424218937422725e-05,
+      "3": 0.00013083896565246477,
+      "4": 0.00022947461661960915,
+      "5": 0.0003083651663621768,
+      "6": 0.0005096998915826625,
+      "7": 0.0008987986491723412,
+      "8": 0.0018254711540679567,
+      "9": 0.010596892358227684
+    },
+    "per_decile_calibration_std": {
+      "1": 1.0621034188877213e-06,
+      "10": 3.7254263498453545e-05,
+      "2": 3.3043615086954913e-06,
+      "3": 4.456272064235935e-06,
+      "4": 4.643373245524411e-06,
+      "5": 6.305467738201427e-06,
+      "6": 4.118698829676937e-06,
+      "7": 3.960614890722237e-06,
+      "8": 6.001102642710534e-06,
+      "9": 3.627617356668952e-05
+    },
+    "pseudo_r2_mean": 0.8590407773315156,
+    "pseudo_r2_std": 0.0014106909269948867,
+    "spearman": {
+      "mean": 0.9981061292258341,
+      "min": 0.9978405183870379,
+      "pairs": {
+        "42-43": 0.9979794396383077,
+        "42-44": 0.9979428199706007,
+        "42-45": 0.9979795957028413,
+        "42-46": 0.9978405183870379,
+        "43-44": 0.998054952470409,
+        "43-45": 0.9981727334644218,
+        "43-46": 0.9984543557309472,
+        "44-45": 0.9982545060854141,
+        "44-46": 0.9980961009443267,
+        "45-46": 0.9982862698640341
+      }
+    }
+  },
+  "timestamp_utc": "2026-04-25T12:30:44.102338+00:00",
+  "verification": {
+    "production_after": {
+      "columns": [
+        "link_id",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
+        "estimated_aadt",
+        "predicted_glm",
+        "predicted_xgb",
+        "residual_glm",
+        "risk_percentile",
+        "road_classification",
+        "hgv_proportion",
+        "speed_limit_mph_effective",
+        "speed_limit_mph",
+        "betweenness_relative"
+      ],
+      "mtime_ns": 1777068483027642035,
+      "path": "data/models/risk_scores.parquet",
+      "row_count": 2167557,
+      "size_bytes": 161647320
+    },
+    "production_before": {
+      "columns": [
+        "link_id",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
+        "estimated_aadt",
+        "predicted_glm",
+        "predicted_xgb",
+        "residual_glm",
+        "risk_percentile",
+        "road_classification",
+        "hgv_proportion",
+        "speed_limit_mph_effective",
+        "speed_limit_mph",
+        "betweenness_relative"
+      ],
+      "mtime_ns": 1777068483027642035,
+      "path": "data/models/risk_scores.parquet",
+      "row_count": 2167557,
+      "size_bytes": 161647320
+    },
+    "production_risk_scores_unchanged": true,
+    "provenance_exists_and_parses": true,
+    "report_exists": true,
+    "row_counts_match_expected": {
+      "42": true,
+      "43": true,
+      "44": true,
+      "45": true,
+      "46": true
+    },
+    "seed_files_exist": {
+      "42": true,
+      "43": true,
+      "44": true,
+      "45": true,
+      "46": true
+    }
+  }
+}
