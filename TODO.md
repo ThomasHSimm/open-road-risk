@@ -198,6 +198,26 @@ Tracked here so nothing gets lost. Cross off as done.
 - [x] ~~Download additional AADF years~~ — stale; AADF ingest already loads full
       2015-2024 range. Real issue was counted-vs-estimated, now handled by the
       counted-only filter.
+- [x] Empirical Bayes shrinkage for risk ranking (25 April 2026) — v1
+  implemented with positive-event weighted MoM k ≈ 3.07. Session 1: dispersion
+  strongly non-constant across predicted-risk range (k_bin varies ~3,400× from
+  low- to high-prediction bins); global-k is a known-imperfect summary. Session 2:
+  EB does regression-to-the-mean correction at prediction/observation extremes
+  (top-1% intersection 84.93%, ~3,267 links each entering/leaving). Does NOT
+  improve cross-seed top-k stability — seed-churn population moved at parity with
+  general population under EB. Adopted as additional ranking (`risk_percentile_eb`),
+  not a replacement for `risk_percentile`. 5-seed EB comparison deferred — single-run
+  §6.4 already answered the relevant question. Per-family or per-bin EB recommended
+  for v2, paired with planned facility-family split. Outputs:
+  `src/road_risk/model/eb_{dispersion,shrinkage}.py`,
+  `src/road_risk/diagnostics/eb_validation.py`,
+  `data/models/risk_scores_eb.parquet`,
+  `data/provenance/eb_dispersion_provenance.json`,
+  `reports/eb_{dispersion,validation}.md`,
+  `quarto/methodology/empirical-bayes-shrinkage.qmd`.
+  Production `risk_scores.parquet` unchanged throughout. Open caveat: ~4%
+  top-1% membership churn from MoM aggregation choice; production k logged in
+  provenance JSON. Per-family k removes this ambiguity.
 - [x] OSM tiered speed-limit imputation + Stage 2 retrain (24 April 2026) —
       `speed_limit_mph_effective` replaces raw OSM-only feature in model. Coverage
       91.27% (1.98M / 2.17M links) via `road_classification × ruc_urban_rural` lookup;
@@ -213,63 +233,6 @@ Tracked here so nothing gets lost. Cross off as done.
 ---
 
 ## Queued tasks with prompts
-
----
-
-### Empirical Bayes shrinkage for risk ranking
-
-**Context:** Stage 2 currently ranks on `mean predicted_xgb` with no shrinkage.
-For a network-screening output with rare events across millions of links, EB
-adjustment (HSM/FHWA standard) combines model prediction with observed history
-and controls for regression to the mean. Likely to improve stability of top-k
-lists without necessarily moving headline R².
-
-**Decisions already made:**
-- Global NB fit for `k` (not per-family) for v1 simplicity. Per-family is a
-  future extension that pairs with the facility-family split.
-- Shrink toward `predicted_xgb`, not `predicted_glm` — GLM has biased intercept
-  from zero-downsampling.
-- Compute `n_years` per link; don't assume uniform (some links may only appear
-  in some AADT years).
-- Output `risk_percentile_eb` alongside existing `risk_percentile`, not replacing.
-- Methodological compromise: HSM uses NB model predictions as the prior; we
-  use XGBoost-Poisson predictions and borrow `k` from an auxiliary NB GLM.
-  Flag explicitly in methodology.
-
-**Prompt:**
-
-Produce a Quarto design doc at `quarto/methodology/empirical-bayes-shrinkage.qmd`, NOT code.
-I will review before any implementation.
-
-The doc should cover:
-
-1. Mathematical formulation: `expected_EB = w × predicted + (1-w) × observed`,
-   where `w = 1 / (1 + k × predicted × n_years)`. Confirm units — read
-   `collision.py` and report shape and units of `predicted_xgb` at pooling point.
-2. `k` estimation: fit a global NB GLM on the full link-year table using the
-   same feature set as the current Poisson GLM; extract dispersion parameter.
-   Document that this is a compromise: HSM assumes NB-derived predictions as
-   prior; we use XGBoost + borrowed `k`.
-3. Handling of `n_years` — per link, from AADT output row counts.
-4. Implementation plan: which functions change, new diagnostic module, aim to
-   keep changes in `collision.py` plus a small new module.
-5. Validation plan:
-   - How many links have rank change >10 percentiles.
-   - Top-1% list size change.
-   - Qualitative review: 5 links that drop out of top-1% under EB vs 5 that
-     enter, and what they have in common.
-   - Do NOT include cross-fold stability — that is separate 5-seed work.
-6. Caveat section on the `k`-borrowing methodology compromise.
-
-Stop after the doc. Do not implement. Do not modify `collision.py`.
-
-**Expected outcomes:**
-- Top-1% list likely shrinks slightly as high-predicted/low-observed links
-  shrink toward observed.
-- Short segments with one freak collision should drop in ranking.
-- Long segments with smooth exposure should rise.
-- Rank correlation old vs new likely 0.85–0.95 (meaningful change, not total
-  reshuffle).
 
 ---
 
@@ -726,9 +689,8 @@ list documents intent as much as plan.
 
 Dependencies matter more than priority:
 
-- EB shrinkage and 5-seed stability are independent of everything else — do
-  those first.
-- Facility-family split depends on EB shrinkage infrastructure being in place.
+- ~~EB shrinkage~~ ✅ done. 5-seed stability is independent of everything else.
+- Facility-family split depends on EB shrinkage infrastructure being in place ✅.
 - NHNM depends on facility-family split.
 - OSM tiered imputation benefits from ONS RUC being done first.
 - Curvature/grade are independent but want the 5-seed infrastructure to evaluate
@@ -736,12 +698,12 @@ Dependencies matter more than priority:
 
 A rough execution sequence that respects dependencies:
 
-1. AADF filter — small, quick win.
+1. ~~AADF filter~~ ✅ done.
 2. 5-seed stability — infrastructure for evaluating everything else.
-3. EB shrinkage — biggest single structural improvement.
+3. ~~EB shrinkage~~ ✅ done (25 April 2026).
 4. IMD + NaPTAN — cheap adds, independent of model structure.
-5. ONS RUC.
-6. OSM tiered imputation — uses ONS RUC.
+5. ~~ONS RUC~~ ✅ done.
+6. ~~OSM tiered imputation~~ ✅ done.
 7. Curvature + grade — independent; do when in the mood for geometry work.
 8. Facility-family split — larger refactor, do when other improvements are in
    place.
