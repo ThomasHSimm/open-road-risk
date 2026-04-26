@@ -399,13 +399,21 @@ Diagnostics:
 1. Compute the `predicted_xgb_family` value at the top-1% threshold within
    each family. Are the family thresholds similar, or does one family require
    much larger predicted counts to enter its own top 1%?
-2. Around the global stitched top-1% threshold, sample 100 adjacent link pairs
-   where the link just above and just below the boundary are in different
-   families. Compare their predicted values. Small gaps indicate a smooth
-   stitched ranking; large gaps indicate a calibration discontinuity.
-3. Repeat the adjacent-pair check at the global top-1000 and top-10,000
-   thresholds, because narrow operational lists are most sensitive to
-   discontinuities.
+2. At each of the three global stitched thresholds (top-1%, top-1000,
+   top-10000), sample adjacent boundary-crossing link pairs stratified by
+   family pair. The six possible family pairs are: Motorway × Trunk A-road,
+   Motorway × Other-Urban, Motorway × Other-Rural, Trunk A-road × Other-Urban,
+   Trunk A-road × Other-Rural, and Other-Urban × Other-Rural. For each family
+   pair at each threshold, sample up to 25 adjacent pairs where the two links
+   straddle the threshold and belong to different families. If a family pair has
+   fewer than 25 available pairs at a threshold, take all available pairs and
+   report the count explicitly; a low count indicates limited rank-range overlap
+   for that pair, which is itself a calibration signal. Total target per
+   threshold is up to 150 pairs (6 pairs × 25 max each). Compare predicted
+   values across the sampled pairs. Small gaps indicate smooth stitching; large
+   gaps indicate calibration discontinuity. Small counts for rare family pairs
+   (e.g. Motorway × Other-Rural) are informative—they mean those families' risk
+   ranges barely overlap, which the global model may not be handling well.
 
 The pre-run hypothesis is that small discontinuities are likely. Large
 discontinuities would make the stitched ranking operationally questionable,
@@ -513,7 +521,7 @@ v1 residuals show form-of-way patterning.
 ### 7.6 GLM unchanged, XGBoost-only split
 
 Per-family GLM is not implemented in v1. The current global GLM, with pseudo-R2
-around 0.301 after speed-limit imputation, remains a diagnostic baseline.
+around 0.251 after speed-limit imputation, remains a diagnostic baseline.
 Per-family GLM is a v2 extension if interpretability by family becomes
 important.
 
