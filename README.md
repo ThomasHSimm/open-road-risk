@@ -32,14 +32,16 @@ producing `timezone_profiles.parquet`. These profiles are currently a
 separate output for temporal analysis and future exposure weighting; they are
 not part of the current Stage 2 collision feature set.
 
-**Stage 2 — Collision risk model**  
-Poisson GLM + XGBoost predicting collision counts per link per year.
+**Stage 2 — Collision risk model** Poisson GLM + XGBoost predicting collision counts per link per year.
 Uses `log(AADT × length_km × 365 / 1e6)` as exposure offset so the model learns
 *which roads are dangerous given their traffic* — not just which are busy.
-XGBoost (pseudo-R² 0.858, out-of-sample) drives the final risk percentile ranking;
-the GLM (pseudo-R² 0.251, in-sample on downsampled training set) provides
-interpretable coefficients and diagnostic residuals. Note: the two pseudo-R² values
-are not computed on a common evaluation set and are not directly comparable.
+XGBoost (pseudo-R² 0.8575, out-of-sample) drives the final risk percentile ranking (`risk_scores.parquet`).
+The GLM (pseudo-R² 0.3013, in-sample on downsampled training set) provides
+interpretable coefficients and diagnostic residuals. Features include a tiered
+speed limit imputation (`speed_limit_mph_effective`) and an LSOA spatial/rural 
+fallback to ensure network-wide coverage. 
+
+*Experimental variants for Empirical Bayes (EB) shrinkage (`risk_scores_eb.parquet`) and a Facility-Family split (`risk_scores_family.parquet`) are also generated for diagnostic comparison.*
 
 ---
 
@@ -141,8 +143,8 @@ open-road-risk/
 | Mean snap score | 0.860 |
 | Road links scored (full network) | 2,167,557 |
 | AADT estimator CV R² | ~0.83 (counted-only AADF rows) |
-| Poisson GLM pseudo-R² | 0.251 (in-sample, downsampled training set) |
-| XGBoost pseudo-R² | 0.858 |
+| Poisson GLM pseudo-R² | 0.3013 (in-sample, downsampled training set) |
+| XGBoost pseudo-R² | 0.8575 |
 
 ---
 
@@ -164,9 +166,10 @@ open-road-risk/
   observation in the training window and avoids learning from DfT-interpolated
   targets.
 
-- **OSM attribute coverage** — speed limit 56.4%, lanes 7.3%, lit 9.3%,
-  unpaved/surface flag 16.2%. The current Stage 2 run includes OSM speed in both
-  GLM and XGBoost; sparse OSM attributes are imputed or used only where present.
+- **OSM attribute coverage** — Raw speed limit is 56.4%, but a tiered imputation 
+  keyed off OS road classifications provides a `speed_limit_mph_effective` coverage 
+  of 91.27%. `lanes` (7.3%), `lit` (9.3%), and surface flags (16.2%) remain 
+  sparse and are median-imputed where retained in the GLM.
 
 Detailed working notes are kept in `docs/internal/data-quality-notes.md`.
 

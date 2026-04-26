@@ -297,7 +297,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#out-of-scope-for-v1" id="toc-out-of-scope-for-v1" class="nav-link" data-scroll-target="#out-of-scope-for-v1">8. Out of scope for v1</a></li>
   <li><a href="#expected-outcomes" id="toc-expected-outcomes" class="nav-link" data-scroll-target="#expected-outcomes">9. Expected outcomes</a></li>
-  <li><a href="#implementation-sessions-plan" id="toc-implementation-sessions-plan" class="nav-link" data-scroll-target="#implementation-sessions-plan">10. Implementation sessions plan</a></li>
+  <li><a href="#implementation-status" id="toc-implementation-status" class="nav-link" data-scroll-target="#implementation-status">10. Implementation status</a></li>
   </ul>
 </nav>
     </div>
@@ -323,7 +323,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p><strong>Status:</strong> Design only. Implementation sessions follow after review. <strong>Scope:</strong> v1 facility-family split for Stage 2 XGBoost risk ranking. <strong>Primary code path:</strong> <code>src/road_risk/model/collision.py</code>, with additive wrappers and diagnostics. <strong>Reference model:</strong> FHWA Highway Safety Manual (HSM) safety performance functions are explicitly site-type specific.</p>
+<p><strong>Status:</strong> Sessions 1 &amp; 2 complete (April 25, 2026). <strong>Scope:</strong> v1 facility-family split for Stage 2 XGBoost risk ranking. <strong>Primary code path:</strong> <code>src/road_risk/model/collision.py</code>, with additive wrappers and diagnostics. <strong>Reference model:</strong> FHWA Highway Safety Manual (HSM) safety performance functions are explicitly site-type specific.</p>
 <hr>
 <section id="status-and-scope" class="level2">
 <h2 class="anchored" data-anchor-id="status-and-scope">0. Status and scope</h2>
@@ -905,16 +905,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The most valuable positive result would be not just a higher headline pseudo-R2, but clearer family-specific calibration and residual behaviour.</p>
 <hr>
 </section>
-<section id="implementation-sessions-plan" class="level2">
-<h2 class="anchored" data-anchor-id="implementation-sessions-plan">10. Implementation sessions plan</h2>
-<p>Anticipated implementation split:</p>
-<ol type="1">
-<li><strong>Session 1: Family assignment, per-family training, and stitching.</strong> Produce <code>risk_scores_family.parquet</code> for seed 42 only. Do not modify production <code>risk_scores.parquet</code>.</li>
-<li><strong>Session 2: Single-run validation.</strong> Compute family-boundary diagnostics, per-family pseudo-R2 and residuals, and compare seed-42 stitched output against the current global baseline.</li>
-<li><strong>Session 3: 5-seed family rank stability.</strong> Extend <code>rank_stability.py</code>, run 20 family models, and produce <code>reports/family_rank_stability.md</code>.</li>
-<li><strong>Session 4: Adoption decision.</strong> Decide whether to adopt stitched ranking, within-family ranking only, both, or neither. Update methodology docs and downstream output contracts accordingly.</li>
-</ol>
-<p>Plausible clock time is two to three weeks including reviews, with several hours of agent/runtime for the multi-seed evaluation.</p>
+<section id="implementation-status" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-status">10. Implementation status</h2>
+<p><strong>Sessions 1 &amp; 2 (Complete - April 25, 2026):</strong> The network was successfully split into Motorway (4,084 links), Trunk A, Other-Urban, and Other-Rural based on ONS RUC and road function. * <strong>Result:</strong> Stitched all-links pseudo-R² improved to <strong>0.895</strong> vs the global <strong>0.888</strong>. * <strong>Artefact:</strong> <code>risk_scores_family.parquet</code> was generated successfully alongside the production scores. * <strong>Diagnostics:</strong> Full validation available in <code>reports/family_validation.md</code>.</p>
+<p><strong>Pending Sessions:</strong> * <strong>Session 3: 5-seed family rank stability.</strong> Extend <code>rank_stability.py</code>, run 20 family models, and produce <code>reports/family_rank_stability.md</code>. * <strong>Session 4: Adoption decision.</strong> Decide whether to adopt stitched ranking, within-family ranking only, both, or neither for the core pipeline.</p>
 
 
 <!-- -->
@@ -1383,7 +1377,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>**Status:** Design only. Implementation sessions follow after review.</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>**Status:** Sessions 1 &amp; 2 complete (April 25, 2026).</span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>**Scope:** v1 facility-family split for Stage 2 XGBoost risk ranking.</span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>**Primary code path:** <span class="in">`src/road_risk/model/collision.py`</span>, with additive</span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>wrappers and diagnostics.</span>
@@ -1934,24 +1928,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-559"><a href="#cb7-559" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-560"><a href="#cb7-560" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb7-561"><a href="#cb7-561" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-562"><a href="#cb7-562" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Implementation sessions plan</span></span>
+<span id="cb7-562"><a href="#cb7-562" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Implementation status</span></span>
 <span id="cb7-563"><a href="#cb7-563" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-564"><a href="#cb7-564" aria-hidden="true" tabindex="-1"></a>Anticipated implementation split:</span>
-<span id="cb7-565"><a href="#cb7-565" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-566"><a href="#cb7-566" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Session 1: Family assignment, per-family training, and stitching.**</span>
-<span id="cb7-567"><a href="#cb7-567" aria-hidden="true" tabindex="-1"></a>   Produce <span class="in">`risk_scores_family.parquet`</span> for seed 42 only. Do not modify</span>
-<span id="cb7-568"><a href="#cb7-568" aria-hidden="true" tabindex="-1"></a>   production <span class="in">`risk_scores.parquet`</span>.</span>
-<span id="cb7-569"><a href="#cb7-569" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Session 2: Single-run validation.** Compute family-boundary diagnostics,</span>
-<span id="cb7-570"><a href="#cb7-570" aria-hidden="true" tabindex="-1"></a>   per-family pseudo-R2 and residuals, and compare seed-42 stitched output</span>
-<span id="cb7-571"><a href="#cb7-571" aria-hidden="true" tabindex="-1"></a>   against the current global baseline.</span>
-<span id="cb7-572"><a href="#cb7-572" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Session 3: 5-seed family rank stability.** Extend <span class="in">`rank_stability.py`</span>,</span>
-<span id="cb7-573"><a href="#cb7-573" aria-hidden="true" tabindex="-1"></a>   run 20 family models, and produce <span class="in">`reports/family_rank_stability.md`</span>.</span>
-<span id="cb7-574"><a href="#cb7-574" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Session 4: Adoption decision.** Decide whether to adopt stitched ranking,</span>
-<span id="cb7-575"><a href="#cb7-575" aria-hidden="true" tabindex="-1"></a>   within-family ranking only, both, or neither. Update methodology docs and</span>
-<span id="cb7-576"><a href="#cb7-576" aria-hidden="true" tabindex="-1"></a>   downstream output contracts accordingly.</span>
-<span id="cb7-577"><a href="#cb7-577" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-578"><a href="#cb7-578" aria-hidden="true" tabindex="-1"></a>Plausible clock time is two to three weeks including reviews, with several</span>
-<span id="cb7-579"><a href="#cb7-579" aria-hidden="true" tabindex="-1"></a>hours of agent/runtime for the multi-seed evaluation.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb7-564"><a href="#cb7-564" aria-hidden="true" tabindex="-1"></a>**Sessions 1 &amp; 2 (Complete - April 25, 2026):**</span>
+<span id="cb7-565"><a href="#cb7-565" aria-hidden="true" tabindex="-1"></a>The network was successfully split into Motorway (4,084 links), Trunk A, Other-Urban, and Other-Rural based on ONS RUC and road function. </span>
+<span id="cb7-566"><a href="#cb7-566" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Result:** Stitched all-links pseudo-R² improved to **0.895** vs the global **0.888**.</span>
+<span id="cb7-567"><a href="#cb7-567" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Artefact:** <span class="in">`risk_scores_family.parquet`</span> was generated successfully alongside the production scores.</span>
+<span id="cb7-568"><a href="#cb7-568" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Diagnostics:** Full validation available in <span class="in">`reports/family_validation.md`</span>.</span>
+<span id="cb7-569"><a href="#cb7-569" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-570"><a href="#cb7-570" aria-hidden="true" tabindex="-1"></a>**Pending Sessions:**</span>
+<span id="cb7-571"><a href="#cb7-571" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Session 3: 5-seed family rank stability.** Extend <span class="in">`rank_stability.py`</span>, run 20 family models, and produce <span class="in">`reports/family_rank_stability.md`</span>.</span>
+<span id="cb7-572"><a href="#cb7-572" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Session 4: Adoption decision.** Decide whether to adopt stitched ranking, within-family ranking only, both, or neither for the core pipeline.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

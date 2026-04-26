@@ -95,7 +95,7 @@
     "href": "analysis/eda-collisions.html#overview",
     "title": "Collision EDA — STATS19",
     "section": "1 Overview",
-    "text": "1 Overview\nThis page explores the raw STATS19 collision records for the study area (Yorkshire and surrounding forces) before any spatial joining or modelling. The goal is to understand the coverage, quality, and structure of the outcome variable.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nThe sharp drop in 2020–2021 reflects COVID-19 lockdowns reducing traffic and reported collisions. Both years are flagged is_covid = True and treated separately where needed."
+    "text": "1 Overview\nThis page explores the raw STATS19 collision records for the expanded study area (Northern and Central England) before any spatial joining or modelling. The goal is to understand the coverage, quality, and structure of the outcome variable.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nThe sharp drop in 2020–2021 reflects COVID-19 lockdowns reducing traffic and reported collisions. Both years are flagged is_covid = True and treated separately where needed."
   },
   {
     "objectID": "analysis/eda-collisions.html#severity",
@@ -564,7 +564,7 @@
     "href": "data-sources/stats19.html#what-this-page-answers",
     "title": "STATS19 — Road Casualty Statistics",
     "section": "2 What this page answers",
-    "text": "2 What this page answers\n\nWhat is STATS19 and what does it contain?\nHow is the data collected, and what biases does that introduce?\nWhat does the Yorkshire sample look like over 2015–2024?\nHow do severity, road type, time of day, and vehicle mix vary?\nHow well do the three STATS19 tables link together?"
+    "text": "2 What this page answers\n\nWhat is STATS19 and what does it contain?\nHow is the data collected, and what biases does that introduce?\nWhat does the Northern and Central England sample look like over 2015–2024?\nHow do severity, road type, time of day, and vehicle mix vary?\nHow well do the three STATS19 tables link together?"
   },
   {
     "objectID": "data-sources/stats19.html#what-stats19-is",
@@ -1145,7 +1145,7 @@
     "href": "methodology/facility-family-split.html",
     "title": "Facility-Family Split",
     "section": "",
-    "text": "Status: Design only. Implementation sessions follow after review. Scope: v1 facility-family split for Stage 2 XGBoost risk ranking. Primary code path: src/road_risk/model/collision.py, with additive wrappers and diagnostics. Reference model: FHWA Highway Safety Manual (HSM) safety performance functions are explicitly site-type specific."
+    "text": "Status: Sessions 1 & 2 complete (April 25, 2026). Scope: v1 facility-family split for Stage 2 XGBoost risk ranking. Primary code path: src/road_risk/model/collision.py, with additive wrappers and diagnostics. Reference model: FHWA Highway Safety Manual (HSM) safety performance functions are explicitly site-type specific."
   },
   {
     "objectID": "methodology/facility-family-split.html#status-and-scope",
@@ -1218,11 +1218,11 @@
     "text": "9. Expected outcomes\nThese are hypotheses to compare against v1 results, not pass/fail thresholds.\n\n\n\n\n\n\n\nOutcome\nPre-run expectation\n\n\n\n\nHeadline pseudo-R2\napproximately unchanged around 0.86, or slightly improved\n\n\nStitched top-1% 5-seed Jaccard\napproximately unchanged or marginally improved relative to current 0.918\n\n\nMotorway mean residual\nsignificantly closer to zero than the current global mean residual around -3.3\n\n\nOther-Urban / Other-Rural metrics\nroughly comparable to global, because the global model already has many relevant signals\n\n\nFamily-boundary discontinuity\nsome discontinuity is likely; small is acceptable, large is a warning against stitched ranking adoption\n\n\n\nThe most valuable positive result would be not just a higher headline pseudo-R2, but clearer family-specific calibration and residual behaviour."
   },
   {
-    "objectID": "methodology/facility-family-split.html#implementation-sessions-plan",
-    "href": "methodology/facility-family-split.html#implementation-sessions-plan",
+    "objectID": "methodology/facility-family-split.html#implementation-status",
+    "href": "methodology/facility-family-split.html#implementation-status",
     "title": "Facility-Family Split",
-    "section": "10. Implementation sessions plan",
-    "text": "10. Implementation sessions plan\nAnticipated implementation split:\n\nSession 1: Family assignment, per-family training, and stitching. Produce risk_scores_family.parquet for seed 42 only. Do not modify production risk_scores.parquet.\nSession 2: Single-run validation. Compute family-boundary diagnostics, per-family pseudo-R2 and residuals, and compare seed-42 stitched output against the current global baseline.\nSession 3: 5-seed family rank stability. Extend rank_stability.py, run 20 family models, and produce reports/family_rank_stability.md.\nSession 4: Adoption decision. Decide whether to adopt stitched ranking, within-family ranking only, both, or neither. Update methodology docs and downstream output contracts accordingly.\n\nPlausible clock time is two to three weeks including reviews, with several hours of agent/runtime for the multi-seed evaluation."
+    "section": "10. Implementation status",
+    "text": "10. Implementation status\nSessions 1 & 2 (Complete - April 25, 2026): The network was successfully split into Motorway (4,084 links), Trunk A, Other-Urban, and Other-Rural based on ONS RUC and road function. * Result: Stitched all-links pseudo-R² improved to 0.895 vs the global 0.888. * Artefact: risk_scores_family.parquet was generated successfully alongside the production scores. * Diagnostics: Full validation available in reports/family_validation.md.\nPending Sessions: * Session 3: 5-seed family rank stability. Extend rank_stability.py, run 20 family models, and produce reports/family_rank_stability.md. * Session 4: Adoption decision. Decide whether to adopt stitched ranking, within-family ranking only, both, or neither for the core pipeline."
   },
   {
     "objectID": "methodology/modelling.html",

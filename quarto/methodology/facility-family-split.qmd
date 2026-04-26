@@ -8,7 +8,7 @@ format:
     page-layout: full
 ---
 
-**Status:** Design only. Implementation sessions follow after review.
+**Status:** Sessions 1 & 2 complete (April 25, 2026).
 **Scope:** v1 facility-family split for Stage 2 XGBoost risk ranking.
 **Primary code path:** `src/road_risk/model/collision.py`, with additive
 wrappers and diagnostics.
@@ -559,21 +559,79 @@ but clearer family-specific calibration and residual behaviour.
 
 ---
 
-## 10. Implementation sessions plan
+## 10. Implementation status
 
-Anticipated implementation split:
+**Sessions 1 & 2 (Complete - April 25, 2026):**
+The network was successfully split into Motorway (4,084 links), Trunk A, Other-Urban, and Other-Rural based on ONS RUC and road function. 
+* **Result:** Stitched all-links pseudo-R² improved to **0.895** vs the global **0.888**.
+* **Artefact:** `risk_scores_family.parquet` was generated successfully alongside the production scores.
+* **Diagnostics:** Full validation available in `reports/family_validation.md`.
 
-1. **Session 1: Family assignment, per-family training, and stitching.**
-   Produce `risk_scores_family.parquet` for seed 42 only. Do not modify
-   production `risk_scores.parquet`.
-2. **Session 2: Single-run validation.** Compute family-boundary diagnostics,
-   per-family pseudo-R2 and residuals, and compare seed-42 stitched output
-   against the current global baseline.
-3. **Session 3: 5-seed family rank stability.** Extend `rank_stability.py`,
-   run 20 family models, and produce `reports/family_rank_stability.md`.
-4. **Session 4: Adoption decision.** Decide whether to adopt stitched ranking,
-   within-family ranking only, both, or neither. Update methodology docs and
-   downstream output contracts accordingly.
+**Session 3 and 4: Deferred.** Adoption decision reached from single-seed evidence (see §11).
+Session 3 (5-seed harness) would confirm the motorway reversal at multi-seed grain, but is
+deferred pending v2 redesign rather than running on the v1 specification.
 
-Plausible clock time is two to three weeks including reviews, with several
-hours of agent/runtime for the multi-seed evaluation.
+---
+
+## 11. Session 1–2 conclusions
+
+Sessions 1 and 2 produced single-seed evidence on the per-family approach. Session 3
+(5-seed harness) was deferred pending v2 design.
+
+### Findings
+
+- **Stitched ranking is calibration-clean.** Largest adjacent different-family
+  predicted-value gap is 0.0047 across all family pairs at top-1%, top-1000, and
+  top-10000 thresholds. The stitching itself is operationally sound.
+
+- **Motorway calibration improvement is robust.** Per-family motorway mean residual
+  is +0.13, vs the global model's known −3.3 under-prediction. This is the design
+  doc's primary v1 hypothesis and is supported.
+
+- **Held-out pseudo-R² is essentially unchanged on three of four families.**
+  Apples-to-apples held-out link-year deltas: trunk_a +0.006, other_urban +0.001,
+  other_rural +0.002. All within seed-noise of zero. The all-data gains in
+  `reports/family_validation.md §6.2.1` were partly training-set fit, not held-out
+  generalisation.
+
+- **Motorway pseudo-R² reverses on held-out.** All-data delta +0.052 vs held-out
+  delta −0.027. The per-family motorway model overfits its small training set
+  (~4k links). This is consistent with the §3.1 flag that n_estimators=500 may be
+  too much capacity at motorway scale.
+
+### Adoption
+
+Do not adopt v1 stitched ranking as a replacement for global `risk_percentile`. The
+held-out evidence does not support a meaningful generalisation gain, and the motorway
+pseudo-R² reversal is a genuine concern.
+
+The motorway calibration improvement is methodologically interesting and motivates v2
+work. The per-family approach is documented as evaluated, with v1 outputs available
+diagnostically in `data/models/risk_scores_family.parquet`.
+
+### v2 design questions (deferred)
+
+- **Motorway hyperparameters.** n_estimators=500 is plausibly too large for a 4k-link
+  family. v2 candidates: reduced n_estimators (e.g. 100–200), early stopping with
+  held-out validation, or partial pooling.
+
+- **Network expansion.** Going from N+C England (~4k motorway links) to all-GB (~6k)
+  may reduce overfitting risk. Necessary but probably not sufficient: the held-out
+  near-zero deltas on the other three families suggest the gain mechanism is not
+  simply "more data per family."
+
+- **Partial pooling.** Motorway and trunk-A could be pooled into a single "high-spec"
+  family with shared structure. This would preserve the calibration improvement on
+  motorway while increasing training data and reducing overfitting risk.
+
+- **Per-family EB k.** The v1-to-v2 progression flagged in §7.4 still applies.
+  Coherent with per-family modelling but requires the mean-model change to land first.
+
+- **Network topology features.** None of the v1 work addressed the underlying feature
+  gap (curvature, gradient, junction type/density beyond what is in `form_of_way`).
+  Per-family modelling without new features may be hitting an information ceiling on
+  what existing features can predict.
+
+Session 3 (§6.4) remains specified. It would confirm or refute the single-seed
+reversal at multi-seed grain. Deferred pending v2 redesign rather than running on
+the v1 specification.

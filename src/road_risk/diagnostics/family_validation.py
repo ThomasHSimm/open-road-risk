@@ -17,7 +17,14 @@ import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 
 from road_risk.config import _ROOT
-from road_risk.model.collision import MODELS
+from road_risk.model.collision import (
+    AADT_PATH,
+    MODELS,
+    NET_PATH,
+    OPENROADS_PATH,
+    RLA_PATH,
+    build_collision_dataset,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +173,80 @@ def _heldout_link_ids(merged: pd.DataFrame) -> dict[str, set[Any]]:
     return result
 
 
+def _global_heldout_link_year_pr2(
+    merged: pd.DataFrame,
+    heldout_by_family: dict[str, set[Any]],
+) -> dict[str, float]:
+    """Compute global-model held-out pseudo-R² at link-year grain for each family.
+
+    Loads collision_xgb.json, builds a filtered link-year dataset for held-out
+    links only, scores with the global model, and applies the exact eps=1e-6
+    Poisson deviance formula from train_collision_xgb — giving a true
+    apples-to-apples comparison with the per-family held_out_pr2 from provenance.
+    """
+    from xgboost import XGBRegressor
+
+    xgb_model = XGBRegressor()
+    xgb_model.load_model(str(MODELS / "collision_xgb.json"))
+    with (MODELS / "collision_metrics.json").open() as fh:
+        feature_list = json.load(fh)["xgb"]["features"]
+
+    heldout_all: set[Any] = set().union(*heldout_by_family.values())
+    logger.info("Loading data for %d held-out links", len(heldout_all))
+
+    or_cols = [
+        "link_id", "road_classification", "form_of_way",
+        "link_length_km", "is_trunk", "is_primary",
+    ]
+    openroads = pd.read_parquet(OPENROADS_PATH, columns=or_cols)
+    openroads = openroads[openroads["link_id"].isin(heldout_all)].copy()
+
+    aadt = pd.read_parquet(AADT_PATH)
+    aadt = aadt[aadt["link_id"].isin(heldout_all)].copy()
+
+    rla = pd.read_parquet(RLA_PATH)
+    rla = rla[rla["link_id"].isin(heldout_all)].copy()
+
+    net_features = pd.read_parquet(NET_PATH)
+    net_features = net_features[net_features["link_id"].isin(heldout_all)].copy()
+
+    logger.info("Building held-out link-year dataset (%d openroads links)", len(openroads))
+    base = build_collision_dataset(openroads, aadt, rla, net_features)
+    logger.info("Held-out dataset: %d link-year rows", len(base))
+
+    X = base[feature_list].fillna(0).astype(float)
+    offsets = base["log_offset"].fillna(0).values.astype(float)
+    base = base.copy()
+    base["predicted_global"] = xgb_model.predict(X, base_margin=offsets)
+
+    family_map = merged.set_index("link_id")["family"].to_dict()
+    base["family"] = base["link_id"].map(family_map)
+
+    eps = 1e-6
+    result: dict[str, float] = {}
+    for fam in FAMILIES:
+        fam_links = heldout_by_family[fam]
+        sub = base[base["link_id"].isin(fam_links)]
+        if len(sub) == 0:
+            result[fam] = float("nan")
+            continue
+        y = sub["collision_count"].astype(float).to_numpy()
+        y_pred = sub["predicted_global"].to_numpy()
+        deviance = 2.0 * float(np.sum(
+            np.where(y > 0, y * np.log((y + eps) / (y_pred + eps)), 0.0) - (y - y_pred)
+        ))
+        null_val = float(y.mean())
+        null_dev = 2.0 * float(np.sum(
+            np.where(y > 0, y * np.log((y + eps) / (null_val + eps)), 0.0) - (y - null_val)
+        ))
+        r2 = float(1.0 - deviance / null_dev) if null_dev > 0 else float("nan")
+        result[fam] = r2
+        logger.info(
+            "Global held-out link-year R² %s: %.6f (%d rows)", fam, r2, len(sub)
+        )
+    return result
+
+
 # ---------------------------------------------------------------------------
 # §6.1 Headline: stitched vs global
 # ---------------------------------------------------------------------------
@@ -242,6 +323,7 @@ def _section_62(
     merged: pd.DataFrame,
     provenance: dict[str, Any],
     heldout_by_family: dict[str, set[Any]],
+    global_heldout_link_year_by_family: dict[str, float],
 ) -> pd.DataFrame:
     per_fam = provenance.get("per_family_metrics", {})
     rows = []
@@ -274,6 +356,9 @@ def _section_62(
         else:
             global_held_out_pr2 = float("nan")
 
+        global_heldout_ly_pr2 = global_heldout_link_year_by_family.get(
+            fam, float("nan")
+        )
         rows.append({
             "family": fam,
             "n_links": int(len(sub)),
@@ -282,6 +367,7 @@ def _section_62(
             "family_all_pr2": pr2_fam_all,
             "global_subset_pr2": pr2_glob_sub,
             "global_held_out_pr2": global_held_out_pr2,
+            "global_heldout_link_year_pr2": global_heldout_ly_pr2,
             "mean_y_obs": float(y_obs.mean()),
             "mean_y_pred_family": float(y_pred_fam.mean()),
             "mean_resid_family": mean_resid_fam,
@@ -447,6 +533,9 @@ def _write_report(
     SUPPORTING_DIR.mkdir(parents=True, exist_ok=True)
 
     s62_df.to_csv(SUPPORTING_DIR / "family_validation_per_family_metrics.csv", index=False)
+    s62_df[["family", "held_out_pr2", "global_heldout_link_year_pr2"]].to_csv(
+        SUPPORTING_DIR / "family_validation_held_out_link_year.csv", index=False
+    )
     s63_stats.to_csv(SUPPORTING_DIR / "family_validation_boundary_stats.csv", index=False)
     if not s63_pairs.empty:
         s63_pairs.to_csv(SUPPORTING_DIR / "family_validation_boundary_pairs.csv", index=False)
@@ -522,6 +611,7 @@ def _write_report(
             "family_all_pr2",
             "global_subset_pr2",
             "global_held_out_pr2",
+            "global_heldout_link_year_pr2",
             "mean_y_obs",
             "mean_resid_family",
             "mean_resid_global",
@@ -535,6 +625,7 @@ def _write_report(
                 _format_float(r["family_all_pr2"]),
                 _format_float(r["global_subset_pr2"]),
                 _format_float(r["global_held_out_pr2"]),
+                _format_float(r["global_heldout_link_year_pr2"]),
                 _format_float(r["mean_y_obs"], 4),
                 _format_float(r["mean_resid_family"], 4),
                 _format_float(r["mean_resid_global"], 4),
@@ -552,21 +643,26 @@ def _write_report(
                 r["family"],
                 _format_float(r["family_all_pr2"]),
                 _format_float(r["global_subset_pr2"]),
-                f"+{r['family_all_pr2'] - r['global_subset_pr2']:.3f}",
+                f"{r['family_all_pr2'] - r['global_subset_pr2']:+.3f}",
             ]
             for _, r in s62_df.iterrows()
         ],
     )
 
-    # §6.2.1 — held-out comparison (per-family link-year R² vs global link-grain R²)
+    # §6.2.1 — held-out comparison (both at link-year grain)
     delta_heldout_table = _markdown_table(
-        ["family", "per-family held-out R² (link-year)", "global held-out R² (link-grain)", "delta"],
+        [
+            "family",
+            "per-family held-out R² (link-year)",
+            "global held-out R² (link-year)",
+            "delta",
+        ],
         [
             [
                 r["family"],
                 _format_float(r["held_out_pr2"]),
-                _format_float(r["global_held_out_pr2"]),
-                f"+{r['held_out_pr2'] - r['global_held_out_pr2']:.3f}",
+                _format_float(r["global_heldout_link_year_pr2"]),
+                f"{r['held_out_pr2'] - r['global_heldout_link_year_pr2']:+.3f}",
             ]
             for _, r in s62_df.iterrows()
         ],
@@ -657,6 +753,9 @@ def _write_report(
 
     git_sha = provenance.get("git_sha", "unknown")[:12]
     timestamp = provenance.get("timestamp_utc", "unknown")
+    _mw_resid = _format_float(
+        float(s62_df.loc[s62_df["family"] == "motorway", "mean_resid_family"].iloc[0]), 4
+    )
 
     report = "\n\n".join([
         "# Family-Split Session 2 Validation",
@@ -687,12 +786,14 @@ def _write_report(
         + "Columns: `held_out_pr2` = held-out link-year pseudo-R² from session-1 training "
         "(authoritative, link-year grain). "
         "`family_all_pr2` / `global_subset_pr2` = all-links link-grain pseudo-R² on family "
-        "subset. `global_held_out_pr2` = global model on family's held-out links, link-grain "
-        "(same grain as `family_all_pr2`; differs in grain from `held_out_pr2`). "
+        "subset. `global_held_out_pr2` = global model on family's held-out links, link-grain. "
+        "`global_heldout_link_year_pr2` = global model on family's held-out links, "
+        "link-year grain (same grain as `held_out_pr2`; apples-to-apples for §6.2.1). "
         "`mean_resid` = mean(y_obs - y_pred) at link grain.\n\n"
         + s62_table
         + "\n\n### §6.2.1 Did separating help?\n\n"
-        + "**All-data comparison (link-grain; per-family model vs global on same family subset):**\n\n"
+        + "**All-data comparison (link-grain; per-family model vs global on "
+        "same family subset):**\n\n"
         + delta_alldata_table
         + "\n\n"
         + "Per-family models match or beat the global model on every family. "
@@ -701,14 +802,23 @@ def _write_report(
         "a dedicated model. Other-Urban and Other-Rural gains are small (+0.002 and +0.011), "
         "also consistent with the design doc hypothesis that the global model already "
         "captures the relevant feature signals for those populations.\n\n"
-        + "**Held-out comparison (per-family link-year R² from provenance vs "
-        "global link-grain R² on held-out links; note grain difference):**\n\n"
+        + "**Held-out comparison (both columns at link-year grain):**\n\n"
         + delta_heldout_table
         + "\n\n"
-        "The held-out deltas are less clean due to the grain mismatch "
-        "(per-family figures are link-year; global figures are link-grain). "
-        "The direction is consistent with the all-data comparison: motorway and trunk_a "
-        "show the largest per-family gains.",
+        "Both columns are link-year grain Poisson pseudo-R² on the same per-family "
+        "held-out sets (seed=42, 20% of links). Per-family column: authoritative "
+        "figures from session-1 training provenance. Global column: global "
+        "`collision_xgb.json` scored on identical held-out link-years using the same "
+        "eps=1e-6 deviance formula. "
+        "trunk_a, other_urban, and other_rural deltas are consistent in sign with the "
+        "all-data comparison. **Motorway reverses sign**: per-family is -0.027 on "
+        "held-out but +0.052 on all-data. The all-data gain is real (link-grain, same "
+        "formula for both models), but the held-out reversal indicates the motorway "
+        "model over-fits its 4,084-link training set; the global model generalises "
+        "better out-of-sample on the 817 held-out motorway links (8,170 link-years). "
+        "The all-data comparison remains the primary surface for 'did separating help?' "
+        "because it uses the full population; the held-out reversal is a v2 signal for "
+        "regularisation or a larger motorway training window.",
         "## §6.3 Family-boundary discontinuity\n\n"
         + "### Per-family representation at each threshold\n\n"
         + s63_stat_table
@@ -761,12 +871,12 @@ def _write_report(
             f"- Top-1% intersection (stitched vs global): "
             f"{s61['intersection']:,} / {s61['top_k']:,} "
             f"({s61['intersection_pct']:.2f}%).",
-            f"- Motorway mean residual (family model, link-grain): "
-            f"{_format_float(float(s62_df.loc[s62_df['family'] == 'motorway', 'mean_resid_family'].iloc[0]), 4)}.",
-            f"- other_rural held-out pseudo-R²: 0.648 (global baseline 0.859); "
-            f"gap consistent with sparse low-AADT signal.",
-            f"- other_urban per-family gain over global: +{urban_delta:.3f} (all-data link-grain); "
-            "elevation vs 0.859 baseline explained by urban predictability, not per-family modelling.",
+            f"- Motorway mean residual (family model, link-grain): {_mw_resid}.",
+            "- other_rural held-out pseudo-R²: 0.648 (global baseline 0.859); "
+            "gap consistent with sparse low-AADT signal.",
+            f"- other_urban per-family gain over global: +{urban_delta:.3f} "
+            "(all-data link-grain); elevation vs 0.859 baseline explained by urban "
+            "predictability, not per-family modelling.",
             f"- Largest adjacent different-family predicted-value gap near boundary: "
             f"{_format_float(s63_max_gap, 6)} — stitched ranking is smoothly calibrated.",
         ]),
@@ -791,8 +901,11 @@ def run_validation() -> dict[str, Any]:
     logger.info("§6.1 headline comparison")
     s61 = _section_61(merged, heldout_by_family)
 
+    logger.info("§6.2 global held-out link-year pseudo-R² per family")
+    global_heldout_ly = _global_heldout_link_year_pr2(merged, heldout_by_family)
+
     logger.info("§6.2 per-family metrics")
-    s62_df = _section_62(merged, provenance, heldout_by_family)
+    s62_df = _section_62(merged, provenance, heldout_by_family, global_heldout_ly)
 
     logger.info("§6.3 boundary discontinuity")
     s63_stats, s63_pairs, s63_max_gap = _section_63(merged)
@@ -814,6 +927,10 @@ def run_validation() -> dict[str, Any]:
         row["family"]: row["family_all_pr2"] - row["global_subset_pr2"]
         for _, row in s62_df.iterrows()
     }
+    deltas_heldout_link_year = {
+        row["family"]: row["held_out_pr2"] - row["global_heldout_link_year_pr2"]
+        for _, row in s62_df.iterrows()
+    }
     return {
         "pr2_stitched_heldout": s61["pr2_stitched_heldout"],
         "pr2_global_heldout": s61["pr2_global_heldout"],
@@ -833,6 +950,7 @@ def run_validation() -> dict[str, Any]:
         ),
         "largest_boundary_gap": s63_max_gap,
         "deltas": deltas,
+        "deltas_heldout_link_year": deltas_heldout_link_year,
     }
 
 
@@ -854,6 +972,10 @@ def main() -> None:
     print(f"top1pct_intersection={result['top1_intersection_pct']:.4f}%")
     print(f"motorway_mean_residual={result['motorway_mean_resid']:.6g}")
     print("per_family_deltas_alldata:", {k: f"+{v:.3f}" for k, v in result["deltas"].items()})
+    print(
+        "per_family_deltas_heldout_link_year:",
+        {k: f"{v:+.3f}" for k, v in result["deltas_heldout_link_year"].items()},
+    )
     print(f"largest_boundary_gap={result['largest_boundary_gap']:.8g}")
 
 

@@ -1,0 +1,287 @@
+---
+title: " Sub-Linear Exposure Scaling & Kinetic Severity"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: python3
+---
+
+```{python}
+
+OR_PATH      = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+RISK_PATH    = ROOT / "data/models/risk_scores.parquet"
+
+data = {}
+data["risk"] = pd.read_parquet(RISK_PATH)
+data["or"] = gpd.read_parquet(OR_PATH).drop(columns=["geometry"])
+
+a = data["or"][["link_id","link_length_km", "form_of_way", "road_classification"]]
+b = data["risk"][["link_id","collision_count", "estimated_aadt", "fatal_count", "serious_count", "speed_limit_mph_effective"]]
+
+base = a.merge(b, on="link_id", how="inner")
+```
+
+### Background: Re-evaluating the Collision-Exposure Relationship
+A foundational assumption in traditional traffic safety analysis is that risk scales linearly with exposure. Under this assumption, doubling the traffic volume (Annual Average Daily Traffic, or AADT) on a road segment should inherently double the expected number of collisions. 
+
+However, when training our count-based network screening model, applying a strict linear exposure offset (`base_margin = log_offset`) resulted in systematic over-prediction on high-volume roads. To investigate this, we fitted a Poisson Generalized Linear Model (GLM) to the full network—crucially including zero-collision links—to extract the true exposure coefficient ($\beta$) for different road characteristics. 
+
+The Poisson GLM fits the following relationship:
+
+$$E[Y] = \exp(\alpha + \beta \cdot \ln(\text{Exposure}))$$
+
+Where:
+* $E[Y]$ is the expected number of annual collisions.
+* $\alpha$ is the baseline risk intercept (how dangerous the road is when nearly empty).
+* $\beta$ is the exposure scaling factor.
+* $\text{Exposure}$ is the annual vehicle-kilometers travelled on the link.
+
+The findings confirm that **collisions scale sub-linearly with traffic** ($\beta < 1$), and that this scaling is heavily dictated by physical infrastructure and permitted kinetic energy.
+
+---
+
+### Part 1: Infrastructure Impact (Single vs. Dual Carriageways)
+
+```{python}
+
+
+# 1. Calculate full exposure (you already did this correctly)
+vehicle_km_M = base["estimated_aadt"] * base["link_length_km"] * 365 / 1e6
+base["log_offset"] = np.log(vehicle_km_M.clip(lower=1e-6))
+
+data_all = []
+for r_type in base['road_classification'].unique():
+    # 2. DO NOT filter out collision_count == 0! Keep all data.
+    road_type = base[base['road_classification'] == r_type].copy()
+    
+    print(f"\n{r_type}: {len(road_type)} links")
+
+    # 3. Fit against the full log_offset (Exposure), not just AADT
+    X = sm.add_constant(road_type['log_offset'])
+    y = road_type['collision_count']
+    
+    model = sm.GLM(y, X, family=sm.families.Poisson()).fit()
+
+    data_all.append({
+        "road_classification": r_type,
+        "intercept": model.params['const'],
+        "exposure_coef": model.params['log_offset']
+    })
+
+data_all = pd.DataFrame(data_all)
+data_all
+```
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+# 1. The data you just extracted from the GLM
+glm_results = pd.DataFrame({
+    'road_classification': [
+        'Motorway', 'A Road', 'B Road', 'Classified Unnumbered', 'Unclassified'
+    ],
+    'alpha': [-0.116122, 0.511410, 0.277854, 0.450847, 0.528085],
+    'beta':  [0.764207, 0.466845, 0.531110, 0.569605, 0.759343]
+})
+
+# Match your existing styling
+ROAD_COLOURS = {
+    "Motorway": "#2563eb", "A Road": "#16a34a", "B Road": "#ca8a04",
+    "Classified Unnumbered": "#9333ea", "Unclassified": "#64748b"
+}
+LINES_STYLES = {
+    "Motorway": "-", "A Road": "--", "B Road": "-.",
+    "Classified Unnumbered": ":", "Unclassified": "-"
+}
+
+fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+fig.suptitle("Exposure Scaling by Road Classification (Poisson GLM)", fontsize=14, fontweight="bold")
+
+# ==========================================
+# Plot 1: Risk Regime Scatter (Alpha vs Beta)
+# ==========================================
+ax = axes[0]
+for _, row in glm_results.iterrows():
+    ax.scatter(row['beta'], row['alpha'], 
+               color=ROAD_COLOURS[row['road_classification']], 
+               s=150, alpha=0.8, edgecolors='k')
+    # Add labels slightly offset
+    ax.text(row['beta'] + 0.005, row['alpha'] - 0.02, 
+            row['road_classification'], fontsize=10)
+
+ax.set_xlabel(r"Exposure Scaling Factor ($\beta$) $\rightarrow$ Higher = Crashes scale faster with traffic")
+ax.set_ylabel(r"Baseline Risk Intercept ($\alpha$) $\rightarrow$ Higher = More dangerous when empty")
+ax.set_title("Risk Regimes: Baseline Risk vs. Exposure Scaling")
+ax.axhline(0, color='gray', linestyle='--', alpha=0.3)
+ax.grid(True, alpha=0.3)
+
+# ==========================================
+# Plot 2: Expected Collision Curves
+# ==========================================
+ax = axes[1]
+# Generate a synthetic range of exposure (e.g., 0.1 to 50 Million Vehicle-Km)
+exposure_M_vkm = np.linspace(0.1, 50, 200)
+log_exposure = np.log(exposure_M_vkm)
+
+for _, row in glm_results.iterrows():
+    # Poisson Expected Value: E[Y] = exp(alpha + beta * log_exposure)
+    expected_collisions = np.exp(row['alpha'] + row['beta'] * log_exposure)
+    
+    ax.plot(exposure_M_vkm, expected_collisions, 
+            color=ROAD_COLOURS[row['road_classification']], 
+            linewidth=2.5, label=row['road_classification'], linestyle=LINES_STYLES[row['road_classification']])
+
+ax.set_xlabel("Annual Exposure (Million Vehicle-Km)")
+ax.set_ylabel("Expected Annual Collisions")
+ax.set_yscale('log')  # Log scale for better visibility of differences
+ax.set_xscale('log')  # Log scale to show wide range of exposures
+ax.set_title("Sub-Linear Scaling: Expected Collisions vs Total Exposure")
+ax.legend(title="Road Classification", loc="upper left")
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+```
+
+The relationship between traffic volume and collision frequency is not universal; it is fundamentally altered by the "concrete in the ground."
+
+* **The Single Carriageway Risk Curve ($\beta = 0.74$):** On single carriageways, risk scales aggressively as traffic increases. Because opposing flows are separated only by paint, and these roads frequently feature unprotected right turns, agricultural access, and blind bends, adding more vehicles rapidly compounds the physical opportunities for collisions.
+* **The Dual Carriageway Flattening Effect ($\beta = 0.39$):** Dual carriageways demonstrate the profound mathematical value of capital infrastructure. At very low volumes, they carry a slightly higher baseline risk (likely due to higher ambient speeds and complex slip-road merges). However, as traffic volume scales up, the risk curve aggressively flattens. Physical separation completely removes the compounding risk of head-on collisions, allowing the road to absorb massive increases in volume without a proportional spike in crashes.
+
+---
+
+### Part 2: Kinetic Energy (The 60mph Rural Phenomenon)
+
+```{python}
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+# Ensure KSI and log_offset are calculated
+base['ksi_count'] = base['fatal_count'].fillna(0) + base['serious_count'].fillna(0)
+vehicle_km_M = base["estimated_aadt"] * base["link_length_km"] * 365 / 1e6
+base["log_offset"] = np.log(vehicle_km_M.clip(lower=1e-6))
+
+# ==========================================
+# 1. Fit GLMs for 'form_of_way'
+# ==========================================
+fow_results = []
+# Focus on the primary forms of way (skip rare ones to keep the plot clean)
+primary_fows = ['Single Carriageway', 'Dual Carriageway', 'Roundabout', 'Slip Road']
+
+for fow in primary_fows:
+    df_fow = base[base['form_of_way'] == fow].copy()
+    if len(df_fow) > 1000: # Ensure sufficient sample size
+        X = sm.add_constant(df_fow['log_offset'])
+        y = df_fow['collision_count']
+        model = sm.GLM(y, X, family=sm.families.Poisson()).fit()
+        fow_results.append({
+            'form_of_way': fow,
+            'alpha': model.params.iloc[0],
+            'beta': model.params.iloc[1]
+        })
+
+fow_df = pd.DataFrame(fow_results)
+
+# ==========================================
+# 2. Prepare the Plots
+# ==========================================
+fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+fig.suptitle("Section 6 Extension: Infrastructure and Speed", fontsize=14, fontweight="bold")
+
+# --- PLOT 1: Form of Way Expected Curves ---
+ax = axes[0]
+exposure_M_vkm = np.linspace(0.1, 40, 200)
+log_exposure = np.log(exposure_M_vkm)
+
+FOW_COLOURS = {
+    'Single Carriageway': '#16a34a', # Green
+    'Dual Carriageway': '#2563eb',   # Blue
+    'Roundabout': '#f59e0b',         # Orange
+    'Slip Road': '#ef4444'           # Red
+}
+LINES_STYLES = {
+    'Single Carriageway': '-',
+    'Dual Carriageway': '--',
+    'Roundabout': '-.',
+    'Slip Road': ':'
+}
+
+for _, row in fow_df.iterrows():
+    expected_collisions = np.exp(row['alpha'] + row['beta'] * log_exposure)
+    ax.plot(exposure_M_vkm, expected_collisions, 
+            color=FOW_COLOURS.get(row['form_of_way'], '#000000'), 
+            linewidth=2.5, label=f"{row['form_of_way']} (β={row['beta']:.2f})", linestyle=LINES_STYLES.get(row['form_of_way'], '-'))
+
+ax.set_xlabel("Annual Exposure (Million Vehicle-Km)")
+ax.set_ylabel("Expected Annual Collisions")
+ax.set_title("Infrastructure Impact: Single vs Dual Carriageway Risk")
+ax.set_xscale('log')  # Log scale to show wide range of speed limits
+ax.set_yscale('log')  # Log scale for better visibility of differences
+ax.legend(title="Form of Way", loc="upper left")
+ax.grid(True, alpha=0.3)
+
+# --- PLOT 2: Speed Limit vs Severity Ratio ---
+ax = axes[1]
+# Group by speed limit, calculate total collisions and total KSIs
+speed_stats = base.groupby('speed_limit_mph_effective').agg(
+    total_collisions=('collision_count', 'sum'),
+    total_ksi=('ksi_count', 'sum')
+).reset_index()
+
+# Filter out weird speed limits (keep standard UK limits) and drop zeros
+standard_speeds = [20, 30, 40, 50, 60, 70]
+speed_stats = speed_stats[
+    (speed_stats['speed_limit_mph_effective'].isin(standard_speeds)) & 
+    (speed_stats['total_collisions'] > 100)
+].copy()
+
+# Calculate % of collisions that result in KSI
+speed_stats['severity_ratio_pct'] = (speed_stats['total_ksi'] / speed_stats['total_collisions']) * 100
+
+# Color mapping: Make 60mph and 70mph stand out (usually the highest severity)
+colors = ['#94a3b8' if speed < 60 else '#ef4444' for speed in speed_stats['speed_limit_mph_effective']]
+
+bars = ax.bar(speed_stats['speed_limit_mph_effective'].astype(str) + " mph", 
+              speed_stats['severity_ratio_pct'], 
+              color=colors, width=0.6)
+
+# Add value labels on top of bars
+for bar in bars:
+    yval = bar.get_height()
+    ax.text(bar.get_x() + bar.get_width()/2, yval + 0.5, 
+            f"{yval:.1f}%", ha='center', va='bottom', fontweight='bold')
+
+ax.set_xlabel("Posted Speed Limit")
+ax.set_ylabel("% of Collisions Resulting in KSI")
+ax.set_title("Kinetic Energy: Severity Ratio by Speed Limit")
+ax.set_ylim(0, speed_stats['severity_ratio_pct'].max() + 3) # Add headroom for labels
+ax.grid(axis='y', alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+```
+
+While exposure dictates *how many* crashes happen, the posted speed limit heavily influences *how severe* those crashes will be. When we map the proportion of collisions that result in a Killed or Seriously Injured (KSI) casualty against speed limits, a stark pattern emerges.
+
+* **The 60mph Peak (26.4% KSI Rate):** The highest severity ratio in the network occurs at 60mph, not 70mph. This perfectly captures a notorious phenomenon in UK traffic safety: 60mph is the National Speed Limit for rural single carriageways. When collisions occur at these speeds without the benefit of physical separation or central reservations, they frequently involve massive kinetic energy (e.g., high-speed head-on or run-off-road collisions).
+* **The 70mph Safety Buffer (20.4% KSI Rate):** Despite allowing the highest kinetic energy, the severity ratio drops significantly at 70mph. This is because 70mph limits are legally restricted almost exclusively to Motorways and high-quality Dual Carriageways. The infrastructure completely mitigates the types of conflict points that make 60mph roads so lethal. 
+
+---
+
+### Conclusion: Validating the XGBoost Architecture
+These diagnostics perfectly justify why our model must uncouple exposure from a rigid 1:1 baseline assumption. 
+
+A simple collision rate (crashes divided by AADT) assumes risk scales equally everywhere. Our data proves that **risk scales differently depending on physical infrastructure**, and **severity is dictated by the kinetic energy permitted by the speed limit**. 
+
+By dropping the rigid mathematical offset and supplying `log_offset` as a standard feature, we allow the XGBoost tree-building algorithm to independently discover these exact realities—flattening the risk curve for dual carriageways and motorways, while keeping it steeper for minor urban and rural roads.

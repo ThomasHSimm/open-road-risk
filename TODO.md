@@ -243,58 +243,28 @@ Tracked here so nothing gets lost. Cross off as done.
       correctly references `speed_limit_mph_effective` not `speed_limit_mph`.
 - [x] `.coverage` and `htmlcov/` already ignored in root `.gitignore` — no
       additional housekeeping change needed.
+- [x] 5-seed GroupShuffleSplit for rank stability (25 April 2026) — XGBoost evaluated 
+      across seeds 42-46. Pseudo-R² highly stable (0.8590 ± 0.0014). Top-1% Jaccard 
+      averages 0.918. Narrow top-k cuts show expected fuzzy boundary churn, but full-rank 
+      Spearman correlation remains >0.998. See `reports/rank_stability.md`.
+- [x] Facility-family split for Stage 2 (25–26 April 2026) — Sessions 1 & 2 complete;
+      sessions 3–4 deferred. Split network into Motorway (4,084 links), Trunk A, Other-Urban,
+      and Other-Rural based on ONS RUC and road function. Stitched all-links pseudo-R² 0.895
+      vs global 0.888; held-out link-grain 0.8898 vs 0.8892 (baseline 0.859 is link-year grain).
+      Held-out link-year deltas: trunk_a +0.006, other_urban +0.001, other_rural +0.002 —
+      within seed-noise of zero. Motorway delta reverses on held-out (−0.027 vs +0.052
+      all-data): overfitting on ~4k-link training set; global model generalises better
+      out-of-sample on motorway. Motorway mean residual +0.13 (global −3.3): calibration
+      improvement is robust. Adoption decision: do not replace `risk_percentile` with
+      stitched ranking; v1 outputs available diagnostically in `risk_scores_family.parquet`.
+      Boundary discontinuity max gap 0.0047 — stitching is clean. v2 candidates: motorway
+      hyperparameter reduction / partial pooling with trunk-A; per-family EB k; network
+      topology features. See `reports/family_validation.md`,
+      `quarto/methodology/facility-family-split.qmd §11`.
 
 ---
 
 ## Queued tasks with prompts
-
----
-
-### 5-seed GroupShuffleSplit for rank stability
-
-**Context:** Current XGBoost training uses a single GroupShuffleSplit seed.
-Single-split pseudo-R² implies precision that isn't there. The operational
-output is a ranking, so rank stability across retrains matters more than a
-single R² number. Running 5 seeds is infrastructure that supports EB
-shrinkage validation, facility-family split evaluation, and any future
-model comparison.
-
-**Decisions already made:**
-- 5 seeds as starting point; extend to 10–20 only if results are loose.
-- Report pseudo-R² mean ± std, top-k Jaccard (k = 100, 1000, 10000, 1%),
-  Spearman rank correlation full list, per-decile calibration.
-- XGBoost only for v1; GLM adds compute without directly supporting the
-  production ranking.
-
-**Prompt:**
-
-Add 5-seed GroupShuffleSplit rank stability evaluation to Stage 2.
-
-**Implementation:**
-
-1. In `collision.py` or a new validation module, wrap the XGBoost training in a
-   loop over 5 seeds passed to GroupShuffleSplit.
-2. Save per-seed `risk_percentile` outputs; do not overwrite
-   `risk_scores.parquet`.
-3. Compute and save:
-   - Pseudo-R² per seed: mean ± std.
-   - Top-k Jaccard index for `k in [100, 1000, 10000, ceil(0.01 × n_links)]`.
-   - Pairwise seed comparisons; report mean pairwise Jaccard per k.
-   - Spearman rank correlation for the full ranked list, each pair; report mean.
-   - Per-risk-decile observed collision rate per seed; report std across seeds.
-
-Save to `quarto/analysis/rank-stability.qmd` with a table and short narrative.
-
-Do NOT change the production risk_scores.parquet — keep using seed=42 for
-the canonical output. This evaluation is reported alongside, not replacing.
-
-**Expected outcomes:**
-- Pseudo-R² spread <0.02 → model is stable; single-number reporting is defensible.
-- Top-1% Jaccard >0.85 → ranking is robust; stakeholder-facing use case is supported.
-- Top-1% Jaccard <0.70 → ranking is unstable; flag as a concern and investigate
-  before further production use.
-
----
 
 ---
 
@@ -584,45 +554,6 @@ grade summary features. Add to network_features.parquet.]
 
 ---
 
-### Facility-family split for Stage 2
-
-**Context:** Current Stage 2 uses one global model with road-class indicators.
-HSM/FHWA safety performance functions are explicitly site-type specific
-because the exposure-to-risk curve has different shape across road families,
-not just different level. Separate models by family (or partially pooled)
-typically improve calibration and interpretability before they improve
-headline R². Prerequisite for integrating the Network Model GDB cleanly
-(lets authoritative SRN features live on the SRN model rather than needing
-imputation across the full network).
-
-**Decisions already made:**
-- Candidate families: motorway, trunk A-road, urban A-road, rural A-road,
-  B-road, unclassified, explicit intersection entity.
-- Start with separate models then evaluate hierarchical/partial-pooling
-  variants. Small families (motorways at 4k links) will fit noisily
-  standalone.
-- Urban/rural split depends on ONS Rural-Urban classification or
-  pop_density threshold — needs a decision.
-- Must be done before NHNM integration but after EB shrinkage infrastructure
-  lands.
-
-**Prompt:**
-[Draft after EB shrinkage design doc is in hand. Design doc first, not
-implementation. Should cover: family definition, separate vs hierarchical
-modelling tradeoffs, how to handle intersections as separate entities,
-how per-family EB k estimation interacts with this, evaluation strategy
-against single-model baseline.]
-
-**Expected outcomes:**
-- Better calibration per family, especially on motorways where the global
-  model currently under-predicts (mean residual -3.3 on motorway from
-  current results).
-- Enables clean NHNM integration on SRN families.
-- Expected modest pseudo-R² change but meaningful rank stability improvement
-  and interpretability gain.
-
----
-
 ### IMD (Index of Multiple Deprivation) LSOA join
 
 **Context:** Deprivation correlates with crash risk via mechanisms not
@@ -711,9 +642,9 @@ A rough execution sequence that respects dependencies:
 5. ~~ONS RUC~~ ✅ done.
 6. ~~OSM tiered imputation~~ ✅ done.
 7. Curvature + grade — independent; do when in the mood for geometry work.
-8. Facility-family split — larger refactor, do when other improvements are in
-   place.
-9. NHNM integration — depends on facility-family split.
+8. ~~Facility-family split~~ ✅ sessions 1–2 done (26 April 2026); sessions 3–4 deferred
+   pending v2 redesign (motorway overfitting, partial pooling candidate).
+9. NHNM integration — depends on facility-family v2 decision.
 
 
 ## 🔭 Future Work & Open directions (low priority, good starting points for others)

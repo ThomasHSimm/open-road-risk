@@ -553,5 +553,830 @@ def main() -> None:
     run_rank_stability()
 
 
+# =============================================================================
+# Per-family rank stability (extension — global harness above is unchanged)
+# =============================================================================
+
+FAMILIES_ORDERED = ["motorway", "trunk_a", "other_urban", "other_rural"]
+FAMILY_OUT_DIR = MODELS / "family"
+FAMILY_REPORT_PATH = _ROOT / "reports/family_rank_stability.md"
+FAMILY_PROVENANCE_PATH = (
+    _ROOT / "data/provenance/family_rank_stability_provenance.json"
+)
+
+# Per-family fixed top-k (from design doc §6.2); percentage k added at runtime
+_FAMILY_FIXED_TOP_K: dict[str, list[int]] = {
+    "motorway":    [25, 50, 100],
+    "trunk_a":     [50, 100, 500],
+    "other_urban": [100, 1_000, 10_000],
+    "other_rural": [100, 1_000, 10_000],
+}
+_FAMILY_PCT_K: dict[str, float] = {
+    "motorway":    0.10,
+    "trunk_a":     0.10,
+    "other_urban": 0.01,
+    "other_rural": 0.01,
+}
+
+# Global baseline from reports/rank_stability.md (5-seed, held-out, link-year)
+_GLOBAL_BASELINE: dict[str, float] = {
+    "pseudo_r2_mean": 0.859041,
+    "pseudo_r2_std": 0.001411,
+    "top1pct_jaccard_mean": 0.918494,
+    "top1pct_jaccard_min": 0.907843,
+    "spearman_mean": 0.998106,
+    "spearman_min": 0.997841,
+}
+
+
+# ---------------------------------------------------------------------------
+# Column-parameterised variants of global helpers
+# ---------------------------------------------------------------------------
+
+
+def _top_links_col(scores: pd.DataFrame, score_col: str, k: int) -> set[Any]:
+    ranked = scores.sort_values(
+        [score_col, "link_id"],
+        ascending=[False, True],
+        kind="mergesort",
+    )
+    return set(ranked["link_id"].head(k))
+
+
+def _rank_array_col(scores: pd.DataFrame, score_col: str) -> np.ndarray:
+    ordered = _sorted_by_link(scores)
+    return ordered[score_col].rank(method="average", ascending=True).to_numpy()
+
+
+def _pairwise_stability_col(
+    scores_by_seed: dict[int, pd.DataFrame],
+    top_ks: list[int],
+    score_col: str,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Like _pairwise_stability but with a configurable score column."""
+    pairs = list(itertools.combinations(scores_by_seed, 2))
+
+    jaccard: dict[str, Any] = {}
+    for k in top_ks:
+        top_sets = {
+            seed: _top_links_col(scores_by_seed[seed], score_col, k)
+            for seed in scores_by_seed
+        }
+        pair_values: dict[str, float] = {}
+        for left, right in pairs:
+            union = top_sets[left] | top_sets[right]
+            pair_values[f"{left}-{right}"] = (
+                len(top_sets[left] & top_sets[right]) / len(union)
+                if union else float("nan")
+            )
+        values = list(pair_values.values())
+        jaccard[str(k)] = {
+            "mean": float(np.mean(values)),
+            "min": float(np.min(values)),
+            "pairs": pair_values,
+        }
+
+    ranks = {
+        seed: _rank_array_col(scores_by_seed[seed], score_col)
+        for seed in scores_by_seed
+    }
+    spearman_pairs: dict[str, float] = {
+        f"{left}-{right}": _pearson_corr(ranks[left], ranks[right])
+        for left, right in pairs
+    }
+    spearman_values = list(spearman_pairs.values())
+    spearman: dict[str, Any] = {
+        "mean": float(np.mean(spearman_values)),
+        "min": float(np.min(spearman_values)),
+        "pairs": spearman_pairs,
+    }
+
+    top1_key = str(top_ks[-1])
+    seed42_top1 = {
+        pair: value
+        for pair, value in jaccard[top1_key]["pairs"].items()
+        if pair.startswith("42-") or pair.endswith("-42")
+    }
+    seed42_spear = [
+        value
+        for pair, value in spearman_pairs.items()
+        if pair.startswith("42-") or pair.endswith("-42")
+    ]
+    seed42_context = {
+        "seed42_top1_jaccard_mean": (
+            float(np.mean(list(seed42_top1.values()))) if seed42_top1 else float("nan")
+        ),
+        "seed42_spearman_mean": (
+            float(np.mean(seed42_spear)) if seed42_spear else float("nan")
+        ),
+    }
+    return jaccard, spearman, seed42_context
+
+
+def _calibration_matrix_col(
+    scores_by_seed: dict[int, pd.DataFrame],
+    n_years: int,
+    score_col: str,
+) -> tuple[pd.DataFrame, dict[str, float], dict[str, float]]:
+    """Like _calibration_matrix but with a configurable score column."""
+    rows: list[dict[str, Any]] = []
+    for seed, scores in scores_by_seed.items():
+        ranked = scores.sort_values(
+            [score_col, "link_id"],
+            ascending=[True, True],
+            kind="mergesort",
+        ).copy()
+        ranked["decile"] = pd.qcut(
+            np.arange(len(ranked)),
+            q=10,
+            labels=range(1, 11),
+        ).astype(int)
+        observed = (
+            ranked.groupby("decile", observed=True)["collision_count"].sum()
+            / (ranked.groupby("decile", observed=True)["link_id"].size() * n_years)
+        )
+        for decile, rate in observed.items():
+            rows.append({
+                "seed": int(seed),
+                "decile": int(decile),
+                "observed_rate": float(rate),
+            })
+
+    long = pd.DataFrame(rows)
+    matrix = (
+        long.pivot(index="decile", columns="seed", values="observed_rate")
+        .sort_index()
+    )
+    std = matrix.std(axis=1, ddof=1)
+    mean_col = matrix.mean(axis=1)
+    matrix["std"] = std
+    return (
+        matrix,
+        {str(int(decile)): float(v) for decile, v in std.items()},
+        {str(int(decile)): float(v) for decile, v in mean_col.items()},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Stitched held-out pseudo-R² from per-family training
+# ---------------------------------------------------------------------------
+
+
+def _family_stitched_heldout_pr2(
+    df: pd.DataFrame,
+    models_by_family: dict[str, tuple[Any, list[str], dict[str, Any]]],
+    seed: int,
+) -> float:
+    """Pool held-out link-year rows across all trained families and compute
+    stitched pseudo-R² (link-year grain, eps=1e-6 — same as train_collision_xgb)."""
+    from sklearn.model_selection import GroupShuffleSplit
+
+    gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=seed)
+    eps = 1e-6
+    all_y: list[np.ndarray] = []
+    all_y_pred: list[np.ndarray] = []
+
+    for family, (model, feature_list, _metrics) in models_by_family.items():
+        fam_df = df[df["family"] == family].copy()
+        groups = fam_df["link_id"].values
+        # GroupShuffleSplit is deterministic on the sorted unique groups;
+        # passing zeros for X is fine — only groups matters for the split.
+        x_dummy = np.zeros((len(fam_df), 1))
+        _, test_idx = next(gss.split(x_dummy, groups=groups))
+        test_df = fam_df.iloc[test_idx]
+
+        x_test = test_df[feature_list].fillna(0).astype(float)
+        off_test = test_df["log_offset"].fillna(0).values.astype(float)
+        y_pred = model.predict(x_test, base_margin=off_test)
+        y_test = test_df["collision_count"].astype(float).values
+
+        all_y.append(y_test)
+        all_y_pred.append(y_pred)
+
+    y = np.concatenate(all_y)
+    y_pred_arr = np.concatenate(all_y_pred)
+    null_val = float(y.mean())
+
+    deviance = 2.0 * float(np.sum(
+        np.where(y > 0, y * np.log((y + eps) / (y_pred_arr + eps)), 0.0)
+        - (y - y_pred_arr)
+    ))
+    null_dev = 2.0 * float(np.sum(
+        np.where(y > 0, y * np.log((y + eps) / (null_val + eps)), 0.0)
+        - (y - null_val)
+    ))
+    return float(1.0 - deviance / null_dev) if null_dev > 0 else float("nan")
+
+
+# ---------------------------------------------------------------------------
+# Failure threshold guard
+# ---------------------------------------------------------------------------
+
+
+def _check_failure_threshold(
+    failed_combos: list[tuple[int, str, str]],
+    threshold: int = 3,
+) -> None:
+    """Raise if any single family accumulates >= threshold seed failures."""
+    from collections import Counter
+    family_failures = Counter(fam for _, fam, _ in failed_combos)
+    bad = {fam: cnt for fam, cnt in family_failures.items() if cnt >= threshold}
+    if bad:
+        summary = "; ".join(f"{fam}: {cnt} failures" for fam, cnt in bad.items())
+        raise RuntimeError(
+            "Too many seed failures for families — stopping rather than averaging "
+            f"over degraded results. {summary}. "
+            "Check failed_combos in provenance for details."
+        )
+
+
+# ---------------------------------------------------------------------------
+# Report writing
+# ---------------------------------------------------------------------------
+
+
+def _write_family_report(  # noqa: C901
+    seeds_used: list[int],
+    stitched_pseudo: dict[int, float],
+    per_family_pseudo: dict[str, dict[int, float]],
+    jaccard_stitched: dict[str, Any],
+    spearman_stitched: dict[str, Any],
+    family_jaccard: dict[str, dict[str, Any]],
+    family_spearman: dict[str, dict[str, Any]],
+    calibration: pd.DataFrame,
+    family_link_counts: dict[str, int],
+    n_links: int,
+) -> None:
+    FAMILY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    stitched_vals = [v for v in stitched_pseudo.values() if np.isfinite(v)]
+    stitched_mean = float(np.mean(stitched_vals)) if stitched_vals else float("nan")
+    stitched_std = (
+        float(np.std(stitched_vals, ddof=1)) if len(stitched_vals) > 1 else float("nan")
+    )
+    top1_k = n_links // 100
+
+    # §1 Pseudo-R² table
+    pr2_headers = ["seed", "stitched"] + FAMILIES_ORDERED
+    pr2_rows: list[list[Any]] = []
+    for seed in seeds_used:
+        row: list[Any] = [seed, _format_float(stitched_pseudo.get(seed, float("nan")))]
+        for fam in FAMILIES_ORDERED:
+            row.append(_format_float(per_family_pseudo.get(fam, {}).get(seed, float("nan"))))
+        pr2_rows.append(row)
+
+    def _fam_mean(fam: str) -> str:
+        vals = [v for v in per_family_pseudo.get(fam, {}).values() if np.isfinite(v)]
+        return _format_float(float(np.mean(vals))) if vals else "nan"
+
+    def _fam_std(fam: str) -> str:
+        vals = [v for v in per_family_pseudo.get(fam, {}).values() if np.isfinite(v)]
+        return (
+            _format_float(float(np.std(vals, ddof=1))) if len(vals) > 1 else "nan"
+        )
+
+    pr2_rows.append(
+        ["mean", _format_float(stitched_mean)] + [_fam_mean(f) for f in FAMILIES_ORDERED]
+    )
+    pr2_rows.append(
+        ["std", _format_float(stitched_std)] + [_fam_std(f) for f in FAMILIES_ORDERED]
+    )
+    pr2_table = _markdown_table(pr2_headers, pr2_rows)
+
+    # §2 Stitched Jaccard table
+    stitched_jacc_rows = [
+        [k, _format_float(stats["mean"]), _format_float(stats["min"])]
+        for k, stats in jaccard_stitched.items()
+    ]
+    stitched_jacc_table = _markdown_table(
+        ["k", "pairwise_mean", "pairwise_min"], stitched_jacc_rows
+    )
+
+    # §3 Per-family Jaccard sections
+    family_jacc_sections: list[str] = []
+    for fam in FAMILIES_ORDERED:
+        if fam not in family_jaccard:
+            continue
+        fam_rows = [
+            [k, _format_float(s["mean"]), _format_float(s["min"])]
+            for k, s in family_jaccard[fam].items()
+        ]
+        family_jacc_sections.append(
+            f"#### {fam} (n={family_link_counts.get(fam, 0):,})\n\n"
+            + _markdown_table(["k", "pairwise_mean", "pairwise_min"], fam_rows)
+        )
+
+    # §4 Spearman table
+    spearman_rows: list[list[Any]] = [
+        [
+            "stitched",
+            _format_float(spearman_stitched["mean"]),
+            _format_float(spearman_stitched["min"]),
+        ]
+    ]
+    for fam in FAMILIES_ORDERED:
+        sp = family_spearman.get(fam, {})
+        spearman_rows.append([
+            fam,
+            _format_float(sp.get("mean", float("nan"))),
+            _format_float(sp.get("min", float("nan"))),
+        ])
+    spearman_table = _markdown_table(
+        ["model_surface", "pairwise_mean", "pairwise_min"], spearman_rows
+    )
+
+    # §5 Calibration table
+    cal_rows: list[list[Any]] = []
+    for decile, row in calibration.iterrows():
+        cal_rows.append(
+            [int(decile)]
+            + [_format_float(float(row[seed])) for seed in seeds_used]
+            + [_format_float(float(row["std"]))]
+        )
+    cal_table = _markdown_table(
+        ["decile"] + [f"seed_{s}" for s in seeds_used] + ["std"],
+        cal_rows,
+    )
+
+    # §6 Global comparison table
+    top1_jacc_mean = jaccard_stitched.get(str(top1_k), {}).get("mean", float("nan"))
+    top1_jacc_min = jaccard_stitched.get(str(top1_k), {}).get("min", float("nan"))
+    comparison_rows: list[list[str]] = [
+        [
+            "pseudo-R² mean",
+            (
+                f"{_GLOBAL_BASELINE['pseudo_r2_mean']:.6f}"
+                f" ± {_GLOBAL_BASELINE['pseudo_r2_std']:.6f}"
+            ),
+            f"{stitched_mean:.6f} ± {stitched_std:.6f}",
+        ],
+        [
+            "top-1% Jaccard mean",
+            _format_float(_GLOBAL_BASELINE["top1pct_jaccard_mean"]),
+            _format_float(top1_jacc_mean),
+        ],
+        [
+            "top-1% Jaccard min",
+            _format_float(_GLOBAL_BASELINE["top1pct_jaccard_min"]),
+            _format_float(top1_jacc_min),
+        ],
+        [
+            "Spearman mean",
+            _format_float(_GLOBAL_BASELINE["spearman_mean"]),
+            _format_float(spearman_stitched["mean"]),
+        ],
+        [
+            "Spearman min",
+            _format_float(_GLOBAL_BASELINE["spearman_min"]),
+            _format_float(spearman_stitched["min"]),
+        ],
+    ]
+    comparison_table = _markdown_table(
+        ["metric", "global (rank_stability.md)", "family stitched (this run)"],
+        comparison_rows,
+    )
+
+    # §7 Flags
+    positive_flags: list[str] = []
+    concern_flags: list[str] = []
+
+    pr2_delta = stitched_mean - _GLOBAL_BASELINE["pseudo_r2_mean"]
+    if pr2_delta >= 0:
+        positive_flags.append(
+            f"Stitched pseudo-R² mean ({stitched_mean:.6f}) matches or exceeds global "
+            f"baseline ({_GLOBAL_BASELINE['pseudo_r2_mean']:.6f}); delta = {pr2_delta:+.6f}."
+        )
+    else:
+        concern_flags.append(
+            f"Stitched pseudo-R² mean ({stitched_mean:.6f}) below global baseline "
+            f"({_GLOBAL_BASELINE['pseudo_r2_mean']:.6f}); delta = {pr2_delta:+.6f}."
+        )
+
+    if spearman_stitched["mean"] >= _GLOBAL_BASELINE["spearman_mean"] - 0.001:
+        positive_flags.append(
+            f"Stitched Spearman mean ({spearman_stitched['mean']:.6f}) comparable to "
+            f"global baseline ({_GLOBAL_BASELINE['spearman_mean']:.6f})."
+        )
+    else:
+        concern_flags.append(
+            f"Stitched Spearman mean ({spearman_stitched['mean']:.6f}) below global "
+            f"baseline ({_GLOBAL_BASELINE['spearman_mean']:.6f})."
+        )
+
+    top1_jacc_vs_baseline = top1_jacc_mean - _GLOBAL_BASELINE["top1pct_jaccard_mean"]
+    if top1_jacc_mean >= _GLOBAL_BASELINE["top1pct_jaccard_mean"] - 0.01:
+        positive_flags.append(
+            f"Stitched top-1% Jaccard mean ({top1_jacc_mean:.6f}) within 0.01 of "
+            f"global baseline ({_GLOBAL_BASELINE['top1pct_jaccard_mean']:.6f}); "
+            f"delta = {top1_jacc_vs_baseline:+.6f}."
+        )
+    else:
+        concern_flags.append(
+            f"Stitched top-1% Jaccard mean ({top1_jacc_mean:.6f}) more than 0.01 below "
+            f"global baseline ({_GLOBAL_BASELINE['top1pct_jaccard_mean']:.6f}); "
+            f"delta = {top1_jacc_vs_baseline:+.6f}."
+        )
+
+    stitched_spread = max(stitched_vals) - min(stitched_vals) if len(stitched_vals) > 1 else 0.0
+    if stitched_spread < 0.01:
+        positive_flags.append(
+            f"Stitched pseudo-R² spread ({stitched_spread:.6f}) is below 0.01 — "
+            "fit quality is stable across seeds."
+        )
+
+    for fam in FAMILIES_ORDERED:
+        fam_vals = [v for v in per_family_pseudo.get(fam, {}).values() if np.isfinite(v)]
+        if len(fam_vals) < 2:
+            continue
+        spread = max(fam_vals) - min(fam_vals)
+        if spread >= 0.02:
+            concern_flags.append(
+                f"{fam} pseudo-R² spread across seeds is {spread:.4f} "
+                "(≥ 0.02); may indicate overfitting on this small family."
+            )
+        else:
+            positive_flags.append(
+                f"{fam} pseudo-R² spread ({spread:.4f}) is below 0.02."
+            )
+
+    flag_text = ""
+    if positive_flags:
+        flag_text += "### Positive findings\n\n" + "\n".join(
+            f"- {f}" for f in positive_flags
+        )
+    if concern_flags:
+        if flag_text:
+            flag_text += "\n\n"
+        flag_text += "### Concerns\n\n" + "\n".join(
+            f"- {f}" for f in concern_flags
+        )
+    if not flag_text:
+        flag_text = "- All measured stability metrics are within prior expectations."
+
+    report = "\n\n".join([
+        "# Family Rank Stability Evaluation",
+        (
+            "This report evaluates per-family XGBoost rank stability across five seeds "
+            f"({', '.join(str(s) for s in seeds_used)}), with seed 42 representing the "
+            "session-1 production realisation. "
+            f"The stitched ranking covers the full network ({n_links:,} links); "
+            "per-family metrics cover each family subset. "
+            "Global baseline from `reports/rank_stability.md`: "
+            f"pseudo-R² {_GLOBAL_BASELINE['pseudo_r2_mean']:.6f} "
+            f"± {_GLOBAL_BASELINE['pseudo_r2_std']:.6f}. "
+            "Adoption criterion (design doc §6.5): recommend per-family approach if "
+            "headline stitched metrics improve materially, or if per-family diagnostics "
+            "reveal patterned residuals the global model missed."
+        ),
+        (
+            "## 1. Pseudo-R² Stability\n\n"
+            "Per-seed held-out link-year pseudo-R². Stitched: pooled held-out "
+            "link-years across all families (single null model). Per-family: "
+            "directly from training metrics (same grain, same formula).\n\n"
+            + pr2_table
+        ),
+        (
+            "## 2. Stitched Ranking: Top-k Jaccard\n\n"
+            + stitched_jacc_table
+        ),
+        (
+            "## 3. Per-Family Top-k Jaccard\n\n"
+            "Family-scaled thresholds: motorway/trunk_a at fixed k + 10% of family "
+            "links; other_urban/other_rural at fixed k + 1% of family links.\n\n"
+            + "\n\n".join(family_jacc_sections)
+        ),
+        "## 4. Spearman Correlation\n\n" + spearman_table,
+        (
+            "## 5. Calibration (Stitched Ranking)\n\n"
+            "Per-decile observed mean collision rate per seed and std across seeds. "
+            "Stitched ranking sorted by predicted_xgb_family.\n\n"
+            + cal_table
+        ),
+        "## 6. Comparison Against Global Baseline\n\n" + comparison_table,
+        "## 7. Flags\n\n" + flag_text,
+        (
+            "Full run metadata and per-pair values are in "
+            "`data/provenance/family_rank_stability_provenance.json`."
+        ),
+    ])
+    FAMILY_REPORT_PATH.write_text(report + "\n")
+    logger.info("Wrote family rank stability report to %s", FAMILY_REPORT_PATH)
+
+
+# ---------------------------------------------------------------------------
+# Main orchestration
+# ---------------------------------------------------------------------------
+
+
+def run_family_rank_stability(seeds: list[int] | None = None) -> dict[str, Any]:
+    """Five-seed per-family rank stability evaluation.
+
+    Does not modify production risk_scores.parquet, session-1
+    risk_scores_family.parquet, or global rank_stability/seed_<N>.parquet files.
+    """
+    from road_risk.model.family_split import (
+        assign_family,
+        compute_family_rankings,
+        score_family_xgb,
+        train_family_xgb,
+    )
+
+    seeds = seeds or SEEDS
+    logger.info("Family rank stability run: seeds=%s", seeds)
+
+    FAMILY_OUT_DIR.mkdir(parents=True, exist_ok=True)
+    FAMILY_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    FAMILY_PROVENANCE_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # Snapshot protected artefacts before any work
+    production_before = _read_production_fingerprint()
+    n_links = production_before["row_count"]
+
+    family_prod_path = MODELS / "risk_scores_family.parquet"
+    family_prod_mtime: int | None = None
+    if family_prod_path.exists():
+        family_prod_mtime = family_prod_path.stat().st_mtime_ns
+
+    # Load data once — same dataset as global harness
+    logger.info("Loading collision dataset (shared with global harness) ...")
+    df = _load_collision_dataset()
+    n_years = int(df["year"].nunique())
+
+    # road_function is needed for assign_family but not in build_collision_dataset
+    if "road_function" not in df.columns:
+        import geopandas as gpd
+        _or = gpd.read_parquet(OPENROADS_PATH, columns=["link_id", "road_function"])
+        road_func = (
+            pd.DataFrame(_or[["link_id", "road_function"]])
+            .drop_duplicates("link_id")
+        )
+        df = df.merge(road_func, on="link_id", how="left")
+
+    df = assign_family(df)
+    family_link_counts = {
+        fam: int(df[df["family"] == fam]["link_id"].nunique())
+        for fam in FAMILIES_ORDERED
+    }
+    logger.info("Family link counts: %s", family_link_counts)
+
+    # Per-seed training loop
+    failed_combos: list[tuple[int, str, str]] = []
+    per_seed_stitched_pr2: dict[int, float] = {}
+    per_family_pseudo: dict[str, dict[int, float]] = {
+        fam: {} for fam in FAMILIES_ORDERED
+    }
+    per_seed_n_train: dict[int, dict[str, int]] = {}
+    per_seed_n_test: dict[int, dict[str, int]] = {}
+    per_seed_row_counts: dict[int, dict[str, int]] = {}
+    stitched_scores_by_seed: dict[int, pd.DataFrame] = {}
+    fam_scores_by_seed: dict[str, dict[int, pd.DataFrame]] = {
+        fam: {} for fam in FAMILIES_ORDERED
+    }
+
+    for i_seed, seed in enumerate(seeds, 1):
+        logger.info(
+            "=== Family rank stability seed %d (%d/%d) ===", seed, i_seed, len(seeds)
+        )
+        seed_dir = FAMILY_OUT_DIR / f"seed_{seed}"
+        seed_dir.mkdir(parents=True, exist_ok=True)
+
+        models_by_family: dict[str, tuple[Any, list[str], dict[str, Any]]] = {}
+        seed_n_train: dict[str, int] = {}
+        seed_n_test: dict[str, int] = {}
+        seed_row_counts: dict[str, int] = {}
+
+        for family in FAMILIES_ORDERED:
+            try:
+                model, feature_list, metrics = train_family_xgb(df, family, seed=seed)
+            except Exception as exc:
+                logger.error(
+                    "FAILED seed=%d family=%s: %s", seed, family, exc
+                )
+                failed_combos.append((seed, family, str(exc)))
+                _check_failure_threshold(failed_combos)
+                continue
+
+            models_by_family[family] = (model, feature_list, metrics)
+            per_family_pseudo[family][seed] = float(metrics["pseudo_r2"])
+            seed_n_train[family] = int(metrics["n_train"])
+            seed_n_test[family] = int(metrics["n_test"])
+            logger.info(
+                "  %s: pseudo_R2=%.4f  n_train=%d  n_test=%d",
+                family,
+                metrics["pseudo_r2"],
+                metrics["n_train"],
+                metrics["n_test"],
+            )
+
+        if not models_by_family:
+            logger.error("Seed %d: all families failed — skipping seed", seed)
+            continue
+
+        missing_fams = set(FAMILIES_ORDERED) - set(models_by_family)
+        if missing_fams:
+            logger.warning(
+                "Seed %d: missing families %s — stitching with available families",
+                seed,
+                missing_fams,
+            )
+
+        # Score and pool
+        pooled = score_family_xgb(df, models_by_family)
+        pooled = compute_family_rankings(pooled)
+
+        if len(pooled) != n_links:
+            logger.warning(
+                "Seed %d stitched row count %d != expected %d (some families may "
+                "have failed)",
+                seed,
+                len(pooled),
+                n_links,
+            )
+
+        # Save per-family parquets
+        for family in FAMILIES_ORDERED:
+            if family not in models_by_family:
+                continue
+            fam_sub = pooled[pooled["family"] == family].copy()
+            fam_path = seed_dir / f"{family}.parquet"
+            fam_sub.to_parquet(fam_path, index=False)
+            seed_row_counts[family] = int(len(fam_sub))
+            logger.info("  Saved %s (%d rows)", fam_path.name, len(fam_sub))
+
+        stitched_path = seed_dir / "stitched.parquet"
+        pooled.to_parquet(stitched_path, index=False)
+        logger.info("  Saved stitched.parquet (%d rows)", len(pooled))
+
+        # Stitched held-out pseudo-R² at link-year grain
+        pr2_stitched = _family_stitched_heldout_pr2(df, models_by_family, seed)
+        per_seed_stitched_pr2[seed] = pr2_stitched
+        logger.info("  Stitched held-out R² (seed=%d): %.6f", seed, pr2_stitched)
+
+        # Store lightweight copies for stability metrics
+        stitched_scores_by_seed[seed] = pooled[
+            ["link_id", "collision_count", "predicted_xgb_family"]
+        ].copy()
+        for family in FAMILIES_ORDERED:
+            if family in models_by_family:
+                fam_scores_by_seed[family][seed] = pooled[
+                    pooled["family"] == family
+                ][["link_id", "collision_count", "predicted_xgb_family"]].copy()
+
+        per_seed_n_train[seed] = seed_n_train
+        per_seed_n_test[seed] = seed_n_test
+        per_seed_row_counts[seed] = seed_row_counts
+
+    _check_failure_threshold(failed_combos)
+
+    # Stability metrics
+    top_ks_stitched = TOP_K_FIXED + [n_links // 100]
+    jaccard_stitched, spearman_stitched, _ = _pairwise_stability_col(
+        stitched_scores_by_seed, top_ks_stitched, score_col="predicted_xgb_family"
+    )
+
+    family_jaccard: dict[str, dict[str, Any]] = {}
+    family_spearman: dict[str, dict[str, Any]] = {}
+    for fam in FAMILIES_ORDERED:
+        fam_seeds = fam_scores_by_seed[fam]
+        if len(fam_seeds) < 2:
+            logger.warning(
+                "Family %s has fewer than 2 successful seeds — skipping stability", fam
+            )
+            continue
+        n_fam = family_link_counts.get(fam, 0)
+        pct_k = max(1, int(n_fam * _FAMILY_PCT_K[fam]))
+        top_ks_fam = _FAMILY_FIXED_TOP_K[fam] + [pct_k]
+        jac_fam, spear_fam, _ = _pairwise_stability_col(
+            fam_seeds, top_ks_fam, score_col="predicted_xgb_family"
+        )
+        family_jaccard[fam] = jac_fam
+        family_spearman[fam] = {"mean": spear_fam["mean"], "min": spear_fam["min"]}
+
+    calibration, cal_std, cal_mean = _calibration_matrix_col(
+        stitched_scores_by_seed, n_years, score_col="predicted_xgb_family"
+    )
+
+    # Write report
+    _write_family_report(
+        seeds_used=seeds,
+        stitched_pseudo=per_seed_stitched_pr2,
+        per_family_pseudo=per_family_pseudo,
+        jaccard_stitched=jaccard_stitched,
+        spearman_stitched=spearman_stitched,
+        family_jaccard=family_jaccard,
+        family_spearman=family_spearman,
+        calibration=calibration,
+        family_link_counts=family_link_counts,
+        n_links=n_links,
+    )
+
+    # Verify protected artefacts unchanged
+    production_after = _read_production_fingerprint()
+    prod_unchanged = production_after["mtime_ns"] == production_before["mtime_ns"]
+    if not prod_unchanged:
+        raise RuntimeError(
+            "Production risk_scores.parquet changed during family rank stability run"
+        )
+
+    if family_prod_mtime is not None and family_prod_path.exists():
+        if family_prod_path.stat().st_mtime_ns != family_prod_mtime:
+            raise RuntimeError(
+                "Session-1 risk_scores_family.parquet changed during family "
+                "rank stability run"
+            )
+
+    rs_files_ok = {
+        str(s): (OUT_DIR / f"seed_{s}.parquet").exists() for s in SEEDS
+    }
+
+    # Build and write provenance
+    stitched_vals = [v for v in per_seed_stitched_pr2.values() if np.isfinite(v)]
+    provenance: dict[str, Any] = {
+        "script_path": "src/road_risk/model/rank_stability.py",
+        "git_sha": _git_sha(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
+        "seeds_used": seeds,
+        "n_jobs": 1,
+        "families": FAMILIES_ORDERED,
+        "failed_combos": [
+            {"seed": s, "family": f, "error": e} for s, f, e in failed_combos
+        ],
+        "family_link_counts": family_link_counts,
+        "per_seed_stitched_pseudo_r2": {
+            str(s): v for s, v in per_seed_stitched_pr2.items()
+        },
+        "per_family_pseudo_r2": {
+            fam: {str(s): v for s, v in by_seed.items()}
+            for fam, by_seed in per_family_pseudo.items()
+        },
+        "per_seed_n_train": {
+            str(s): counts for s, counts in per_seed_n_train.items()
+        },
+        "per_seed_n_test": {
+            str(s): counts for s, counts in per_seed_n_test.items()
+        },
+        "per_seed_row_counts": {
+            str(s): counts for s, counts in per_seed_row_counts.items()
+        },
+        "summary_statistics": {
+            "stitched_pseudo_r2_mean": (
+                float(np.mean(stitched_vals)) if stitched_vals else float("nan")
+            ),
+            "stitched_pseudo_r2_std": (
+                float(np.std(stitched_vals, ddof=1))
+                if len(stitched_vals) > 1 else float("nan")
+            ),
+            "jaccard_stitched": jaccard_stitched,
+            "spearman_stitched": spearman_stitched,
+            "family_jaccard": family_jaccard,
+            "family_spearman": family_spearman,
+            "per_decile_calibration_std": cal_std,
+            "per_decile_calibration_mean": cal_mean,
+        },
+        "production_risk_scores_before": production_before,
+        "production_risk_scores_unchanged": prod_unchanged,
+        "rank_stability_global_seed_files_exist": rs_files_ok,
+        "global_baseline": _GLOBAL_BASELINE,
+    }
+    FAMILY_PROVENANCE_PATH.write_text(json.dumps(provenance, indent=2, sort_keys=True) + "\n")
+    logger.info("Wrote provenance to %s", FAMILY_PROVENANCE_PATH)
+
+    return provenance
+
+
+def main_family() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s  %(levelname)-8s  %(message)s",
+    )
+    result = run_family_rank_stability()
+    summary = result.get("summary_statistics", {})
+    pr2_mean = summary.get("stitched_pseudo_r2_mean", float("nan"))
+    pr2_std = summary.get("stitched_pseudo_r2_std", float("nan"))
+    top1_k = result.get("production_risk_scores_before", {}).get("row_count", 0) // 100
+    jacc = summary.get("jaccard_stitched", {})
+    jm = jacc.get(str(top1_k), {})
+    print(f"\nStitched 5-seed pseudo-R²: {pr2_mean:.6f} ± {pr2_std:.6f}")
+    print(
+        f"Stitched top-1% Jaccard: "
+        f"mean={jm.get('mean', float('nan')):.6f}  "
+        f"min={jm.get('min', float('nan')):.6f}"
+    )
+    fam_pr2 = result.get("per_family_pseudo_r2", {})
+    for fam in FAMILIES_ORDERED:
+        vals = [v for v in fam_pr2.get(fam, {}).values() if np.isfinite(v)]
+        if vals:
+            print(
+                f"  {fam}: pseudo-R² "
+                f"mean={np.mean(vals):.4f} ± {np.std(vals, ddof=1):.4f}"
+            )
+    if result.get("failed_combos"):
+        print("FAILURES:", result["failed_combos"])
+
+
 if __name__ == "__main__":
-    main()
+    import sys as _sys
+    if "--family" in _sys.argv:
+        main_family()
+    else:
+        main()

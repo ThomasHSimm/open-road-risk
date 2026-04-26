@@ -83,10 +83,9 @@ See `docs/internal/data-quality-notes.md` for working detail. Summary:
   trains on directly Counted AADF rows only, then estimates AADT for every
   Open Roads link × year.
 
-- **OSM coverage** — current `speed_limit_mph` coverage is 56.4% overall and
-  59.4% on Unclassified links; `lanes`, `lit`, and surface-derived flags remain
-  sparse. Run `src/road_risk/diagnostics/osm_coverage.py` for the class-stratified
-  table. Sparse features are median-imputed in the GLM where retained.
+- **OSM coverage** — Raw `speed_limit_mph` coverage is 56.4%. A tiered imputation 
+  fallback (`speed_limit_mph_effective`) resolves this to 91.27% coverage. `lanes`, 
+  `lit`, and surface-derived flags remain sparse and are median-imputed in the GLM.
 
 ---
 
@@ -123,11 +122,12 @@ performance metrics, and validation detail — kept there to avoid documentation
 - Counted-only AADF target CV R²: ~0.83 | Applied to 2,167,557 links × 10 years
 
 **Stage 2 — Collision Model**
-- Poisson GLM pseudo-R²: 0.251 (in-sample on downsampled training set)
-- XGBoost pseudo-R²: 0.858 (out-of-sample, GroupShuffleSplit by link_id)
+- Poisson GLM pseudo-R²: 0.3013 (in-sample on downsampled training set, `n_full` recovered to 18.3M)
+- XGBoost pseudo-R²: 0.8575 (out-of-sample, GroupShuffleSplit by link_id)
 - **Not directly comparable** — different row subsets, different null models. See methodology site.
-- XGBoost drives `risk_percentile`; GLM drives `residual_glm` residual diagnostics
-- Metrics are read from `data/models/collision_metrics.json` — that file is canonical
+- XGBoost drives `risk_percentile`; GLM drives `residual_glm` residual diagnostics. 
+- *Note: April 25 diagnostic runs generated `risk_scores_eb.parquet` (Empirical Bayes) and `risk_scores_family.parquet` (Facility-Family split). Production app continues to use `risk_scores.parquet` (April 24).*
+- Metrics are read from `data/models/collision_metrics.json` — that file is canonical.
 
 ---
 
