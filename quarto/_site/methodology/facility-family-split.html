@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Facility-Family Split – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/mrdb.html">
+ <span class="dropdown-text">Major Road Database</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/covid-handling.html">
+ <span class="dropdown-text">Handling COVID Years</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Model Results &amp; SHAP</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../api-reference/index.html"> 
+<span class="menu-text">API Reference</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#status-and-scope" id="toc-status-and-scope" class="nav-link active" data-scroll-target="#status-and-scope">0. Status and scope</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">1. Motivation</a></li>
+  <li><a href="#family-definitions" id="toc-family-definitions" class="nav-link" data-scroll-target="#family-definitions">2. Family definitions</a></li>
+  <li><a href="#per-family-modelling-approach" id="toc-per-family-modelling-approach" class="nav-link" data-scroll-target="#per-family-modelling-approach">3. Per-family modelling approach</a>
+  <ul class="collapse">
+  <li><a href="#separate-xgboost-models-one-per-family" id="toc-separate-xgboost-models-one-per-family" class="nav-link" data-scroll-target="#separate-xgboost-models-one-per-family">3.1 Separate XGBoost models, one per family</a></li>
+  <li><a href="#what-does-not-change" id="toc-what-does-not-change" class="nav-link" data-scroll-target="#what-does-not-change">3.2 What does NOT change</a></li>
+  </ul></li>
+  <li><a href="#operational-outputs-both-global-and-per-family-rankings" id="toc-operational-outputs-both-global-and-per-family-rankings" class="nav-link" data-scroll-target="#operational-outputs-both-global-and-per-family-rankings">4. Operational outputs: both global and per-family rankings</a>
+  <ul class="collapse">
+  <li><a href="#global-stitched-ranking" id="toc-global-stitched-ranking" class="nav-link" data-scroll-target="#global-stitched-ranking">4.1 Global stitched ranking</a></li>
+  <li><a href="#per-family-rankings" id="toc-per-family-rankings" class="nav-link" data-scroll-target="#per-family-rankings">4.2 Per-family rankings</a></li>
+  </ul></li>
+  <li><a href="#implementation-design" id="toc-implementation-design" class="nav-link" data-scroll-target="#implementation-design">5. Implementation design</a>
+  <ul class="collapse">
+  <li><a href="#proposed-file-structure" id="toc-proposed-file-structure" class="nav-link" data-scroll-target="#proposed-file-structure">5.1 Proposed file structure</a></li>
+  <li><a href="#family-assignment" id="toc-family-assignment" class="nav-link" data-scroll-target="#family-assignment">5.2 Family assignment</a></li>
+  <li><a href="#per-family-training-loop" id="toc-per-family-training-loop" class="nav-link" data-scroll-target="#per-family-training-loop">5.3 Per-family training loop</a></li>
+  <li><a href="#stitching-and-scoring" id="toc-stitching-and-scoring" class="nav-link" data-scroll-target="#stitching-and-scoring">5.4 Stitching and scoring</a></li>
+  </ul></li>
+  <li><a href="#validation-plan" id="toc-validation-plan" class="nav-link" data-scroll-target="#validation-plan">6. Validation plan</a>
+  <ul class="collapse">
+  <li><a href="#headline-metrics-global-stitched-vs-current-global" id="toc-headline-metrics-global-stitched-vs-current-global" class="nav-link" data-scroll-target="#headline-metrics-global-stitched-vs-current-global">6.1 Headline metrics: global stitched vs current global</a></li>
+  <li><a href="#per-family-metrics" id="toc-per-family-metrics" class="nav-link" data-scroll-target="#per-family-metrics">6.2 Per-family metrics</a></li>
+  <li><a href="#family-boundary-discontinuity-check" id="toc-family-boundary-discontinuity-check" class="nav-link" data-scroll-target="#family-boundary-discontinuity-check">6.3 Family-boundary discontinuity check</a></li>
+  <li><a href="#seed-harness-extension" id="toc-seed-harness-extension" class="nav-link" data-scroll-target="#seed-harness-extension">6.4 5-seed harness extension</a></li>
+  <li><a href="#comparison-against-global-baseline" id="toc-comparison-against-global-baseline" class="nav-link" data-scroll-target="#comparison-against-global-baseline">6.5 Comparison against global baseline</a></li>
+  </ul></li>
+  <li><a href="#caveats" id="toc-caveats" class="nav-link" data-scroll-target="#caveats">7. Caveats</a>
+  <ul class="collapse">
+  <li><a href="#imputed-ruc-for-about-1k-active-links" id="toc-imputed-ruc-for-about-1k-active-links" class="nav-link" data-scroll-target="#imputed-ruc-for-about-1k-active-links">7.1 Imputed RUC for about 1k active links</a></li>
+  <li><a href="#motorway-family-size" id="toc-motorway-family-size" class="nav-link" data-scroll-target="#motorway-family-size">7.2 Motorway family size</a></li>
+  <li><a href="#stitched-ranking-calibration" id="toc-stitched-ranking-calibration" class="nav-link" data-scroll-target="#stitched-ranking-calibration">7.3 Stitched ranking calibration</a></li>
+  <li><a href="#per-family-eb-k-is-deferred-to-v2" id="toc-per-family-eb-k-is-deferred-to-v2" class="nav-link" data-scroll-target="#per-family-eb-k-is-deferred-to-v2">7.4 Per-family EB k is deferred to v2</a></li>
+  <li><a href="#intersections-roundabouts-not-separated" id="toc-intersections-roundabouts-not-separated" class="nav-link" data-scroll-target="#intersections-roundabouts-not-separated">7.5 Intersections / roundabouts not separated</a></li>
+  <li><a href="#glm-unchanged-xgboost-only-split" id="toc-glm-unchanged-xgboost-only-split" class="nav-link" data-scroll-target="#glm-unchanged-xgboost-only-split">7.6 GLM unchanged, XGBoost-only split</a></li>
+  </ul></li>
+  <li><a href="#out-of-scope-for-v1" id="toc-out-of-scope-for-v1" class="nav-link" data-scroll-target="#out-of-scope-for-v1">8. Out of scope for v1</a></li>
+  <li><a href="#expected-outcomes" id="toc-expected-outcomes" class="nav-link" data-scroll-target="#expected-outcomes">9. Expected outcomes</a></li>
+  <li><a href="#implementation-sessions-plan" id="toc-implementation-sessions-plan" class="nav-link" data-scroll-target="#implementation-sessions-plan">10. Implementation sessions plan</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Facility-Family Split</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Status:</strong> Design only. Implementation sessions follow after review. <strong>Scope:</strong> v1 facility-family split for Stage 2 XGBoost risk ranking. <strong>Primary code path:</strong> <code>src/road_risk/model/collision.py</code>, with additive wrappers and diagnostics. <strong>Reference model:</strong> FHWA Highway Safety Manual (HSM) safety performance functions are explicitly site-type specific.</p>
+<hr>
+<section id="status-and-scope" class="level2">
+<h2 class="anchored" data-anchor-id="status-and-scope">0. Status and scope</h2>
+<p>This document specifies the v1 facility-family split for Stage 2 XGBoost collision-risk ranking. It is a design document only: no production scoring path, model artefact, or data table should change until this design has been reviewed and an implementation session is opened.</p>
+<p>The v1 scope is deliberately narrow:</p>
+<ul>
+<li>define the four facility families used for Stage 2 modelling;</li>
+<li>train separate XGBoost Poisson models by family;</li>
+<li>stitch per-family predictions into a network-wide ranking;</li>
+<li>also expose within-family rankings;</li>
+<li>evaluate against the existing global Stage 2 XGBoost baseline.</li>
+</ul>
+<p>The GLM remains global in v1. Empirical Bayes shrinkage remains unchanged in v1. Per-family EB dispersion, per-family hyperparameter tuning, and hierarchical/partial-pooling models are deferred.</p>
+<hr>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">1. Motivation</h2>
+<p>Stage 2 currently trains one global XGBoost Poisson model across all road links. That model sees road class, form of way, trunk status, primary status, exposure, network centrality, population density, speed-limit, lane, and surface proxies, but it still has to learn one response surface across very different traffic environments.</p>
+<p>There are two convergent reasons to split the model by facility family.</p>
+<p>First, the HSM/FHWA safety-performance-function precedent is site-type specific. The motivation is not only that different road families have different baseline collision levels; it is that the exposure-to-risk curve can have a different shape across facility types. A motorway, a trunk A-road, an urban local road, and a rural minor road do not merely differ by intercept. They differ in access control, junction density, speed environment, pedestrian and cyclist exposure, maintenance regime, and the kinds of conflict that produce collisions.</p>
+<p>Second, EB session 1 found independent evidence that one global dispersion summary is fragile. In <code>reports/eb_dispersion.md</code>, binned method-of-moments NB2 dispersion values vary by about 3,400x across the predicted-risk range, monotonically falling from low- to high-prediction bins. That finding does not prove a family split will help, but it is a strong warning that a single global mean/dispersion structure is leaving systematic structure on the table. <code>quarto/methodology/empirical-bayes-shrinkage.qmd</code> records this as a v2 motivation for per-family or per-bin k; facility-family modelling attacks the corresponding mean-model problem first.</p>
+<p>The operational hypothesis is:</p>
+<ul>
+<li>per-family XGBoost models improve calibration within families, especially on motorways, where the current global model has a known mean residual of about -3.3;</li>
+<li>per-family predictions are easier to interpret operationally because each model is fitted within a more coherent road environment;</li>
+<li>headline rank stability may improve modestly, but large improvement is not guaranteed because seed-induced churn near narrow top-k thresholds is a separate mechanism.</li>
+</ul>
+<hr>
+</section>
+<section id="family-definitions" class="level2">
+<h2 class="anchored" data-anchor-id="family-definitions">2. Family definitions</h2>
+<p>The v1 family definitions are taken from <code>docs/internal/family-definition-rationale.md</code>. That document contains the decision history and reasoning; this section summarises the frozen definitions rather than re-deriving them.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 28%">
+<col style="width: 28%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Family</th>
+<th>Definition</th>
+<th style="text-align: right;">Study-area links</th>
+<th style="text-align: right;">Active links in <code>road_link_annual.parquet</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Motorway</td>
+<td><code>road_function == "Motorway"</code></td>
+<td style="text-align: right;">4,084</td>
+<td style="text-align: right;">2,279</td>
+</tr>
+<tr class="even">
+<td>Trunk A-road</td>
+<td><code>road_function == "A Road"</code> and <code>is_trunk == True</code></td>
+<td style="text-align: right;">16,011</td>
+<td style="text-align: right;">5,465</td>
+</tr>
+<tr class="odd">
+<td>Other-Urban</td>
+<td>neither of the above and <code>ruc_urban_rural == "Urban"</code></td>
+<td style="text-align: right;">1,366,925</td>
+<td style="text-align: right;">177,296</td>
+</tr>
+<tr class="even">
+<td>Other-Rural</td>
+<td>neither of the above and <code>ruc_urban_rural == "Rural"</code></td>
+<td style="text-align: right;">780,537</td>
+<td style="text-align: right;">48,564</td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td>exactly one family per link</td>
+<td style="text-align: right;">2,167,557</td>
+<td style="text-align: right;">233,604</td>
+</tr>
+</tbody>
+</table>
+<p>The family assignment columns come from two existing sources:</p>
+<ul>
+<li><code>road_function</code> and <code>is_trunk</code> from OS Open Roads metadata, already used by <code>build_collision_dataset()</code>;</li>
+<li><code>ruc_urban_rural</code> from post-fill <code>data/features/network_features.parquet</code>.</li>
+</ul>
+<p>The recent RUC fill resolved the previous 335,692-link no-LSOA gap. About 336k links have <code>ruc_imputed = True</code>, but only 993 links in the rural-default fallback population appear in <code>road_link_annual.parquet</code>. Family assignment is therefore complete for all active modelled links, and the practical modelling impact of the rural default is small. The fill is documented in <code>reports/ruc_fill.md</code> and verified in <code>reports/ruc_fill_verification.md</code>.</p>
+<p><code>form_of_way</code> and <code>is_primary</code> stay as features within each family. They are not used to define v1 families.</p>
+<hr>
+</section>
+<section id="per-family-modelling-approach" class="level2">
+<h2 class="anchored" data-anchor-id="per-family-modelling-approach">3. Per-family modelling approach</h2>
+<section id="separate-xgboost-models-one-per-family" class="level3">
+<h3 class="anchored" data-anchor-id="separate-xgboost-models-one-per-family">3.1 Separate XGBoost models, one per family</h3>
+<p>v1 trains one XGBoost Poisson regressor per family. Each model is fitted on the link-year rows belonging to links in that family. The wrapper should reuse the current <code>train_collision_xgb()</code> path in <code>src/road_risk/model/collision.py</code> rather than creating a second training implementation.</p>
+<p>The v1 XGBoost settings are the same as the current global model:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th style="text-align: right;">v1 value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>objective</code></td>
+<td style="text-align: right;"><code>count:poisson</code></td>
+</tr>
+<tr class="even">
+<td><code>n_estimators</code></td>
+<td style="text-align: right;">500</td>
+</tr>
+<tr class="odd">
+<td><code>max_depth</code></td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td><code>learning_rate</code></td>
+<td style="text-align: right;">0.05</td>
+</tr>
+<tr class="odd">
+<td><code>subsample</code></td>
+<td style="text-align: right;">0.8</td>
+</tr>
+<tr class="even">
+<td><code>colsample_bytree</code></td>
+<td style="text-align: right;">0.8</td>
+</tr>
+<tr class="odd">
+<td><code>n_jobs</code></td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+<p>The exposure offset is unchanged:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>base_margin <span class="op">=</span> log_offset</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>log_offset <span class="op">=</span> log(estimated_aadt <span class="op">*</span> link_length_km <span class="op">*</span> <span class="dv">365</span> <span class="op">/</span> <span class="fl">1e6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The train/test split is also unchanged in principle: use <code>GroupShuffleSplit</code> by <code>link_id</code>, but apply it within each family. All years for a link remain in one split. The seed controls both the split <code>random_state</code> and the XGBoost <code>random_state</code>, matching the current global rank-stability harness.</p>
+<p>The feature list is the same as the current global <code>train_collision_xgb()</code> feature list. Some existing features will be constant or nearly constant in particular families. For example, <code>is_motorway</code> is constant in the motorway family, <code>is_trunk</code> is constant in the trunk A family, and the assignment columns <code>road_function</code> and <code>ruc_urban_rural</code> are family-constant by definition even where they are attached for diagnostics rather than used as raw XGBoost features. This is wasteful but simple: XGBoost will not split on zero-variance features. Per-family feature pruning is a v2 candidate if v1 works and the extra cleanup is worth the complexity.</p>
+<p>The motorway family is small, about 4k links and roughly 40k link-years before held-out splitting. <code>n_estimators=500</code> may overfit on that population. The 5-seed evaluation should surface this if it happens, especially as motorway-specific pseudo-R2 volatility or top-k instability. v2 candidates include reduced <code>n_estimators</code>, early stopping, or partial pooling across motorway and trunk A families.</p>
+</section>
+<section id="what-does-not-change" class="level3">
+<h3 class="anchored" data-anchor-id="what-does-not-change">3.2 What does NOT change</h3>
+<p>The v1 family split does not change:</p>
+<ul>
+<li>GLM training, which remains global and unchanged from the current pipeline;</li>
+<li>XGBoost hyperparameters, which are kept fixed across families;</li>
+<li>the pseudo-R2 definition;</li>
+<li>EB shrinkage, including the persisted global positive-event-weighted k;</li>
+<li>the canonical <code>data/models/risk_scores.parquet</code> output until per-family evaluation is reviewed.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="operational-outputs-both-global-and-per-family-rankings" class="level2">
+<h2 class="anchored" data-anchor-id="operational-outputs-both-global-and-per-family-rankings">4. Operational outputs: both global and per-family rankings</h2>
+<p>The family split should produce two new ranking surfaces while preserving the current global ranking for comparison.</p>
+<section id="global-stitched-ranking" class="level3">
+<h3 class="anchored" data-anchor-id="global-stitched-ranking">4.1 Global stitched ranking</h3>
+<p>Each family model produces <code>predicted_xgb_family</code> for its own family link-year rows. Those predictions are pooled to one row per link using the same unit as the current <code>score_collision_models()</code> path:</p>
+<pre class="text"><code>predicted_xgb_family = mean expected collisions per link-year</code></pre>
+<p>The stitching procedure is:</p>
+<ol type="1">
+<li>score link-years within each family model;</li>
+<li>pool to one row per link, taking mean <code>predicted_xgb_family</code> across years;</li>
+<li>concatenate all four family outputs;</li>
+<li>rank <code>predicted_xgb_family</code> across all links to produce <code>risk_percentile_family</code>.</li>
+</ol>
+<p>This network-wide stitched ranking has the same operational semantics as the current <code>risk_percentile</code>: it answers, “where does this link sit in the whole network?” The current <code>risk_percentile</code> remains unchanged and should be available side-by-side.</p>
+<p>Per-family Poisson XGBoost with the same exposure offset should, in principle, produce predictions on the same expected-collisions-per-link-year scale across families. The stitched ranking is therefore meaningful in principle. In practice, family boundaries can create ranking discontinuities if the family-level models are calibrated differently. Section 6.3 makes that an explicit validation diagnostic rather than an assumption.</p>
+</section>
+<section id="per-family-rankings" class="level3">
+<h3 class="anchored" data-anchor-id="per-family-rankings">4.2 Per-family rankings</h3>
+<p>Each family also produces <code>risk_percentile_within_family</code>, ranked only within that family. This is a different operational object from the stitched ranking. “Top 1% of motorways for traffic-management intervention” and “top 1% of rural minor/local roads for road-safety partnership work” are not the same screening question.</p>
+<p>The eventual scored output should include:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>family</code></td>
+<td>one of <code>motorway</code>, <code>trunk_a</code>, <code>other_urban</code>, <code>other_rural</code></td>
+</tr>
+<tr class="even">
+<td><code>risk_percentile</code></td>
+<td>current global-model percentile, unchanged</td>
+</tr>
+<tr class="odd">
+<td><code>predicted_xgb_family</code></td>
+<td>per-family model prediction, pooled to link grain</td>
+</tr>
+<tr class="even">
+<td><code>risk_percentile_family</code></td>
+<td>global stitched percentile from per-family models</td>
+</tr>
+<tr class="odd">
+<td><code>risk_percentile_within_family</code></td>
+<td>percentile within the link’s family</td>
+</tr>
+</tbody>
+</table>
+<p>The current production <code>risk_percentile</code> stays unchanged until v1 evaluation supports adoption of either new ranking surface.</p>
+<hr>
+</section>
+</section>
+<section id="implementation-design" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-design">5. Implementation design</h2>
+<p>This is a design document only. The implementation should be small, additive, and reviewable. The first implementation pass should not modify the existing global training path: <code>train_collision_xgb()</code> stays as-is, and the new family module wraps it.</p>
+<section id="proposed-file-structure" class="level3">
+<h3 class="anchored" data-anchor-id="proposed-file-structure">5.1 Proposed file structure</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>src/road_risk/model/collision.py</code></td>
+<td>Add helper to assign family from Open Roads and network-feature columns.</td>
+</tr>
+<tr class="even">
+<td><code>src/road_risk/model/family_split.py</code></td>
+<td>New module: <code>train_family_xgb()</code>, <code>score_family_xgb()</code>, <code>stitch_predictions()</code>, family assignment logic.</td>
+</tr>
+<tr class="odd">
+<td><code>src/road_risk/diagnostics/family_evaluation.py</code></td>
+<td>New diagnostic: per-family and combined evaluation, comparison against global baseline.</td>
+</tr>
+<tr class="even">
+<td><code>src/road_risk/model/rank_stability.py</code></td>
+<td>Extend to optionally run per-family evaluation.</td>
+</tr>
+<tr class="odd">
+<td><code>data/models/family/seed_&lt;N&gt;/&lt;family&gt;.parquet</code></td>
+<td>New per-seed per-family score outputs.</td>
+</tr>
+<tr class="even">
+<td><code>data/models/risk_scores_family.parquet</code></td>
+<td>Eventually: scored output with both new ranking columns.</td>
+</tr>
+<tr class="odd">
+<td><code>data/provenance/family_split_provenance.json</code></td>
+<td>New provenance for per-family training run.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="family-assignment" class="level3">
+<h3 class="anchored" data-anchor-id="family-assignment">5.2 Family assignment</h3>
+<p>Add a vectorised <code>assign_family()</code> helper that takes columns <code>road_function</code>, <code>is_trunk</code>, and <code>ruc_urban_rural</code>, and returns one of:</p>
+<ul>
+<li><code>motorway</code></li>
+<li><code>trunk_a</code></li>
+<li><code>other_urban</code></li>
+<li><code>other_rural</code></li>
+</ul>
+<p>The precedence is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> road_function <span class="op">==</span> <span class="st">"Motorway"</span>:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"motorway"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> road_function <span class="op">==</span> <span class="st">"A Road"</span> <span class="kw">and</span> is_trunk:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"trunk_a"</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> ruc_urban_rural <span class="op">==</span> <span class="st">"Urban"</span>:</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"other_urban"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> ruc_urban_rural <span class="op">==</span> <span class="st">"Rural"</span>:</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"other_rural"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="cf">raise</span> <span class="pp">ValueError</span>  <span class="co"># should not happen post-RUC-fill</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The implementation should verify that every link in <code>road_link_annual.parquet</code> maps to exactly one family, and that the full scored network has zero unknown-family rows.</p>
+</section>
+<section id="per-family-training-loop" class="level3">
+<h3 class="anchored" data-anchor-id="per-family-training-loop">5.3 Per-family training loop</h3>
+<p>The wrapper should be intentionally thin:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_family_xgb(df, family, seed<span class="op">=</span><span class="dv">42</span>):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    family_df <span class="op">=</span> df[df[<span class="st">"family"</span>] <span class="op">==</span> family]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train_collision_xgb(family_df, seed<span class="op">=</span>seed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>train_collision_xgb()</code> is called per family without changing its internals. The wrapper is responsible for filtering, row-count checks, logging, and provenance.</p>
+</section>
+<section id="stitching-and-scoring" class="level3">
+<h3 class="anchored" data-anchor-id="stitching-and-scoring">5.4 Stitching and scoring</h3>
+<p>The scoring helper should mirror <code>score_collision_models()</code> but use the per-family XGBoost models:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> score_family_xgb(network_df, models_by_family):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> []</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> family, model <span class="kw">in</span> models_by_family.items():</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        family_df <span class="op">=</span> network_df[network_df[<span class="st">"family"</span>] <span class="op">==</span> family].copy()</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        family_df[<span class="st">"predicted_xgb_family"</span>] <span class="op">=</span> model.predict(...)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        predictions.append(family_df)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    scored <span class="op">=</span> pd.concat(predictions)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pool_family_predictions(scored)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Pooling should keep the same link-level semantics as current Stage 2:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Aggregation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>collision_count</code></td>
+<td>sum across years</td>
+</tr>
+<tr class="even">
+<td><code>fatal_count</code></td>
+<td>sum across years</td>
+</tr>
+<tr class="odd">
+<td><code>serious_count</code></td>
+<td>sum across years</td>
+</tr>
+<tr class="even">
+<td><code>estimated_aadt</code></td>
+<td>mean across years</td>
+</tr>
+<tr class="odd">
+<td><code>predicted_xgb_family</code></td>
+<td>mean across years</td>
+</tr>
+<tr class="even">
+<td><code>family</code></td>
+<td>first; must be constant by <code>link_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>Then compute:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"risk_percentile_family"</span>] <span class="op">=</span> (</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    pooled[<span class="st">"predicted_xgb_family"</span>].rank(pct<span class="op">=</span><span class="va">True</span>) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"risk_percentile_within_family"</span>] <span class="op">=</span> (</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    pooled.groupby(<span class="st">"family"</span>)[<span class="st">"predicted_xgb_family"</span>].rank(pct<span class="op">=</span><span class="va">True</span>) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Exact top-k set selection should use deterministic sorting: <code>predicted_xgb_family desc, link_id asc</code>.</p>
+<hr>
+</section>
+</section>
+<section id="validation-plan" class="level2">
+<h2 class="anchored" data-anchor-id="validation-plan">6. Validation plan</h2>
+<p>Validation decides whether the family split should be adopted, kept as a diagnostic, or deferred.</p>
+<section id="headline-metrics-global-stitched-vs-current-global" class="level3">
+<h3 class="anchored" data-anchor-id="headline-metrics-global-stitched-vs-current-global">6.1 Headline metrics: global stitched vs current global</h3>
+<p>Compare <code>risk_percentile_family</code> against the current global <code>risk_percentile</code>.</p>
+<p>Report:</p>
+<ul>
+<li>pseudo-R2 on held-out link-years using stitched family predictions;</li>
+<li>5-seed Jaccard at k = 100, 1,000, 10,000, and top-1%;</li>
+<li>Spearman rank correlation between <code>risk_percentile_family</code> and current <code>risk_percentile</code>;</li>
+<li>top-1% entrant/leaver counts and road-family breakdown.</li>
+</ul>
+<p>The headline question is whether the stitched ranking improves on the global model’s headline metrics. The pre-run hypothesis is modest improvement in stability, because each model has less within-family structural variation to learn, and small change in pseudo-R2.</p>
+</section>
+<section id="per-family-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="per-family-metrics">6.2 Per-family metrics</h3>
+<p>For each family, report:</p>
+<ul>
+<li>pseudo-R2 on held-out link-years within the family;</li>
+<li>mean residual on training and held-out link-years;</li>
+<li>observed vs predicted by family risk decile;</li>
+<li>5-seed Jaccard on family-specific top-k sets.</li>
+</ul>
+<p>Per-family top-k thresholds should scale with family size:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Family</th>
+<th>Suggested thresholds</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Motorway</td>
+<td>top 25, top 50, top 100, top 10%</td>
+</tr>
+<tr class="even">
+<td>Trunk A-road</td>
+<td>top 50, top 100, top 500, top 10%</td>
+</tr>
+<tr class="odd">
+<td>Other-Urban</td>
+<td>top 100, top 1,000, top 10,000, top 1%</td>
+</tr>
+<tr class="even">
+<td>Other-Rural</td>
+<td>top 100, top 1,000, top 10,000, top 1%</td>
+</tr>
+</tbody>
+</table>
+<p>For motorway, top-1% is only about 40 links and will be noisy. A top-10% diagnostic is more meaningful for that family.</p>
+<p>The pre-run hypothesis is that motorway and trunk A families show the largest improvement in mean residual over the global model. Other-Urban and Other-Rural may show smaller improvement because the global model already has many of the relevant road-function, RUC, and exposure signals.</p>
+</section>
+<section id="family-boundary-discontinuity-check" class="level3">
+<h3 class="anchored" data-anchor-id="family-boundary-discontinuity-check">6.3 Family-boundary discontinuity check</h3>
+<p>Stitching per-family predictions can produce ranking discontinuities if family-level calibration differs.</p>
+<p>Diagnostics:</p>
+<ol type="1">
+<li>Compute the <code>predicted_xgb_family</code> value at the top-1% threshold within each family. Are the family thresholds similar, or does one family require much larger predicted counts to enter its own top 1%?</li>
+<li>At each of the three global stitched thresholds (top-1%, top-1000, top-10000), sample adjacent boundary-crossing link pairs stratified by family pair. The six possible family pairs are: Motorway × Trunk A-road, Motorway × Other-Urban, Motorway × Other-Rural, Trunk A-road × Other-Urban, Trunk A-road × Other-Rural, and Other-Urban × Other-Rural. For each family pair at each threshold, sample up to 25 adjacent pairs where the two links straddle the threshold and belong to different families. If a family pair has fewer than 25 available pairs at a threshold, take all available pairs and report the count explicitly; a low count indicates limited rank-range overlap for that pair, which is itself a calibration signal. Total target per threshold is up to 150 pairs (6 pairs × 25 max each). Compare predicted values across the sampled pairs. Small gaps indicate smooth stitching; large gaps indicate calibration discontinuity. Small counts for rare family pairs (e.g.&nbsp;Motorway × Other-Rural) are informative—they mean those families’ risk ranges barely overlap, which the global model may not be handling well.</li>
+</ol>
+<p>The pre-run hypothesis is that small discontinuities are likely. Large discontinuities would make the stitched ranking operationally questionable, even if within-family rankings are useful.</p>
+</section>
+<section id="seed-harness-extension" class="level3">
+<h3 class="anchored" data-anchor-id="seed-harness-extension">6.4 5-seed harness extension</h3>
+<p>The existing <code>src/road_risk/model/rank_stability.py</code> harness runs seeds 42-46 against the global model and writes <code>data/models/rank_stability/seed_&lt;N&gt;.parquet</code>. Extend it with an optional per-family mode.</p>
+<p>For each seed:</p>
+<ol type="1">
+<li>build the same Stage 2 base table;</li>
+<li>assign family;</li>
+<li>train four XGBoost models, one per family;</li>
+<li>write per-family score files to <code>data/models/family/seed_&lt;N&gt;/&lt;family&gt;.parquet</code>;</li>
+<li>write a stitched score file to <code>data/models/family/seed_&lt;N&gt;/stitched.parquet</code>;</li>
+<li>compute pairwise Jaccard and Spearman for the stitched ranking;</li>
+<li>compute family-specific Jaccard for each family.</li>
+</ol>
+<p>The output report should be <code>reports/family_rank_stability.md</code>, following the same structure as <code>reports/rank_stability.md</code>.</p>
+<p>Runtime expectation: per-family training is faster per model because each family has fewer rows, but the total job is 4 families x 5 seeds = 20 training runs. Total runtime is plausibly comparable to the existing global 5-seed run, around several hours. The eventual implementation prompt should treat this as a “leave it running” job.</p>
+</section>
+<section id="comparison-against-global-baseline" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-against-global-baseline">6.5 Comparison against global baseline</h3>
+<p>The evaluation report should compare:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model surface</th>
+<th>Metrics</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Current global XGBoost</td>
+<td>pseudo-R2, 5-seed Jaccard at each k, Spearman, calibration</td>
+</tr>
+<tr class="even">
+<td>Per-family stitched</td>
+<td>same headline metrics</td>
+</tr>
+<tr class="odd">
+<td>Per-family within-family</td>
+<td>pseudo-R2, residuals, calibration, family-scaled top-k Jaccard</td>
+</tr>
+</tbody>
+</table>
+<p>Use the existing global baseline from <code>reports/rank_stability.md</code>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th style="text-align: right;">Current global result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pseudo-R2 mean across 5 seeds</td>
+<td style="text-align: right;">0.859041</td>
+</tr>
+<tr class="even">
+<td>pseudo-R2 std across 5 seeds</td>
+<td style="text-align: right;">0.001411</td>
+</tr>
+<tr class="odd">
+<td>top-1% Jaccard mean</td>
+<td style="text-align: right;">0.918494</td>
+</tr>
+<tr class="even">
+<td>top-1% Jaccard min</td>
+<td style="text-align: right;">0.907843</td>
+</tr>
+<tr class="odd">
+<td>Spearman mean</td>
+<td style="text-align: right;">0.998106</td>
+</tr>
+<tr class="even">
+<td>Spearman min</td>
+<td style="text-align: right;">0.997841</td>
+</tr>
+</tbody>
+</table>
+<p>Adoption criterion: recommend the per-family approach if either:</p>
+<ul>
+<li>headline stitched metrics improve materially; or</li>
+<li>per-family diagnostics reveal patterned residuals that the global model was missing, even if the headline stitched gain is modest.</li>
+</ul>
+<p>If neither condition holds, document the split as evaluated and not adopted.</p>
+<hr>
+</section>
+</section>
+<section id="caveats" class="level2">
+<h2 class="anchored" data-anchor-id="caveats">7. Caveats</h2>
+<section id="imputed-ruc-for-about-1k-active-links" class="level3">
+<h3 class="anchored" data-anchor-id="imputed-ruc-for-about-1k-active-links">7.1 Imputed RUC for about 1k active links</h3>
+<p>The RUC fill assigned about 336k links with <code>ruc_imputed = True</code>. Most are outside <code>road_link_annual.parquet</code>. The practical rural-default fallback impact is 993 active modelled links, about 0.05% of the 2.17M-link network. These links land in Other-Rural. The impact is small, but output documentation should keep <code>ruc_imputed</code> and <code>ruc_fill_method</code> visible for audit.</p>
+</section>
+<section id="motorway-family-size" class="level3">
+<h3 class="anchored" data-anchor-id="motorway-family-size">7.2 Motorway family size</h3>
+<p>The motorway family has 4,084 links. That is small for XGBoost with the current global hyperparameters. The 5-seed evaluation should surface motorway-specific instability if the model overfits. v2 candidates include reduced <code>n_estimators</code>, early stopping, or partial pooling with trunk A-road.</p>
+</section>
+<section id="stitched-ranking-calibration" class="level3">
+<h3 class="anchored" data-anchor-id="stitched-ranking-calibration">7.3 Stitched ranking calibration</h3>
+<p>Per-family Poisson XGBoost with the same exposure offset should produce comparable predictions across families, but calibration can still differ. The section 6.3 discontinuity diagnostic is mandatory. If calibration differs materially, the stitched ranking should not be adopted; only within-family rankings should be reported.</p>
+</section>
+<section id="per-family-eb-k-is-deferred-to-v2" class="level3">
+<h3 class="anchored" data-anchor-id="per-family-eb-k-is-deferred-to-v2">7.4 Per-family EB k is deferred to v2</h3>
+<p>Current EB shrinkage uses one global positive-event-weighted k. With per-family models, per-family k is the natural pairing because each family may have its own dispersion structure. EB session 1’s non-constant dispersion finding suggests this is likely. It is deferred to v2 so the mean-model split can be evaluated cleanly first.</p>
+</section>
+<section id="intersections-roundabouts-not-separated" class="level3">
+<h3 class="anchored" data-anchor-id="intersections-roundabouts-not-separated">7.5 Intersections / roundabouts not separated</h3>
+<p><code>form_of_way == "Roundabout"</code> links remain inside their parent family for v1. HSM treats intersections as separate site types, so a separate intersection or roundabout family is methodologically plausible. It is deferred because it would bundle another family-definition decision into v1. Promote it only if v1 residuals show form-of-way patterning.</p>
+</section>
+<section id="glm-unchanged-xgboost-only-split" class="level3">
+<h3 class="anchored" data-anchor-id="glm-unchanged-xgboost-only-split">7.6 GLM unchanged, XGBoost-only split</h3>
+<p>Per-family GLM is not implemented in v1. The current global GLM, with pseudo-R2 around 0.251 after speed-limit imputation, remains a diagnostic baseline. Per-family GLM is a v2 extension if interpretability by family becomes important.</p>
+<hr>
+</section>
+</section>
+<section id="out-of-scope-for-v1" class="level2">
+<h2 class="anchored" data-anchor-id="out-of-scope-for-v1">8. Out of scope for v1</h2>
+<ul>
+<li>Hyperparameter tuning per family.</li>
+<li>Per-family feature pruning.</li>
+<li>Per-family EB k.</li>
+<li>Hierarchical or partial-pooling models.</li>
+<li>Roundabout or intersection family.</li>
+<li>Per-family GLM.</li>
+<li>NHNM integration.</li>
+</ul>
+<p>NHNM integration depends on this work landing first and should remain a separate later design.</p>
+<hr>
+</section>
+<section id="expected-outcomes" class="level2">
+<h2 class="anchored" data-anchor-id="expected-outcomes">9. Expected outcomes</h2>
+<p>These are hypotheses to compare against v1 results, not pass/fail thresholds.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Outcome</th>
+<th>Pre-run expectation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Headline pseudo-R2</td>
+<td>approximately unchanged around 0.86, or slightly improved</td>
+</tr>
+<tr class="even">
+<td>Stitched top-1% 5-seed Jaccard</td>
+<td>approximately unchanged or marginally improved relative to current 0.918</td>
+</tr>
+<tr class="odd">
+<td>Motorway mean residual</td>
+<td>significantly closer to zero than the current global mean residual around -3.3</td>
+</tr>
+<tr class="even">
+<td>Other-Urban / Other-Rural metrics</td>
+<td>roughly comparable to global, because the global model already has many relevant signals</td>
+</tr>
+<tr class="odd">
+<td>Family-boundary discontinuity</td>
+<td>some discontinuity is likely; small is acceptable, large is a warning against stitched ranking adoption</td>
+</tr>
+</tbody>
+</table>
+<p>The most valuable positive result would be not just a higher headline pseudo-R2, but clearer family-specific calibration and residual behaviour.</p>
+<hr>
+</section>
+<section id="implementation-sessions-plan" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-sessions-plan">10. Implementation sessions plan</h2>
+<p>Anticipated implementation split:</p>
+<ol type="1">
+<li><strong>Session 1: Family assignment, per-family training, and stitching.</strong> Produce <code>risk_scores_family.parquet</code> for seed 42 only. Do not modify production <code>risk_scores.parquet</code>.</li>
+<li><strong>Session 2: Single-run validation.</strong> Compute family-boundary diagnostics, per-family pseudo-R2 and residuals, and compare seed-42 stitched output against the current global baseline.</li>
+<li><strong>Session 3: 5-seed family rank stability.</strong> Extend <code>rank_stability.py</code>, run 20 family models, and produce <code>reports/family_rank_stability.md</code>.</li>
+<li><strong>Session 4: Adoption decision.</strong> Decide whether to adopt stitched ranking, within-family ranking only, both, or neither. Update methodology docs and downstream output contracts accordingly.</li>
+</ol>
+<p>Plausible clock time is two to three weeks including reviews, with several hours of agent/runtime for the multi-seed evaluation.</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Facility-Family Split"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: false</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>**Status:** Design only. Implementation sessions follow after review.</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>**Scope:** v1 facility-family split for Stage 2 XGBoost risk ranking.</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>**Primary code path:** <span class="in">`src/road_risk/model/collision.py`</span>, with additive</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>wrappers and diagnostics.</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>**Reference model:** FHWA Highway Safety Manual (HSM) safety performance</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>functions are explicitly site-type specific.</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0. Status and scope</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>This document specifies the v1 facility-family split for Stage 2 XGBoost</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>collision-risk ranking. It is a design document only: no production scoring</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>path, model artefact, or data table should change until this design has been</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>reviewed and an implementation session is opened.</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>The v1 scope is deliberately narrow:</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>define the four facility families used for Stage 2 modelling;</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>train separate XGBoost Poisson models by family;</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>stitch per-family predictions into a network-wide ranking;</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>also expose within-family rankings;</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>evaluate against the existing global Stage 2 XGBoost baseline.</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>The GLM remains global in v1. Empirical Bayes shrinkage remains unchanged in</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>v1. Per-family EB dispersion, per-family hyperparameter tuning, and</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>hierarchical/partial-pooling models are deferred.</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Motivation</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>Stage 2 currently trains one global XGBoost Poisson model across all road links.</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>That model sees road class, form of way, trunk status, primary status, exposure,</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>network centrality, population density, speed-limit, lane, and surface proxies,</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>but it still has to learn one response surface across very different traffic</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>environments.</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>There are two convergent reasons to split the model by facility family.</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>First, the HSM/FHWA safety-performance-function precedent is site-type</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>specific. The motivation is not only that different road families have</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>different baseline collision levels; it is that the exposure-to-risk curve can</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>have a different shape across facility types. A motorway, a trunk A-road, an</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>urban local road, and a rural minor road do not merely differ by intercept.</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>They differ in access control, junction density, speed environment, pedestrian</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>and cyclist exposure, maintenance regime, and the kinds of conflict that</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>produce collisions.</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>Second, EB session 1 found independent evidence that one global dispersion</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>summary is fragile. In <span class="in">`reports/eb_dispersion.md`</span>, binned method-of-moments</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>NB2 dispersion values vary by about 3,400x across the predicted-risk range,</span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>monotonically falling from low- to high-prediction bins. That finding does not</span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>prove a family split will help, but it is a strong warning that a single global</span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>mean/dispersion structure is leaving systematic structure on the table.</span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a><span class="in">`quarto/methodology/empirical-bayes-shrinkage.qmd`</span> records this as a v2</span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>motivation for per-family or per-bin k; facility-family modelling attacks the</span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>corresponding mean-model problem first.</span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>The operational hypothesis is:</span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>per-family XGBoost models improve calibration within families, especially</span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>  on motorways, where the current global model has a known mean residual of</span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>  about -3.3;</span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>per-family predictions are easier to interpret operationally because each</span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>  model is fitted within a more coherent road environment;</span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>headline rank stability may improve modestly, but large improvement is not</span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>  guaranteed because seed-induced churn near narrow top-k thresholds is a</span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>  separate mechanism.</span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Family definitions</span></span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>The v1 family definitions are taken from</span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a><span class="in">`docs/internal/family-definition-rationale.md`</span>. That document contains the</span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>decision history and reasoning; this section summarises the frozen definitions</span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a>rather than re-deriving them.</span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Family <span class="pp">|</span> Definition <span class="pp">|</span> Study-area links <span class="pp">|</span> Active links in <span class="in">`road_link_annual.parquet`</span> <span class="pp">|</span></span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---:|---:|</span></span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Motorway <span class="pp">|</span> <span class="in">`road_function == "Motorway"`</span> <span class="pp">|</span> 4,084 <span class="pp">|</span> 2,279 <span class="pp">|</span></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Trunk A-road <span class="pp">|</span> <span class="in">`road_function == "A Road"`</span> and <span class="in">`is_trunk == True`</span> <span class="pp">|</span> 16,011 <span class="pp">|</span> 5,465 <span class="pp">|</span></span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Other-Urban <span class="pp">|</span> neither of the above and <span class="in">`ruc_urban_rural == "Urban"`</span> <span class="pp">|</span> 1,366,925 <span class="pp">|</span> 177,296 <span class="pp">|</span></span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Other-Rural <span class="pp">|</span> neither of the above and <span class="in">`ruc_urban_rural == "Rural"`</span> <span class="pp">|</span> 780,537 <span class="pp">|</span> 48,564 <span class="pp">|</span></span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Total** <span class="pp">|</span> exactly one family per link <span class="pp">|</span> 2,167,557 <span class="pp">|</span> 233,604 <span class="pp">|</span></span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a>The family assignment columns come from two existing sources:</span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`road_function`</span> and <span class="in">`is_trunk`</span> from OS Open Roads metadata, already used by</span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a>  <span class="in">`build_collision_dataset()`</span>;</span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`ruc_urban_rural`</span> from post-fill <span class="in">`data/features/network_features.parquet`</span>.</span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a>The recent RUC fill resolved the previous 335,692-link no-LSOA gap. About</span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a>336k links have <span class="in">`ruc_imputed = True`</span>, but only 993 links in the rural-default</span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a>fallback population appear in <span class="in">`road_link_annual.parquet`</span>. Family assignment is</span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a>therefore complete for all active modelled links, and the practical modelling</span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a>impact of the rural default is small. The fill is documented in</span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a><span class="in">`reports/ruc_fill.md`</span> and verified in <span class="in">`reports/ruc_fill_verification.md`</span>.</span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a><span class="in">`form_of_way`</span> and <span class="in">`is_primary`</span> stay as features within each family. They are</span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a>not used to define v1 families.</span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. Per-family modelling approach</span></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.1 Separate XGBoost models, one per family</span></span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a>v1 trains one XGBoost Poisson regressor per family. Each model is fitted on</span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>the link-year rows belonging to links in that family. The wrapper should reuse</span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a>the current <span class="in">`train_collision_xgb()`</span> path in</span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a><span class="in">`src/road_risk/model/collision.py`</span> rather than creating a second training</span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a>implementation.</span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a>The v1 XGBoost settings are the same as the current global model:</span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> v1 value <span class="pp">|</span></span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---:|</span></span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`objective`</span> <span class="pp">|</span> <span class="in">`count:poisson`</span> <span class="pp">|</span></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`n_estimators`</span> <span class="pp">|</span> 500 <span class="pp">|</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`max_depth`</span> <span class="pp">|</span> 6 <span class="pp">|</span></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`learning_rate`</span> <span class="pp">|</span> 0.05 <span class="pp">|</span></span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`subsample`</span> <span class="pp">|</span> 0.8 <span class="pp">|</span></span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`colsample_bytree`</span> <span class="pp">|</span> 0.8 <span class="pp">|</span></span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`n_jobs`</span> <span class="pp">|</span> 1 <span class="pp">|</span></span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a>The exposure offset is unchanged:</span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>base_margin <span class="op">=</span> log_offset</span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>log_offset <span class="op">=</span> log(estimated_aadt <span class="op">*</span> link_length_km <span class="op">*</span> <span class="dv">365</span> <span class="op">/</span> <span class="fl">1e6</span>)</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>The train/test split is also unchanged in principle: use</span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a><span class="in">`GroupShuffleSplit`</span> by <span class="in">`link_id`</span>, but apply it within each family. All years</span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>for a link remain in one split. The seed controls both the split</span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a><span class="in">`random_state`</span> and the XGBoost <span class="in">`random_state`</span>, matching the current global</span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a>rank-stability harness.</span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a>The feature list is the same as the current global <span class="in">`train_collision_xgb()`</span></span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a>feature list. Some existing features will be constant or nearly constant in</span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>particular families. For example, <span class="in">`is_motorway`</span> is constant in the motorway</span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>family, <span class="in">`is_trunk`</span> is constant in the trunk A family, and the assignment</span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>columns <span class="in">`road_function`</span> and <span class="in">`ruc_urban_rural`</span> are family-constant by</span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a>definition even where they are attached for diagnostics rather than used as</span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>raw XGBoost features. This is wasteful but simple: XGBoost will not split on</span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a>zero-variance features. Per-family feature pruning is a v2 candidate if v1</span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a>works and the extra cleanup is worth the complexity.</span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a>The motorway family is small, about 4k links and roughly 40k link-years before</span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a>held-out splitting. <span class="in">`n_estimators=500`</span> may overfit on that population. The</span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a>5-seed evaluation should surface this if it happens, especially as</span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a>motorway-specific pseudo-R2 volatility or top-k instability. v2 candidates</span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a>include reduced <span class="in">`n_estimators`</span>, early stopping, or partial pooling across</span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a>motorway and trunk A families.</span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.2 What does NOT change</span></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a>The v1 family split does not change:</span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>GLM training, which remains global and unchanged from the current pipeline;</span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>XGBoost hyperparameters, which are kept fixed across families;</span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the pseudo-R2 definition;</span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>EB shrinkage, including the persisted global positive-event-weighted k;</span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the canonical <span class="in">`data/models/risk_scores.parquet`</span> output until per-family</span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>  evaluation is reviewed.</span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. Operational outputs: both global and per-family rankings</span></span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>The family split should produce two new ranking surfaces while preserving the</span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a>current global ranking for comparison.</span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4.1 Global stitched ranking</span></span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a>Each family model produces <span class="in">`predicted_xgb_family`</span> for its own family link-year</span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a>rows. Those predictions are pooled to one row per link using the same unit as</span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>the current <span class="in">`score_collision_models()`</span> path:</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a><span class="in">predicted_xgb_family = mean expected collisions per link-year</span></span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a>The stitching procedure is:</span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>score link-years within each family model;</span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>pool to one row per link, taking mean <span class="in">`predicted_xgb_family`</span> across years;</span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>concatenate all four family outputs;</span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>rank <span class="in">`predicted_xgb_family`</span> across all links to produce</span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>   <span class="in">`risk_percentile_family`</span>.</span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>This network-wide stitched ranking has the same operational semantics as the</span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>current <span class="in">`risk_percentile`</span>: it answers, "where does this link sit in the whole</span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>network?" The current <span class="in">`risk_percentile`</span> remains unchanged and should be</span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a>available side-by-side.</span>
+<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a>Per-family Poisson XGBoost with the same exposure offset should, in principle,</span>
+<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a>produce predictions on the same expected-collisions-per-link-year scale across</span>
+<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a>families. The stitched ranking is therefore meaningful in principle. In</span>
+<span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a>practice, family boundaries can create ranking discontinuities if the</span>
+<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a>family-level models are calibrated differently. Section 6.3 makes that an</span>
+<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a>explicit validation diagnostic rather than an assumption.</span>
+<span id="cb7-215"><a href="#cb7-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-216"><a href="#cb7-216" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4.2 Per-family rankings</span></span>
+<span id="cb7-217"><a href="#cb7-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-218"><a href="#cb7-218" aria-hidden="true" tabindex="-1"></a>Each family also produces <span class="in">`risk_percentile_within_family`</span>, ranked only within</span>
+<span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a>that family. This is a different operational object from the stitched ranking.</span>
+<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a>"Top 1% of motorways for traffic-management intervention" and "top 1% of</span>
+<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a>rural minor/local roads for road-safety partnership work" are not the same</span>
+<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a>screening question.</span>
+<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-224"><a href="#cb7-224" aria-hidden="true" tabindex="-1"></a>The eventual scored output should include:</span>
+<span id="cb7-225"><a href="#cb7-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-226"><a href="#cb7-226" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Column <span class="pp">|</span> Meaning <span class="pp">|</span></span>
+<span id="cb7-227"><a href="#cb7-227" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-228"><a href="#cb7-228" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`family`</span> <span class="pp">|</span> one of <span class="in">`motorway`</span>, <span class="in">`trunk_a`</span>, <span class="in">`other_urban`</span>, <span class="in">`other_rural`</span> <span class="pp">|</span></span>
+<span id="cb7-229"><a href="#cb7-229" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile`</span> <span class="pp">|</span> current global-model percentile, unchanged <span class="pp">|</span></span>
+<span id="cb7-230"><a href="#cb7-230" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`predicted_xgb_family`</span> <span class="pp">|</span> per-family model prediction, pooled to link grain <span class="pp">|</span></span>
+<span id="cb7-231"><a href="#cb7-231" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile_family`</span> <span class="pp">|</span> global stitched percentile from per-family models <span class="pp">|</span></span>
+<span id="cb7-232"><a href="#cb7-232" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile_within_family`</span> <span class="pp">|</span> percentile within the link's family <span class="pp">|</span></span>
+<span id="cb7-233"><a href="#cb7-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-234"><a href="#cb7-234" aria-hidden="true" tabindex="-1"></a>The current production <span class="in">`risk_percentile`</span> stays unchanged until v1 evaluation</span>
+<span id="cb7-235"><a href="#cb7-235" aria-hidden="true" tabindex="-1"></a>supports adoption of either new ranking surface.</span>
+<span id="cb7-236"><a href="#cb7-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-237"><a href="#cb7-237" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-238"><a href="#cb7-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-239"><a href="#cb7-239" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Implementation design</span></span>
+<span id="cb7-240"><a href="#cb7-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-241"><a href="#cb7-241" aria-hidden="true" tabindex="-1"></a>This is a design document only. The implementation should be small, additive,</span>
+<span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a>and reviewable. The first implementation pass should not modify the existing</span>
+<span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a>global training path: <span class="in">`train_collision_xgb()`</span> stays as-is, and the new family</span>
+<span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>module wraps it.</span>
+<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-246"><a href="#cb7-246" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.1 Proposed file structure</span></span>
+<span id="cb7-247"><a href="#cb7-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-248"><a href="#cb7-248" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> File <span class="pp">|</span> Change <span class="pp">|</span></span>
+<span id="cb7-249"><a href="#cb7-249" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-250"><a href="#cb7-250" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/model/collision.py`</span> <span class="pp">|</span> Add helper to assign family from Open Roads and network-feature columns. <span class="pp">|</span></span>
+<span id="cb7-251"><a href="#cb7-251" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/model/family_split.py`</span> <span class="pp">|</span> New module: <span class="in">`train_family_xgb()`</span>, <span class="in">`score_family_xgb()`</span>, <span class="in">`stitch_predictions()`</span>, family assignment logic. <span class="pp">|</span></span>
+<span id="cb7-252"><a href="#cb7-252" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/diagnostics/family_evaluation.py`</span> <span class="pp">|</span> New diagnostic: per-family and combined evaluation, comparison against global baseline. <span class="pp">|</span></span>
+<span id="cb7-253"><a href="#cb7-253" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/model/rank_stability.py`</span> <span class="pp">|</span> Extend to optionally run per-family evaluation. <span class="pp">|</span></span>
+<span id="cb7-254"><a href="#cb7-254" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data/models/family/seed_&lt;N&gt;/&lt;family&gt;.parquet`</span> <span class="pp">|</span> New per-seed per-family score outputs. <span class="pp">|</span></span>
+<span id="cb7-255"><a href="#cb7-255" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data/models/risk_scores_family.parquet`</span> <span class="pp">|</span> Eventually: scored output with both new ranking columns. <span class="pp">|</span></span>
+<span id="cb7-256"><a href="#cb7-256" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data/provenance/family_split_provenance.json`</span> <span class="pp">|</span> New provenance for per-family training run. <span class="pp">|</span></span>
+<span id="cb7-257"><a href="#cb7-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-258"><a href="#cb7-258" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.2 Family assignment</span></span>
+<span id="cb7-259"><a href="#cb7-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-260"><a href="#cb7-260" aria-hidden="true" tabindex="-1"></a>Add a vectorised <span class="in">`assign_family()`</span> helper that takes columns</span>
+<span id="cb7-261"><a href="#cb7-261" aria-hidden="true" tabindex="-1"></a><span class="in">`road_function`</span>, <span class="in">`is_trunk`</span>, and <span class="in">`ruc_urban_rural`</span>, and returns one of:</span>
+<span id="cb7-262"><a href="#cb7-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-263"><a href="#cb7-263" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`motorway`</span></span>
+<span id="cb7-264"><a href="#cb7-264" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`trunk_a`</span></span>
+<span id="cb7-265"><a href="#cb7-265" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`other_urban`</span></span>
+<span id="cb7-266"><a href="#cb7-266" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`other_rural`</span></span>
+<span id="cb7-267"><a href="#cb7-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-268"><a href="#cb7-268" aria-hidden="true" tabindex="-1"></a>The precedence is:</span>
+<span id="cb7-269"><a href="#cb7-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-270"><a href="#cb7-270" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb7-271"><a href="#cb7-271" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> road_function <span class="op">==</span> <span class="st">"Motorway"</span>:</span>
+<span id="cb7-272"><a href="#cb7-272" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"motorway"</span></span>
+<span id="cb7-273"><a href="#cb7-273" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> road_function <span class="op">==</span> <span class="st">"A Road"</span> <span class="kw">and</span> is_trunk:</span>
+<span id="cb7-274"><a href="#cb7-274" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"trunk_a"</span></span>
+<span id="cb7-275"><a href="#cb7-275" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> ruc_urban_rural <span class="op">==</span> <span class="st">"Urban"</span>:</span>
+<span id="cb7-276"><a href="#cb7-276" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"other_urban"</span></span>
+<span id="cb7-277"><a href="#cb7-277" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> ruc_urban_rural <span class="op">==</span> <span class="st">"Rural"</span>:</span>
+<span id="cb7-278"><a href="#cb7-278" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"other_rural"</span></span>
+<span id="cb7-279"><a href="#cb7-279" aria-hidden="true" tabindex="-1"></a><span class="cf">raise</span> <span class="pp">ValueError</span>  <span class="co"># should not happen post-RUC-fill</span></span>
+<span id="cb7-280"><a href="#cb7-280" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-281"><a href="#cb7-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-282"><a href="#cb7-282" aria-hidden="true" tabindex="-1"></a>The implementation should verify that every link in</span>
+<span id="cb7-283"><a href="#cb7-283" aria-hidden="true" tabindex="-1"></a><span class="in">`road_link_annual.parquet`</span> maps to exactly one family, and that the full</span>
+<span id="cb7-284"><a href="#cb7-284" aria-hidden="true" tabindex="-1"></a>scored network has zero unknown-family rows.</span>
+<span id="cb7-285"><a href="#cb7-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-286"><a href="#cb7-286" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.3 Per-family training loop</span></span>
+<span id="cb7-287"><a href="#cb7-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-288"><a href="#cb7-288" aria-hidden="true" tabindex="-1"></a>The wrapper should be intentionally thin:</span>
+<span id="cb7-289"><a href="#cb7-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-290"><a href="#cb7-290" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb7-291"><a href="#cb7-291" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_family_xgb(df, family, seed<span class="op">=</span><span class="dv">42</span>):</span>
+<span id="cb7-292"><a href="#cb7-292" aria-hidden="true" tabindex="-1"></a>    family_df <span class="op">=</span> df[df[<span class="st">"family"</span>] <span class="op">==</span> family]</span>
+<span id="cb7-293"><a href="#cb7-293" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train_collision_xgb(family_df, seed<span class="op">=</span>seed)</span>
+<span id="cb7-294"><a href="#cb7-294" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-295"><a href="#cb7-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-296"><a href="#cb7-296" aria-hidden="true" tabindex="-1"></a><span class="in">`train_collision_xgb()`</span> is called per family without changing its internals.</span>
+<span id="cb7-297"><a href="#cb7-297" aria-hidden="true" tabindex="-1"></a>The wrapper is responsible for filtering, row-count checks, logging, and</span>
+<span id="cb7-298"><a href="#cb7-298" aria-hidden="true" tabindex="-1"></a>provenance.</span>
+<span id="cb7-299"><a href="#cb7-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-300"><a href="#cb7-300" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.4 Stitching and scoring</span></span>
+<span id="cb7-301"><a href="#cb7-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-302"><a href="#cb7-302" aria-hidden="true" tabindex="-1"></a>The scoring helper should mirror <span class="in">`score_collision_models()`</span> but use the</span>
+<span id="cb7-303"><a href="#cb7-303" aria-hidden="true" tabindex="-1"></a>per-family XGBoost models:</span>
+<span id="cb7-304"><a href="#cb7-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-305"><a href="#cb7-305" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb7-306"><a href="#cb7-306" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> score_family_xgb(network_df, models_by_family):</span>
+<span id="cb7-307"><a href="#cb7-307" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> []</span>
+<span id="cb7-308"><a href="#cb7-308" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> family, model <span class="kw">in</span> models_by_family.items():</span>
+<span id="cb7-309"><a href="#cb7-309" aria-hidden="true" tabindex="-1"></a>        family_df <span class="op">=</span> network_df[network_df[<span class="st">"family"</span>] <span class="op">==</span> family].copy()</span>
+<span id="cb7-310"><a href="#cb7-310" aria-hidden="true" tabindex="-1"></a>        family_df[<span class="st">"predicted_xgb_family"</span>] <span class="op">=</span> model.predict(...)</span>
+<span id="cb7-311"><a href="#cb7-311" aria-hidden="true" tabindex="-1"></a>        predictions.append(family_df)</span>
+<span id="cb7-312"><a href="#cb7-312" aria-hidden="true" tabindex="-1"></a>    scored <span class="op">=</span> pd.concat(predictions)</span>
+<span id="cb7-313"><a href="#cb7-313" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pool_family_predictions(scored)</span>
+<span id="cb7-314"><a href="#cb7-314" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-315"><a href="#cb7-315" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-316"><a href="#cb7-316" aria-hidden="true" tabindex="-1"></a>Pooling should keep the same link-level semantics as current Stage 2:</span>
+<span id="cb7-317"><a href="#cb7-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-318"><a href="#cb7-318" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Column <span class="pp">|</span> Aggregation <span class="pp">|</span></span>
+<span id="cb7-319"><a href="#cb7-319" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-320"><a href="#cb7-320" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`collision_count`</span> <span class="pp">|</span> sum across years <span class="pp">|</span></span>
+<span id="cb7-321"><a href="#cb7-321" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`fatal_count`</span> <span class="pp">|</span> sum across years <span class="pp">|</span></span>
+<span id="cb7-322"><a href="#cb7-322" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`serious_count`</span> <span class="pp">|</span> sum across years <span class="pp">|</span></span>
+<span id="cb7-323"><a href="#cb7-323" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`estimated_aadt`</span> <span class="pp">|</span> mean across years <span class="pp">|</span></span>
+<span id="cb7-324"><a href="#cb7-324" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`predicted_xgb_family`</span> <span class="pp">|</span> mean across years <span class="pp">|</span></span>
+<span id="cb7-325"><a href="#cb7-325" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`family`</span> <span class="pp">|</span> first; must be constant by <span class="in">`link_id`</span> <span class="pp">|</span></span>
+<span id="cb7-326"><a href="#cb7-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-327"><a href="#cb7-327" aria-hidden="true" tabindex="-1"></a>Then compute:</span>
+<span id="cb7-328"><a href="#cb7-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-329"><a href="#cb7-329" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb7-330"><a href="#cb7-330" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"risk_percentile_family"</span>] <span class="op">=</span> (</span>
+<span id="cb7-331"><a href="#cb7-331" aria-hidden="true" tabindex="-1"></a>    pooled[<span class="st">"predicted_xgb_family"</span>].rank(pct<span class="op">=</span><span class="va">True</span>) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb7-332"><a href="#cb7-332" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-333"><a href="#cb7-333" aria-hidden="true" tabindex="-1"></a>pooled[<span class="st">"risk_percentile_within_family"</span>] <span class="op">=</span> (</span>
+<span id="cb7-334"><a href="#cb7-334" aria-hidden="true" tabindex="-1"></a>    pooled.groupby(<span class="st">"family"</span>)[<span class="st">"predicted_xgb_family"</span>].rank(pct<span class="op">=</span><span class="va">True</span>) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb7-335"><a href="#cb7-335" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-336"><a href="#cb7-336" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-337"><a href="#cb7-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-338"><a href="#cb7-338" aria-hidden="true" tabindex="-1"></a>Exact top-k set selection should use deterministic sorting:</span>
+<span id="cb7-339"><a href="#cb7-339" aria-hidden="true" tabindex="-1"></a><span class="in">`predicted_xgb_family desc, link_id asc`</span>.</span>
+<span id="cb7-340"><a href="#cb7-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-341"><a href="#cb7-341" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-342"><a href="#cb7-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-343"><a href="#cb7-343" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Validation plan</span></span>
+<span id="cb7-344"><a href="#cb7-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-345"><a href="#cb7-345" aria-hidden="true" tabindex="-1"></a>Validation decides whether the family split should be adopted, kept as a</span>
+<span id="cb7-346"><a href="#cb7-346" aria-hidden="true" tabindex="-1"></a>diagnostic, or deferred.</span>
+<span id="cb7-347"><a href="#cb7-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-348"><a href="#cb7-348" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.1 Headline metrics: global stitched vs current global</span></span>
+<span id="cb7-349"><a href="#cb7-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-350"><a href="#cb7-350" aria-hidden="true" tabindex="-1"></a>Compare <span class="in">`risk_percentile_family`</span> against the current global</span>
+<span id="cb7-351"><a href="#cb7-351" aria-hidden="true" tabindex="-1"></a><span class="in">`risk_percentile`</span>.</span>
+<span id="cb7-352"><a href="#cb7-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-353"><a href="#cb7-353" aria-hidden="true" tabindex="-1"></a>Report:</span>
+<span id="cb7-354"><a href="#cb7-354" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-355"><a href="#cb7-355" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>pseudo-R2 on held-out link-years using stitched family predictions;</span>
+<span id="cb7-356"><a href="#cb7-356" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>5-seed Jaccard at k = 100, 1,000, 10,000, and top-1%;</span>
+<span id="cb7-357"><a href="#cb7-357" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Spearman rank correlation between <span class="in">`risk_percentile_family`</span> and current</span>
+<span id="cb7-358"><a href="#cb7-358" aria-hidden="true" tabindex="-1"></a>  <span class="in">`risk_percentile`</span>;</span>
+<span id="cb7-359"><a href="#cb7-359" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>top-1% entrant/leaver counts and road-family breakdown.</span>
+<span id="cb7-360"><a href="#cb7-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-361"><a href="#cb7-361" aria-hidden="true" tabindex="-1"></a>The headline question is whether the stitched ranking improves on the global</span>
+<span id="cb7-362"><a href="#cb7-362" aria-hidden="true" tabindex="-1"></a>model's headline metrics. The pre-run hypothesis is modest improvement in</span>
+<span id="cb7-363"><a href="#cb7-363" aria-hidden="true" tabindex="-1"></a>stability, because each model has less within-family structural variation to</span>
+<span id="cb7-364"><a href="#cb7-364" aria-hidden="true" tabindex="-1"></a>learn, and small change in pseudo-R2.</span>
+<span id="cb7-365"><a href="#cb7-365" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-366"><a href="#cb7-366" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.2 Per-family metrics</span></span>
+<span id="cb7-367"><a href="#cb7-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-368"><a href="#cb7-368" aria-hidden="true" tabindex="-1"></a>For each family, report:</span>
+<span id="cb7-369"><a href="#cb7-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-370"><a href="#cb7-370" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>pseudo-R2 on held-out link-years within the family;</span>
+<span id="cb7-371"><a href="#cb7-371" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mean residual on training and held-out link-years;</span>
+<span id="cb7-372"><a href="#cb7-372" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>observed vs predicted by family risk decile;</span>
+<span id="cb7-373"><a href="#cb7-373" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>5-seed Jaccard on family-specific top-k sets.</span>
+<span id="cb7-374"><a href="#cb7-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-375"><a href="#cb7-375" aria-hidden="true" tabindex="-1"></a>Per-family top-k thresholds should scale with family size:</span>
+<span id="cb7-376"><a href="#cb7-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-377"><a href="#cb7-377" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Family <span class="pp">|</span> Suggested thresholds <span class="pp">|</span></span>
+<span id="cb7-378"><a href="#cb7-378" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-379"><a href="#cb7-379" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Motorway <span class="pp">|</span> top 25, top 50, top 100, top 10% <span class="pp">|</span></span>
+<span id="cb7-380"><a href="#cb7-380" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Trunk A-road <span class="pp">|</span> top 50, top 100, top 500, top 10% <span class="pp">|</span></span>
+<span id="cb7-381"><a href="#cb7-381" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Other-Urban <span class="pp">|</span> top 100, top 1,000, top 10,000, top 1% <span class="pp">|</span></span>
+<span id="cb7-382"><a href="#cb7-382" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Other-Rural <span class="pp">|</span> top 100, top 1,000, top 10,000, top 1% <span class="pp">|</span></span>
+<span id="cb7-383"><a href="#cb7-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-384"><a href="#cb7-384" aria-hidden="true" tabindex="-1"></a>For motorway, top-1% is only about 40 links and will be noisy. A top-10%</span>
+<span id="cb7-385"><a href="#cb7-385" aria-hidden="true" tabindex="-1"></a>diagnostic is more meaningful for that family.</span>
+<span id="cb7-386"><a href="#cb7-386" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-387"><a href="#cb7-387" aria-hidden="true" tabindex="-1"></a>The pre-run hypothesis is that motorway and trunk A families show the largest</span>
+<span id="cb7-388"><a href="#cb7-388" aria-hidden="true" tabindex="-1"></a>improvement in mean residual over the global model. Other-Urban and</span>
+<span id="cb7-389"><a href="#cb7-389" aria-hidden="true" tabindex="-1"></a>Other-Rural may show smaller improvement because the global model already has</span>
+<span id="cb7-390"><a href="#cb7-390" aria-hidden="true" tabindex="-1"></a>many of the relevant road-function, RUC, and exposure signals.</span>
+<span id="cb7-391"><a href="#cb7-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-392"><a href="#cb7-392" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.3 Family-boundary discontinuity check</span></span>
+<span id="cb7-393"><a href="#cb7-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-394"><a href="#cb7-394" aria-hidden="true" tabindex="-1"></a>Stitching per-family predictions can produce ranking discontinuities if</span>
+<span id="cb7-395"><a href="#cb7-395" aria-hidden="true" tabindex="-1"></a>family-level calibration differs.</span>
+<span id="cb7-396"><a href="#cb7-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-397"><a href="#cb7-397" aria-hidden="true" tabindex="-1"></a>Diagnostics:</span>
+<span id="cb7-398"><a href="#cb7-398" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-399"><a href="#cb7-399" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Compute the <span class="in">`predicted_xgb_family`</span> value at the top-1% threshold within</span>
+<span id="cb7-400"><a href="#cb7-400" aria-hidden="true" tabindex="-1"></a>   each family. Are the family thresholds similar, or does one family require</span>
+<span id="cb7-401"><a href="#cb7-401" aria-hidden="true" tabindex="-1"></a>   much larger predicted counts to enter its own top 1%?</span>
+<span id="cb7-402"><a href="#cb7-402" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>At each of the three global stitched thresholds (top-1%, top-1000,</span>
+<span id="cb7-403"><a href="#cb7-403" aria-hidden="true" tabindex="-1"></a>   top-10000), sample adjacent boundary-crossing link pairs stratified by</span>
+<span id="cb7-404"><a href="#cb7-404" aria-hidden="true" tabindex="-1"></a>   family pair. The six possible family pairs are: Motorway × Trunk A-road,</span>
+<span id="cb7-405"><a href="#cb7-405" aria-hidden="true" tabindex="-1"></a>   Motorway × Other-Urban, Motorway × Other-Rural, Trunk A-road × Other-Urban,</span>
+<span id="cb7-406"><a href="#cb7-406" aria-hidden="true" tabindex="-1"></a>   Trunk A-road × Other-Rural, and Other-Urban × Other-Rural. For each family</span>
+<span id="cb7-407"><a href="#cb7-407" aria-hidden="true" tabindex="-1"></a>   pair at each threshold, sample up to 25 adjacent pairs where the two links</span>
+<span id="cb7-408"><a href="#cb7-408" aria-hidden="true" tabindex="-1"></a>   straddle the threshold and belong to different families. If a family pair has</span>
+<span id="cb7-409"><a href="#cb7-409" aria-hidden="true" tabindex="-1"></a>   fewer than 25 available pairs at a threshold, take all available pairs and</span>
+<span id="cb7-410"><a href="#cb7-410" aria-hidden="true" tabindex="-1"></a>   report the count explicitly; a low count indicates limited rank-range overlap</span>
+<span id="cb7-411"><a href="#cb7-411" aria-hidden="true" tabindex="-1"></a>   for that pair, which is itself a calibration signal. Total target per</span>
+<span id="cb7-412"><a href="#cb7-412" aria-hidden="true" tabindex="-1"></a>   threshold is up to 150 pairs (6 pairs × 25 max each). Compare predicted</span>
+<span id="cb7-413"><a href="#cb7-413" aria-hidden="true" tabindex="-1"></a>   values across the sampled pairs. Small gaps indicate smooth stitching; large</span>
+<span id="cb7-414"><a href="#cb7-414" aria-hidden="true" tabindex="-1"></a>   gaps indicate calibration discontinuity. Small counts for rare family pairs</span>
+<span id="cb7-415"><a href="#cb7-415" aria-hidden="true" tabindex="-1"></a>   (e.g. Motorway × Other-Rural) are informative—they mean those families' risk</span>
+<span id="cb7-416"><a href="#cb7-416" aria-hidden="true" tabindex="-1"></a>   ranges barely overlap, which the global model may not be handling well.</span>
+<span id="cb7-417"><a href="#cb7-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-418"><a href="#cb7-418" aria-hidden="true" tabindex="-1"></a>The pre-run hypothesis is that small discontinuities are likely. Large</span>
+<span id="cb7-419"><a href="#cb7-419" aria-hidden="true" tabindex="-1"></a>discontinuities would make the stitched ranking operationally questionable,</span>
+<span id="cb7-420"><a href="#cb7-420" aria-hidden="true" tabindex="-1"></a>even if within-family rankings are useful.</span>
+<span id="cb7-421"><a href="#cb7-421" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-422"><a href="#cb7-422" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.4 5-seed harness extension</span></span>
+<span id="cb7-423"><a href="#cb7-423" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-424"><a href="#cb7-424" aria-hidden="true" tabindex="-1"></a>The existing <span class="in">`src/road_risk/model/rank_stability.py`</span> harness runs seeds</span>
+<span id="cb7-425"><a href="#cb7-425" aria-hidden="true" tabindex="-1"></a>42-46 against the global model and writes <span class="in">`data/models/rank_stability/seed_&lt;N&gt;.parquet`</span>.</span>
+<span id="cb7-426"><a href="#cb7-426" aria-hidden="true" tabindex="-1"></a>Extend it with an optional per-family mode.</span>
+<span id="cb7-427"><a href="#cb7-427" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-428"><a href="#cb7-428" aria-hidden="true" tabindex="-1"></a>For each seed:</span>
+<span id="cb7-429"><a href="#cb7-429" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-430"><a href="#cb7-430" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>build the same Stage 2 base table;</span>
+<span id="cb7-431"><a href="#cb7-431" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>assign family;</span>
+<span id="cb7-432"><a href="#cb7-432" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>train four XGBoost models, one per family;</span>
+<span id="cb7-433"><a href="#cb7-433" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>write per-family score files to</span>
+<span id="cb7-434"><a href="#cb7-434" aria-hidden="true" tabindex="-1"></a>   <span class="in">`data/models/family/seed_&lt;N&gt;/&lt;family&gt;.parquet`</span>;</span>
+<span id="cb7-435"><a href="#cb7-435" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>write a stitched score file to</span>
+<span id="cb7-436"><a href="#cb7-436" aria-hidden="true" tabindex="-1"></a>   <span class="in">`data/models/family/seed_&lt;N&gt;/stitched.parquet`</span>;</span>
+<span id="cb7-437"><a href="#cb7-437" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>compute pairwise Jaccard and Spearman for the stitched ranking;</span>
+<span id="cb7-438"><a href="#cb7-438" aria-hidden="true" tabindex="-1"></a><span class="ss">7. </span>compute family-specific Jaccard for each family.</span>
+<span id="cb7-439"><a href="#cb7-439" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-440"><a href="#cb7-440" aria-hidden="true" tabindex="-1"></a>The output report should be <span class="in">`reports/family_rank_stability.md`</span>, following the</span>
+<span id="cb7-441"><a href="#cb7-441" aria-hidden="true" tabindex="-1"></a>same structure as <span class="in">`reports/rank_stability.md`</span>.</span>
+<span id="cb7-442"><a href="#cb7-442" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-443"><a href="#cb7-443" aria-hidden="true" tabindex="-1"></a>Runtime expectation: per-family training is faster per model because each</span>
+<span id="cb7-444"><a href="#cb7-444" aria-hidden="true" tabindex="-1"></a>family has fewer rows, but the total job is 4 families x 5 seeds = 20 training</span>
+<span id="cb7-445"><a href="#cb7-445" aria-hidden="true" tabindex="-1"></a>runs. Total runtime is plausibly comparable to the existing global 5-seed run,</span>
+<span id="cb7-446"><a href="#cb7-446" aria-hidden="true" tabindex="-1"></a>around several hours. The eventual implementation prompt should treat this as</span>
+<span id="cb7-447"><a href="#cb7-447" aria-hidden="true" tabindex="-1"></a>a "leave it running" job.</span>
+<span id="cb7-448"><a href="#cb7-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-449"><a href="#cb7-449" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.5 Comparison against global baseline</span></span>
+<span id="cb7-450"><a href="#cb7-450" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-451"><a href="#cb7-451" aria-hidden="true" tabindex="-1"></a>The evaluation report should compare:</span>
+<span id="cb7-452"><a href="#cb7-452" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-453"><a href="#cb7-453" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Model surface <span class="pp">|</span> Metrics <span class="pp">|</span></span>
+<span id="cb7-454"><a href="#cb7-454" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-455"><a href="#cb7-455" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Current global XGBoost <span class="pp">|</span> pseudo-R2, 5-seed Jaccard at each k, Spearman, calibration <span class="pp">|</span></span>
+<span id="cb7-456"><a href="#cb7-456" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Per-family stitched <span class="pp">|</span> same headline metrics <span class="pp">|</span></span>
+<span id="cb7-457"><a href="#cb7-457" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Per-family within-family <span class="pp">|</span> pseudo-R2, residuals, calibration, family-scaled top-k Jaccard <span class="pp">|</span></span>
+<span id="cb7-458"><a href="#cb7-458" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-459"><a href="#cb7-459" aria-hidden="true" tabindex="-1"></a>Use the existing global baseline from <span class="in">`reports/rank_stability.md`</span>:</span>
+<span id="cb7-460"><a href="#cb7-460" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-461"><a href="#cb7-461" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Metric <span class="pp">|</span> Current global result <span class="pp">|</span></span>
+<span id="cb7-462"><a href="#cb7-462" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---:|</span></span>
+<span id="cb7-463"><a href="#cb7-463" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> pseudo-R2 mean across 5 seeds <span class="pp">|</span> 0.859041 <span class="pp">|</span></span>
+<span id="cb7-464"><a href="#cb7-464" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> pseudo-R2 std across 5 seeds <span class="pp">|</span> 0.001411 <span class="pp">|</span></span>
+<span id="cb7-465"><a href="#cb7-465" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> top-1% Jaccard mean <span class="pp">|</span> 0.918494 <span class="pp">|</span></span>
+<span id="cb7-466"><a href="#cb7-466" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> top-1% Jaccard min <span class="pp">|</span> 0.907843 <span class="pp">|</span></span>
+<span id="cb7-467"><a href="#cb7-467" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Spearman mean <span class="pp">|</span> 0.998106 <span class="pp">|</span></span>
+<span id="cb7-468"><a href="#cb7-468" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Spearman min <span class="pp">|</span> 0.997841 <span class="pp">|</span></span>
+<span id="cb7-469"><a href="#cb7-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-470"><a href="#cb7-470" aria-hidden="true" tabindex="-1"></a>Adoption criterion: recommend the per-family approach if either:</span>
+<span id="cb7-471"><a href="#cb7-471" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-472"><a href="#cb7-472" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>headline stitched metrics improve materially; or</span>
+<span id="cb7-473"><a href="#cb7-473" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>per-family diagnostics reveal patterned residuals that the global model was</span>
+<span id="cb7-474"><a href="#cb7-474" aria-hidden="true" tabindex="-1"></a>  missing, even if the headline stitched gain is modest.</span>
+<span id="cb7-475"><a href="#cb7-475" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-476"><a href="#cb7-476" aria-hidden="true" tabindex="-1"></a>If neither condition holds, document the split as evaluated and not adopted.</span>
+<span id="cb7-477"><a href="#cb7-477" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-478"><a href="#cb7-478" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-479"><a href="#cb7-479" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-480"><a href="#cb7-480" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. Caveats</span></span>
+<span id="cb7-481"><a href="#cb7-481" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-482"><a href="#cb7-482" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.1 Imputed RUC for about 1k active links</span></span>
+<span id="cb7-483"><a href="#cb7-483" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-484"><a href="#cb7-484" aria-hidden="true" tabindex="-1"></a>The RUC fill assigned about 336k links with <span class="in">`ruc_imputed = True`</span>. Most are</span>
+<span id="cb7-485"><a href="#cb7-485" aria-hidden="true" tabindex="-1"></a>outside <span class="in">`road_link_annual.parquet`</span>. The practical rural-default fallback impact</span>
+<span id="cb7-486"><a href="#cb7-486" aria-hidden="true" tabindex="-1"></a>is 993 active modelled links, about 0.05% of the 2.17M-link network. These</span>
+<span id="cb7-487"><a href="#cb7-487" aria-hidden="true" tabindex="-1"></a>links land in Other-Rural. The impact is small, but output documentation should</span>
+<span id="cb7-488"><a href="#cb7-488" aria-hidden="true" tabindex="-1"></a>keep <span class="in">`ruc_imputed`</span> and <span class="in">`ruc_fill_method`</span> visible for audit.</span>
+<span id="cb7-489"><a href="#cb7-489" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-490"><a href="#cb7-490" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.2 Motorway family size</span></span>
+<span id="cb7-491"><a href="#cb7-491" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-492"><a href="#cb7-492" aria-hidden="true" tabindex="-1"></a>The motorway family has 4,084 links. That is small for XGBoost with the</span>
+<span id="cb7-493"><a href="#cb7-493" aria-hidden="true" tabindex="-1"></a>current global hyperparameters. The 5-seed evaluation should surface</span>
+<span id="cb7-494"><a href="#cb7-494" aria-hidden="true" tabindex="-1"></a>motorway-specific instability if the model overfits. v2 candidates include</span>
+<span id="cb7-495"><a href="#cb7-495" aria-hidden="true" tabindex="-1"></a>reduced <span class="in">`n_estimators`</span>, early stopping, or partial pooling with trunk A-road.</span>
+<span id="cb7-496"><a href="#cb7-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-497"><a href="#cb7-497" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.3 Stitched ranking calibration</span></span>
+<span id="cb7-498"><a href="#cb7-498" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-499"><a href="#cb7-499" aria-hidden="true" tabindex="-1"></a>Per-family Poisson XGBoost with the same exposure offset should produce</span>
+<span id="cb7-500"><a href="#cb7-500" aria-hidden="true" tabindex="-1"></a>comparable predictions across families, but calibration can still differ. The</span>
+<span id="cb7-501"><a href="#cb7-501" aria-hidden="true" tabindex="-1"></a>section 6.3 discontinuity diagnostic is mandatory. If calibration differs</span>
+<span id="cb7-502"><a href="#cb7-502" aria-hidden="true" tabindex="-1"></a>materially, the stitched ranking should not be adopted; only within-family</span>
+<span id="cb7-503"><a href="#cb7-503" aria-hidden="true" tabindex="-1"></a>rankings should be reported.</span>
+<span id="cb7-504"><a href="#cb7-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-505"><a href="#cb7-505" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.4 Per-family EB k is deferred to v2</span></span>
+<span id="cb7-506"><a href="#cb7-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-507"><a href="#cb7-507" aria-hidden="true" tabindex="-1"></a>Current EB shrinkage uses one global positive-event-weighted k. With</span>
+<span id="cb7-508"><a href="#cb7-508" aria-hidden="true" tabindex="-1"></a>per-family models, per-family k is the natural pairing because each family</span>
+<span id="cb7-509"><a href="#cb7-509" aria-hidden="true" tabindex="-1"></a>may have its own dispersion structure. EB session 1's non-constant dispersion</span>
+<span id="cb7-510"><a href="#cb7-510" aria-hidden="true" tabindex="-1"></a>finding suggests this is likely. It is deferred to v2 so the mean-model split</span>
+<span id="cb7-511"><a href="#cb7-511" aria-hidden="true" tabindex="-1"></a>can be evaluated cleanly first.</span>
+<span id="cb7-512"><a href="#cb7-512" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-513"><a href="#cb7-513" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.5 Intersections / roundabouts not separated</span></span>
+<span id="cb7-514"><a href="#cb7-514" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-515"><a href="#cb7-515" aria-hidden="true" tabindex="-1"></a><span class="in">`form_of_way == "Roundabout"`</span> links remain inside their parent family for v1.</span>
+<span id="cb7-516"><a href="#cb7-516" aria-hidden="true" tabindex="-1"></a>HSM treats intersections as separate site types, so a separate intersection or</span>
+<span id="cb7-517"><a href="#cb7-517" aria-hidden="true" tabindex="-1"></a>roundabout family is methodologically plausible. It is deferred because it</span>
+<span id="cb7-518"><a href="#cb7-518" aria-hidden="true" tabindex="-1"></a>would bundle another family-definition decision into v1. Promote it only if</span>
+<span id="cb7-519"><a href="#cb7-519" aria-hidden="true" tabindex="-1"></a>v1 residuals show form-of-way patterning.</span>
+<span id="cb7-520"><a href="#cb7-520" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-521"><a href="#cb7-521" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.6 GLM unchanged, XGBoost-only split</span></span>
+<span id="cb7-522"><a href="#cb7-522" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-523"><a href="#cb7-523" aria-hidden="true" tabindex="-1"></a>Per-family GLM is not implemented in v1. The current global GLM, with pseudo-R2</span>
+<span id="cb7-524"><a href="#cb7-524" aria-hidden="true" tabindex="-1"></a>around 0.251 after speed-limit imputation, remains a diagnostic baseline.</span>
+<span id="cb7-525"><a href="#cb7-525" aria-hidden="true" tabindex="-1"></a>Per-family GLM is a v2 extension if interpretability by family becomes</span>
+<span id="cb7-526"><a href="#cb7-526" aria-hidden="true" tabindex="-1"></a>important.</span>
+<span id="cb7-527"><a href="#cb7-527" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-528"><a href="#cb7-528" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-529"><a href="#cb7-529" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-530"><a href="#cb7-530" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. Out of scope for v1</span></span>
+<span id="cb7-531"><a href="#cb7-531" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-532"><a href="#cb7-532" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hyperparameter tuning per family.</span>
+<span id="cb7-533"><a href="#cb7-533" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family feature pruning.</span>
+<span id="cb7-534"><a href="#cb7-534" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family EB k.</span>
+<span id="cb7-535"><a href="#cb7-535" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hierarchical or partial-pooling models.</span>
+<span id="cb7-536"><a href="#cb7-536" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Roundabout or intersection family.</span>
+<span id="cb7-537"><a href="#cb7-537" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family GLM.</span>
+<span id="cb7-538"><a href="#cb7-538" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>NHNM integration.</span>
+<span id="cb7-539"><a href="#cb7-539" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-540"><a href="#cb7-540" aria-hidden="true" tabindex="-1"></a>NHNM integration depends on this work landing first and should remain a</span>
+<span id="cb7-541"><a href="#cb7-541" aria-hidden="true" tabindex="-1"></a>separate later design.</span>
+<span id="cb7-542"><a href="#cb7-542" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-543"><a href="#cb7-543" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-544"><a href="#cb7-544" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-545"><a href="#cb7-545" aria-hidden="true" tabindex="-1"></a><span class="fu">## 9. Expected outcomes</span></span>
+<span id="cb7-546"><a href="#cb7-546" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-547"><a href="#cb7-547" aria-hidden="true" tabindex="-1"></a>These are hypotheses to compare against v1 results, not pass/fail thresholds.</span>
+<span id="cb7-548"><a href="#cb7-548" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-549"><a href="#cb7-549" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Outcome <span class="pp">|</span> Pre-run expectation <span class="pp">|</span></span>
+<span id="cb7-550"><a href="#cb7-550" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-551"><a href="#cb7-551" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Headline pseudo-R2 <span class="pp">|</span> approximately unchanged around 0.86, or slightly improved <span class="pp">|</span></span>
+<span id="cb7-552"><a href="#cb7-552" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Stitched top-1% 5-seed Jaccard <span class="pp">|</span> approximately unchanged or marginally improved relative to current 0.918 <span class="pp">|</span></span>
+<span id="cb7-553"><a href="#cb7-553" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Motorway mean residual <span class="pp">|</span> significantly closer to zero than the current global mean residual around -3.3 <span class="pp">|</span></span>
+<span id="cb7-554"><a href="#cb7-554" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Other-Urban / Other-Rural metrics <span class="pp">|</span> roughly comparable to global, because the global model already has many relevant signals <span class="pp">|</span></span>
+<span id="cb7-555"><a href="#cb7-555" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Family-boundary discontinuity <span class="pp">|</span> some discontinuity is likely; small is acceptable, large is a warning against stitched ranking adoption <span class="pp">|</span></span>
+<span id="cb7-556"><a href="#cb7-556" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-557"><a href="#cb7-557" aria-hidden="true" tabindex="-1"></a>The most valuable positive result would be not just a higher headline pseudo-R2,</span>
+<span id="cb7-558"><a href="#cb7-558" aria-hidden="true" tabindex="-1"></a>but clearer family-specific calibration and residual behaviour.</span>
+<span id="cb7-559"><a href="#cb7-559" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-560"><a href="#cb7-560" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-561"><a href="#cb7-561" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-562"><a href="#cb7-562" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Implementation sessions plan</span></span>
+<span id="cb7-563"><a href="#cb7-563" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-564"><a href="#cb7-564" aria-hidden="true" tabindex="-1"></a>Anticipated implementation split:</span>
+<span id="cb7-565"><a href="#cb7-565" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-566"><a href="#cb7-566" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Session 1: Family assignment, per-family training, and stitching.**</span>
+<span id="cb7-567"><a href="#cb7-567" aria-hidden="true" tabindex="-1"></a>   Produce <span class="in">`risk_scores_family.parquet`</span> for seed 42 only. Do not modify</span>
+<span id="cb7-568"><a href="#cb7-568" aria-hidden="true" tabindex="-1"></a>   production <span class="in">`risk_scores.parquet`</span>.</span>
+<span id="cb7-569"><a href="#cb7-569" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Session 2: Single-run validation.** Compute family-boundary diagnostics,</span>
+<span id="cb7-570"><a href="#cb7-570" aria-hidden="true" tabindex="-1"></a>   per-family pseudo-R2 and residuals, and compare seed-42 stitched output</span>
+<span id="cb7-571"><a href="#cb7-571" aria-hidden="true" tabindex="-1"></a>   against the current global baseline.</span>
+<span id="cb7-572"><a href="#cb7-572" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Session 3: 5-seed family rank stability.** Extend <span class="in">`rank_stability.py`</span>,</span>
+<span id="cb7-573"><a href="#cb7-573" aria-hidden="true" tabindex="-1"></a>   run 20 family models, and produce <span class="in">`reports/family_rank_stability.md`</span>.</span>
+<span id="cb7-574"><a href="#cb7-574" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Session 4: Adoption decision.** Decide whether to adopt stitched ranking,</span>
+<span id="cb7-575"><a href="#cb7-575" aria-hidden="true" tabindex="-1"></a>   within-family ranking only, both, or neither. Update methodology docs and</span>
+<span id="cb7-576"><a href="#cb7-576" aria-hidden="true" tabindex="-1"></a>   downstream output contracts accordingly.</span>
+<span id="cb7-577"><a href="#cb7-577" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-578"><a href="#cb7-578" aria-hidden="true" tabindex="-1"></a>Plausible clock time is two to three weeks including reviews, with several</span>
+<span id="cb7-579"><a href="#cb7-579" aria-hidden="true" tabindex="-1"></a>hours of agent/runtime for the multi-seed evaluation.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
