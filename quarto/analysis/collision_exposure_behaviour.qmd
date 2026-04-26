@@ -14,6 +14,11 @@ jupyter: python3
 ---
 
 ```{python}
+from road_risk.config import _ROOT as ROOT
+import pandas as pd
+import geopandas as gpd
+import statsmodels.api as sm
+import numpy as np
 
 OR_PATH      = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
 RISK_PATH    = ROOT / "data/models/risk_scores.parquet"
@@ -43,7 +48,6 @@ Where:
 * $\beta$ is the exposure scaling factor.
 * $\text{Exposure}$ is the annual vehicle-kilometers travelled on the link.
 
-The findings confirm that **collisions scale sub-linearly with traffic** ($\beta < 1$), and that this scaling is heavily dictated by physical infrastructure and permitted kinetic energy.
 
 ---
 
@@ -152,10 +156,12 @@ plt.tight_layout()
 plt.show()
 ```
 
-The relationship between traffic volume and collision frequency is not universal; it is fundamentally altered by the "concrete in the ground."
+The relationship between traffic volume and collision frequency is not universal; it varies significantly across different road types and forms of way.
 
-* **The Single Carriageway Risk Curve ($\beta = 0.74$):** On single carriageways, risk scales aggressively as traffic increases. Because opposing flows are separated only by paint, and these roads frequently feature unprotected right turns, agricultural access, and blind bends, adding more vehicles rapidly compounds the physical opportunities for collisions.
-* **The Dual Carriageway Flattening Effect ($\beta = 0.39$):** Dual carriageways demonstrate the profound mathematical value of capital infrastructure. At very low volumes, they carry a slightly higher baseline risk (likely due to higher ambient speeds and complex slip-road merges). However, as traffic volume scales up, the risk curve aggressively flattens. Physical separation completely removes the compounding risk of head-on collisions, allowing the road to absorb massive increases in volume without a proportional spike in crashes.
+* **The Single Carriageway Risk Curve ($\beta = 0.74$):** 
+Single carriageways exhibit a steep exposure scaling curve. While this single-feature GLM confounds infrastructure with other variables (like rural/urban geography and junction density), the descriptive reality remains: adding vehicles to unseparated roads rapidly compounds collision opportunities.
+* **The Dual Carriageway Flattening Effect ($\beta = 0.39$):** 
+Dual carriageways show a markedly flatter risk curve. Although they carry a slightly higher baseline risk (α) at very low volumes, the sub-linear scaling demonstrates their capacity to absorb massive increases in traffic volume without a proportional spike in crashes.
 
 ---
 
@@ -272,16 +278,16 @@ plt.tight_layout()
 plt.show()
 ```
 
-While exposure dictates *how many* crashes happen, the posted speed limit heavily influences *how severe* those crashes will be. When we map the proportion of collisions that result in a Killed or Seriously Injured (KSI) casualty against speed limits, a stark pattern emerges.
+While exposure dictates the frequency of collisions, the posted speed limit is a strong proxy for their severity. Mapping the proportion of collisions that result in a Killed or Seriously Injured (KSI) casualty against speed limits reveals a stark descriptive pattern.
 
-* **The 60mph Peak (26.4% KSI Rate):** The highest severity ratio in the network occurs at 60mph, not 70mph. This perfectly captures a notorious phenomenon in UK traffic safety: 60mph is the National Speed Limit for rural single carriageways. When collisions occur at these speeds without the benefit of physical separation or central reservations, they frequently involve massive kinetic energy (e.g., high-speed head-on or run-off-road collisions).
-* **The 70mph Safety Buffer (20.4% KSI Rate):** Despite allowing the highest kinetic energy, the severity ratio drops significantly at 70mph. This is because 70mph limits are legally restricted almost exclusively to Motorways and high-quality Dual Carriageways. The infrastructure completely mitigates the types of conflict points that make 60mph roads so lethal. 
+* **The 60mph Peak (26.4% KSI Rate):** The highest severity ratio in the network occurs at 60mph. While speed limit alone confounds other factors (like road class and traffic mix), this matches well-known patterns in UK road safety: 60mph limits are highly prevalent on rural single carriageways, combining high permitted kinetic energy with unseparated opposing flows.
+* **The 70mph Safety Buffer (20.4% KSI Rate):** Despite allowing higher speeds, the severity ratio drops at 70mph. This reflects the reality that 70mph limits are legally restricted almost exclusively to Motorways and high-quality Dual Carriageways, where physical separation mitigates the specific conflict types that make 60mph roads highly severe.
 
 ---
 
 ### Conclusion: Validating the XGBoost Architecture
-These diagnostics perfectly justify why our model must uncouple exposure from a rigid 1:1 baseline assumption. 
+These diagnostics reveal a known specification gap in our current v2 architecture. By using log(exposure) as a fixed Poisson offset, the model is effectively forced to assume β=1.
 
-A simple collision rate (crashes divided by AADT) assumes risk scales equally everywhere. Our data proves that **risk scales differently depending on physical infrastructure**, and **severity is dictated by the kinetic energy permitted by the speed limit**. 
+Because the empirical data shows β is actually between 0.4 and 0.8 depending on the road profile, the XGBoost model has to compensate for this misspecification by using other features to artificially absorb the exposure-curvature signal. This likely contributes to the residual variance observed on high-volume networks, and specifically the tendency to under-predict on Motorways.
 
-By dropping the rigid mathematical offset and supplying `log_offset` as a standard feature, we allow the XGBoost tree-building algorithm to independently discover these exact realities—flattening the risk curve for dual carriageways and motorways, while keeping it steeper for minor urban and rural roads.
+Recognizing this sub-linear scaling provides a clear diagnostic baseline. It informs our v3 roadmap, where we can empirically test alternative exposure specifications—such as passing log(exposure) as a learned feature, or utilizing per-family fitted GLM offsets—to better capture these realities without forcing the trees to approximate smooth curves.

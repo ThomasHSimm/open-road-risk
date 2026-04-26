@@ -523,34 +523,73 @@ Do not retrain the collision model yet. This is feature engineering only.
 
 ### Grade from OS Terrain 50 DEM
 
-**Context:** Vertical gradient correlates with crash frequency and severity,
-especially for heavy-vehicle and run-off-road incidents. OS Terrain 50
-(50m grid) is open data, GB-wide, free. Paired naturally with curvature
-— both are full-coverage geometric features, both attack gaps the literature
-supports.
+**Status:** Designed, partially set up, not implemented. Deep research 
+report at <path or location>. OS Terrain 50 ASCII grid downloaded but 
+[unzip / VRT build status unknown — verify before next session]. 
+road_terrain.py listed in README repo structure but [file may or may 
+not exist — verify].
 
-**Decisions already made:**
-- Use OS Terrain 50 (50m grid) — open data, consistent with rest of OS
-  ecosystem. Terrain 5 is better but premium.
-- Sample elevation at points along each link (same resampling as curvature).
-- Per-link features: `mean_grade`, `max_grade`, `grade_change` (absolute
-  total vertical change over link).
-- Handle bridges and tunnels separately — DEM-sampled grade is wrong under
-  a bridge. Needs either a bridge flag (OS or OSM) or outlier detection.
+**Approach (from deep research):**
+- OS Terrain 50 ASCII grid (NOT GeoPackage — that's the contour product)
+- Build VRT via gdalbuildvrt over ~2,858 tiles in 55 folders
+- Bilinear interpolation against the raster (NOT rasterio.sample() 
+  nearest-neighbour, which produces edge artefacts on a 50m grid)
+- Sample at same 15m point spacing as curvature features
+- Compute slope over 45-60m effective baseline (3-4 sample steps), 
+  not consecutive 15m pairs — the 50m DEM doesn't support 15m 
+  resolution
+- Features: mean_grade_pct (length-weighted absolute), 
+  max_grade_pct, grade_change_m
+- Use magnitudes not signed values (link direction often arbitrary)
+- 4m RMSE on heights, 50m cell spacing — feature is rank-preserving, 
+  amplitude-conservative
 
-**Prompt:**
-[Draft after curvature is done so the resampled point geometry is already
-cached. Should include: OS Terrain 50 download + grid handling, sampling
-elevation along each link, bridge/tunnel handling (from OSM tunnel=yes
-and bridge=yes tags as a proxy since OS Open Roads lacks the flag), per-link
-grade summary features. Add to network_features.parquet.]
+**Structure handling — open design decision:**
+Bridges, tunnels, AND slip roads need special handling because the 
+DTM removes supported structures and reports ground level under/over 
+them. Slip roads on grade-separated junctions are particularly 
+problematic — the DTM has no way to know which level a link is on.
 
-**Expected outcomes:**
-- Universal GB coverage.
-- Grade correlates with road class (motorways flatter on average) but has
-  meaningful within-class variance — the bit road class doesn't capture.
-- Combined with curvature, attacks the geometric-risk gap in the current
-  feature set.
+Two paths considered:
+1. OSM bridge/tunnel tags (bridge=*, tunnel=*, covered=*) joined 
+   to links, endpoint-fallback grade where flagged. Requires 
+   extending OSM extraction in network.py to capture these tags.
+2. OS Open Roads form_of_way to identify slip roads, endpoint-
+   fallback for those. Uses authoritative network metadata; doesn't 
+   need OSM extension; but only catches slip roads, not bridges 
+   in general.
+
+Best path is probably both: OS form_of_way for slip roads, OSM 
+tags for bridges/tunnels, endpoint-fallback for either flag. 
+Approximately 2-3% of links would be affected.
+
+**Why not now:**
+- Deferred after a high-output day to avoid attention fatigue on 
+  fiddly debug
+- Structure handling design needs to land cleanly — running without 
+  it produces visibly wrong values on bridges/tunnels/slip roads, 
+  which would require explaining away in methodology
+- Lower priority than the 5-seed harness (evaluation infrastructure 
+  unlocks honest measurement of every future change including this)
+
+**Next steps when picked up:**
+1. Verify OS Terrain 50 unzip state and VRT build (check tile count 
+   ~2,858 .asc files; build VRT if not done)
+2. Extend OSM extraction in network.py to capture bridge, tunnel, 
+   covered tags (separate small task)
+3. Implement grade script with both structure-handling paths
+4. Validation tests: flat terrain (grade ~0), linear ramp 
+   (grade matches), bridge/tunnel/slip flagged correctly
+5. Spot-check 20 random links per category against OSM 
+6. Don't retrain Stage 2 — this is feature engineering only, retrain 
+   happens after 5-seed harness lands
+
+**Related:** Pairs with curvature features. Both attack the geometric-
+risk gap in the current feature set. Likely modest individual 
+contribution given the rank stability findings (top-1% Jaccard 0.951 
+across the tiered imputation change), but as a paired set with 
+curvature, captures geometric alignment risk that the model currently 
+has no signal for.
 
 ---
 
