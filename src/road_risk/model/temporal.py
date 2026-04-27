@@ -73,7 +73,7 @@ def build_temporal_profiles(
 
     frames = []
     for chunk in chunks:
-        site_id = int(chunk.stem.split("_")[1])
+        site_id = chunk.stem.split("_")[1]
         if site_id not in study_sites:
             continue
         df = pd.read_parquet(chunk)
@@ -164,3 +164,14 @@ def plot_temporal_profiles(profiles: pd.DataFrame) -> None:
     plt.savefig(out, dpi=150, bbox_inches="tight")
     logger.info(f"  Saved plot to {out}")
     plt.close()
+
+
+if __name__ == "__main__":
+    # profiles = build_temporal_profiles()
+    out = MODELS / "temporal_profiles.parquet"
+    if out.exists():
+        profiles = pd.read_parquet(out)
+    else:
+        logger.error(f"Temporal profiles not found at {out} — run build_temporal_profiles() first")
+        profiles = build_temporal_profiles()
+    plot_temporal_profiles(profiles)

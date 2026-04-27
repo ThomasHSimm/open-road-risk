@@ -535,9 +535,9 @@ def _derive_time_zones(df: pd.DataFrame) -> pd.DataFrame:
 
     Output columns (vehicles per hour, all-days basis)
     ───────────────────────────────────────────────────
-    flow_ph_peak, flow_ph_prepeak, flow_ph_preoffpeak, flow_ph_offpeak
-    hgv_ph_peak,  hgv_ph_prepeak,  hgv_ph_preoffpeak,  hgv_ph_offpeak
-    peak_offpeak_ratio  — flow_ph_peak / flow_ph_offpeak
+    flow_ph_core_daytime, flow_ph_shoulder, flow_ph_late_evening, flow_ph_overnight
+    hgv_ph_core_daytime,  hgv_ph_shoulder,  hgv_ph_late_evening,  hgv_ph_overnight
+    core_overnight_ratio  — flow_ph_core_daytime / flow_ph_overnight
     """
     df = df.copy()
 
@@ -556,10 +556,10 @@ def _derive_time_zones(df: pd.DataFrame) -> pd.DataFrame:
     zone_offpeak    = df["all_flow"]     - df["all_flow_18h"]
 
     # Per-hour flow rates
-    df["flow_ph_peak"]       = zone_peak       / 12
-    df["flow_ph_prepeak"]    = zone_prepeak     / 4
-    df["flow_ph_preoffpeak"] = zone_preoffpeak  / 2
-    df["flow_ph_offpeak"]    = zone_offpeak     / 6
+    df["flow_ph_core_daytime"]       = zone_peak       / 12
+    df["flow_ph_shoulder"]    = zone_prepeak     / 4
+    df["flow_ph_late_evening"] = zone_preoffpeak  / 2
+    df["flow_ph_overnight"]    = zone_offpeak     / 6
 
     # HGV per-hour — derive by differencing *cumulative HGV counts*, not by
     # applying cumulative HGV% to marginal flow bands (which mixes cumulative
@@ -581,10 +581,10 @@ def _derive_time_zones(df: pd.DataFrame) -> pd.DataFrame:
         zone_hgv_preoffpeak = cum_hgv_18h - cum_hgv_16h
         zone_hgv_offpeak    = cum_hgv_24h - cum_hgv_18h
 
-        df["hgv_ph_peak"]       = zone_hgv_peak       / 12
-        df["hgv_ph_prepeak"]    = zone_hgv_prepeak     / 4
-        df["hgv_ph_preoffpeak"] = zone_hgv_preoffpeak  / 2
-        df["hgv_ph_offpeak"]    = zone_hgv_offpeak     / 6
+        df["hgv_ph_core_daytime"]       = zone_hgv_peak       / 12
+        df["hgv_ph_shoulder"]    = zone_hgv_prepeak     / 4
+        df["hgv_ph_late_evening"] = zone_hgv_preoffpeak  / 2
+        df["hgv_ph_overnight"]    = zone_hgv_offpeak     / 6
 
         # Sanity check: reconstructed daily HGV should equal cum_hgv_24h
         recon = zone_hgv_peak + zone_hgv_prepeak + zone_hgv_preoffpeak + zone_hgv_offpeak
@@ -599,8 +599,8 @@ def _derive_time_zones(df: pd.DataFrame) -> pd.DataFrame:
                        + str([c for c in hgv_needed if c not in df.columns]))
 
     # Peakiness ratio — how much more intense is peak vs night
-    df["peak_offpeak_ratio"] = (
-        df["flow_ph_peak"] / df["flow_ph_offpeak"].replace(0, np.nan)
+    df["core_overnight_ratio"] = (
+        df["flow_ph_core_daytime"] / df["flow_ph_overnight"].replace(0, np.nan)
     )
 
     new_cols = [c for c in df.columns

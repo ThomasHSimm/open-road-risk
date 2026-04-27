@@ -30,12 +30,12 @@ what fraction of daily traffic flows in each time band? Combined with the Stage
 WebTRIS annual reports provide cumulative flow totals for four hour windows.
 Differencing these gives four non-overlapping time bands:
 
-| Band | Hours | Window | Typical character |
-|------|------:|-------|---|
-| Peak | 12 | 07:00–19:00 | Commuter, business, school |
-| Pre-peak | 4 | 19:00–23:00 | Evening leisure, retail |
-| Pre-offpeak | 2 | 23:00–01:00 | Transition |
-| Offpeak | 6 | 01:00–07:00 | Night freight, low volume |
+| Code label | True period | Hours |
+|------------|-------------|------:|
+| `core_daytime_frac` | 07:00–18:59 | 12 |
+| `shoulder_frac` | 06–07 + 19–22 (mixed shoulder) | 4 |
+| `late_evening_frac` | 22:00–24:00 | 2 |
+| `overnight_frac` | 00:00–06:00 | 6 |
 
 The model predicts the fraction of daily traffic in each band. Absolute
 per-hour flow is then reconstructed as:
@@ -75,12 +75,12 @@ are computed from the measured flow windows and used as prediction targets.
 
 ```{python}
 wt = webtris[webtris["all_flow"] > 0].copy()
-wt["peak_frac"]       = (wt["flow_ph_peak"]       * 12) / wt["all_flow"]
-wt["prepeak_frac"]    = (wt["flow_ph_prepeak"]     *  4) / wt["all_flow"]
-wt["preoffpeak_frac"] = (wt["flow_ph_preoffpeak"]  *  2) / wt["all_flow"]
-wt["offpeak_frac"]    = (wt["flow_ph_offpeak"]     *  6) / wt["all_flow"]
+wt["core_daytime_frac"]       = (wt["flow_ph_core_daytime"]       * 12) / wt["all_flow"]
+wt["shoulder_frac"]    = (wt["flow_ph_shoulder"]     *  4) / wt["all_flow"]
+wt["late_evening_frac"] = (wt["flow_ph_late_evening"]  *  2) / wt["all_flow"]
+wt["overnight_frac"]    = (wt["flow_ph_overnight"]     *  6) / wt["all_flow"]
 
-fracs = ["peak_frac", "prepeak_frac", "preoffpeak_frac", "offpeak_frac"]
+fracs = ["core_daytime_frac", "shoulder_frac", "late_evening_frac", "overnight_frac"]
 print("Time-zone fraction distributions (measured WebTRIS sites):\n")
 print(wt[fracs].describe(percentiles=[0.1, 0.25, 0.5, 0.75, 0.9]).round(3).to_string())
 ```
@@ -103,14 +103,14 @@ plt.show()
 
 ```{python}
 print("Peak–offpeak ratio (measured sites):")
-print(wt["peak_offpeak_ratio"].describe(percentiles=[0.1,0.25,0.5,0.75,0.9]).round(2).to_string())
+print(wt["core_overnight_ratio"].describe(percentiles=[0.1,0.25,0.5,0.75,0.9]).round(2).to_string())
 
 plt.figure(figsize=(7, 4))
-plt.hist(wt["peak_offpeak_ratio"].clip(0, 30), bins=50, edgecolor="none")
+plt.hist(wt["core_overnight_ratio"].clip(0, 30), bins=50, edgecolor="none")
 plt.xlabel("Peak flow/hr ÷ offpeak flow/hr")
 plt.ylabel("Count")
 plt.title("Peak–offpeak ratio distribution (WebTRIS sites)")
-plt.axvline(wt["peak_offpeak_ratio"].median(), color="red", linestyle="--", linewidth=1)
+plt.axvline(wt["core_overnight_ratio"].median(), color="red", linestyle="--", linewidth=1)
 plt.tight_layout()
 plt.show()
 ```
@@ -127,11 +127,11 @@ major road, population density, year, COVID flag.
 ::: {.callout-note}
 | Target | CV R² | Interpretation |
 |--------|------:|---|
-| `peak_frac` | ~0.65 | Strong — peak shape driven by road function and location |
-| `prepeak_frac` | ~0.63 | Strong — evening pattern correlates with urban density |
-| `offpeak_frac` | ~0.53 | Moderate — night freight patterns are more variable |
-| `preoffpeak_frac` | ~0.46 | Weakest — short transition band with mixed signal |
-| `hgv_peak_frac` | ~0.63 | Strong — HGV peak timing is structurally driven |
+| `core_daytime_frac` | ~0.65 | Strong — peak shape driven by road function and location |
+| `shoulder_frac` | ~0.63 | Strong — evening pattern correlates with urban density |
+| `overnight_frac` | ~0.53 | Moderate — night freight patterns are more variable |
+| `late_evening_frac` | ~0.46 | Weakest — short transition band with mixed signal |
+| `hgv_core_daytime_frac` | ~0.63 | Strong — HGV peak timing is structurally driven |
 :::
 
 The MAE for all fraction targets is < 0.03, meaning the model predicts daily
@@ -144,7 +144,7 @@ if not profiles.empty:
     latest = profiles[profiles["year"] == profiles["year"].max()].copy()
     print(f"Year {latest['year'].iloc[0]} — {len(latest):,} link estimates\n")
     frac_cols = [c for c in fracs if c in latest.columns]
-    print(latest[frac_cols + ["peak_offpeak_ratio"]].describe(
+    print(latest[frac_cols + ["core_overnight_ratio"]].describe(
         percentiles=[0.1, 0.25, 0.5, 0.75, 0.9]
     ).round(3).to_string())
 ```
@@ -182,20 +182,20 @@ if not profiles.empty and road_class_col:
         on="link_id", how="left"
     )
     grp = (
-        with_class.groupby(road_class_col)[["peak_frac", "offpeak_frac", "peak_offpeak_ratio"]]
+        with_class.groupby(road_class_col)[["core_daytime_frac", "overnight_frac", "core_overnight_ratio"]]
         .median()
-        .sort_values("peak_frac", ascending=False)
+        .sort_values("core_daytime_frac", ascending=False)
     )
     print("Median time-zone fractions by road class:\n")
     print(grp.round(3).to_string())
 
     fig, axes = plt.subplots(1, 2, figsize=(13, 4))
-    grp[["peak_frac", "offpeak_frac"]].plot(kind="bar", ax=axes[0])
+    grp[["core_daytime_frac", "overnight_frac"]].plot(kind="bar", ax=axes[0])
     axes[0].set_title("Peak vs offpeak fraction by road class")
     axes[0].set_ylabel("Fraction of daily traffic")
     axes[0].tick_params(axis="x", rotation=35)
 
-    grp["peak_offpeak_ratio"].plot(kind="bar", ax=axes[1])
+    grp["core_overnight_ratio"].plot(kind="bar", ax=axes[1])
     axes[1].set_title("Peak–offpeak ratio by road class")
     axes[1].set_ylabel("Ratio (peak flow/hr ÷ offpeak flow/hr)")
     axes[1].axhline(1, color="grey", linestyle="--", linewidth=0.8)
@@ -213,7 +213,7 @@ be computed for any link in the network.
 ```{python}
 if not profiles.empty:
     flow_cols = [c for c in [
-        "flow_ph_peak", "flow_ph_prepeak", "flow_ph_preoffpeak", "flow_ph_offpeak"
+        "flow_ph_core_daytime", "flow_ph_shoulder", "flow_ph_late_evening", "flow_ph_overnight"
     ] if c in profiles.columns]
 
     if flow_cols:
@@ -234,7 +234,7 @@ to distinguish:
 - Roads where most collisions occur during peak hours (high peak exposure)
 - Roads with disproportionate night-time collisions (relative to low offpeak flow)
 
-The `peak_offpeak_ratio` is also a candidate model feature, capturing whether a
+The `core_overnight_ratio` is also a candidate model feature, capturing whether a
 road functions primarily as a commuter route or serves mixed/freight traffic.
 
 ::: {.callout-note}

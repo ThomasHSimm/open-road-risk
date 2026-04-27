@@ -56,7 +56,7 @@ WEBTRIS_PATH = _ROOT / "data/processed/webtris/webtris_clean.parquet"
 AADT_ESTIMATES_PATH = _ROOT / "data/models/aadt_estimates.parquet"
 
 # WebTRIS features used in Stage 1a AADT training.
-# Must be empty: peak_offpeak_ratio is produced by Stage 1b (timezone_profile),
+# Must be empty: core_overnight_ratio is produced by Stage 1b (timezone_profile),
 # which runs *after* Stage 1a. At inference, no real sensor values exist for
 # the full 2.1M-link network, so the column was being filled with 0 via
 # fillna(0). HistGBR routes NaN and 0 through different tree branches, so

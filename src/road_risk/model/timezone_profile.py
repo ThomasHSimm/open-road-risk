@@ -8,10 +8,13 @@ time-resolved flow data). Predicts the *fraction* of daily traffic
 in each time band — a dimensionless ratio independent of total volume.
 
 Time bands (from differencing cumulative 12h/16h/18h/24h windows):
-  Peak        : 12 h (07:00–19:00) — commuter and business traffic
-  Pre-peak    :  4 h (19:00–23:00) — evening wind-down
-  Pre-offpeak :  2 h (23:00–01:00) — transition
-  Offpeak     :  6 h (01:00–07:00) — night freight / low volume
+  
+    | Code label | True period | Hours |
+   |------------|-------------|------:|
+   | `core_daytime_frac` | 07:00–18:59 | 12 |
+   | `shoulder_frac` | 06–07 + 19–22 (mixed shoulder) | 4 |
+   | `late_evening_frac` | 22:00–24:00 | 2 |
+   | `overnight_frac` | 00:00–06:00 | 6 |
 
 Why fractions, not absolute flows
 ----------------------------------
@@ -19,7 +22,7 @@ Absolute time-zone flows depend on total AADT (estimated in Stage 1a).
 Predicting dimensionless fractions separates the volume question from the
 shape question. Absolute flows for any link are then reconstructed as:
 
-    flow_ph_peak = estimated_aadt × peak_frac / 12   (vehicles per hour)
+    flow_ph_core_daytime = estimated_aadt × core_daytime_frac / 12   (vehicles per hour)
 
 Generalisation strategy
 ------------------------
@@ -33,10 +36,10 @@ Outputs
 -------
 data/models/timezone_profiles.parquet
     link_id × year with columns:
-        peak_frac, prepeak_frac, preoffpeak_frac, offpeak_frac
-        flow_ph_peak, flow_ph_prepeak, flow_ph_preoffpeak, flow_ph_offpeak
-        hgv_peak_frac, hgv_ph_peak
-        peak_offpeak_ratio
+        core_daytime_frac, shoulder_frac, late_evening_frac, overnight_frac
+        flow_ph_core_daytime, flow_ph_shoulder, flow_ph_late_evening, flow_ph_overnight
+        hgv_core_daytime_frac, hgv_ph_core_daytime
+        core_overnight_ratio
 """
 
 import logging
@@ -60,14 +63,14 @@ PROFILES_OUT      = _ROOT / "data/models/timezone_profiles.parquet"
 
 # Fractions predicted by the model (all four — normalised to sum=1 on output)
 FRACTION_TARGETS = [
-    "peak_frac",
-    "prepeak_frac",
-    "preoffpeak_frac",
-    "offpeak_frac",
+    "core_daytime_frac",
+    "shoulder_frac",
+    "late_evening_frac",
+    "overnight_frac",
 ]
 
 # HGV fraction in peak (optional — predicted separately)
-HGV_TARGET = "hgv_peak_frac"
+HGV_TARGET = "hgv_core_daytime_frac"
 
 
 # ---------------------------------------------------------------------------
@@ -89,16 +92,16 @@ def build_profile_training(webtris: pd.DataFrame) -> pd.DataFrame:
     df = df[df["all_flow"] > 0].copy()
 
     # --- Compute fraction targets -------------------------------------------
-    df["peak_frac"]        = (df["flow_ph_peak"]       * 12) / df["all_flow"]
-    df["prepeak_frac"]     = (df["flow_ph_prepeak"]     *  4) / df["all_flow"]
-    df["preoffpeak_frac"]  = (df["flow_ph_preoffpeak"]  *  2) / df["all_flow"]
-    df["offpeak_frac"]     = (df["flow_ph_offpeak"]     *  6) / df["all_flow"]
+    df["core_daytime_frac"]        = (df["flow_ph_core_daytime"]       * 12) / df["all_flow"]
+    df["shoulder_frac"]     = (df["flow_ph_shoulder"]     *  4) / df["all_flow"]
+    df["late_evening_frac"]  = (df["flow_ph_late_evening"]  *  2) / df["all_flow"]
+    df["overnight_frac"]     = (df["flow_ph_overnight"]     *  6) / df["all_flow"]
 
     # HGV fraction of peak traffic relative to all HGVs on that road
     total_hgv = df["all_flow"] * df["hgv_pct"] / 100
-    df["hgv_peak_frac"] = np.where(
+    df["hgv_core_daytime_frac"] = np.where(
         total_hgv > 0,
-        (df["hgv_ph_peak"] * 12) / total_hgv,
+        (df["hgv_ph_core_daytime"] * 12) / total_hgv,
         np.nan,
     )
 
@@ -186,7 +189,7 @@ def _feature_cols(df: pd.DataFrame) -> list[str]:
 def train_profile_estimator(train_df: pd.DataFrame) -> tuple:
     """
     Train one HistGradientBoostingRegressor per fraction target plus one
-    for hgv_peak_frac.
+    for hgv_core_daytime_frac.
 
     GroupKFold grouped by site_id so the same sensor never appears in both
     train and validation folds.
@@ -264,7 +267,7 @@ def apply_profile_estimator(
 
     Returns
     -------
-    DataFrame: link_id × year with fraction + flow_ph_* + peak_offpeak_ratio
+    DataFrame: link_id × year with fraction + flow_ph_* + core_overnight_ratio
     """
     import geopandas as gpd
 
@@ -339,29 +342,29 @@ def apply_profile_estimator(
             estimated > 0, estimated,
             np.expm1(pred_df["log_all_flow"].values)
         )
-        if "peak_frac" in out.columns:
-            out["flow_ph_peak"]       = aadt_vals * out["peak_frac"]        / 12
-            out["flow_ph_prepeak"]    = aadt_vals * out["prepeak_frac"]     /  4
-            out["flow_ph_preoffpeak"] = aadt_vals * out["preoffpeak_frac"]  /  2
-            out["flow_ph_offpeak"]    = aadt_vals * out["offpeak_frac"]     /  6
-            out["peak_offpeak_ratio"] = (
-                out["flow_ph_peak"] / out["flow_ph_offpeak"].replace(0, np.nan)
+        if "core_daytime_frac" in out.columns:
+            out["flow_ph_core_daytime"]       = aadt_vals * out["core_daytime_frac"]        / 12
+            out["flow_ph_shoulder"]    = aadt_vals * out["shoulder_frac"]     /  4
+            out["flow_ph_late_evening"] = aadt_vals * out["late_evening_frac"]  /  2
+            out["flow_ph_overnight"]    = aadt_vals * out["overnight_frac"]     /  6
+            out["core_overnight_ratio"] = (
+                out["flow_ph_core_daytime"] / out["flow_ph_overnight"].replace(0, np.nan)
             )
 
         if HGV_TARGET in out.columns:
-            # hgv_ph_peak needs hgv proportion — use 0.05 as fallback
+            # hgv_ph_core_daytime needs hgv proportion — use 0.05 as fallback
             hgv_prop = or_df.get("hgv_proportion", pd.Series(0.05, index=or_df.index)).values
             hgv_prop = np.where(np.isnan(hgv_prop), 0.05, hgv_prop)
             daily_hgv = aadt_vals * hgv_prop
-            out["hgv_ph_peak"] = daily_hgv * out[HGV_TARGET] / 12
+            out["hgv_ph_core_daytime"] = daily_hgv * out[HGV_TARGET] / 12
 
         frames.append(out)
 
     result = pd.concat(frames, ignore_index=True)
     logger.info(
         f"  Profile estimates: {len(result):,} link × year rows | "
-        f"median peak_frac={result['peak_frac'].median():.3f} | "
-        f"median peak_offpeak_ratio={result['peak_offpeak_ratio'].median():.2f}"
+        f"median core_daytime_frac={result['core_daytime_frac'].median():.3f} | "
+        f"median core_overnight_ratio={result['core_overnight_ratio'].median():.2f}"
     )
     return result
 

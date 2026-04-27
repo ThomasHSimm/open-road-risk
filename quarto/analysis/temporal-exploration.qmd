@@ -1,0 +1,238 @@
+---
+title: "Temporal Traffic Exploration: Seasonality and Day-of-Week Patterns"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: env1
+---
+
+## Overview {.unnumbered}
+
+This notebook explores the temporal dimensions of traffic flow using WebTRIS sensor data. We analyze how traffic volumes and compositions change across different months and between weekdays and weekends. 
+
+The goal is to determine which temporal patterns are link-specific (requiring granular modelling) and which are stable enough to be treated as global constants.
+
+We investigate:
+1. **Monthly Seasonality**: High-season vs. low-season flow amplitudes.
+2. **Weekday/Weekend Ratios**: Commuter-heavy vs. leisure-heavy road signatures.
+3. **Time-of-Day Intensity**: The ratio of daytime to nighttime flow.
+4. **HGV Mixing**: How vehicle composition shifts across these same axes.
+
+```{python}
+import os
+import logging
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from road_risk.config import _ROOT as ROOT
+from road_risk.model.constants import MONTH_ORDER
+
+# Configure paths
+WEBTRIS_RAW = ROOT / "data/raw/webtris"
+WEBTRIS_CLEAN = ROOT / "data/processed/webtris/webtris_clean.parquet"
+TEMPORAL_PROFILES = ROOT / "data/models/temporal_profiles.parquet"
+
+sns.set_theme(style="whitegrid")
+```
+
+---
+
+## Variance Analysis (Weekday/Weekend)
+
+We begin by testing the variance of the weekday/weekend ratio at the individual sensor level. If the ratio is stable across different sites within the same month, it suggests the pattern is universal rather than link-specific.
+
+We start with the strongest test: whether different sensors in the same month give similar weekday/weekend ratios. If they do, the descriptor has no link-specific variation to model.
+
+```{python}
+# Load a larger sample of raw parquets to test variance
+files = [f for f in os.listdir(WEBTRIS_RAW) if "2023" in f and f.endswith(".parquet")]
+df_list = []
+for file in files: 
+    df = pd.read_parquet(WEBTRIS_RAW / file, columns=["site_id", "monthname", "adt24hour", "awt24hour"])
+    df_list.append(df)
+
+raw_2023 = pd.concat(df_list, ignore_index=True)
+raw_2023["adt24hour"] = pd.to_numeric(raw_2023["adt24hour"], errors="coerce")
+raw_2023["awt24hour"] = pd.to_numeric(raw_2023["awt24hour"], errors="coerce")
+raw_2023["ww_ratio"] = raw_2023["awt24hour"] / raw_2023["adt24hour"].replace(0, np.nan)
+
+# Calculate within-month standard deviation across sites
+month_stats = raw_2023.groupby("monthname")["ww_ratio"].agg(["mean", "std", "count"])
+print("Per-site Weekday/Weekend Ratio stats by month:")
+print(month_stats.round(4))
+
+overall_std = raw_2023.groupby("monthname")["ww_ratio"].std().mean()
+print(f"\nAverage within-month standard deviation across sites: {overall_std:.3f}")
+```
+
+### Interpretation
+The data shows that the standard deviation across sites within any given month is consistently ~0.03. This low variance suggests that individual roads do not deviate significantly from the network-wide weekday/weekend behavior.
+
+---
+
+## Monthly Seasonality Analysis
+
+We now switch to the `temporal_profiles.parquet`, which aggregates data at the road corridor grain and calculates seasonal indices.
+
+```{python}
+profiles = pd.read_parquet(TEMPORAL_PROFILES)
+profiles = profiles[profiles["n_site_months"] > 0].copy()
+
+# Broad classification
+profiles['road_type'] = profiles['road_prefix'].apply(
+    lambda x: 'Motorway' if str(x).startswith('M') else ('A-Road' if str(x).startswith('A') else 'Other')
+)
+
+# Ensure chronological sorting
+profiles["monthname"] = pd.Categorical(profiles["monthname"], categories=MONTH_ORDER, ordered=True)
+
+profiles.sample(5)
+```
+
+### Seasonal Index Distribution
+
+The seasonal index is the monthly flow divided by the annual average. We want to see if different road types have different seasonal "signatures."
+
+```{python}
+fig, ax = plt.subplots(figsize=(12, 6))
+
+sns.lineplot(
+    data=profiles, 
+    x="monthname", 
+    y="seasonal_index", 
+    hue="road_type", 
+    marker="o", 
+    errorbar=("sd", 1),
+    ax=ax
+)
+
+ax.axhline(1.0, color="black", linestyle="--", alpha=0.5)
+ax.set_title("Seasonal Traffic Index by Road Type (Mean ± 1 SD)")
+ax.set_ylabel("Seasonal Index (1.0 = Annual Average)")
+plt.show()
+
+print("Mean Seasonal Index by Month and Road Type:")
+print(profiles.groupby(["monthname", "road_type"], observed=True)["seasonal_index"].mean().unstack().round(3))
+```
+
+### Interpretation
+- **Amplitude**: The vertical distance between the summer peak and winter trough shows a significant ~30% seasonal swing.
+- **Convergence**: The lines for Motorways and A-Roads overlap closely, with seasonal indices sitting within ±0.02 of each other in every month. This means seasonality is a **global phenomenon** rather than a link-specific one.
+
+---
+
+## Weekday vs. Weekend Profiles
+
+We investigate the stability of the weekday/weekend ratio across the network.
+
+The Variance Analysis section used raw 2023 chunks at site grain. This section uses the corridor-level aggregations from temporal_profiles.parquet, confirming the same result holds at corridor grain.
+
+```{python}
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+# Distribution across all sites/months
+sns.histplot(profiles["weekday_weekend_ratio"].dropna(), bins=40, kde=True, color="seagreen", ax=ax1)
+ax1.axvline(profiles["weekday_weekend_ratio"].median(), color="red", linestyle="--")
+ax1.set_title("Distribution of Weekday/Weekend Ratios")
+ax1.set_xlabel("Ratio (AWT / ADT)")
+
+# Stability by month
+sns.boxplot(data=profiles, x="monthname", y="weekday_weekend_ratio", color="lightblue", ax=ax2)
+ax2.axhline(1.0, color="black", linestyle="--", alpha=0.3)
+ax2.set_title("Ratio Stability Across Months")
+ax2.set_ylabel("Weekday/Weekend Ratio")
+
+plt.tight_layout()
+plt.show()
+
+# Mean check by road type
+print("Mean Weekday/Weekend Ratio by Road Type:")
+print(profiles.groupby("road_type")["weekday_weekend_ratio"].mean().round(4))
+```
+
+### Interpretation
+Mean ratio is 1.08; standard deviation across sites within any month is ~0.03; mean is essentially identical across road types (motorway 1.073, A-road 1.076, other 1.085). The descriptor has no link-specific variation to model.
+
+---
+
+## Time-of-Day Intensity (Day vs. Night)
+
+Using the `webtris_clean.parquet` dataset, we examine the `core_overnight_ratio`. This measures the daytime flow per hour relative to the nighttime flow per hour.
+
+```{python}
+webtris_clean = pd.read_parquet(WEBTRIS_CLEAN)
+site_tod = webtris_clean.groupby("site_id")["core_overnight_ratio"].mean().dropna()
+
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.histplot(site_tod, bins=50, kde=True, color="purple", ax=ax)
+ax.set_title("Daytime-to-Nighttime Intensity Ratio")
+ax.set_xlabel("Ratio (Mean Day Flow / Mean Night Flow)")
+plt.show()
+
+print(f"5th Percentile: {site_tod.quantile(0.05):.2f}")
+print(f"95th Percentile: {site_tod.quantile(0.95):.2f}")
+```
+
+### Interpretation
+Unlike the weekday/weekend ratio, this distribution is **wide**, spanning from 4.2 to 15.2. This indicates that time-of-day behavior is **highly link-specific**. Some roads carry substantial overnight flows (e.g., freight corridors), while others are almost exclusively used during the day.
+
+---
+
+## Heavy Goods Vehicle (HGV) Composition
+
+Finally, we look at how the large vehicle percentage fluctuates across the network.
+
+```{python}
+fig, ax = plt.subplots(figsize=(12, 6))
+
+sns.boxplot(data=profiles, x="monthname", y="mean_large_pct", hue="road_type", ax=ax)
+ax.set_title("Large Vehicle Percentage by Month and Road Type")
+ax.set_ylabel("HGV %")
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.show()
+
+print("Mean Large Vehicle Percentage by Month and Road Type:")
+print(profiles.groupby(["monthname", "road_type"], observed=True)["mean_large_pct"].mean().unstack().round(2))
+```
+
+### Interpretation
+HGV percentage shows a ~3pp summer dip across all road types. This is largely a denominator artefact — total traffic rises ~30% in summer while HGV volumes stay roughly flat — not a freight-side seasonal pattern. The within-road-class spread visible in the boxplot is genuine variation in road character, but a cleaner descriptor would be HGV volume (vehicles/day) rather than HGV percentage. Per-site within-month std check still warranted before drawing a verdict; if HGV is eventually taken to ablation, volume is the better feature. Worth a per-site within-month std analysis matching the Variance Analysis section before drawing a final verdict.
+
+---
+
+## Data Depth Check
+
+We verify the amount of data backing these observations to ensure statistical confidence.
+
+```{python}
+# Site counts per corridor
+site_counts = profiles.groupby("road_prefix")["n_site_months"].sum() / 12
+print(f"Total Unique Corridors: {len(site_counts)}")
+
+fig, ax = plt.subplots(figsize=(10, 4))
+sns.histplot(site_counts, bins=30, log_scale=(True, False), ax=ax)
+ax.set_title("Distribution of Sites per Corridor (Log Scale)")
+ax.set_xlabel("Approximate Sites")
+plt.show()
+```
+
+## Summary of Potential Modelling Implications
+
+Based on the variance observed in the plots above:
+
+| Dimension | Observed Variance | Modelling Strategy |
+| :--- | :--- | :--- |
+| **Monthly Seasonality** | High amplitude, low inter-link variance. | Handle via **global** monthly multipliers. |
+| **Weekday vs. Weekend** | Low variance across network (~1.08). | Treat as a **global** constant. |
+| **Time-of-Day** | High inter-link variance (4.2 - 15.2). | Treat as **link-specific** (Priority for ablation). |
+| **HGV Mix** | Global seasonal swing (~3pp) and substantial within-class spread. | Status: not formally tested at site grain. May carry signal beyond road class. |

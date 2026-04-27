@@ -75,8 +75,8 @@ def main(stage: str = "all") -> None:
                 f"(±{m['cv_r2_std']:.3f}) | MAE={m['cv_mae_mean']:.4f} "
                 f"(n={m['n_train']:,})"
             )
-        print(f"\n  Median peak_frac         : {profiles['peak_frac'].median():.3f}")
-        print(f"  Median peak_offpeak_ratio: {profiles['peak_offpeak_ratio'].median():.2f}")
+        print(f"\n  Median core_daytime_frac         : {profiles['core_daytime_frac'].median():.3f}")
+        print(f"  Median core_overnight_ratio: {profiles['core_overnight_ratio'].median():.2f}")
 
     if stage in ("temporal", "all"):
         from road_risk.model.temporal import build_temporal_profiles, plot_temporal_profiles

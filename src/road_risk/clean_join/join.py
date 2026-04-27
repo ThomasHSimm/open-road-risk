@@ -99,17 +99,17 @@ WEBTRIS_FEATURE_COLS = [
     "hgv_pct",
     "hgv_weekday_pct",
     # Time-zone per-hour flow rates (all-days basis)
-    "flow_ph_peak",
-    "flow_ph_prepeak",
-    "flow_ph_preoffpeak",
-    "flow_ph_offpeak",
+    "flow_ph_core_daytime",
+    "flow_ph_shoulder",
+    "flow_ph_late_evening",
+    "flow_ph_overnight",
     # Time-zone HGV per-hour rates
-    "hgv_ph_peak",
-    "hgv_ph_prepeak",
-    "hgv_ph_preoffpeak",
-    "hgv_ph_offpeak",
+    "hgv_ph_core_daytime",
+    "hgv_ph_shoulder",
+    "hgv_ph_late_evening",
+    "hgv_ph_overnight",
     # Derived ratio
-    "peak_offpeak_ratio",
+    "core_overnight_ratio",
 ]
 
 

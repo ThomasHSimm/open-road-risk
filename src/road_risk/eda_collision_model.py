@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats
+from road_risk.config import _ROOT as ROOT
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s  %(levelname)-8s  %(message)s")
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Paths (relative to project root)
 # ---------------------------------------------------------------------------
-ROOT = Path(__file__).parent.parent.parent  # src/road_risk/ -> src/ -> project root
+# ROOT = Path(__file__).parent.parent.parent  # src/road_risk/ -> src/ -> project root
 
 RISK_PATH    = ROOT / "data/models/risk_scores.parquet"
 RLA_PATH     = ROOT / "data/features/road_link_annual.parquet"

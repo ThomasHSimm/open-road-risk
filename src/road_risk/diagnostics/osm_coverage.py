@@ -30,8 +30,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from road_risk.config import _ROOT as ROOT
 
-ROOT = Path(__file__).resolve().parents[3]
+# ROOT = Path(__file__).resolve().parents[3]
 NET_PATH    = ROOT / "data/features/network_features.parquet"
 OR_PATH     = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
 REPORT_DIR  = ROOT / "quarto" / "analysis"

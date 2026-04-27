@@ -226,21 +226,36 @@ window.Quarto = {
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Analysis</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-analysis">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
         <li>
     <a class="dropdown-item" href="../analysis/eda-collisions.html">
  <span class="dropdown-text">Collision EDA</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../analysis/eda-traffic.html">
- <span class="dropdown-text">Traffic Volume EDA</span></a>
-  </li>  
-        <li>
     <a class="dropdown-item" href="../analysis/vehicle-mix.html">
  <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../analysis/model-results.html">
@@ -249,10 +264,6 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../analysis/osm-coverage.html">
  <span class="dropdown-text">OSM Coverage</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../analysis/road-curvature.html">
- <span class="dropdown-text">Road Curvature</span></a>
   </li>  
     </ul>
   </li>
@@ -333,36 +344,31 @@ window.Quarto = {
 <table class="caption-top table">
 <thead>
 <tr class="header">
-<th>Band</th>
+<th>Code label</th>
+<th>True period</th>
 <th style="text-align: right;">Hours</th>
-<th>Window</th>
-<th>Typical character</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Peak</td>
+<td><code>core_daytime_frac</code></td>
+<td>07:00–18:59</td>
 <td style="text-align: right;">12</td>
-<td>07:00–19:00</td>
-<td>Commuter, business, school</td>
 </tr>
 <tr class="even">
-<td>Pre-peak</td>
+<td><code>shoulder_frac</code></td>
+<td>06–07 + 19–22 (mixed shoulder)</td>
 <td style="text-align: right;">4</td>
-<td>19:00–23:00</td>
-<td>Evening leisure, retail</td>
 </tr>
 <tr class="odd">
-<td>Pre-offpeak</td>
+<td><code>late_evening_frac</code></td>
+<td>22:00–24:00</td>
 <td style="text-align: right;">2</td>
-<td>23:00–01:00</td>
-<td>Transition</td>
 </tr>
 <tr class="even">
-<td>Offpeak</td>
+<td><code>overnight_frac</code></td>
+<td>00:00–06:00</td>
 <td style="text-align: right;">6</td>
-<td>01:00–07:00</td>
-<td>Night freight, low volume</td>
 </tr>
 </tbody>
 </table>
@@ -371,7 +377,7 @@ window.Quarto = {
 </section>
 <section id="data-and-model-setup" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="data-and-model-setup"><span class="header-section-number">3</span> Data and model setup</h2>
-<div id="a735db01" class="cell" data-execution_count="1">
+<div id="932ecf41" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -404,36 +410,36 @@ Profile estimates      : 21,675,570 rows</code></pre>
 <section id="training-data-webtris-time-zone-fractions" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="training-data-webtris-time-zone-fractions"><span class="header-section-number">4</span> Training data: WebTRIS time-zone fractions</h2>
 <p>The profile model is trained on WebTRIS sensors — National Highways sites on motorways and major A-roads. For each site×year, the four time-band fractions are computed from the measured flow windows and used as prediction targets.</p>
-<div id="937380d6" class="cell" data-execution_count="2">
+<div id="0b0f3974" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>wt <span class="op">=</span> webtris[webtris[<span class="st">"all_flow"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"peak_frac"</span>]       <span class="op">=</span> (wt[<span class="st">"flow_ph_peak"</span>]       <span class="op">*</span> <span class="dv">12</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"prepeak_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_prepeak"</span>]     <span class="op">*</span>  <span class="dv">4</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"preoffpeak_frac"</span>] <span class="op">=</span> (wt[<span class="st">"flow_ph_preoffpeak"</span>]  <span class="op">*</span>  <span class="dv">2</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"offpeak_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_offpeak"</span>]     <span class="op">*</span>  <span class="dv">6</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"core_daytime_frac"</span>]       <span class="op">=</span> (wt[<span class="st">"flow_ph_core_daytime"</span>]       <span class="op">*</span> <span class="dv">12</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"shoulder_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_shoulder"</span>]     <span class="op">*</span>  <span class="dv">4</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"late_evening_frac"</span>] <span class="op">=</span> (wt[<span class="st">"flow_ph_late_evening"</span>]  <span class="op">*</span>  <span class="dv">2</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"overnight_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_overnight"</span>]     <span class="op">*</span>  <span class="dv">6</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>fracs <span class="op">=</span> [<span class="st">"peak_frac"</span>, <span class="st">"prepeak_frac"</span>, <span class="st">"preoffpeak_frac"</span>, <span class="st">"offpeak_frac"</span>]</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>fracs <span class="op">=</span> [<span class="st">"core_daytime_frac"</span>, <span class="st">"shoulder_frac"</span>, <span class="st">"late_evening_frac"</span>, <span class="st">"overnight_frac"</span>]</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Time-zone fraction distributions (measured WebTRIS sites):</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[fracs].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Time-zone fraction distributions (measured WebTRIS sites):
 
-       peak_frac  prepeak_frac  preoffpeak_frac  offpeak_frac
-count  15003.000     15003.000        15003.000     15003.000
-mean       0.783         0.133            0.028         0.056
-std        0.036         0.016            0.008         0.018
-min        0.500         0.040            0.000         0.005
-10%        0.737         0.112            0.019         0.033
-25%        0.760         0.122            0.023         0.044
-50%        0.783         0.133            0.027         0.055
-75%        0.808         0.144            0.033         0.067
-90%        0.829         0.153            0.038         0.077
-max        0.933         0.318            0.182         0.251</code></pre>
+       core_daytime_frac  shoulder_frac  late_evening_frac  overnight_frac
+count          15003.000      15003.000          15003.000       15003.000
+mean               0.783          0.133              0.028           0.056
+std                0.036          0.016              0.008           0.018
+min                0.500          0.040              0.000           0.005
+10%                0.737          0.112              0.019           0.033
+25%                0.760          0.122              0.023           0.044
+50%                0.783          0.133              0.027           0.055
+75%                0.808          0.144              0.033           0.067
+90%                0.829          0.153              0.038           0.077
+max                0.933          0.318              0.182           0.251</code></pre>
 </div>
 </div>
-<div id="f997e71c" class="cell" data-execution_count="3">
+<div id="35ddec96" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
@@ -458,18 +464,18 @@ max        0.933         0.318            0.182         0.251</code></pre>
 </div>
 </div>
 </div>
-<div id="bc179385" class="cell" data-execution_count="4">
+<div id="8b01295f" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Peak–offpeak ratio (measured sites):"</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[<span class="st">"peak_offpeak_ratio"</span>].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">2</span>).to_string())</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[<span class="st">"core_overnight_ratio"</span>].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">2</span>).to_string())</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>plt.hist(wt[<span class="st">"peak_offpeak_ratio"</span>].clip(<span class="dv">0</span>, <span class="dv">30</span>), bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>plt.hist(wt[<span class="st">"core_overnight_ratio"</span>].clip(<span class="dv">0</span>, <span class="dv">30</span>), bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Peak flow/hr ÷ offpeak flow/hr"</span>)</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Count"</span>)</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Peak–offpeak ratio distribution (WebTRIS sites)"</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.axvline(wt[<span class="st">"peak_offpeak_ratio"</span>].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.axvline(wt[<span class="st">"core_overnight_ratio"</span>].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
@@ -524,27 +530,27 @@ Note
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>peak_frac</code></td>
+<td><code>core_daytime_frac</code></td>
 <td style="text-align: right;">~0.65</td>
 <td>Strong — peak shape driven by road function and location</td>
 </tr>
 <tr class="even">
-<td><code>prepeak_frac</code></td>
+<td><code>shoulder_frac</code></td>
 <td style="text-align: right;">~0.63</td>
 <td>Strong — evening pattern correlates with urban density</td>
 </tr>
 <tr class="odd">
-<td><code>offpeak_frac</code></td>
+<td><code>overnight_frac</code></td>
 <td style="text-align: right;">~0.53</td>
 <td>Moderate — night freight patterns are more variable</td>
 </tr>
 <tr class="even">
-<td><code>preoffpeak_frac</code></td>
+<td><code>late_evening_frac</code></td>
 <td style="text-align: right;">~0.46</td>
 <td>Weakest — short transition band with mixed signal</td>
 </tr>
 <tr class="odd">
-<td><code>hgv_peak_frac</code></td>
+<td><code>hgv_core_daytime_frac</code></td>
 <td style="text-align: right;">~0.63</td>
 <td>Strong — HGV peak timing is structurally driven</td>
 </tr>
@@ -556,34 +562,34 @@ Note
 </section>
 <section id="estimated-profiles-across-the-full-network" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="estimated-profiles-across-the-full-network"><span class="header-section-number">6</span> Estimated profiles across the full network</h2>
-<div id="7b740c73" class="cell" data-execution_count="5">
+<div id="41c560a3" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    latest <span class="op">=</span> profiles[profiles[<span class="st">"year"</span>] <span class="op">==</span> profiles[<span class="st">"year"</span>].<span class="bu">max</span>()].copy()</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Year </span><span class="sc">{</span>latest[<span class="st">'year'</span>]<span class="sc">.</span>iloc[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> — </span><span class="sc">{</span><span class="bu">len</span>(latest)<span class="sc">:,}</span><span class="ss"> link estimates</span><span class="ch">\n</span><span class="ss">"</span>)</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    frac_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> fracs <span class="cf">if</span> c <span class="kw">in</span> latest.columns]</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest[frac_cols <span class="op">+</span> [<span class="st">"peak_offpeak_ratio"</span>]].describe(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest[frac_cols <span class="op">+</span> [<span class="st">"core_overnight_ratio"</span>]].describe(</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    ).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Year 2024 — 2,167,557 link estimates
 
-         peak_frac  prepeak_frac  preoffpeak_frac  offpeak_frac  peak_offpeak_ratio
-count  2167557.000   2167557.000      2167557.000   2167557.000         2167557.000
-mean         0.815         0.115            0.026         0.044               9.804
-std          0.022         0.013            0.004         0.010               2.591
-min          0.724         0.071            0.016         0.010               3.092
-10%          0.787         0.097            0.020         0.032               7.091
-25%          0.798         0.107            0.022         0.037               7.968
-50%          0.815         0.116            0.026         0.044               9.271
-75%          0.832         0.125            0.030         0.050              11.152
-90%          0.846         0.130            0.032         0.056              13.192
-max          0.893         0.155            0.037         0.117              44.320</code></pre>
+       core_daytime_frac  shoulder_frac  late_evening_frac  overnight_frac  core_overnight_ratio
+count        2167557.000    2167557.000        2167557.000     2167557.000           2167557.000
+mean               0.814          0.115              0.026           0.045                 9.409
+std                0.022          0.012              0.004           0.009                 2.360
+min                0.714          0.073              0.017           0.010                 3.221
+10%                0.785          0.098              0.020           0.034                 6.888
+25%                0.797          0.107              0.022           0.038                 7.688
+50%                0.813          0.116              0.026           0.045                 8.959
+75%                0.831          0.124              0.029           0.052                10.792
+90%                0.844          0.130              0.031           0.057                12.462
+max                0.890          0.164              0.041           0.112                44.706</code></pre>
 </div>
 </div>
-<div id="911f8178" class="cell" data-execution_count="6">
+<div id="6cff1c1a" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
@@ -615,7 +621,7 @@ max          0.893         0.155            0.037         0.117              44.
 <section id="profile-variation-by-road-class" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="profile-variation-by-road-class"><span class="header-section-number">7</span> Profile variation by road class</h2>
 <p>Roads with different functions show distinct daily profiles. Motorways have high peak fractions (commuter + freight); rural unclassified roads have flatter profiles. The model captures this through road classification and network betweenness.</p>
-<div id="adadcfad" class="cell" data-execution_count="7">
+<div id="1c280594" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty <span class="kw">and</span> road_class_col:</span>
@@ -624,20 +630,20 @@ max          0.893         0.155            0.037         0.117              44.
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span></span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    grp <span class="op">=</span> (</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        with_class.groupby(road_class_col)[[<span class="st">"peak_frac"</span>, <span class="st">"offpeak_frac"</span>, <span class="st">"peak_offpeak_ratio"</span>]]</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        with_class.groupby(road_class_col)[[<span class="st">"core_daytime_frac"</span>, <span class="st">"overnight_frac"</span>, <span class="st">"core_overnight_ratio"</span>]]</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        .median()</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        .sort_values(<span class="st">"peak_frac"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        .sort_values(<span class="st">"core_daytime_frac"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Median time-zone fractions by road class:</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(grp.<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span>
 <span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">4</span>))</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    grp[[<span class="st">"peak_frac"</span>, <span class="st">"offpeak_frac"</span>]].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>])</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    grp[[<span class="st">"core_daytime_frac"</span>, <span class="st">"overnight_frac"</span>]].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>])</span>
 <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Peak vs offpeak fraction by road class"</span>)</span>
 <span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Fraction of daily traffic"</span>)</span>
 <span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">35</span>)</span>
 <span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    grp[<span class="st">"peak_offpeak_ratio"</span>].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>])</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    grp[<span class="st">"core_overnight_ratio"</span>].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>])</span>
 <span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Peak–offpeak ratio by road class"</span>)</span>
 <span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Ratio (peak flow/hr ÷ offpeak flow/hr)"</span>)</span>
 <span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].axhline(<span class="dv">1</span>, color<span class="op">=</span><span class="st">"grey"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>)</span>
@@ -649,15 +655,15 @@ max          0.893         0.155            0.037         0.117              44.
 <div class="cell-output cell-output-stdout">
 <pre><code>Median time-zone fractions by road class:
 
-                       peak_frac  offpeak_frac  peak_offpeak_ratio
-road_classification                                               
-Classified Unnumbered      0.813         0.045               8.996
-Not Classified             0.813         0.044               9.123
-Unknown                    0.811         0.045               8.994
-Unclassified               0.806         0.045               8.908
-B Road                     0.804         0.047               8.521
-A Road                     0.795         0.049               8.089
-Motorway                   0.786         0.053               7.346</code></pre>
+                       core_daytime_frac  overnight_frac  core_overnight_ratio
+road_classification                                                           
+Classified Unnumbered              0.812           0.046                 8.855
+Not Classified                     0.811           0.046                 8.707
+Unknown                            0.809           0.047                 8.627
+Unclassified                       0.805           0.047                 8.553
+B Road                             0.801           0.048                 8.345
+A Road                             0.793           0.050                 7.938
+Motorway                           0.784           0.055                 7.137</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -671,12 +677,12 @@ Motorway                   0.786         0.053               7.346</code></pre>
 <section id="reconstructed-per-hour-flows" class="level2" data-number="8">
 <h2 data-number="8" class="anchored" data-anchor-id="reconstructed-per-hour-flows"><span class="header-section-number">8</span> Reconstructed per-hour flows</h2>
 <p>Using Stage 1a AADT estimates and Stage 1b fractions, per-hour flow rates can be computed for any link in the network.</p>
-<div id="5a4c4757" class="cell" data-execution_count="8">
+<div id="6ed9bb40" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    flow_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> [</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"flow_ph_peak"</span>, <span class="st">"flow_ph_prepeak"</span>, <span class="st">"flow_ph_preoffpeak"</span>, <span class="st">"flow_ph_offpeak"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"flow_ph_core_daytime"</span>, <span class="st">"flow_ph_shoulder"</span>, <span class="st">"flow_ph_late_evening"</span>, <span class="st">"flow_ph_overnight"</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    ] <span class="cf">if</span> c <span class="kw">in</span> profiles.columns]</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> flow_cols:</span>
@@ -689,17 +695,17 @@ Motorway                   0.786         0.053               7.346</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Per-hour flow estimates — full network (vehicles/hour):
 
-       flow_ph_peak  flow_ph_prepeak  flow_ph_preoffpeak  flow_ph_offpeak
-count     2167557.0        2167557.0           2167557.0        2167557.0
-mean          122.5             56.2                24.9             14.0
-std           228.8            113.3                50.1             29.2
-min             4.4              1.2                 0.5              0.2
-25%            23.7             10.1                 4.4              2.5
-50%            37.8             16.0                 7.1              4.1
-75%           105.7             46.5                20.7             10.8
-90%           241.0            107.5                49.7             27.8
-99%          1099.2            564.7               255.5            148.3
-max          5249.3           2964.2              1477.8            889.4</code></pre>
+       flow_ph_core_daytime  flow_ph_shoulder  flow_ph_late_evening  flow_ph_overnight
+count             2167557.0         2167557.0             2167557.0          2167557.0
+mean                  143.4              66.2                  28.9               16.7
+std                   278.4             139.1                  60.6               36.4
+min                     4.7               1.5                   0.6                0.2
+25%                    29.2              12.3                   5.4                3.3
+50%                    47.1              19.8                   8.9                5.3
+75%                   110.1              48.9                  21.8               12.0
+90%                   315.1             131.7                  58.1               32.1
+99%                  1299.0             661.2                 290.9              174.2
+max                  7105.6            3884.5                1920.6             1226.3</code></pre>
 </div>
 </div>
 </section>
@@ -710,7 +716,7 @@ max          5249.3           2964.2              1477.8            889.4</code>
 <li>Roads where most collisions occur during peak hours (high peak exposure)</li>
 <li>Roads with disproportionate night-time collisions (relative to low offpeak flow)</li>
 </ul>
-<p>The <code>peak_offpeak_ratio</code> is also a candidate model feature, capturing whether a road functions primarily as a commuter route or serves mixed/freight traffic.</p>
+<p>The <code>core_overnight_ratio</code> is also a candidate model feature, capturing whether a road functions primarily as a commuter route or serves mixed/freight traffic.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1231,12 +1237,12 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>WebTRIS annual reports provide cumulative flow totals for four hour windows.</span>
 <span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>Differencing these gives four non-overlapping time bands:</span>
 <span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Band <span class="pp">|</span> Hours <span class="pp">|</span> Window <span class="pp">|</span> Typical character <span class="pp">|</span></span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------:|-------|---|</span></span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Peak <span class="pp">|</span> 12 <span class="pp">|</span> 07:00–19:00 <span class="pp">|</span> Commuter, business, school <span class="pp">|</span></span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pre-peak <span class="pp">|</span> 4 <span class="pp">|</span> 19:00–23:00 <span class="pp">|</span> Evening leisure, retail <span class="pp">|</span></span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pre-offpeak <span class="pp">|</span> 2 <span class="pp">|</span> 23:00–01:00 <span class="pp">|</span> Transition <span class="pp">|</span></span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Offpeak <span class="pp">|</span> 6 <span class="pp">|</span> 01:00–07:00 <span class="pp">|</span> Night freight, low volume <span class="pp">|</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Code label <span class="pp">|</span> True period <span class="pp">|</span> Hours <span class="pp">|</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|-------------|------:|</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`core_daytime_frac`</span> <span class="pp">|</span> 07:00–18:59 <span class="pp">|</span> 12 <span class="pp">|</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`shoulder_frac`</span> <span class="pp">|</span> 06–07 + 19–22 (mixed shoulder) <span class="pp">|</span> 4 <span class="pp">|</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`late_evening_frac`</span> <span class="pp">|</span> 22:00–24:00 <span class="pp">|</span> 2 <span class="pp">|</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`overnight_frac`</span> <span class="pp">|</span> 00:00–06:00 <span class="pp">|</span> 6 <span class="pp">|</span></span>
 <span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>The model predicts the fraction of daily traffic in each band. Absolute</span>
 <span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>per-hour flow is then reconstructed as:</span>
@@ -1276,12 +1282,12 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-77"><a href="#cb16-77" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-80"><a href="#cb16-80" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb16-81"><a href="#cb16-81" aria-hidden="true" tabindex="-1"></a>wt <span class="op">=</span> webtris[webtris[<span class="st">"all_flow"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
-<span id="cb16-82"><a href="#cb16-82" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"peak_frac"</span>]       <span class="op">=</span> (wt[<span class="st">"flow_ph_peak"</span>]       <span class="op">*</span> <span class="dv">12</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb16-83"><a href="#cb16-83" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"prepeak_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_prepeak"</span>]     <span class="op">*</span>  <span class="dv">4</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb16-84"><a href="#cb16-84" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"preoffpeak_frac"</span>] <span class="op">=</span> (wt[<span class="st">"flow_ph_preoffpeak"</span>]  <span class="op">*</span>  <span class="dv">2</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb16-85"><a href="#cb16-85" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"offpeak_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_offpeak"</span>]     <span class="op">*</span>  <span class="dv">6</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb16-82"><a href="#cb16-82" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"core_daytime_frac"</span>]       <span class="op">=</span> (wt[<span class="st">"flow_ph_core_daytime"</span>]       <span class="op">*</span> <span class="dv">12</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb16-83"><a href="#cb16-83" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"shoulder_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_shoulder"</span>]     <span class="op">*</span>  <span class="dv">4</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb16-84"><a href="#cb16-84" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"late_evening_frac"</span>] <span class="op">=</span> (wt[<span class="st">"flow_ph_late_evening"</span>]  <span class="op">*</span>  <span class="dv">2</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
+<span id="cb16-85"><a href="#cb16-85" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"overnight_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_overnight"</span>]     <span class="op">*</span>  <span class="dv">6</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
 <span id="cb16-86"><a href="#cb16-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-87"><a href="#cb16-87" aria-hidden="true" tabindex="-1"></a>fracs <span class="op">=</span> [<span class="st">"peak_frac"</span>, <span class="st">"prepeak_frac"</span>, <span class="st">"preoffpeak_frac"</span>, <span class="st">"offpeak_frac"</span>]</span>
+<span id="cb16-87"><a href="#cb16-87" aria-hidden="true" tabindex="-1"></a>fracs <span class="op">=</span> [<span class="st">"core_daytime_frac"</span>, <span class="st">"shoulder_frac"</span>, <span class="st">"late_evening_frac"</span>, <span class="st">"overnight_frac"</span>]</span>
 <span id="cb16-88"><a href="#cb16-88" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Time-zone fraction distributions (measured WebTRIS sites):</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb16-89"><a href="#cb16-89" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[fracs].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span>
 <span id="cb16-90"><a href="#cb16-90" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
@@ -1304,14 +1310,14 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-109"><a href="#cb16-109" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-112"><a href="#cb16-112" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb16-113"><a href="#cb16-113" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Peak–offpeak ratio (measured sites):"</span>)</span>
-<span id="cb16-114"><a href="#cb16-114" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[<span class="st">"peak_offpeak_ratio"</span>].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">2</span>).to_string())</span>
+<span id="cb16-114"><a href="#cb16-114" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[<span class="st">"core_overnight_ratio"</span>].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">2</span>).to_string())</span>
 <span id="cb16-115"><a href="#cb16-115" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-116"><a href="#cb16-116" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb16-117"><a href="#cb16-117" aria-hidden="true" tabindex="-1"></a>plt.hist(wt[<span class="st">"peak_offpeak_ratio"</span>].clip(<span class="dv">0</span>, <span class="dv">30</span>), bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
+<span id="cb16-117"><a href="#cb16-117" aria-hidden="true" tabindex="-1"></a>plt.hist(wt[<span class="st">"core_overnight_ratio"</span>].clip(<span class="dv">0</span>, <span class="dv">30</span>), bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
 <span id="cb16-118"><a href="#cb16-118" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Peak flow/hr ÷ offpeak flow/hr"</span>)</span>
 <span id="cb16-119"><a href="#cb16-119" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Count"</span>)</span>
 <span id="cb16-120"><a href="#cb16-120" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Peak–offpeak ratio distribution (WebTRIS sites)"</span>)</span>
-<span id="cb16-121"><a href="#cb16-121" aria-hidden="true" tabindex="-1"></a>plt.axvline(wt[<span class="st">"peak_offpeak_ratio"</span>].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb16-121"><a href="#cb16-121" aria-hidden="true" tabindex="-1"></a>plt.axvline(wt[<span class="st">"core_overnight_ratio"</span>].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb16-122"><a href="#cb16-122" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb16-123"><a href="#cb16-123" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
 <span id="cb16-124"><a href="#cb16-124" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
@@ -1328,11 +1334,11 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-135"><a href="#cb16-135" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
 <span id="cb16-136"><a href="#cb16-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Target <span class="pp">|</span> CV R² <span class="pp">|</span> Interpretation <span class="pp">|</span></span>
 <span id="cb16-137"><a href="#cb16-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|------:|---|</span></span>
-<span id="cb16-138"><a href="#cb16-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`peak_frac`</span> <span class="pp">|</span> ~0.65 <span class="pp">|</span> Strong — peak shape driven by road function and location <span class="pp">|</span></span>
-<span id="cb16-139"><a href="#cb16-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`prepeak_frac`</span> <span class="pp">|</span> ~0.63 <span class="pp">|</span> Strong — evening pattern correlates with urban density <span class="pp">|</span></span>
-<span id="cb16-140"><a href="#cb16-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`offpeak_frac`</span> <span class="pp">|</span> ~0.53 <span class="pp">|</span> Moderate — night freight patterns are more variable <span class="pp">|</span></span>
-<span id="cb16-141"><a href="#cb16-141" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`preoffpeak_frac`</span> <span class="pp">|</span> ~0.46 <span class="pp">|</span> Weakest — short transition band with mixed signal <span class="pp">|</span></span>
-<span id="cb16-142"><a href="#cb16-142" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`hgv_peak_frac`</span> <span class="pp">|</span> ~0.63 <span class="pp">|</span> Strong — HGV peak timing is structurally driven <span class="pp">|</span></span>
+<span id="cb16-138"><a href="#cb16-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`core_daytime_frac`</span> <span class="pp">|</span> ~0.65 <span class="pp">|</span> Strong — peak shape driven by road function and location <span class="pp">|</span></span>
+<span id="cb16-139"><a href="#cb16-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`shoulder_frac`</span> <span class="pp">|</span> ~0.63 <span class="pp">|</span> Strong — evening pattern correlates with urban density <span class="pp">|</span></span>
+<span id="cb16-140"><a href="#cb16-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`overnight_frac`</span> <span class="pp">|</span> ~0.53 <span class="pp">|</span> Moderate — night freight patterns are more variable <span class="pp">|</span></span>
+<span id="cb16-141"><a href="#cb16-141" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`late_evening_frac`</span> <span class="pp">|</span> ~0.46 <span class="pp">|</span> Weakest — short transition band with mixed signal <span class="pp">|</span></span>
+<span id="cb16-142"><a href="#cb16-142" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`hgv_core_daytime_frac`</span> <span class="pp">|</span> ~0.63 <span class="pp">|</span> Strong — HGV peak timing is structurally driven <span class="pp">|</span></span>
 <span id="cb16-143"><a href="#cb16-143" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb16-144"><a href="#cb16-144" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-145"><a href="#cb16-145" aria-hidden="true" tabindex="-1"></a>The MAE for all fraction targets is &lt; 0.03, meaning the model predicts daily</span>
@@ -1345,7 +1351,7 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-154"><a href="#cb16-154" aria-hidden="true" tabindex="-1"></a>    latest <span class="op">=</span> profiles[profiles[<span class="st">"year"</span>] <span class="op">==</span> profiles[<span class="st">"year"</span>].<span class="bu">max</span>()].copy()</span>
 <span id="cb16-155"><a href="#cb16-155" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Year </span><span class="sc">{</span>latest[<span class="st">'year'</span>]<span class="sc">.</span>iloc[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> — </span><span class="sc">{</span><span class="bu">len</span>(latest)<span class="sc">:,}</span><span class="ss"> link estimates</span><span class="ch">\n</span><span class="ss">"</span>)</span>
 <span id="cb16-156"><a href="#cb16-156" aria-hidden="true" tabindex="-1"></a>    frac_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> fracs <span class="cf">if</span> c <span class="kw">in</span> latest.columns]</span>
-<span id="cb16-157"><a href="#cb16-157" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest[frac_cols <span class="op">+</span> [<span class="st">"peak_offpeak_ratio"</span>]].describe(</span>
+<span id="cb16-157"><a href="#cb16-157" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest[frac_cols <span class="op">+</span> [<span class="st">"core_overnight_ratio"</span>]].describe(</span>
 <span id="cb16-158"><a href="#cb16-158" aria-hidden="true" tabindex="-1"></a>        percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]</span>
 <span id="cb16-159"><a href="#cb16-159" aria-hidden="true" tabindex="-1"></a>    ).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span>
 <span id="cb16-160"><a href="#cb16-160" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
@@ -1383,20 +1389,20 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-196"><a href="#cb16-196" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span></span>
 <span id="cb16-197"><a href="#cb16-197" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb16-198"><a href="#cb16-198" aria-hidden="true" tabindex="-1"></a>    grp <span class="op">=</span> (</span>
-<span id="cb16-199"><a href="#cb16-199" aria-hidden="true" tabindex="-1"></a>        with_class.groupby(road_class_col)[[<span class="st">"peak_frac"</span>, <span class="st">"offpeak_frac"</span>, <span class="st">"peak_offpeak_ratio"</span>]]</span>
+<span id="cb16-199"><a href="#cb16-199" aria-hidden="true" tabindex="-1"></a>        with_class.groupby(road_class_col)[[<span class="st">"core_daytime_frac"</span>, <span class="st">"overnight_frac"</span>, <span class="st">"core_overnight_ratio"</span>]]</span>
 <span id="cb16-200"><a href="#cb16-200" aria-hidden="true" tabindex="-1"></a>        .median()</span>
-<span id="cb16-201"><a href="#cb16-201" aria-hidden="true" tabindex="-1"></a>        .sort_values(<span class="st">"peak_frac"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb16-201"><a href="#cb16-201" aria-hidden="true" tabindex="-1"></a>        .sort_values(<span class="st">"core_daytime_frac"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
 <span id="cb16-202"><a href="#cb16-202" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb16-203"><a href="#cb16-203" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Median time-zone fractions by road class:</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb16-204"><a href="#cb16-204" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(grp.<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span>
 <span id="cb16-205"><a href="#cb16-205" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-206"><a href="#cb16-206" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">4</span>))</span>
-<span id="cb16-207"><a href="#cb16-207" aria-hidden="true" tabindex="-1"></a>    grp[[<span class="st">"peak_frac"</span>, <span class="st">"offpeak_frac"</span>]].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>])</span>
+<span id="cb16-207"><a href="#cb16-207" aria-hidden="true" tabindex="-1"></a>    grp[[<span class="st">"core_daytime_frac"</span>, <span class="st">"overnight_frac"</span>]].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>])</span>
 <span id="cb16-208"><a href="#cb16-208" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Peak vs offpeak fraction by road class"</span>)</span>
 <span id="cb16-209"><a href="#cb16-209" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Fraction of daily traffic"</span>)</span>
 <span id="cb16-210"><a href="#cb16-210" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">35</span>)</span>
 <span id="cb16-211"><a href="#cb16-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-212"><a href="#cb16-212" aria-hidden="true" tabindex="-1"></a>    grp[<span class="st">"peak_offpeak_ratio"</span>].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>])</span>
+<span id="cb16-212"><a href="#cb16-212" aria-hidden="true" tabindex="-1"></a>    grp[<span class="st">"core_overnight_ratio"</span>].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>])</span>
 <span id="cb16-213"><a href="#cb16-213" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Peak–offpeak ratio by road class"</span>)</span>
 <span id="cb16-214"><a href="#cb16-214" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Ratio (peak flow/hr ÷ offpeak flow/hr)"</span>)</span>
 <span id="cb16-215"><a href="#cb16-215" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].axhline(<span class="dv">1</span>, color<span class="op">=</span><span class="st">"grey"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>)</span>
@@ -1414,7 +1420,7 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-229"><a href="#cb16-229" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
 <span id="cb16-230"><a href="#cb16-230" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
 <span id="cb16-231"><a href="#cb16-231" aria-hidden="true" tabindex="-1"></a>    flow_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> [</span>
-<span id="cb16-232"><a href="#cb16-232" aria-hidden="true" tabindex="-1"></a>        <span class="st">"flow_ph_peak"</span>, <span class="st">"flow_ph_prepeak"</span>, <span class="st">"flow_ph_preoffpeak"</span>, <span class="st">"flow_ph_offpeak"</span></span>
+<span id="cb16-232"><a href="#cb16-232" aria-hidden="true" tabindex="-1"></a>        <span class="st">"flow_ph_core_daytime"</span>, <span class="st">"flow_ph_shoulder"</span>, <span class="st">"flow_ph_late_evening"</span>, <span class="st">"flow_ph_overnight"</span></span>
 <span id="cb16-233"><a href="#cb16-233" aria-hidden="true" tabindex="-1"></a>    ] <span class="cf">if</span> c <span class="kw">in</span> profiles.columns]</span>
 <span id="cb16-234"><a href="#cb16-234" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-235"><a href="#cb16-235" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> flow_cols:</span>
@@ -1435,7 +1441,7 @@ Stage 2   python -m road_risk.model --stage collision
 <span id="cb16-250"><a href="#cb16-250" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Roads where most collisions occur during peak hours (high peak exposure)</span>
 <span id="cb16-251"><a href="#cb16-251" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Roads with disproportionate night-time collisions (relative to low offpeak flow)</span>
 <span id="cb16-252"><a href="#cb16-252" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-253"><a href="#cb16-253" aria-hidden="true" tabindex="-1"></a>The <span class="in">`peak_offpeak_ratio`</span> is also a candidate model feature, capturing whether a</span>
+<span id="cb16-253"><a href="#cb16-253" aria-hidden="true" tabindex="-1"></a>The <span class="in">`core_overnight_ratio`</span> is also a candidate model feature, capturing whether a</span>
 <span id="cb16-254"><a href="#cb16-254" aria-hidden="true" tabindex="-1"></a>road functions primarily as a commuter route or serves mixed/freight traffic.</span>
 <span id="cb16-255"><a href="#cb16-255" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-256"><a href="#cb16-256" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
