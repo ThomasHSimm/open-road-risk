@@ -34,6 +34,7 @@ python src/road_risk/ingest/ingest_openroads.py
 
 # 2. Convert OSM pbf files (download study-area county files from Geofabrik first)
 #    https://download.geofabrik.de/europe/great-britain/england/
+
 for f in data/raw/osm/*.osm.pbf; do
     osmium cat "$f" -o "${f%.osm.pbf}.osm"
 done
