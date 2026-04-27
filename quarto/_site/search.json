@@ -140,32 +140,53 @@
     "text": "7 Key observations\n\n\nTotal collisions analysed : 452,897\nFatal collisions          : 7,451 (1.6%)\nDark conditions           : 126,529 (27.9%)\nUrban setting             : 290,929 (64.2%)\nNot at junction           : 241,733 (53.4%)\n\n\n\n\n\n\n\n\nNote\n\n\n\nThese raw proportions describe the collision dataset, not collision risk. Risk requires dividing by exposure (vehicle-kilometres). Roads with high urban or junction proportions may look dangerous here but score differently after the exposure model is applied in Stage 2."
   },
   {
-    "objectID": "analysis/vehicle-mix.html",
-    "href": "analysis/vehicle-mix.html",
-    "title": "Vehicle Mix Analysis",
-    "section": "",
-    "text": "This page will describe how vehicle types and vehicle mix relate to traffic exposure and collision severity.\n\n\n\n\n\n\nNote\n\n\n\nPlaceholder page."
-  },
-  {
-    "objectID": "analysis/vehicle-mix.html#overview",
-    "href": "analysis/vehicle-mix.html#overview",
-    "title": "Vehicle Mix Analysis",
-    "section": "",
-    "text": "This page will describe how vehicle types and vehicle mix relate to traffic exposure and collision severity.\n\n\n\n\n\n\nNote\n\n\n\nPlaceholder page."
-  },
-  {
-    "objectID": "analysis/vehicle-mix.html#planned-content",
-    "href": "analysis/vehicle-mix.html#planned-content",
-    "title": "Vehicle Mix Analysis",
-    "section": "Planned Content",
-    "text": "Planned Content\n\nVehicle-type breakdown from STATS19.\nHGV and long-vehicle exposure from traffic data.\nSeverity patterns by vehicle mix.\nPlanned Stage 1c vehicle-mix modelling."
-  },
-  {
-    "objectID": "analysis/collision_exposure_behaviour.html",
-    "href": "analysis/collision_exposure_behaviour.html",
+    "objectID": "analysis/collision-exposure-behaviour.html",
+    "href": "analysis/collision-exposure-behaviour.html",
     "title": "Sub-Linear Exposure Scaling & Kinetic Severity",
     "section": "",
     "text": "0.1 Background: Re-evaluating the Collision-Exposure Relationship\nA foundational assumption in traditional traffic safety analysis is that risk scales linearly with exposure. Under this assumption, doubling the traffic volume (Annual Average Daily Traffic, or AADT) on a road segment should inherently double the expected number of collisions.\nHowever, when training our count-based network screening model, applying a strict linear exposure offset (base_margin = log_offset) resulted in systematic over-prediction on high-volume roads. To investigate this, we fitted a Poisson Generalized Linear Model (GLM) to the full network—crucially including zero-collision links—to extract the true exposure coefficient (\\(\\beta\\)) for different road characteristics.\nThe Poisson GLM fits the following relationship:\n\\[E[Y] = \\exp(\\alpha + \\beta \\cdot \\ln(\\text{Exposure}))\\]\nWhere: * \\(E[Y]\\) is the expected number of annual collisions. * \\(\\alpha\\) is the baseline risk intercept (how dangerous the road is when nearly empty). * \\(\\beta\\) is the exposure scaling factor. * \\(\\text{Exposure}\\) is the annual vehicle-kilometers travelled on the link.\n\n\n\n0.2 Part 1: Infrastructure Impact (Single vs. Dual Carriageways)\n\n\n\nUnclassified: 1060014 links\n\nClassified Unnumbered: 190921 links\n\nUnknown: 442836 links\n\nNot Classified: 224878 links\n\nA Road: 155538 links\n\nB Road: 89286 links\n\nMotorway: 4084 links\n\n\n\n\n\n\n\n\n\nroad_classification\nintercept\nexposure_coef\n\n\n\n\n0\nUnclassified\n0.528085\n0.759343\n\n\n1\nClassified Unnumbered\n0.450847\n0.569605\n\n\n2\nUnknown\n-1.555200\n0.553078\n\n\n3\nNot Classified\n-1.567816\n0.587902\n\n\n4\nA Road\n0.511410\n0.466845\n\n\n5\nB Road\n0.277854\n0.531110\n\n\n6\nMotorway\n-0.116122\n0.764207\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe relationship between traffic volume and collision frequency is not universal; it varies significantly across different road types and forms of way.\n\nThe Single Carriageway Risk Curve (\\(\\beta = 0.74\\)): Single carriageways exhibit a steep exposure scaling curve. While this single-feature GLM confounds infrastructure with other variables (like rural/urban geography and junction density), the descriptive reality remains: adding vehicles to unseparated roads rapidly compounds collision opportunities.\nThe Dual Carriageway Flattening Effect (\\(\\beta = 0.39\\)): Dual carriageways show a markedly flatter risk curve. Although they carry a slightly higher baseline risk (α) at very low volumes, the sub-linear scaling demonstrates their capacity to absorb massive increases in traffic volume without a proportional spike in crashes.\n\n\n\n\n0.3 Part 2: Kinetic Energy (The 60mph Rural Phenomenon)\n\n\n\n\n\n\n\n\n\nWhile exposure dictates the frequency of collisions, the posted speed limit is a strong proxy for their severity. Mapping the proportion of collisions that result in a Killed or Seriously Injured (KSI) casualty against speed limits reveals a stark descriptive pattern.\n\nThe 60mph Peak (26.4% KSI Rate): The highest severity ratio in the network occurs at 60mph. While speed limit alone confounds other factors (like road class and traffic mix), this matches well-known patterns in UK road safety: 60mph limits are highly prevalent on rural single carriageways, combining high permitted kinetic energy with unseparated opposing flows.\nThe 70mph Safety Buffer (20.4% KSI Rate): Despite allowing higher speeds, the severity ratio drops at 70mph. This reflects the reality that 70mph limits are legally restricted almost exclusively to Motorways and high-quality Dual Carriageways, where physical separation mitigates the specific conflict types that make 60mph roads highly severe.\n\n\n\n\n0.4 Conclusion: Validating the XGBoost Architecture\nThese diagnostics reveal a known specification gap in our current v2 architecture. By using log(exposure) as a fixed Poisson offset, the model is effectively forced to assume β=1.\nBecause the empirical data shows β is actually between 0.4 and 0.8 depending on the road profile, the XGBoost model has to compensate for this misspecification by using other features to artificially absorb the exposure-curvature signal. This likely contributes to the residual variance observed on high-volume networks, and specifically the tendency to under-predict on Motorways.\nRecognizing this sub-linear scaling provides a clear diagnostic baseline. It informs our v3 roadmap, where we can empirically test alternative exposure specifications—such as passing log(exposure) as a learned feature, or utilizing per-family fitted GLM offsets—to better capture these realities without forcing the trees to approximate smooth curves."
+  },
+  {
+    "objectID": "analysis/osm-coverage.html",
+    "href": "analysis/osm-coverage.html",
+    "title": "OSM Feature Coverage Diagnostic",
+    "section": "",
+    "text": "column\nn_links\nn_filled\npct_coverage\n\n\n\n\nis_unpaved\n2167557\n350597\n16.2\n\n\nlanes\n2167557\n158217\n7.3\n\n\nlit\n2167557\n201442\n9.3\n\n\nspeed_limit_mph\n2167557\n1223142\n56.4"
+  },
+  {
+    "objectID": "analysis/osm-coverage.html#overall-coverage",
+    "href": "analysis/osm-coverage.html#overall-coverage",
+    "title": "OSM Feature Coverage Diagnostic",
+    "section": "",
+    "text": "column\nn_links\nn_filled\npct_coverage\n\n\n\n\nis_unpaved\n2167557\n350597\n16.2\n\n\nlanes\n2167557\n158217\n7.3\n\n\nlit\n2167557\n201442\n9.3\n\n\nspeed_limit_mph\n2167557\n1223142\n56.4"
+  },
+  {
+    "objectID": "analysis/osm-coverage.html#coverage-by-road-class",
+    "href": "analysis/osm-coverage.html#coverage-by-road-class",
+    "title": "OSM Feature Coverage Diagnostic",
+    "section": "2 Coverage by road class (%)",
+    "text": "2 Coverage by road class (%)\n\n\n\n\n\n\n\n\n\n\n\n\n\ncolumn\nMotorway\nA Road\nB Road\nClassified Unnumbered\nUnclassified\nNot Classified\nUnknown\n\n\n\n\nis_unpaved\n36.2\n27.4\n24.9\n20.2\n16.7\n12.5\n9.2\n\n\nlanes\n40.3\n34.7\n21.9\n13.2\n4.4\n1.9\n1.5\n\n\nlit\n38\n25\n16.4\n10.8\n10.1\n3.6\n2.3\n\n\nspeed_limit_mph\n46.1\n55.3\n52.4\n53.9\n59.4\n57.4\n51.1"
+  },
+  {
+    "objectID": "analysis/osm-coverage.html#coverage-by-latitude-band",
+    "href": "analysis/osm-coverage.html#coverage-by-latitude-band",
+    "title": "OSM Feature Coverage Diagnostic",
+    "section": "3 Coverage by latitude band (%)",
+    "text": "3 Coverage by latitude band (%)\n\n\n\n\n\n\n\n\n\n\n\ncolumn\n51–52°N\n52–53°N\n53–54°N\n54–55°N\n55–56°N\n\n\n\n\nis_unpaved\n2.7\n22.4\n13.7\n17.2\n8.9\n\n\nlanes\n1.2\n10.2\n5.6\n9.2\n4.3\n\n\nlit\n1.2\n11.3\n8.2\n12.1\n8.5\n\n\nspeed_limit_mph\n10.8\n75\n47.8\n66\n36.2"
+  },
+  {
+    "objectID": "analysis/osm-coverage.html#value-distributions-populated-rows-only",
+    "href": "analysis/osm-coverage.html#value-distributions-populated-rows-only",
+    "title": "OSM Feature Coverage Diagnostic",
+    "section": "4 Value distributions (populated rows only)",
+    "text": "4 Value distributions (populated rows only)\n\n4.1 speed_limit_mph\n\n\n\n\n\n\n\n\n\n\n\n\n\nroad_class\nn_filled\nn_distinct\nmin\nq25\nmedian\nq75\nmax\n\n\n\n\nMotorway\n1882\n32\n15\n70\n70\n70\n70\n\n\nA Road\n86016\n65\n10\n30\n36\n50\n115\n\n\nB Road\n46830\n58\n10\n30\n30\n40\n125\n\n\nClassified Unnumbered\n102922\n61\n10\n30\n33\n40\n195\n\n\nUnclassified\n630118\n74\n6\n22\n26\n30\n220\n\n\nNot Classified\n129078\n62\n6\n21\n25\n29\n224\n\n\nUnknown\n226296\n76\n6\n20\n22\n26\n224\n\n\n\n\n\n4.2 lanes\n\n\n\n\n\n\n\n\n\n\n\n\n\nroad_class\nn_filled\nn_distinct\nmin\nq25\nmedian\nq75\nmax\n\n\n\n\nMotorway\n1644\n8\n1\n2\n2\n3\n10\n\n\nA Road\n53962\n7\n1\n2\n2\n2\n8\n\n\nB Road\n19547\n7\n1\n2\n2\n2\n7\n\n\nClassified Unnumbered\n25119\n6\n0\n2\n2\n2\n5\n\n\nUnclassified\n47151\n7\n0\n2\n2\n2\n20\n\n\nNot Classified\n4347\n6\n0\n1\n2\n2\n5\n\n\nUnknown\n6447\n6\n1\n1\n2\n2\n6"
+  },
+  {
+    "objectID": "analysis/osm-coverage.html#highlights",
+    "href": "analysis/osm-coverage.html#highlights",
+    "title": "OSM Feature Coverage Diagnostic",
+    "section": "5 Highlights",
+    "text": "5 Highlights\n\n5.1 Columns with &gt;80% coverage by road class (usable without imputation)\nNo column × road-class combination reaches 80% coverage.\n\n\n5.2 Columns with &lt;20% coverage by road class (imputation would invent most values)\n\n\n\n\n\n\n\n\n\n\nroad_class\ncolumn\npct_coverage\nn_links\nn_filled\n\n\n\n\nUnknown\nlanes\n1.5\n442836\n6447\n\n\nNot Classified\nlanes\n1.9\n224878\n4347\n\n\nUnknown\nlit\n2.3\n442836\n10265\n\n\nNot Classified\nlit\n3.6\n224878\n8139\n\n\nUnclassified\nlanes\n4.4\n1060014\n47151\n\n\nUnknown\nis_unpaved\n9.2\n442836\n40849\n\n\nUnclassified\nlit\n10.1\n1060014\n107342\n\n\nClassified Unnumbered\nlit\n10.8\n190921\n20620\n\n\nNot Classified\nis_unpaved\n12.5\n224878\n28159\n\n\nClassified Unnumbered\nlanes\n13.2\n190921\n25119\n\n\nB Road\nlit\n16.4\n89286\n14618\n\n\nUnclassified\nis_unpaved\n16.7\n1060014\n176644\n\n\n\n\n\n5.3 Decision guidance\nFor each column × road-class, coverage determines the right modelling strategy:\n\n≥80%: Include as-is; drop the small fraction of missing rows.\n20–80%: Median-impute and add an {col}_imputed binary flag; coefficient reflects the imputed value and should be interpreted with caution.\n&lt;20%: The imputed value is invented for &gt;80% of rows. The coefficient will primarily reflect the imputation default, not genuine signal. Consider excluding from the model or using road-class median as a proxy only if the proxy is defensible.\n\nNote: coverage on major roads (Motorway, A Road) is typically higher because OSM contributors prioritise high-traffic routes. If those columns are included in a model trained on all road classes, the signal comes almost entirely from major roads and the imputed values for minor roads are close to noise."
   },
   {
     "objectID": "analysis/eda-traffic.html",
@@ -1323,46 +1344,25 @@
     "text": "7 Summary of Potential Modelling Implications\nBased on the variance observed in the plots above:\n\n\n\n\n\n\n\n\nDimension\nObserved Variance\nModelling Strategy\n\n\n\n\nMonthly Seasonality\nHigh amplitude, low inter-link variance.\nHandle via global monthly multipliers.\n\n\nWeekday vs. Weekend\nLow variance across network (~1.08).\nTreat as a global constant.\n\n\nTime-of-Day\nHigh inter-link variance (4.2 - 15.2).\nTreat as link-specific (Priority for ablation).\n\n\nHGV Mix\nGlobal seasonal swing (~3pp) and substantial within-class spread.\nStatus: not formally tested at site grain. May carry signal beyond road class."
   },
   {
-    "objectID": "analysis/osm-coverage.html",
-    "href": "analysis/osm-coverage.html",
-    "title": "OSM Feature Coverage Diagnostic",
+    "objectID": "analysis/vehicle-mix.html",
+    "href": "analysis/vehicle-mix.html",
+    "title": "Vehicle Mix Analysis",
     "section": "",
-    "text": "column\nn_links\nn_filled\npct_coverage\n\n\n\n\nis_unpaved\n2167557\n350597\n16.2\n\n\nlanes\n2167557\n158217\n7.3\n\n\nlit\n2167557\n201442\n9.3\n\n\nspeed_limit_mph\n2167557\n1223142\n56.4"
+    "text": "This page will describe how vehicle types and vehicle mix relate to traffic exposure and collision severity.\n\n\n\n\n\n\nNote\n\n\n\nPlaceholder page."
   },
   {
-    "objectID": "analysis/osm-coverage.html#overall-coverage",
-    "href": "analysis/osm-coverage.html#overall-coverage",
-    "title": "OSM Feature Coverage Diagnostic",
+    "objectID": "analysis/vehicle-mix.html#overview",
+    "href": "analysis/vehicle-mix.html#overview",
+    "title": "Vehicle Mix Analysis",
     "section": "",
-    "text": "column\nn_links\nn_filled\npct_coverage\n\n\n\n\nis_unpaved\n2167557\n350597\n16.2\n\n\nlanes\n2167557\n158217\n7.3\n\n\nlit\n2167557\n201442\n9.3\n\n\nspeed_limit_mph\n2167557\n1223142\n56.4"
+    "text": "This page will describe how vehicle types and vehicle mix relate to traffic exposure and collision severity.\n\n\n\n\n\n\nNote\n\n\n\nPlaceholder page."
   },
   {
-    "objectID": "analysis/osm-coverage.html#coverage-by-road-class",
-    "href": "analysis/osm-coverage.html#coverage-by-road-class",
-    "title": "OSM Feature Coverage Diagnostic",
-    "section": "2 Coverage by road class (%)",
-    "text": "2 Coverage by road class (%)\n\n\n\n\n\n\n\n\n\n\n\n\n\ncolumn\nMotorway\nA Road\nB Road\nClassified Unnumbered\nUnclassified\nNot Classified\nUnknown\n\n\n\n\nis_unpaved\n36.2\n27.4\n24.9\n20.2\n16.7\n12.5\n9.2\n\n\nlanes\n40.3\n34.7\n21.9\n13.2\n4.4\n1.9\n1.5\n\n\nlit\n38\n25\n16.4\n10.8\n10.1\n3.6\n2.3\n\n\nspeed_limit_mph\n46.1\n55.3\n52.4\n53.9\n59.4\n57.4\n51.1"
-  },
-  {
-    "objectID": "analysis/osm-coverage.html#coverage-by-latitude-band",
-    "href": "analysis/osm-coverage.html#coverage-by-latitude-band",
-    "title": "OSM Feature Coverage Diagnostic",
-    "section": "3 Coverage by latitude band (%)",
-    "text": "3 Coverage by latitude band (%)\n\n\n\n\n\n\n\n\n\n\n\ncolumn\n51–52°N\n52–53°N\n53–54°N\n54–55°N\n55–56°N\n\n\n\n\nis_unpaved\n2.7\n22.4\n13.7\n17.2\n8.9\n\n\nlanes\n1.2\n10.2\n5.6\n9.2\n4.3\n\n\nlit\n1.2\n11.3\n8.2\n12.1\n8.5\n\n\nspeed_limit_mph\n10.8\n75\n47.8\n66\n36.2"
-  },
-  {
-    "objectID": "analysis/osm-coverage.html#value-distributions-populated-rows-only",
-    "href": "analysis/osm-coverage.html#value-distributions-populated-rows-only",
-    "title": "OSM Feature Coverage Diagnostic",
-    "section": "4 Value distributions (populated rows only)",
-    "text": "4 Value distributions (populated rows only)\n\n4.1 speed_limit_mph\n\n\n\n\n\n\n\n\n\n\n\n\n\nroad_class\nn_filled\nn_distinct\nmin\nq25\nmedian\nq75\nmax\n\n\n\n\nMotorway\n1882\n32\n15\n70\n70\n70\n70\n\n\nA Road\n86016\n65\n10\n30\n36\n50\n115\n\n\nB Road\n46830\n58\n10\n30\n30\n40\n125\n\n\nClassified Unnumbered\n102922\n61\n10\n30\n33\n40\n195\n\n\nUnclassified\n630118\n74\n6\n22\n26\n30\n220\n\n\nNot Classified\n129078\n62\n6\n21\n25\n29\n224\n\n\nUnknown\n226296\n76\n6\n20\n22\n26\n224\n\n\n\n\n\n4.2 lanes\n\n\n\n\n\n\n\n\n\n\n\n\n\nroad_class\nn_filled\nn_distinct\nmin\nq25\nmedian\nq75\nmax\n\n\n\n\nMotorway\n1644\n8\n1\n2\n2\n3\n10\n\n\nA Road\n53962\n7\n1\n2\n2\n2\n8\n\n\nB Road\n19547\n7\n1\n2\n2\n2\n7\n\n\nClassified Unnumbered\n25119\n6\n0\n2\n2\n2\n5\n\n\nUnclassified\n47151\n7\n0\n2\n2\n2\n20\n\n\nNot Classified\n4347\n6\n0\n1\n2\n2\n5\n\n\nUnknown\n6447\n6\n1\n1\n2\n2\n6"
-  },
-  {
-    "objectID": "analysis/osm-coverage.html#highlights",
-    "href": "analysis/osm-coverage.html#highlights",
-    "title": "OSM Feature Coverage Diagnostic",
-    "section": "5 Highlights",
-    "text": "5 Highlights\n\n5.1 Columns with &gt;80% coverage by road class (usable without imputation)\nNo column × road-class combination reaches 80% coverage.\n\n\n5.2 Columns with &lt;20% coverage by road class (imputation would invent most values)\n\n\n\n\n\n\n\n\n\n\nroad_class\ncolumn\npct_coverage\nn_links\nn_filled\n\n\n\n\nUnknown\nlanes\n1.5\n442836\n6447\n\n\nNot Classified\nlanes\n1.9\n224878\n4347\n\n\nUnknown\nlit\n2.3\n442836\n10265\n\n\nNot Classified\nlit\n3.6\n224878\n8139\n\n\nUnclassified\nlanes\n4.4\n1060014\n47151\n\n\nUnknown\nis_unpaved\n9.2\n442836\n40849\n\n\nUnclassified\nlit\n10.1\n1060014\n107342\n\n\nClassified Unnumbered\nlit\n10.8\n190921\n20620\n\n\nNot Classified\nis_unpaved\n12.5\n224878\n28159\n\n\nClassified Unnumbered\nlanes\n13.2\n190921\n25119\n\n\nB Road\nlit\n16.4\n89286\n14618\n\n\nUnclassified\nis_unpaved\n16.7\n1060014\n176644\n\n\n\n\n\n5.3 Decision guidance\nFor each column × road-class, coverage determines the right modelling strategy:\n\n≥80%: Include as-is; drop the small fraction of missing rows.\n20–80%: Median-impute and add an {col}_imputed binary flag; coefficient reflects the imputed value and should be interpreted with caution.\n&lt;20%: The imputed value is invented for &gt;80% of rows. The coefficient will primarily reflect the imputation default, not genuine signal. Consider excluding from the model or using road-class median as a proxy only if the proxy is defensible.\n\nNote: coverage on major roads (Motorway, A Road) is typically higher because OSM contributors prioritise high-traffic routes. If those columns are included in a model trained on all road classes, the signal comes almost entirely from major roads and the imputed values for minor roads are close to noise."
+    "objectID": "analysis/vehicle-mix.html#planned-content",
+    "href": "analysis/vehicle-mix.html#planned-content",
+    "title": "Vehicle Mix Analysis",
+    "section": "Planned Content",
+    "text": "Planned Content\n\nVehicle-type breakdown from STATS19.\nHGV and long-vehicle exposure from traffic data.\nSeverity patterns by vehicle mix.\nPlanned Stage 1c vehicle-mix modelling."
   },
   {
     "objectID": "analysis/model-results.html",
