@@ -60,8 +60,7 @@ Tracked here so nothing gets lost. Cross off as done.
   sidebar filters for road type / year / severity.
 
 - [ ] GeoPackage export — ESRI-compatible output layer (link_id, geometry,
-  estimated_aadt, risk_percentile, road_classification). Demonstrates ESRI
-  integration story for DfT/DVSA conversations.
+  estimated_aadt, risk_percentile, road_classification). Useful.
 
 - [ ] `data/README.md` — download instructions for all large raw files not in git
   (STATS19 CSV, OS Open Roads GeoPackage, AADF zip, OSM pbf files, MRDB).

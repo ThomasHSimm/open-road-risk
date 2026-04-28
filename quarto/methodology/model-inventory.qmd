@@ -14,9 +14,9 @@ format:
 
 ---
 
-## 1. Stage 2 — Collision Risk Model (`src/road_risk/model/collision.py`)
+## Stage 2 — Collision Risk Model (`src/road_risk/model/collision.py`)
 
-### 1.1 Training data
+### Training data
 
 | Item | Value | Source |
 |---|---|---|
@@ -32,7 +32,7 @@ then downsamples zero-collision rows to 10× positives (≈ 91% zeros vs 98% in
 the full table) to keep the statsmodels design matrix tractable. XGBoost trains
 on the full ~21.7M-row table with zeros filled to 0.
 
-### 1.2 GLM — Poisson with log-offset
+### GLM — Poisson with log-offset
 
 **Family / link:** Poisson, log link (statsmodels `sm.families.Poisson()`).  
 **Regularisation:** None. Standard MLE.  
@@ -79,7 +79,7 @@ features.
 | AIC | 2,126,878 |
 | Converged | Yes |
 
-### 1.3 XGBoost — Poisson with base_margin offset
+### XGBoost — Poisson with base_margin offset
 
 **Hyperparameters (hardcoded in `train_collision_xgb`, lines 322–328):**
 
@@ -134,7 +134,7 @@ currently in the trained feature list.
 
 **Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, and tiered speed-limit imputation; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.
 
-### 1.4 Output
+### Output
 
 `data/models/risk_scores.parquet` — one row per link. Key columns:
 `predicted_xgb` (mean collisions/year), `predicted_glm`, `residual_glm`,

@@ -1,0 +1,137 @@
+# Executive Summary  
+The **Open Road Risk** pipeline is a modular end‐to‐end road safety model using open data (DfT STATS19 collisions, AADF, OS Open Roads, WebTRIS, OSM) to score every road link by exposure-adjusted collision risk【6†L2-L6】【34†L6-L14】.  The codebase reflects this design: separate packages for **ingest**, **clean/snap**, **feature engineering**, and **modeling**, as documented in the README and CODE_README【7†L102-L109】【34†L6-L14】.  Core decisions – e.g. using *all* links×years with Poisson GLM+XGBoost (Stage 2), including a log-offset for exposure, pooling across years, and excluding post-event features – are implemented consistently with the project goals【44†L1-L9】【44†L57-L66】.  Key metrics are reported (GLM pseudo‑R² ≈0.30, XGB ≈0.857 on test【7†L142-L145】【17†L59-L63】) on the full 2.17M-link network【17†L105-L112】, satisfying the stated ambition to cover uncounted roads.  
+
+However, several gaps and risks emerge.  The **target definition** in `settings.yaml` (set to collision severity) is unused – the model actually predicts total collision counts per link. This misalignment should be resolved to avoid confusion.  The code pipeline itself appears well-structured, but **missing infrastructure** (no CI, no integration tests, no Docker/virtual environment files) could hinder reproducibility.  Notably, there is no PostGIS loader (`db.py`) nor final GeoPackage export implemented yet (both flagged as TODO)【8†L53-L61】, meaning downstream sharing (e.g. via GIS) is incomplete.  The Streamlit app is functional but acknowledged as **slow with 60k links** (per changelog) due to GeoJSON bottlenecks【11†L88-L96】.  On strategy, the roadmap focuses correctly on feature and exposure refinements (OSM imputation, seasonal profiles, vehicle mix, etc.), but advanced experiments (empirical-bayes shrinkage, facility-family splits) are still pending prioritization【12†L9-L12】【8†L45-L53】.  
+
+**Key Findings:**  
+- **Goals vs. Implementation:** The code largely implements the README-specified pipeline: all ingestion scripts, cleaning/snap/join, feature builds, and models exist and run end-to-end【7†L102-L109】【34†L6-L14】. It scores every link in the study area (2.17M links【17†L105-L112】) with exposure offsets, as promised. Derived outputs (risk scores, metrics JSON) are saved appropriately. Missing pieces include final deliverables like a GPKG output or database, currently listed as TODO【8†L53-L61】.  
+- **Architecture & Modularity:** The code is neatly modular: data readers (`ingest/`), preparers (`clean_join/`), feature builders (`features/`), and modeling stages (`model/`). Configuration is centralized in YAML (loaded by `config.py`)【22†L27-L35】【20†L63-L69】, ensuring consistent paths, bounds, years, etc. The choice of OS OpenRoads as the network backbone is sound (full coverage vs. MRDB’s limited scope【49†L68-L76】), and OSM is used only for attributes, not geometry, per design. The design has appropriate abstraction (e.g. helper functions for coordinate transforms, parking of deprecated code). Some hard-coded “magic values” (police force codes, HGV types) are documented in `CODE_README.md`【34†L106-L114】, which aids transparency.  
+- **Reproducibility:** The pipeline uses fixed seeds (RANDOM_STATE=42【43†L45-L49】) and splits (e.g. GroupKFold/ShuffleSplit by site/link to avoid leakage). Intermediate caches (Parquet outputs) and checks (assertions, dropna logic) are in place. Notably, Stage 1a always reruns (no stale cache) as per the changelog【11†L35-L42】, ensuring consistency. However, there's **no CI or test runner for the full pipeline**, and only a handful of unit tests exist (e.g. for curvature, terrain, speed-limit logic【14†L15-L23】【15†L15-L23】【16†L5-L13】). Key scripts like ingestion and modeling lack automated tests or checks, which poses a risk as the pipeline grows.  
+- **Data Handling:** Raw data are kept outside git (as intended) with scripts to ingest them. The code applies bounding-box filters (WGS84 for AADF/WebTRIS, BNG for OpenRoads) to clip to the study area plus buffer【20†L15-L24】【25†L55-L63】, avoiding excess data. Known data issues (force-code mis-selection, coordinate system glitches) have been diagnosed and fixed (e.g. force code bug fixed April 2026【7†L149-L157】). OSM-derived features have only ~56% raw coverage for speed, but a tiered imputation raises it to ~91%【7†L167-L170】; lanes/lit/surface are low-cover (~7–16%) and imputed in GLM【7†L167-L170】. The code explicitly guards against *leakage* by dropping post-event collision aggregates from model inputs (`FORBIDDEN_POST_EVENT_COLS`)【44†L57-L66】【44†L70-L78】, so strategy matches documentation.【34†L94-L100】.  
+
+**Critical Risks & Gaps:**  
+- **Documentation & Deliverables:** The absence of a raw-data README (not yet done【8†L61-L69】) means onboarding requires ad-hoc instructions. The eventual GIS-ready outputs (GeoPackage, PostGIS load) are *planned* but not delivered yet【8†L53-L61】. This limits use by stakeholders (e.g. DfT/DVSA expects ESRI-compatible outputs).  
+- **App Performance:** The Streamlit mapping app is in-flight, but 60k+ link rendering is slow【11†L88-L96】. Without addressing this (e.g. tiling or geometry simplification), user experience suffers. The priority sequence (motorways first) is clever but only halves the problem.  
+- **Feature Strategy:** Current TODO and analysis notes wisely *de-prioritise* a blind global OSM retrain (due to coverage bias) and the Strava data (licensing issues)【8†L93-L100】【8†L111-L120】. Instead, incremental additions (vehicle mix, seasonal risk) are queued. However, the project lacks an integrated experiment management system – e.g. no hyperparameter or model-tracking framework is in place. The analytical recommendation (from an internal review) to run *four-arm held-out experiments* (baseline vs. OSM vs. facility vs. both) is sound【12†L11-L14】 and should guide the next steps.  
+- **Maintainability:** Code is readable and commented, but a few maintenance issues exist. For example, `settings.yaml` still defines `target: collision_severity` even though the modeling code uses `collision_count`【51†L1-L4】【45†L173-L181】; this should be cleaned up to avoid confusion. The output filename `openroads_yorkshire.parquet` still bears the old study name (Yorkshire) even though the filter covers a larger region【49†L147-L150】. These are minor but indicate a need to align metadata with current scope.  
+- **Missing Infrastructure:** There is no continuous integration (CI) or linting configured. Key numeric-heavy code (GLM fitting, XGBoost training) can be slow; profiling and caching have been considered (e.g. AADF parquet cache【24†L288-L293】), but wider automated testing (e.g. a small synthetic test dataset) would catch regressions. Deployment packaging (e.g. a Dockerfile or environment.yml) is absent, which could hinder reproducibility across machines.  
+
+# Goals vs. Implementation  
+
+| **Stated Goal** (source) | **Implemented** | **Gap / Notes** |
+|---|---|---|
+| **Full-network exposure scoring** — score **every** road link × year on risk (links w/ no counts included)【6†L2-L6】 | Implemented. The pipeline builds a link×year table, fills zeros for no-collision links【44†L11-L19】【44†L124-L133】, and outputs one pooled row per link (risk_scores.parquet, ~2.17M links)【17†L105-L112】【48†L462-L471】. | None major. (Note: final `risk_scores.parquet` has no year column by design【44†L13-L20】, matching the stated pooled output.) |
+| **Traffic exposure estimation** — Stage 1a must predict AADT on all 2.1M links (CV R² ~0.83)【6†L16-L24】 | Done. Stage 1a is implemented (`model/aadt.py`), training on counted AADF points and applying to all links. Reported CV R² is ~0.83【6†L16-L24】. The code always regenerates AADT to ensure coverage【11†L35-L42】.  | No gap noted. (One TODO: validate AADT vs. WebTRIS corridors【8†L42-L49】.) |
+| **Temporal profiles** — Stage 1b learn daily shape fractions from WebTRIS (sparse years, 5,948 sites)【6†L24-L32】 | Done. `model/timezone_profile.py` builds fractions (core/day/night) and applies them to all links using network features【36†L3-L12】【36†L79-L88】. Output is saved to `timezone_profiles.parquet`. | No functional gap, though Stage1b results are kept separate (per current TODO) for future use【8†L86-L90】. |
+| **Collision risk modeling** — Stage 2: Poisson GLM + XGBoost on collisions per link×year, with log(offset)【6†L33-L42】 | Done. `model/collision.py` constructs link×year table, merges collisions and AADT, fits Poisson GLM and XGB (with exposure offset)【45†L163-L172】【47†L345-L354】. Final risk is percentile of XGB predictions.  | Model implementation matches goals, with one change: now pooling by link instead of per-year, as noted in docs【11†L35-L42】. This diverges from earlier messaging (README said “link × year”), but is intentional for stability. |
+| **Open data** — use only open/available data: STATS19, AADF, OS, WebTRIS, OSM (with imputation)【6†L2-L6】 | Implemented. Ingest scripts exist for all sources (STATS19, AADF, WebTRIS, MRDB, OpenRoads)【34†L6-L14】. OSM is consumed via `networkx/osmnx` in `network_features.py` for speed/lanes/surface (flags imputed in modeling)【34†L12-L14】. | Done. (One caveat: the OSM “global retrain” was deprioritised upon finding poor coverage【8†L93-L100】, which is a sensible strategy adjustment.) |
+| **Modularity & reproducibility** — clear pipeline stages, documented, repeatable (using config/arguments) | Mostly implemented. The code uses a CLI interface (`-m road_risk.model`) and config settings (YAML)【22†L27-L35】. Modules are separated per stage【7†L102-L109】. | Partially lacking CI/testing. A `CODE_README.md` tracks module status, but no automated pipeline runner. We recommend adding a single-command orchestrator (e.g. Makefile or script) and CI to ensure all stages work together. |
+| **App integration** — interactive map + filters (Streamlit) | In progress. The `app/` folder contains code (`colours.py`, `yorkshire.py`) and the CODE_README marks it “in progress”【34†L18-L21】. The changelog notes adjustments for pooled output (removing year selector)【11†L52-L61】. | Not fully implemented: performance issues remain, and the `db.py` loader for PostGIS (required by the app) is not yet started【8†L53-L61】. Export to GeoPackage (as per TODO) is also pending. These should be high priorities for a shippable product. |
+
+# Core Modules & Dependencies  
+
+| **Module**               | **Description**                           | **Inputs**                                             | **Outputs**                          |
+|--------------------------|-------------------------------------------|--------------------------------------------------------|--------------------------------------|
+| **`ingest/ingest_stats19.py`**   | Load raw STATS19 CSVs, filter by force codes, merge vehicles/casualties by collision ID. | Raw STATS19 CSV directory, `settings.yaml` (force codes) | Clean collision/parquet files (e.g. `stats19_*.parquet`). |
+| **`ingest/ingest_aadf.py`**      | Load DfT AADF zip, filter by year and bounding box, aggregate directions. | `dft_traffic_counts_aadf_by_direction.zip` in `data/raw/aadf/`. | Parquet (`aadf_clean.parquet`) and cached `aadf_filtered.parquet`. |
+| **`ingest/ingest_webtris.py`**   | Pull WebTRIS sensor data via API, filter to study area. | Requires `pyTRIS` library and API credentials; raw folder cache. | Parquet (`webtris_clean.parquet`). |
+| **`ingest/ingest_openroads.py`** | Load OS OpenRoads GeoPackage (road_link layer), apply BNG bbox filter, reproject to WGS84. Builds `road_name_clean` for snapping. | `oproad_gb.gpkg` in raw shapefiles folder. | Parquet (`openroads_yorkshire.parquet`) of ~2.17M links with attrs. |
+| **`clean_join/clean.py`**        | Clean/validate raw tables: LSOA coords, add COVID flag, time/road filters. | Processed data from ingest (collisions, aadf, webtris). | Cleaned tables (`stats19_clean.parquet`, etc.). |
+| **`clean_join/snap.py`**         | Snap collisions to nearest OpenRoads links via weighted match, with KD-tree spatial index. | Clean STATS19 (lat/lon), OpenRoads (geometry). | Snap table (`collision_snap.parquet`) with link IDs and snap scores. |
+| **`clean_join/join.py`**         | Join together: build *road_link×year* feature table with collisions, AADF, WebTRIS. Filters poor snaps. | Snap results, AADF flows, WebTRIS profiles, possibly MRDB. | `road_link_annual.parquet` (one row per link×year with collision counts, exposure). |
+| **`features/network.py`**        | Compute network-level features (betweenness, degree, distance to majors, population density). Also integrates OSM attributes (`--osm` flag for speed, lanes, etc.)【34†L12-L14】. | OpenRoads graph, optional OSM data, LSOA population. | `network_features.parquet` (one row per link). |
+| **`features/road_curvature.py` / `road_terrain.py`** | Compute geometric features (curvature, grade) along link geometry. Used in exploratory analysis and legacy features. | OpenRoads geometry (+ DEM). | Additional feature tables (optionally merged in `network_features`). |
+| **`model/aadt.py`**             | Stage 1a: train gradient-boosted regressor on counted AADF points (count×year), predict AADT on all links×years. Uses GroupKFold by count point. | `aadf_clean.parquet`, network features. | `data/models/aadt_estimates.parquet`. |
+| **`model/timezone_profile.py`** | Stage 1b: compute traffic fraction profiles from WebTRIS; train multi-output HGB regressor with GroupKFold by site. Apply to all links. | `webtris_clean.parquet`, nearest-link snap (in code) + network features, `aadt_estimates`. | `data/models/timezone_profiles.parquet`. |
+| **`model/collision.py`**        | Stage 2: build Poisson modeling dataset; train GLM (statsmodels) and XGBoost with exposure offset; score and pool. | `openroads_yorkshire.parquet`, `road_link_annual.parquet`, `network_features.parquet`, `aadt_estimates.parquet`. | Trained models (`collision_glm.pkl`, `collision_xgb.json`), risk scores (`risk_scores.parquet`), metrics JSON. |
+| **`app/`**                      | Streamlit app for risk map. Uses `risk_scores.parquet`, OpenRoads geometry, network features to render. | `risk_scores.parquet`, `openroads_yorkshire.parquet`, maybe DB. | Interactive map (code) – export to GeoPackage not yet implemented. |
+
+*(Dependencies: ingestion modules feed into clean_join; clean_join outputs feed into model and features; model depends on cleaned & feature data; app depends on model outputs.)*  
+
+# Recommendations & Roadmap  
+
+**Short-term (Next 1–3 months):**  
+- **Finalize Infrastructural Outputs:** Implement the PostGIS loader (`db.py`) and GPKG export as per TODO【8†L53-L61】. This will close the loop to GIS integration. Add instructions/automation for raw data ingestion (e.g. a `data/README.md`)【8†L61-L69】.  
+- **Quality & Testing:** Fix remaining high-priority bugs (plots scaling, geometry fallback) noted in TODO【8†L6-L14】【8†L16-L24】. Add automated tests for ingestion and pipeline steps (e.g. round-trip on a toy dataset). Configure CI (GitHub Actions) to run tests and linters on PRs.  
+- **App Performance:** Profile and optimize the Streamlit app (e.g. simplify/shard geometries, switch to a tile service, or use `folium` offline caching). The changelog flagged this as a major issue【11†L88-L96】. Ensuring the map is responsive is critical for stakeholder demos.  
+- **Documentation Cleanup:** Align metadata (change `target: collision_severity` to `collision_count` in config) and rename outputs (avoid “Yorkshire” if region is larger)【49†L147-L150】【51†L1-L4】. Consolidate the CODE_README into the main docs or automate snippet generation so the repo README and site remain synchronized.  
+
+**Medium-term (3–6 months):**  
+- **Conduct Planned Experiments:** As advised in the internal review【12†L9-L12】, run **controlled ablations**: baseline vs. (OSM-only, facility-family split only, and both). Use held-out links for robust evaluation (the code’s GroupShuffleSplit is a good start【47†L358-L366】). Similarly, implement empirical-Bayes shrinkage and assess rank stability.  Prioritize stability infrastructure (multiple random seeds, cross-validation) as noted in TODO【8†L32-L36】.  
+- **Enhance Features:** Incorporate a vehicle-mix model (Stage 1c) to predict HGV/LGV shares on uncounted links【8†L45-L49】, as it’s in TODO. Explore adding other exposure proxies (e.g. regional active travel rates) if data becomes available. Re-evaluate omitted features: e.g. add `betweenness_relative` (highly ranked) and remove raw `betweenness` if still collinear【8†L38-L42】.  
+- **Data Versioning:** Consider using DVC or a similar tool to track large raw/processed files (or publish on Kaggle as planned【8†L68-L75】). This will ensure data provenance is explicit. Update the provenance directory structure per TODO【8†L68-L75】.  
+- **Model Refinements:** After new features are in, retrain Stage 2 and update the model inventory. Compare metrics and top-1% stability to prior runs (as in [17]). If GLM pseudo-R² remains low, consider alternative formulations (zero-inflated models, spatial random effects, etc.) for research interest. Ensure the models’ interpretations (coefficients) are documented as part of the pipeline (brief section in docs).  
+
+**Long-term (6+ months):**  
+- **Deployment & Scalability:** Containerize the pipeline (Docker) and consider a cloud schedule for periodic refresh (if new data arrives). Implement a user-friendly data portal or dashboard. Explore serving the risk map via a tile server for performance.  
+- **Extension & Maintenance:** Plan to extend beyond current regions (e.g. whole GB). The modular design makes this feasible, but will require re-tuning (new bounding boxes, force codes). If successful, consider packaging the pipeline as a reusable library. Update the documentation site with each major run (quarto site).  
+- **Community & Research:** Publish key outputs (risk tables, methodology) and consider open collaboration (e.g. Kaggle dataset【8†L68-L75】, code on GitHub). Engage with DfT or DVSA to align features with their needs (e.g. the promised GeoPackage output for ArcGIS compatibility).  
+
+```mermaid
+flowchart LR
+  subgraph Short-term
+    A[Fix critical bugs & tasks] --> B[Complete DB/GPKG output]
+    A --> C[Add CI, tests, docs]
+    A --> D[Optimize Streamlit app]
+  end
+  subgraph Medium-term
+    E[Run OSM/Facility/EB experiments] --> F[Implement Stage1c vehicle-mix]
+    E --> G[Improve feature set (speed, betw.)]
+    F --> H[Retrain models & evaluate]
+    G --> H
+  end
+  subgraph Long-term
+    I[Containerize & schedule pipeline] --> J[Extend to wider regions]
+    H --> I
+    J --> K[Publish data/products]
+  end
+```  
+
+**Sources:** The above analysis is based entirely on the repository contents – README, TODO list, internal docs, code, and reports【6†L2-L6】【7†L102-L109】【8†L53-L61】【11†L88-L96】【12†L9-L14】【17†L59-L63】 – supplemented by the provided Quarto documentation. Each cited line underscores how the code matches (or diverges from) the stated goals and best practices in reproducible research.
+
+
+-----------------
+
+Feedback from Claude with view of project but some refereces are 2-3 days old so not up to date. 
+For example, the R2 metrics may be correct they are what is on teh current readme, 60k is streamlit- streamlit needs updating and may not evework that well
+5 seed is done, results are a bit iffy and is on hold
+
+-----
+It's a reasonable review with several genuinely useful catches and several things it gets wrong or overstates. Worth working through systematically because some of its "gaps" are real and some are wrong, and you don't want to fix the wrong ones.
+What it gets right
+The target: collision_severity vs collision_count mismatch. This is a legitimate finding. If settings.yaml has target: collision_severity but the model code uses collision_count, that's a real config drift. Worth checking and fixing — five-minute job. Either update settings or remove the unused key.
+The openroads_yorkshire.parquet filename for a wider region. Also legitimate. The filename predates your study area expansion to Yorkshire + NW + Midlands. Worth a rename to openroads.parquet or similar, with the corresponding code updates. Small cleanup, captures the same point I've flagged earlier this week.
+No CI / no automated pipeline tests. True observation. You have unit tests on specific modules (curvature, terrain, speed-limit logic) but no end-to-end test or GitHub Actions config. For a portfolio project this is a defensible omission; for a project being positioned as research infrastructure for others, more important. Worth a TODO entry.
+Documentation gap for raw data acquisition. True — data/README.md is on your TODO already as a low-priority infrastructure item. The review correctly flags it.
+Streamlit app performance flagged. Whatever the actual current state is, the review correctly identifies it as a known concern from your changelog/TODO.
+What it gets wrong or overstates
+"Final risk_scores.parquet has no year column by design, matching the stated pooled output." Probably correct, but framed as a deviation from the README. The methodology page explicitly explains the pooling decision. This isn't a divergence; it's the documented design.
+"GLM pseudo-R² ~0.30, XGB ~0.857." Off slightly — your last retrain landed at GLM 0.301, XGBoost 0.858. Within rounding tolerance, but the review is quoting from somewhere; worth confirming it's reading the latest collision_metrics.json and not a stale source.
+"db.py PostGIS loader and GeoPackage export are TODO and limit DfT/DVSA stakeholder use." Two issues here:
+
+The framing implies these are blockers for stakeholder engagement. They're not, for two reasons: stakeholders typically request data in whatever format you can deliver; and your current parquet outputs are convertible to GeoPackage with a one-line GeoPandas call. The review treats these as more critical than they are.
+The DfT/DVSA framing assumes those are your stakeholders. For a portfolio project, that's aspirational rather than current. Worth not letting the review's framing shift your prioritisation toward "must build for institutional users" when your actual users are people evaluating the portfolio.
+
+"60k+ link rendering is slow per changelog." Worth checking what the changelog actually says, because your network has 2.17M links, not 60k. Either the review is reading a stale changelog from the Yorkshire-only era, or it's misinterpreting something. If the Streamlit app currently handles 60k links badly, that's still a problem; if it's now expected to handle 2.17M and only 60k loads, that's a different problem.
+"The Streamlit app's db.py loader (required by the app) is not yet started." I don't think the app requires a database loader. It can read directly from parquet. The review may be inferring a hard dependency from the TODO ordering. Worth confirming whether the app is functional with parquet-only input, which I think it is based on your earlier descriptions.
+"Hyperparameter or model-tracking framework" missing. True observation, but framing it as a critical gap is overcalling. For a project producing a single trained model for a research-platform use case, MLflow or W&B is overkill. The single collision_metrics.json file you're already saving is doing the model-tracking job at appropriate weight.
+"Empirical-Bayes shrinkage and facility-family splits still pending prioritization." They are pending, but they're not unprioritised — they're explicitly queued in TODO with clear sequencing. The review writes as if you haven't decided what to do; you have. The review just hasn't read your TODO carefully enough to see the order.
+What it misses entirely
+The 5-seed harness as the next priority. This is a notable omission given how much we've discussed it as the next structural step. The review's "incremental additions (vehicle mix, seasonal risk)" framing skips past the evaluation infrastructure entirely. Either the review didn't see the recent TODO entries, or it's treating evaluation infrastructure as less important than feature additions. Either way, a meaningful gap in the analysis.
+The provenance pattern as something noteworthy. The review mentions provenance once in passing (data versioning recommendation) but doesn't engage with the existing data/provenance/ pattern you've established. This is one of the more distinctive aspects of your project's documentation discipline — investigation reports, provenance JSONs, methodology page updates per change. The review treats the project as standardly-documented when it's actually unusually well-documented.
+The methodology-page transparency. Your methodology page documents specific limitations (pseudo-R² incomparability, GLM intercept bias, AADT uncertainty not propagated, OSM coverage threshold edge case). The review doesn't engage with these. A reviewer reading the methodology carefully would either commend or critique these specific decisions. The fact that the review skims them suggests it's reading the README more carefully than the methodology pages.
+The research-platform positioning. The review treats the project as "a road safety model that should be productionised for DfT/DVSA stakeholders." Your stated positioning is "a research platform for others to extend." These imply different priorities — the productionisation framing puts CI, deployment, GeoPackage, and DB at the top; the research-platform framing puts methodology rigour, attribution, and reproducibility at the top. The review's framing tilts toward the first; your framing tilts toward the second.
+What to actually do with the review
+The legitimate findings worth acting on are small and cheap:
+
+Fix the target: collision_severity config drift. 5 minutes.
+Rename openroads_yorkshire.parquet. 30 minutes including code references.
+Add data/README.md for raw data acquisition. Already on TODO; bump priority slightly.
+Add a brief CI config. Optional but cheap — even a single GitHub Action running pytest and ruff check would address the "no CI" finding. Maybe an hour.
+
+The framing-level disagreements (DfT/DVSA productionisation, db.py as critical, model-tracking framework, hyperparameter tuning) — leave those. They reflect a different vision of the project than the one you've established.
+The methodological gaps — 5-seed harness priority, EB shrinkage sequencing, provenance discipline — your TODO already captures these correctly. The review's omissions don't require any change on your side; they just confirm the review is more "checklist of standard ML-project completeness" than "engagement with the specific project's choices."
+Summary
+A useful review for catching small documentation drift and confirming a few known infrastructure gaps. Less useful for prioritisation — it pushes toward "make this look like a productionised industry project" rather than "make this look like a credible research platform." The specific catches (config drift, filename, CI) are worth fixing in 1-2 hours of cleanup. The framing recommendations (db.py priority, model-tracking framework, productionise for DfT/DVSA) are worth ignoring.
+Roughly 80% of the review's specific findings are correct or worth checking; about half of those are worth acting on; the broader prioritisation recommendations diverge from the project's stated positioning enough to discount.
+Reasonable input, not a redirection. Continue with the 5-seed harness as planned.
