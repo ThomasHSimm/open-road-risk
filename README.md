@@ -90,7 +90,6 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 | STATS19 (collisions, vehicles, casualties) | DfT | Per incident | GB 1979– |
 | AADF by direction | DfT | Count point / year | GB — major + some minor |
 | OS Open Roads | Ordnance Survey | Road link geometry | GB |
-| Major Road Database (MRDB) | DfT / OS | Road geometry | GB |
 | WebTRIS sensor reports | National Highways | Site / month, cleaned to site × year | National Highways network; current pull uses 2019, 2021, 2023 |
 | OpenStreetMap | OSM contributors | Road edge | GB — speed, lanes, surface |
 | LSOA population + area | ONS | LSOA 2021 | England & Wales |
