@@ -1,21 +1,142 @@
 ---
 title: "Modelling Approach"
+format:
+    html:
+        toc: true
+        toc-depth: 3
+        number-sections: false
+        page-layout: full
 ---
 
-## Overview
+## Three models, in sequence
 
-This page will document the modelling strategy: traffic estimation, temporal
-profiles, and exposure-adjusted collision risk scoring.
+The project produces a single output — a risk score per road link per year —
+but it does so via **three models chained together**. Each addresses a
+different gap in the available data, and each stage feeds the next.
 
-::: {.callout-note}
-Placeholder page. The final version should pull from the model results and
-collision-model EDA notebooks.
-:::
+| Stage | What it predicts | Why it exists | Output |
+|---|---|---|---|
+| **1a — Traffic volume** | AADT for every road link | DfT measures traffic at ~13,000 count points; the network has 2.1M links | `aadt_estimates.parquet` |
+| **1b — Time-zone profiles** | Within-day traffic shape (peak / pre-peak / off-peak fractions) | WebTRIS sensors are sparse; profiles let temporal exposure be projected to all links | `timezone_profiles.parquet` |
+| **2 — Collision risk** | Expected collisions per link per year | The headline risk model — uses Stage 1a output as exposure | `risk_scores.parquet` |
 
-## Planned Content
+Each stage has its own page documenting the data, features, validation, and
+known limitations. This page is an orientation: how the three fit together
+and why the project needs all three.
 
-- Stage 1a: AADT estimation for uncounted road links.
-- Stage 1b: temporal profiles from WebTRIS.
-- Stage 2: Poisson GLM and XGBoost collision models.
-- Exposure offset and interpretation of excess risk.
-- Risk percentiles, residuals, and confidence tiers.
+## Why exposure has to be modelled, not measured
+
+Comparing collision counts across roads requires a denominator. A motorway
+with 100,000 vehicles per day should have more collisions than a country lane
+with 500 — that's not a safety problem, it's a volume problem.
+
+The natural denominator is AADT (Annual Average Daily Flow), and DfT
+publishes AADF for ~13,000 count points across the study area. But the
+project scores 2.1 million road links. Most of the network — particularly
+minor and unclassified roads where collision under-counting is most severe —
+has no nearby count point.
+
+**Stage 1a** trains a gradient-boosted model on the directly counted AADF
+rows, learning the relationship between road class, location, network
+position, and traffic volume. It then applies that relationship to every
+link in the network, producing an AADT estimate for the 99.4% of links
+without a count point.
+
+The CV R² of ~0.83 (counted-only training set) means the estimator captures
+the dominant patterns but is not perfect — uncertainty in AADT is propagated
+forward and shows up in the residual structure of Stage 2.
+
+[→ Stage 1a: Traffic Volume](exposure-model.qmd)
+
+## Why temporal profiles are a separate model
+
+Time-of-day matters for risk: an empty motorway at 3am is a different
+exposure regime to the same road in rush hour. WebTRIS sensors on the
+National Highways network record sub-daily flow profiles (peak vs off-peak
+fractions), but they exist only on motorways and trunk A-roads — a tiny
+fraction of the full network.
+
+**Stage 1b** treats the WebTRIS profiles as training data and learns to
+predict the within-day shape from features the rest of the network shares
+with it (road class, AADT, network position). The output is a peak /
+pre-peak / off-peak fraction triple per link.
+
+These profiles are currently produced as a separate output for downstream
+temporal analysis. They are **not** part of the Stage 2 collision feature
+set — see Future Work for plans to integrate them.
+
+[→ Stage 1b: Time-Zone Profiles](timezone-profile.qmd)
+
+## The risk model itself
+
+**Stage 2** is the model the project exists to produce. It predicts annual
+collision counts per road link, using Stage 1a's AADT estimates as an
+exposure offset:
+
+```
+log(expected collisions) = log(AADT × length_km × 365 / 1e6) + β·X
+```
+
+The offset term means the model learns *which roads are dangerous given
+their traffic*, not just which roads are busy. A short minor road with three
+collisions and 500 vehicles per day comes out as higher-risk than a long
+motorway link with three collisions and 100,000 vehicles per day.
+
+Two model classes are fit on the same data:
+
+- A **Poisson GLM** for interpretable coefficients (incidence rate ratios)
+  and residual diagnostics. Used to identify "excess risk" links where
+  observed counts substantially exceed the model's prediction.
+- An **XGBoost** model for the headline risk percentile. Captures the
+  non-linear interactions a GLM misses, at the cost of being harder to
+  interpret directly. SHAP values fill that gap.
+
+The XGBoost output drives `risk_percentile`. The GLM provides the
+diagnostic residuals.
+
+[→ Modelling page (Stage 2 detail)](../analysis/model-results.qmd)
+
+## Decisions that span all three stages
+
+A few choices apply across the pipeline rather than to any single model:
+
+
+**Group-aware cross-validation.** Stage 1a uses GroupKFold by
+`count_point_id`, Stage 1b by `site_id`, and Stage 2 uses
+GroupShuffleSplit by `link_id`. This prevents leakage where a model
+sees the same physical road at training and test time and inflates
+its apparent performance.
+
+**Forbidden post-event columns.** Several columns in the joined data
+are derived *from collision records themselves* (e.g. `pct_dark`,
+`pct_urban`, mean speed at collision sites). These are excluded from
+modelling features by an explicit guard in `model/collision.py` —
+see [Engineering Conventions](../index.qmd) for detail. Using them
+would mean the model "predicts" collisions partly by looking at the
+collisions it's trying to predict.
+
+## Validation across stages
+
+Each stage has its own held-out validation:
+
+- **Stage 1a:** CV R² ~0.83 on counted-only AADF rows.
+- **Stage 1b:** CV R² ~0.65 on `core_daytime_frac`, ~0.46 on
+  `late_evening_frac` (weakest band).
+- **Stage 2:** Out-of-sample pseudo-R² 0.858 (XGBoost), 0.301 (GLM
+  in-sample on downsampled training set).
+
+**The Stage 1a and Stage 2 metrics are not directly comparable** —
+different targets, different null models, different row subsets. See
+[Model Inventory](model-inventory.qmd) for full performance metrics
+and [Empirical Bayes Shrinkage](../methodology/empirical-bayes-shrinkage.qmd)
+for the post-modelling adjustment that handles overconfidence on
+zero-collision links.
+
+## What this section covers
+
+- [Stage 1a: Traffic Volume](exposure-model.qmd) — AADT estimation, training data, validation
+- [Stage 1b: Time-Zone Profiles](timezone-profile.qmd) — within-day shape modelling
+- [Stage 2: Collision Risk Model](../analysis/model-results.qmd) Collision risk modelling, features, diagnostics, SHAP interpretation
+- [Facility Family Split](facility-family-split.qmd) — separate per-family models for motorway / trunk A / urban / rural
+- [Model Inventory](model-inventory.qmd) — concrete list of models, hyperparameters, metrics
+

@@ -8,41 +8,18 @@ Last reviewed: 2026-04-28.
 
 ## In progress
 
-.
+*(none — see Closed for this session's work)*
 
 ## Data Sources menu — coverage gaps
-
-The current menu has 5 entries but the pipeline uses more sources than that.
-Decide structure once MRDB is rewritten.
 
 - **OpenStreetMap** has no page. OSM features (`speed_limit_mph`, `lanes`,
   `surface`, `lit`) feed the model and are documented in
   `analysis/osm-coverage.qmd`, but the source itself is not described in
   Data Sources. No `ingest_osm.py` exists; loading happens via `osmnx` and
-  `osmium` per the README.
+  `osmium` per the README. Drafting requires pointer to actual loading code.
 - **LSOA population + area** (ONS) is listed in the README data sources table
-  but has no site page.
-- **Decision needed:** add three new pages, or fold into existing structure?
-  Three pages would mean the Data Sources menu grows from 5 to 8.
-
-## Methodology chronology — modelling gap
-
-The Methodology menu walks readers through the pipeline:
-data-joining → Stage 1a → Stage 1b → feature engineering → EB shrinkage →
-COVID handling. The actual modelling step is missing from this flow — Models
-is a separate top-level menu. Readers reading chronologically jump from
-Feature Engineering straight to Empirical Bayes Shrinkage with no model
-introduction in between.
-
-Two options:
-
-- Add a brief "Modelling overview" page or section into Methodology that
-  cross-references the Models menu.
-- Restructure so Models lives inside Methodology rather than as a sibling
-  top-level section.
-
-No urgency — the site works as-is — but worth resolving when next editing
-the navbar.
+  but has no site page. Lower priority — population density features are
+  derived from this, but the source description would be brief.
 
 ## Validation content — potential new subsection
 
@@ -63,55 +40,78 @@ work, not just relocation.
 
 ## Documentation/code mismatches to resolve
 
-- **"Yorkshire" terminology is stale.** Filenames (`mrdb_yorkshire.parquet`,
-  `openroads_yorkshire.parquet`), constants (`YORKSHIRE_BBOX_BNG`,
-  `YORKSHIRE_BBOX`), and docstrings in `ingest_mrdb.py` /
+- **"Yorkshire" terminology is stale.** Filenames (`openroads_yorkshire.parquet`),
+  constants (`YORKSHIRE_BBOX_BNG`, `YORKSHIRE_BBOX`), and docstrings in
   `ingest_openroads.py` still say Yorkshire. Actual study area is Northern
-  and Central England (Midlands through Yorkshire). Resolve in code, not by
-  writing carefully around it on the site. *This is also an entry on the
-  engineering TODO, but flagging here because public pages reference these
-  filenames.*
-- **`methodology/data-joining.qmd` does not mention MRDB explicitly.**
-  Once the MRDB page exists, add a one-line cross-reference in Stage 4
-  (AADF → road links) noting MRDB's role.
-- **`README.md` data sources table lists 7 sources; site has 5.** See
-  "Data Sources menu — coverage gaps" above.
+  and Central England. Resolve in code, not by writing carefully around it
+  on the site. Cross-listed in `TODO.md`. Site OS Open Roads page contains
+  a callout flagging this as a known cosmetic inaccuracy.
+- **`methodology/data-joining.qmd` does not mention OS Open Roads as the
+  geometry backbone explicitly.** Could add a one-line cross-reference now
+  that the OS Open Roads source page exists. Low priority.
+- **`README.md` data sources table.** MRDB row has been removed. OSM and LSOA
+  rows still listed without dedicated site pages — see "Coverage gaps" above.
 
 ## Decisions to make
 
 - **`docs/internal/family-definition-rationale.md`**: convert to a public
-  ADR-style page (`docs/decisions/`) or keep internal? Audit flagged it as
-  "Design History (ADR)". Already largely covered in
-  `methodology/facility-family-split.qmd`, so the case for a separate public
-  page is weak.
+  ADR-style page (`docs/decisions/`) or keep internal? Already largely
+  covered in `methodology/facility-family-split.qmd`, so the case for a
+  separate public page is weak. Lean toward keeping internal.
 - **Notebooks (`docs/notes/*.ipynb`)**: leave in place, move to a
   `notebooks/` directory, or convert any to .qmd as supplemental analysis?
   Currently three notebooks (motorwayrisk, temporal_explore, webtris_explore),
   all 1000+ lines and not site-quality.
 - **`docs/notes_notgit/*`**: three files (`note_24apr_1.md`, `_2.md`, `_3.md`)
   in a deliberately untracked directory. Confirm intent and document.
+- **Stage 2 page rename**: `analysis/model-results.qmd` is functionally the
+  Stage 2 model page, not just a results page. Renaming to
+  `methodology/stage2-collision.qmd` would be more honest but triggers
+  cross-reference updates. Navbar label has been updated; file rename
+  deferred.
+
+## Future drafts
+
+- Year encoding section. The modelling overview deliberately omits year
+  handling because the actual encoding wasn't verified against
+  `model/collision.py`. Worth adding once confirmed.
+- Stage 2 hyperparameter / training detail. Currently distributed across
+  `model-results.qmd`, `model-inventory.qmd`, and `CODE_README.md`.
+  Consolidation would help.
 
 ## Closed / done
 
+**2026-04-28 session:**
+
+- Removed MRDB from public site (page deleted, navbar entry removed) after
+  code investigation confirmed `mrdb_clean.parquet` is produced but never
+  consumed downstream. MRDB is functionally orphaned. Engineering follow-up
+  added to `TODO.md`.
+- Removed MRDB row from `README.md` data sources table.
+- Added new OS Open Roads data source page (`quarto/data-sources/openroads.qmd`)
+  with substantive content drawn from `ingest_openroads.py`.
+- Restructured Methodology and Models menus. Stage 1a (exposure model) and
+  Stage 1b (timezone profile) moved from Methodology to Models so all three
+  pipeline stages live together. Methodology now covers data-joining,
+  feature engineering, and EB shrinkage.
+- Removed `covid-handling.qmd` from the site — page was a placeholder with
+  little to add. COVID handling is a one-line decision that fits inline
+  elsewhere if needed.
+- Added Methodology landing page (`methodology/index.qmd`) explaining the
+  Methodology vs Models distinction and listing pages in the section.
+- Replaced empty `modelling.qmd` stub with substantive Models landing page
+  covering the three-stage pipeline at orientation level.
+- Renamed Models menu entry "Model Results & SHAP" → "Stage 2: Collision
+  Risk Model" to reflect that the page is actually the Stage 2 model
+  documentation, not a downstream interpretation page.
+
+**2026-04-27:**
+
 - Added two orphaned `.qmd` files to navbar
   (`analysis/collision-exposure-behaviour.qmd`,
-  `methodology/facility-family-split.qmd`). 2026-04-27.
-- Restructured navbar so Methodology and Models no longer duplicate three
-  pages. 2026-04-27.
+  `methodology/facility-family-split.qmd`).
 - Cleaned commented-out `timezone-profile.qmd` reference under EDA.
-  2026-04-27.
 
-- **Replace MRDB stub page (`quarto/data-sources/mrdb.qmd`).** Current page is
-  a placeholder. Needs honest description of MRDB's auxiliary role: AADF
-  count-point linkage on the Major Road Network, distinct from OS Open Roads
-  which provides the full network backbone. Verification underway on whether
-  `count_point_id` is actually used as a join key downstream (see
-  `clean_join/clean.py` and `clean_join/join.py`)
-
-- **OS Open Roads** has no dedicated page despite being the primary network
-  geometry (2.1M links). Currently mentioned only in passing in the MRDB stub
-  and in `methodology/data-joining.qmd`. Source material: `ingest_openroads.py`
-  docstring is substantial.
 ---
 
 *Maintained alongside `docs/internal/Changelog_April_12_2026.md` and

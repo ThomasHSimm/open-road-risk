@@ -1,0 +1,78 @@
+---
+title: "Methodology"
+format:
+    html:
+        toc: true
+        toc-depth: 2
+        number-sections: false
+        page-layout: full
+---
+
+## What this section covers
+
+The Methodology section documents the **decisions and processes** that
+turn raw data sources into model-ready features. It is distinct from
+the [Models](modelling.qmd) section, which covers the predictive
+models themselves and their performance.
+
+A useful way to think of the split:
+
+- **Methodology**: how the data is shaped — joining sources together,
+  building features, handling overdispersion in count data.
+- **Models**: what predictions are made from that data — traffic
+  estimation, time-zone profiles, collision risk.
+
+The two sections sit on either side of a clear handoff. Methodology
+produces `road_link_annual.parquet` with one row per link per year
+and a fixed schema. Models consume that table and produce predictions.
+
+## Pages in this section
+
+[**Joining the Datasets**](data-joining.qmd) — how STATS19
+collisions, AADF count points, WebTRIS sensors, and OS Open Roads
+links are spatially joined into a single road-link-by-year table.
+Includes the four-dimension weighted snap, distance caps, and
+quality tracking.
+
+[**Feature Engineering**](feature-engineering.qmd) — link-level
+features built on top of the joined table: network centrality, road
+geometry, OSM attributes, population density. Documents the imputation
+rules for sparse OSM fields and the `speed_limit_mph_effective` tiered
+fallback.
+
+[**Empirical Bayes Shrinkage**](empirical-bayes-shrinkage.qmd) — the
+post-modelling adjustment that handles overconfidence on links with
+zero observed collisions. Explains the choice of shrinkage parameter
+*k* and the operational impact on rankings.
+
+## Methodology vs Models
+
+A few decisions sit on the boundary between sections:
+
+- **Year handling** is a methodology question (how to encode time)
+  but interacts directly with model choice. The pipeline uses year as
+  a categorical feature; the COVID years (2020–2021) are absorbed by
+  year-specific fixed effects. An `is_covid` flag is the natural
+  alternative if year is not already in the model.
+- **Group-aware cross-validation** is a model-choice decision but
+  depends on methodology — the grouping key (`count_point_id`,
+  `site_id`, `link_id`) is determined by what the joining pipeline
+  produces.
+- **Forbidden post-event columns** — several derived columns are
+  excluded from modelling because they are computed from collision
+  records themselves. This is enforced in the modelling code but the
+  list is documented as a methodology decision.
+
+These cross-cutting items are documented on the page where they have
+most impact. Cross-references run in both directions.
+
+## What is *not* in Methodology
+
+- Individual model details (architectures, hyperparameters, metrics)
+  are in [Models](modelling.qmd).
+- Exploratory analysis of source data is in
+  [Exploratory Data Analysis](../analysis/eda-collisions.qmd) — what
+  the raw data looks like before processing.
+- Source dataset descriptions are in
+  [Data Sources](../data-sources/stats19.qmd) — provider, format,
+  fields, project location.
