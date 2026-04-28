@@ -763,6 +763,83 @@
     "text": "18 Known issues\n\njunction_detail had an error corrected in the November 2025 release — ensure you download the latest versions of all files.\n2020–2021 volumes are substantially lower due to COVID lockdowns.\nA small number of records have missing or implausible lat/lon — these are dropped in clean.py."
   },
   {
+    "objectID": "data-sources/openroads.html",
+    "href": "data-sources/openroads.html",
+    "title": "OS Open Roads",
+    "section": "",
+    "text": "OS Open Roads is the primary network geometry for the project. Every road link the model scores comes from this dataset: ~2.17 million link geometries covering the full classified road network across the study area, from motorways down to local streets.\nIt is the backbone that everything else attaches to. STATS19 collisions are snapped to OS Open Roads links. AADF count points are spatially joined to OS Open Roads links. Network features (centrality, length, road classification) are computed on the OS Open Roads graph. The output of the modelling pipeline is a risk score per OS Open Roads link.\n\n\n\n\n\n\nNote\n\n\n\nThis page describes the source dataset and how the project uses it. The mechanics of how collisions and traffic counts are snapped onto the network are documented in Joining the Datasets."
+  },
+  {
+    "objectID": "data-sources/openroads.html#overview",
+    "href": "data-sources/openroads.html#overview",
+    "title": "OS Open Roads",
+    "section": "",
+    "text": "OS Open Roads is the primary network geometry for the project. Every road link the model scores comes from this dataset: ~2.17 million link geometries covering the full classified road network across the study area, from motorways down to local streets.\nIt is the backbone that everything else attaches to. STATS19 collisions are snapped to OS Open Roads links. AADF count points are spatially joined to OS Open Roads links. Network features (centrality, length, road classification) are computed on the OS Open Roads graph. The output of the modelling pipeline is a risk score per OS Open Roads link.\n\n\n\n\n\n\nNote\n\n\n\nThis page describes the source dataset and how the project uses it. The mechanics of how collisions and traffic counts are snapped onto the network are documented in Joining the Datasets."
+  },
+  {
+    "objectID": "data-sources/openroads.html#source",
+    "href": "data-sources/openroads.html#source",
+    "title": "OS Open Roads",
+    "section": "2 Source",
+    "text": "2 Source\n\n\n\nField\nValue\n\n\n\n\nProvider\nOrdnance Survey\n\n\nProduct\nOS Open Roads\n\n\nFormat\nGeoPackage (.gpkg)\n\n\nDownload\nhttps://osdatahub.os.uk/downloads/open/OpenRoads\n\n\nLicence\nOpen Government Licence\n\n\nFile used\noproad_gb.gpkg\n\n\nProject location\ndata/raw/shapefiles/oproad_gb.gpkg\n\n\n\nOS Open Roads is updated by Ordnance Survey on a roughly six-monthly cycle. The project pins to whichever release was current at the time of the last full pipeline run."
+  },
+  {
+    "objectID": "data-sources/openroads.html#coverage",
+    "href": "data-sources/openroads.html#coverage",
+    "title": "OS Open Roads",
+    "section": "3 Coverage",
+    "text": "3 Coverage\nOS Open Roads covers all classified roads in Great Britain — motorways, A roads, B roads, minor roads, and local/unclassified roads. This breadth is what makes it usable as the model’s network: minor and unclassified roads are exactly where DfT has no traffic counters and where the project has to estimate exposure rather than measure it.\nFor the project’s study area (Northern and Central England — Yorkshire, North West, North East, Midlands, parts of East England), OS Open Roads provides:\n\n2,167,557 road links within the study area bounding box plus a 20 km buffer.\nFull coverage of all road classifications, not just the Major Road Network.\nTopology — every link has start_node and end_node references that allow the network to be reconstructed as a graph."
+  },
+  {
+    "objectID": "data-sources/openroads.html#why-os-open-roads-is-the-network-backbone",
+    "href": "data-sources/openroads.html#why-os-open-roads-is-the-network-backbone",
+    "title": "OS Open Roads",
+    "section": "4 Why OS Open Roads is the network backbone",
+    "text": "4 Why OS Open Roads is the network backbone\nThe choice of OS Open Roads over alternatives is consequential and worth making explicit.\nThe project also ingests the DfT Major Road Network Database, which has the appealing property of containing AADF count point IDs as a field — which would in principle let traffic counts be joined to road geometry by a key match rather than a spatial join. That route was abandoned because the Major Road Network Database covers only major roads, and the project’s central goal is to extend exposure-adjusted risk estimation to the long tail of minor roads where collisions are under-counted relative to traffic. A network that excludes most of the roads where the model needs to predict is unusable as the backbone.\nOpenStreetMap is used in the project, but as an attribute source (speed limit, lanes, lighting, surface) rather than a geometry source. OS Open Roads provides authoritative, surveyed geometry; OSM provides crowd-sourced attributes that fill gaps OS does not cover."
+  },
+  {
+    "objectID": "data-sources/openroads.html#key-fields-used",
+    "href": "data-sources/openroads.html#key-fields-used",
+    "title": "OS Open Roads",
+    "section": "5 Key fields used",
+    "text": "5 Key fields used\nThe ingest pipeline (src/road_risk/ingest/ingest_openroads.py) reads the road_link layer from the GeoPackage and retains the following fields, renamed to project conventions:\n\n\n\n\n\n\n\n\nSource column\nProject column\nDescription\n\n\n\n\nid\nlink_id\nUnique TOID — the join key against everything downstream\n\n\nroad_classification\nroad_classification\nMotorway / A Road / B Road / Minor Road / Local Road\n\n\nroad_function\nroad_function\nFunctional role (similar to classification but more granular)\n\n\nform_of_way\nform_of_way\nSingle Carriageway / Dual Carriageway / Slip Road / Roundabout etc.\n\n\nroad_classification_number\nroad_number\nNumeric road designation (e.g. M62, A64, B1234)\n\n\nname_1\nroad_name\nFull road name where available\n\n\nlength\nlink_length_m\nLink length in metres (BNG metric CRS)\n\n\ntrunk_road\nis_trunk\nNational Highways trunk road indicator\n\n\nprimary_route\nis_primary\nPart of the Primary Route Network\n\n\nstart_node, end_node\nstart_node, end_node\nNode TOIDs for graph construction\n\n\n\nTwo additional fields are derived during cleaning:\n\nlink_length_km — link_length_m / 1000, used as the exposure denominator in vehicle_km calculations.\nroad_name_clean — uppercased, whitespace-stripped form of the road number (e.g. M62, A64). Used as one of four scoring dimensions in collision-to-link snapping.\nstreet_name_clean — uppercased, alphanumeric-only form of the street name (e.g. DALECLOSE). Used as a fallback match when AADF count points reference a street name rather than a road number."
+  },
+  {
+    "objectID": "data-sources/openroads.html#coordinate-handling",
+    "href": "data-sources/openroads.html#coordinate-handling",
+    "title": "OS Open Roads",
+    "section": "6 Coordinate handling",
+    "text": "6 Coordinate handling\nOS Open Roads ships in EPSG:27700 (British National Grid, metres). The project reprojects to EPSG:4326 (WGS84, degrees) for consistency with STATS19 lat/lon and AADF coordinates. The reprojection happens once, at ingest time.\nLink length (link_length_m) is computed in the source BNG CRS before reprojection — this preserves accurate metric distances. Computing length in WGS84 would give degree-units, which are not metres and vary with latitude.\n\n\n\n\n\n\nNote\n\n\n\nA small number of OS Open Roads links have invalid or null geometries. The ingest pipeline drops null geometries and applies buffer(0) to fix invalid ones. This affects a negligible fraction of links but the reasoning is documented for reproducibility."
+  },
+  {
+    "objectID": "data-sources/openroads.html#spatial-filtering",
+    "href": "data-sources/openroads.html#spatial-filtering",
+    "title": "OS Open Roads",
+    "section": "7 Spatial filtering",
+    "text": "7 Spatial filtering\nGB-wide OS Open Roads contains roughly four million links. The ingest pipeline applies a bounding-box filter at read time, using geopandas.read_file(..., bbox=...) with the study area extent (plus a 20 km buffer) in BNG. This avoids loading the full GB dataset into memory and keeps the parquet output to a manageable size for downstream processing.\nThe 20 km buffer is deliberate: a collision near the study area boundary should still be able to snap to a road link just outside the boundary, otherwise the snap quality degrades at the edges. The buffer is only applied to the network — collisions and AADF data are clipped to the study area itself.\n\n\n\n\n\n\nWarning\n\n\n\nThe output filename is currently openroads_yorkshire.parquet, retained from when the study area was Yorkshire only. The actual filter uses cfg[\"study_area\"][\"bbox_bng\"], which now covers Northern and Central England. The filename is a known cosmetic inaccuracy; see the engineering backlog."
+  },
+  {
+    "objectID": "data-sources/openroads.html#output",
+    "href": "data-sources/openroads.html#output",
+    "title": "OS Open Roads",
+    "section": "8 Output",
+    "text": "8 Output\nThe ingest produces a single GeoParquet file:\n\nPath: data/processed/shapefiles/openroads_yorkshire.parquet\nSchema: the renamed columns listed above, plus link_length_km, road_name_clean, street_name_clean, and geometry in WGS84.\nSize: ~2.17M rows for the current study area.\n\nThis file is consumed by:\n\nclean_join/snap.py — collision-to-link snapping via the four-dimension weighted scoring described in Joining the Datasets.\nclean_join/join.py — AADF-to-link spatial join with a 2 km cap.\nfeatures/network.py — graph centrality, OSM attribute attachment, population density.\nfeatures/road_curvature.py — curvature features from link geometry.\nfeatures/road_terrain.py — slope features sampled from OS Terrain 50.\nmodel/aadt.py — Stage 1a applies the trained traffic estimator to every link in this file."
+  },
+  {
+    "objectID": "data-sources/openroads.html#known-limitations",
+    "href": "data-sources/openroads.html#known-limitations",
+    "title": "OS Open Roads",
+    "section": "9 Known limitations",
+    "text": "9 Known limitations\nDual carriageways are two links. OS Open Roads represents each carriageway of a dual carriageway as a separate link. This is geometrically faithful but creates ambiguity for collision snapping — a collision reported on one carriageway can occasionally snap to the other when GPS drift is on the order of carriageway separation. The weighted snap does not resolve this; both links share the same road_name_clean and road_classification, so the composite score is near-tied. See Joining the Datasets for detail.\nLink granularity varies. Motorway links are typically 1–3 km; urban minor roads are often under 50 m. This is exposed downstream — features like collision counts must be normalised by link_length_km before comparison.\nNo surface, speed limit, or lane data. OS Open Roads covers geometry and classification only. Surface type, speed limits, lighting, and lane count come from OpenStreetMap, joined onto OS Open Roads links during feature engineering.\nNaming inconsistency in road numbers. The source road_classification_number field sometimes arrives as a float (e.g. 62.0) which is normalised to the integer string form during cleaning. Edge cases where the number column is fully null mean some named-but-unclassified roads have road_name_clean = \"\" and rely on the spatial and class scoring dimensions during snapping."
+  },
+  {
+    "objectID": "data-sources/openroads.html#reproducibility",
+    "href": "data-sources/openroads.html#reproducibility",
+    "title": "OS Open Roads",
+    "section": "10 Reproducibility",
+    "text": "10 Reproducibility\nTo regenerate the OS Open Roads layer:\n\nDownload oproad_gb.gpkg from https://osdatahub.os.uk/downloads/open/OpenRoads and place in data/raw/shapefiles/.\nRun python src/road_risk/ingest/ingest_openroads.py.\nOutput appears at data/processed/shapefiles/openroads_yorkshire.parquet.\n\nThe bbox filter is read from config/settings.yaml under study_area.bbox_bng. Adjusting the study area requires editing that config and re-running the ingest."
+  },
+  {
     "objectID": "data-sources/network-model-gdb.html",
     "href": "data-sources/network-model-gdb.html",
     "title": "Network Model GDB",

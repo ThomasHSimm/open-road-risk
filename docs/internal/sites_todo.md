@@ -15,10 +15,6 @@ Last reviewed: 2026-04-28.
 The current menu has 5 entries but the pipeline uses more sources than that.
 Decide structure once MRDB is rewritten.
 
-- **OS Open Roads** has no dedicated page despite being the primary network
-  geometry (2.1M links). Currently mentioned only in passing in the MRDB stub
-  and in `methodology/data-joining.qmd`. Source material: `ingest_openroads.py`
-  docstring is substantial.
 - **OpenStreetMap** has no page. OSM features (`speed_limit_mph`, `lanes`,
   `surface`, `lit`) feed the model and are documented in
   `analysis/osm-coverage.qmd`, but the source itself is not described in
@@ -111,6 +107,11 @@ work, not just relocation.
   which provides the full network backbone. Verification underway on whether
   `count_point_id` is actually used as a join key downstream (see
   `clean_join/clean.py` and `clean_join/join.py`)
+
+- **OS Open Roads** has no dedicated page despite being the primary network
+  geometry (2.1M links). Currently mentioned only in passing in the MRDB stub
+  and in `methodology/data-joining.qmd`. Source material: `ingest_openroads.py`
+  docstring is substantial.
 ---
 
 *Maintained alongside `docs/internal/Changelog_April_12_2026.md` and

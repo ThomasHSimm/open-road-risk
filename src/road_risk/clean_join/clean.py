@@ -746,7 +746,7 @@ def main() -> None:
     """
 
     from road_risk.ingest.ingest_aadf import aggregate_bidirectional, load_aadf
-    from road_risk.ingest.ingest_mrdb import load_mrdb
+    from road_risk.ingest.legacy_ingest_mrdb import load_mrdb
     from road_risk.ingest.ingest_stats19 import load_stats19
 
     logging.basicConfig(
