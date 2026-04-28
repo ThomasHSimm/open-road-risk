@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Feature Engineering and Model Pipeline – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Model Results &amp; SHAP</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../api-reference/index.html"> 
+<span class="menu-text">API Reference</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#why-this-matters" id="toc-why-this-matters" class="nav-link active" data-scroll-target="#why-this-matters"><span class="header-section-number">1</span> Why this matters</a></li>
+  <li><a href="#what-this-page-answers" id="toc-what-this-page-answers" class="nav-link" data-scroll-target="#what-this-page-answers"><span class="header-section-number">2</span> What this page answers</a></li>
+  <li><a href="#pipeline-overview" id="toc-pipeline-overview" class="nav-link" data-scroll-target="#pipeline-overview"><span class="header-section-number">3</span> Pipeline overview</a>
+  <ul class="collapse">
+  <li><a href="#a-note-on-features.py" id="toc-a-note-on-features.py" class="nav-link" data-scroll-target="#a-note-on-features.py"><span class="header-section-number">3.1</span> A note on <code>features.py</code></a></li>
+  </ul></li>
+  <li><a href="#stage-1a-aadt-estimation" id="toc-stage-1a-aadt-estimation" class="nav-link" data-scroll-target="#stage-1a-aadt-estimation"><span class="header-section-number">4</span> Stage 1a: AADT estimation</a>
+  <ul class="collapse">
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link" data-scroll-target="#the-problem"><span class="header-section-number">4.1</span> The problem</a></li>
+  <li><a href="#approach" id="toc-approach" class="nav-link" data-scroll-target="#approach"><span class="header-section-number">4.2</span> Approach</a></li>
+  <li><a href="#network-feature-definitions" id="toc-network-feature-definitions" class="nav-link" data-scroll-target="#network-feature-definitions"><span class="header-section-number">4.3</span> Network feature definitions</a></li>
+  <li><a href="#rural-urban-classification-ruc" id="toc-rural-urban-classification-ruc" class="nav-link" data-scroll-target="#rural-urban-classification-ruc"><span class="header-section-number">4.4</span> Rural-Urban Classification (RUC)</a></li>
+  <li><a href="#tiered-speed-limit-defaults" id="toc-tiered-speed-limit-defaults" class="nav-link" data-scroll-target="#tiered-speed-limit-defaults"><span class="header-section-number">4.5</span> Tiered speed-limit defaults</a></li>
+  <li><a href="#validation-groupkfold-by-count-point" id="toc-validation-groupkfold-by-count-point" class="nav-link" data-scroll-target="#validation-groupkfold-by-count-point"><span class="header-section-number">4.6</span> Validation: <code>GroupKFold</code> by count point</a></li>
+  <li><a href="#applying-the-estimator" id="toc-applying-the-estimator" class="nav-link" data-scroll-target="#applying-the-estimator"><span class="header-section-number">4.7</span> Applying the estimator</a></li>
+  </ul></li>
+  <li><a href="#stage-1b-time-zone-profiles" id="toc-stage-1b-time-zone-profiles" class="nav-link" data-scroll-target="#stage-1b-time-zone-profiles"><span class="header-section-number">5</span> Stage 1b: Time-zone profiles</a></li>
+  <li><a href="#stage-2-collision-model" id="toc-stage-2-collision-model" class="nav-link" data-scroll-target="#stage-2-collision-model"><span class="header-section-number">6</span> Stage 2: Collision model</a>
+  <ul class="collapse">
+  <li><a href="#building-the-training-table" id="toc-building-the-training-table" class="nav-link" data-scroll-target="#building-the-training-table"><span class="header-section-number">6.1</span> Building the training table</a></li>
+  <li><a href="#post-event-diagnostics-are-excluded-from-stage-2-features" id="toc-post-event-diagnostics-are-excluded-from-stage-2-features" class="nav-link" data-scroll-target="#post-event-diagnostics-are-excluded-from-stage-2-features"><span class="header-section-number">6.2</span> Post-event diagnostics are excluded from Stage 2 features</a></li>
+  <li><a href="#why-poisson-with-log-offset" id="toc-why-poisson-with-log-offset" class="nav-link" data-scroll-target="#why-poisson-with-log-offset"><span class="header-section-number">6.3</span> Why Poisson with log-offset</a></li>
+  <li><a href="#two-models-trained-in-parallel" id="toc-two-models-trained-in-parallel" class="nav-link" data-scroll-target="#two-models-trained-in-parallel"><span class="header-section-number">6.4</span> Two models trained in parallel</a></li>
+  <li><a href="#engineering-detail-glm-zero-downsampling" id="toc-engineering-detail-glm-zero-downsampling" class="nav-link" data-scroll-target="#engineering-detail-glm-zero-downsampling"><span class="header-section-number">6.5</span> Engineering detail: GLM zero-downsampling</a></li>
+  <li><a href="#engineering-detail-xgboost-base_margin" id="toc-engineering-detail-xgboost-base_margin" class="nav-link" data-scroll-target="#engineering-detail-xgboost-base_margin"><span class="header-section-number">6.6</span> Engineering detail: XGBoost <code>base_margin</code></a></li>
+  <li><a href="#feature-imputation" id="toc-feature-imputation" class="nav-link" data-scroll-target="#feature-imputation"><span class="header-section-number">6.7</span> Feature imputation</a></li>
+  </ul></li>
+  <li><a href="#output-pooled-risk-scores" id="toc-output-pooled-risk-scores" class="nav-link" data-scroll-target="#output-pooled-risk-scores"><span class="header-section-number">7</span> Output: pooled risk scores</a>
+  <ul class="collapse">
+  <li><a href="#pooling-logic" id="toc-pooling-logic" class="nav-link" data-scroll-target="#pooling-logic"><span class="header-section-number">7.1</span> Pooling logic</a></li>
+  <li><a href="#why-pool-instead-of-score-per-year" id="toc-why-pool-instead-of-score-per-year" class="nav-link" data-scroll-target="#why-pool-instead-of-score-per-year"><span class="header-section-number">7.2</span> Why pool instead of score per year</a></li>
+  <li><a href="#residuals-as-under-over-performance" id="toc-residuals-as-under-over-performance" class="nav-link" data-scroll-target="#residuals-as-under-over-performance"><span class="header-section-number">7.3</span> Residuals as under-/over-performance</a></li>
+  </ul></li>
+  <li><a href="#feature-summary" id="toc-feature-summary" class="nav-link" data-scroll-target="#feature-summary"><span class="header-section-number">8</span> Feature summary</a></li>
+  <li><a href="#known-limitations-and-tradeoffs" id="toc-known-limitations-and-tradeoffs" class="nav-link" data-scroll-target="#known-limitations-and-tradeoffs"><span class="header-section-number">9</span> Known limitations and tradeoffs</a>
+  <ul class="collapse">
+  <li><a href="#xgboost-validation-uses-groupshufflesplit-by-link" id="toc-xgboost-validation-uses-groupshufflesplit-by-link" class="nav-link" data-scroll-target="#xgboost-validation-uses-groupshufflesplit-by-link"><span class="header-section-number">9.1</span> XGBoost validation uses GroupShuffleSplit by link</a></li>
+  <li><a href="#pseudo-r-comparability" id="toc-pseudo-r-comparability" class="nav-link" data-scroll-target="#pseudo-r-comparability"><span class="header-section-number">9.2</span> Pseudo-R² comparability between GLM and XGBoost</a></li>
+  <li><a href="#glm-intercept-bias" id="toc-glm-intercept-bias" class="nav-link" data-scroll-target="#glm-intercept-bias"><span class="header-section-number">9.3</span> GLM intercept bias</a></li>
+  <li><a href="#stage-1a-uncertainty-is-ignored" id="toc-stage-1a-uncertainty-is-ignored" class="nav-link" data-scroll-target="#stage-1a-uncertainty-is-ignored"><span class="header-section-number">9.4</span> Stage 1a uncertainty is ignored</a></li>
+  <li><a href="#no-inter-model-ensembling-or-disagreement-analysis" id="toc-no-inter-model-ensembling-or-disagreement-analysis" class="nav-link" data-scroll-target="#no-inter-model-ensembling-or-disagreement-analysis"><span class="header-section-number">9.5</span> No inter-model ensembling or disagreement analysis</a></li>
+  <li><a href="#rare-event-instability" id="toc-rare-event-instability" class="nav-link" data-scroll-target="#rare-event-instability"><span class="header-section-number">9.6</span> Rare-event instability</a></li>
+  <li><a href="#osm-and-network-feature-availability" id="toc-osm-and-network-feature-availability" class="nav-link" data-scroll-target="#osm-and-network-feature-availability"><span class="header-section-number">9.7</span> OSM and network feature availability</a></li>
+  <li><a href="#glm-training-set-size-under-osm-coverage" id="toc-glm-training-set-size-under-osm-coverage" class="nav-link" data-scroll-target="#glm-training-set-size-under-osm-coverage"><span class="header-section-number">9.8</span> GLM training-set size under OSM coverage</a></li>
+  </ul></li>
+  <li><a href="#running-the-pipeline" id="toc-running-the-pipeline" class="nav-link" data-scroll-target="#running-the-pipeline"><span class="header-section-number">10</span> Running the pipeline</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">11</span> Next steps</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Feature Engineering and Model Pipeline</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="why-this-matters" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="why-this-matters"><span class="header-section-number">1</span> Why this matters</h2>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The model pipeline makes several design choices that are load-bearing but not obvious from reading any single function. This page documents <strong>what goes in, what comes out, and why</strong> — in particular the decisions that keep the model from quietly producing biased or nonsensical risk scores.</p>
+</div>
+</div>
+<p>The collision rate modelling problem has three awkward properties:</p>
+<ol type="1">
+<li><strong>Zero-collision links are genuine low-risk observations</strong> — not missing data. An earlier pipeline (the now-deprecated <code>features.py</code>) silently filtered to collision-positive links only, producing a biased training table that the model couldn’t recover from.</li>
+<li><strong>Traffic exposure is sparse</strong> — AADF directly measures count points, but the expanded OS Open Roads network has over 2 million links. A per-link exposure denominator has to be estimated before rate modelling is possible.</li>
+<li><strong>Collisions per link-year are rare events</strong> — most link-years have zero collisions. Standard regression assumptions break; Poisson with log-offset is the correct framing, but has its own engineering issues at scale.</li>
+</ol>
+</section>
+<section id="what-this-page-answers" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="what-this-page-answers"><span class="header-section-number">2</span> What this page answers</h2>
+<ol type="1">
+<li>What are the pipeline stages, and what does each produce?</li>
+<li>How is AADT estimated for links without a nearby count point?</li>
+<li>How is the collision rate model specified, and why Poisson?</li>
+<li>Which features actually enter the model, and which are diagnostic only?</li>
+<li>What are the main engineering trade-offs and their consequences?</li>
+</ol>
+<hr>
+</section>
+<section id="pipeline-overview" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="pipeline-overview"><span class="header-section-number">3</span> Pipeline overview</h2>
+<p>Three stages, invoked from <code>python -m road_risk.model --stage &lt;name&gt;</code>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Stage</th>
+<th>File</th>
+<th>Input</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1a — AADT estimation</td>
+<td><code>model/aadt.py</code></td>
+<td>AADF count points</td>
+<td><code>aadt_estimates.parquet</code> (all links × years)</td>
+</tr>
+<tr class="even">
+<td>1b — Time-zone profiles</td>
+<td><code>model/timezone_profile.py</code></td>
+<td>WebTRIS + Stage 1a AADT</td>
+<td><code>timezone_profiles.parquet</code> (context / future exposure weighting)</td>
+</tr>
+<tr class="odd">
+<td>2 — Collision model</td>
+<td><code>model/collision.py</code></td>
+<td>Stage 1a + <code>road_link_annual.parquet</code></td>
+<td><code>risk_scores.parquet</code> (one row per link)</td>
+</tr>
+</tbody>
+</table>
+<p>Stage 1b is currently diagnostic/contextual rather than part of the production collision score. The production collision model consumes Stage 1a total AADT as its exposure denominator.</p>
+<section id="a-note-on-features.py" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="a-note-on-features.py"><span class="header-section-number">3.1</span> A note on <code>features.py</code></h3>
+<p>The file <code>road_risk/features.py</code> self-deprecates on import. Its feature builders were correct in principle but it joined only collision-positive link-years, producing a biased training table. The current pipeline builds its own feature table inside <code>collision.py</code> — see below.</p>
+<hr>
+</section>
+</section>
+<section id="stage-1a-aadt-estimation" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="stage-1a-aadt-estimation"><span class="header-section-number">4</span> Stage 1a: AADT estimation</h2>
+<section id="the-problem" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="the-problem"><span class="header-section-number">4.1</span> The problem</h3>
+<p>AADF provides measured flows at count points across the expanded study area, but OS Open Roads contains over 2 million links. The join cap of 2 km (see <a href="../methodology/data-joining.html">Joining the Datasets</a>) leaves many links without a direct AADF match. A rate model needs an exposure denominator for every link — otherwise uncounted-road collisions simply drop out.</p>
+</section>
+<section id="approach" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="approach"><span class="header-section-number">4.2</span> Approach</h3>
+<p>A gradient boosting regressor (<code>HistGradientBoostingRegressor</code>) is trained on AADF count points and applied to every OS Open Roads link.</p>
+<p><strong>Target:</strong> year-de-meaned <code>log1p(all_motor_vehicles)</code>. The model learns each road’s deviation from the network-wide mean for that year; the year mean is stored separately and added back at inference. This prevents a constant per-year feature from dominating the model while still preserving temporal level shifts.</p>
+<p><strong>Features used for training:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Source</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>road_class_ord</code></td>
+<td>AADF <code>road_name</code> prefix</td>
+<td>Ordinal: Motorway=6, A=5, B=4, other=1</td>
+</tr>
+<tr class="even">
+<td><code>is_trunk</code></td>
+<td>AADF <code>road_name</code> regex match</td>
+<td>Binary</td>
+</tr>
+<tr class="odd">
+<td><code>latitude</code>, <code>longitude</code></td>
+<td>AADF</td>
+<td>Coordinates (tree-based model can use raw)</td>
+</tr>
+<tr class="even">
+<td><code>is_covid</code></td>
+<td><code>year ∈ {2020, 2021}</code></td>
+<td>Binary</td>
+</tr>
+<tr class="odd">
+<td><code>hgv_proportion</code></td>
+<td>AADF</td>
+<td>Float</td>
+</tr>
+<tr class="even">
+<td><code>link_length_km</code></td>
+<td>AADF (via MRDB)</td>
+<td>Float, median-imputed per road class</td>
+</tr>
+<tr class="odd">
+<td>Network features</td>
+<td><code>network_features.parquet</code></td>
+<td>See below if available</td>
+</tr>
+</tbody>
+</table>
+<p>WebTRIS-derived flow/profile features are intentionally excluded from Stage 1a: they are not available for every Open Roads link at inference time. Time-zone traffic shape is modelled separately in Stage 1b.</p>
+<p>Network features (<code>degree_mean</code>, <code>betweenness</code>, <code>dist_to_major_km</code>, <code>pop_density_per_km2</code>, etc.) are joined by snapping each count point to its nearest OS Open Roads link via KD-tree (2 km cap). When present they materially improve CV R² — the train log at runtime reports how many count points had network features attached.</p>
+</section>
+<section id="network-feature-definitions" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="network-feature-definitions"><span class="header-section-number">4.3</span> Network feature definitions</h3>
+<p><code>network_features.py</code> turns OS Open Roads into a NetworkX graph where road links are edges, road-link endpoints are nodes, and link length is the shortest path weight. These features are intended to capture network position rather than raw latitude/longitude.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Definition</th>
+<th>Interpretation</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>degree_mean</code></td>
+<td>Mean graph degree of the link’s start and end nodes</td>
+<td>Local junction complexity; higher values usually mean denser urban or interchange structure</td>
+<td>Stage 1a, Stage 2</td>
+</tr>
+<tr class="even">
+<td><code>betweenness</code></td>
+<td>Approximate node betweenness centrality, averaged across the link’s start and end nodes</td>
+<td>Through-route importance; higher values mean the link sits near many shortest paths through the road graph</td>
+<td>Stage 1a, Stage 2</td>
+</tr>
+<tr class="odd">
+<td><code>betweenness_relative</code></td>
+<td><code>log1p(betweenness / mean betweenness for the same road_classification)</code></td>
+<td>Within-road-class centrality; distinguishes unusually central A-roads from ordinary A-roads, rather than just rediscovering road class</td>
+<td>Stage 1a, Stage 2</td>
+</tr>
+<tr class="even">
+<td><code>dist_to_major_km</code></td>
+<td>Graph distance from the link to the nearest Motorway or A-road node</td>
+<td>Feeder-network position; lower values mean closer to the major-road network</td>
+<td>Stage 1a, Stage 2</td>
+</tr>
+<tr class="odd">
+<td><code>pop_density_per_km2</code></td>
+<td>LSOA population density joined to the link centroid</td>
+<td>Local demand / urbanisation proxy</td>
+<td>Stage 1a, Stage 2</td>
+</tr>
+<tr class="even">
+<td><code>ruc_class</code></td>
+<td>ONS 2021 Rural-Urban Classification code joined via the same nearest-LSOA-centroid assignment</td>
+<td>Categorical settlement-context feature at LSOA grain</td>
+<td>OSM imputation / Stage 2 context (pending)</td>
+</tr>
+<tr class="odd">
+<td><code>ruc_urban_rural</code></td>
+<td>Top-level Urban/Rural split derived from <code>ruc_class</code></td>
+<td>Coarser settlement-context feature for simpler modelling or reporting</td>
+<td>OSM imputation / Stage 2 context (pending)</td>
+</tr>
+<tr class="even">
+<td><code>speed_limit_mph</code></td>
+<td>Raw OSM-tagged speed limit only</td>
+<td>Sparse direct observation of signed / mapped speed limits</td>
+<td>Retained as provenance; not modelled in current Stage 2</td>
+</tr>
+<tr class="odd">
+<td><code>speed_limit_mph_effective</code></td>
+<td><code>speed_limit_mph</code> when present, else UK legal-default lookup by <code>road_classification</code> × <code>ruc_urban_rural</code></td>
+<td>Fuller-coverage speed-limit proxy</td>
+<td>Stage 2 model feature</td>
+</tr>
+<tr class="even">
+<td><code>speed_limit_source</code></td>
+<td>Audit label for whether the effective speed came from OSM or a lookup tier</td>
+<td>Per-link provenance for speed-limit assignment</td>
+<td>Audit only</td>
+</tr>
+</tbody>
+</table>
+<p>The current Stage 1a AADT path uses the numeric network/context features above, but not the RUC columns. Those are listed here because they are generated in the broader link-level feature stack and are intended for downstream use rather than the current AADT estimator.</p>
+<p>Raw <code>betweenness</code> is heavily right-skewed and strongly related to road class: motorways and A-roads are central partly by definition. <code>betweenness_relative</code> therefore exists as the safer modelling version when the question is “is this link unusually central compared with its peers?” rather than “is this road a major road?”.</p>
+</section>
+<section id="rural-urban-classification-ruc" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="rural-urban-classification-ruc"><span class="header-section-number">4.4</span> Rural-Urban Classification (RUC)</h3>
+<p><code>ruc_class</code> and <code>ruc_urban_rural</code> come from the ONS 2021 Rural-Urban Classification at LSOA grain for <strong>England and Wales only</strong>. The link-level assignment inherits the existing <code>pop_density_per_km2</code> pipeline: each road link is matched to the <strong>nearest LSOA centroid</strong> within the same 2 km cap, then the RUC code is joined by <code>LSOA21CD</code>.</p>
+<p>This is a deliberate decadal-stability choice. The modelling window runs from 2015 to 2024, but RUC is treated as structurally slow-moving, so a single 2021 classification avoids an artificial boundary discontinuity at 2021 while still capturing broad urban/rural context across the full period.</p>
+<p>The inherited limitation is that nearest-centroid assignment is an approximation, not a polygon-in-polygon spatial overlay. A small number of links near LSOA boundaries may therefore be assigned to a neighbouring LSOA, with the main risk concentrated around urban/rural transition edges where classification changes across the boundary. A polygon containment join would be more accurate, but that is a separate infrastructure change and is not pursued in this pipeline version.</p>
+<p>Because the ONS RUC source is E+W only, links that would map to Scottish or Northern Irish small-area codes have <code>NaN</code> for both <code>ruc_class</code> and <code>ruc_urban_rural</code>.</p>
+<p><strong>RUC 2021 coding.</strong> The file used is the 6-class 2021 variant. Codes are <code>UN1</code>, <code>UF1</code>, <code>RSN1</code>, <code>RSF1</code>, <code>RLN1</code>, <code>RLF1</code>, where <code>U</code>-prefix indicates Urban and <code>R</code>-prefix indicates Rural. The binary <code>ruc_urban_rural</code> is derived by prefix: <code>U</code> -&gt; Urban, <code>R</code> -&gt; Rural.</p>
+<p><strong>Coverage.</strong> Across the current study area, 15.5% of links (~336k) have <code>NaN</code> for RUC. Investigation showed two mechanisms:</p>
+<ul>
+<li>Scottish border-area links (~3% of the network, concentrated above 55.0° N) cannot be assigned because ONS RUC is E+W only.</li>
+<li>The remaining nulls are long, sparse, edge-of-study-area rural links whose centroids fall more than 2 km from any E+W LSOA centroid. Missingness correlates strongly with link length (8% null for links under 100m, 66% null for links over 1km).</li>
+</ul>
+<p><strong>Interpreting Urban vs Rural.</strong> RUC classifies the LSOA a link falls into, not the character of the road itself. An Unclassified residential street in an urban LSOA is Urban even where it looks locally like a quiet side road; a village high street in a rural LSOA is Rural. In this study area, 82% of Unclassified roads are Urban because dense residential street networks in cities dominate the Unclassified link count. This is a feature of LSOA-grain classification, not a classification error.</p>
+</section>
+<section id="tiered-speed-limit-defaults" class="level3" data-number="4.5">
+<h3 data-number="4.5" class="anchored" data-anchor-id="tiered-speed-limit-defaults"><span class="header-section-number">4.5</span> Tiered speed-limit defaults</h3>
+<p>The network feature stack now keeps <strong>raw</strong> and <strong>lookup-filled</strong> speed-limit columns separate. <code>speed_limit_mph</code> remains the raw OSM-tagged-only field. <code>speed_limit_mph_effective</code> is the fuller-coverage version created by using raw OSM where present, then applying UK legal speed-limit defaults via <code>road_classification</code> × <code>ruc_urban_rural</code> where OSM is missing. The audit field <code>speed_limit_source</code> records which path each link took, and the boolean <code>speed_limit_mph_imputed</code> marks whether the effective value came from the lookup rather than a raw OSM tag.</p>
+<p>The lookup hierarchy is deliberately simple and deterministic:</p>
+<ul>
+<li>Motorway = 70 mph</li>
+<li>A-road dual carriageway = 70 mph</li>
+<li>A-road trunk (non-dual) = 70 mph</li>
+<li>A-road single carriageway = 60 mph</li>
+<li>B-road Urban = 30 mph</li>
+<li>B-road Rural = 60 mph</li>
+<li>Minor roads (<code>Unclassified</code>, <code>Not Classified</code>, <code>Classified Unnumbered</code>, <code>Unknown</code>) Urban = 30 mph</li>
+<li>Minor roads (<code>Unclassified</code>, <code>Not Classified</code>, <code>Classified Unnumbered</code>, <code>Unknown</code>) Rural = 60 mph</li>
+</ul>
+<p>This is a feature-engineering layer, not a claim that the inferred value is the observed signed limit on every road. The lookup supplies the legal default in the absence of an OSM tag, so it will miss local exceptions such as 20 mph zones, signed 40 mph urban arterials, or rural 50 mph sections. It therefore represents the legal maximum implied by road type and settlement context, not necessarily the true enforced limit on that segment.</p>
+<p>No extra fallback is applied where <code>ruc_urban_rural</code> is missing. The broader RUC-missing tail is still about 15.5% of links, but only the subset with <strong>both</strong> missing raw OSM speed and missing <code>ruc_urban_rural</code> stays unresolved in <code>speed_limit_mph_effective</code>. In the current build that unresolved subset is about 189k links (8.7% of the network). Those links are labelled <code>speed_limit_source = "null_no_ruc"</code> and remain unresolved until a broader geography-compatible context layer is added.</p>
+</section>
+<section id="validation-groupkfold-by-count-point" class="level3" data-number="4.6">
+<h3 data-number="4.6" class="anchored" data-anchor-id="validation-groupkfold-by-count-point"><span class="header-section-number">4.6</span> Validation: <code>GroupKFold</code> by count point</h3>
+<p>Using vanilla <code>KFold</code> would leak: the same count point appears in 2019, 2021, and 2023, and a random split could put the 2019 and 2021 readings of station <code>X</code> in the training fold and the 2023 reading in test. The model would then “predict” a station it has effectively memorised.</p>
+<p><code>GroupKFold(n_splits=5)</code> grouped by <code>count_point_id</code> ensures a station appears in exactly one fold. The reported CV R² is genuine out-of-sample performance.</p>
+</section>
+<section id="applying-the-estimator" class="level3" data-number="4.7">
+<h3 data-number="4.7" class="anchored" data-anchor-id="applying-the-estimator"><span class="header-section-number">4.7</span> Applying the estimator</h3>
+<p>The trained model predicts AADT for <strong>every</strong> OS Open Roads link × every AADF year. Prediction uses link centroids for <code>latitude</code>/<code>longitude</code>; <code>road_class_ord</code> is derived from <code>road_classification</code> using the same ordinal space as training (Motorway=6, A Road=5, B Road=4, other=1); <code>hgv_proportion</code> and <code>link_length_km</code> are imputed from AADF medians when not available. <code>HistGradientBoostingRegressor</code> receives missing network features as NaN rather than zero so its native missing-value routing is preserved.</p>
+<p>The output has <code>link_id × year × estimated_aadt</code> — no link is dropped.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>AADT uncertainty is not propagated
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Stage 1a produces point estimates with CV MAE reported in log-units. Stage 2 treats these estimates as <strong>exact exposure</strong> via the log-offset. AADT uncertainty therefore contributes silently to Stage 2 residuals but is not represented in model uncertainty or confidence intervals. This is a standard simplification but worth knowing if you’re interpreting residuals closely.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="stage-1b-time-zone-profiles" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="stage-1b-time-zone-profiles"><span class="header-section-number">5</span> Stage 1b: Time-zone profiles</h2>
+<p>Builds daily time-zone fractions from WebTRIS cumulative 12/16/18/24-hour windows, then combines those fractions with Stage 1a AADT estimates to produce per-hour flow profiles. Current outputs are used for EDA and future temporal weighting, not the production collision model.</p>
+<hr>
+</section>
+<section id="stage-2-collision-model" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="stage-2-collision-model"><span class="header-section-number">6</span> Stage 2: Collision model</h2>
+<p>This is where most of the pipeline’s design choices live.</p>
+<section id="building-the-training-table" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="building-the-training-table"><span class="header-section-number">6.1</span> Building the training table</h3>
+<p><code>build_collision_dataset()</code> constructs a table at <code>link_id × year</code> grain covering <strong>every</strong> link × <strong>every</strong> year in the AADT output. Collision counts are left-joined from <code>road_link_annual.parquet</code> and filled with 0 where there’s no match.</p>
+<p>This is the fix for the <code>features.py</code> bias: zero-collision links are kept, and are treated as genuine low-risk observations rather than absence of data.</p>
+<p>Every row has:</p>
+<ul>
+<li><strong>Exposure:</strong> <code>estimated_aadt</code>, <code>link_length_km</code>, <code>log_offset</code> = log(AADT × length × 365 / 1e6)</li>
+<li><strong>Road structure:</strong> <code>road_class_ord</code>, <code>form_of_way_ord</code>, and binary flags for motorway / A-road / slip road / roundabout / dual carriageway / trunk / primary</li>
+<li><strong>Link length:</strong> <code>log_link_length_km</code></li>
+<li><strong>Temporal:</strong> <code>is_covid</code>, <code>year_norm</code></li>
+<li><strong>Network (when available):</strong> <code>degree_mean</code>, <code>betweenness</code>, <code>dist_to_major_km</code>, <code>pop_density_per_km2</code>, <code>speed_limit_mph_effective</code>, <code>lanes</code>, <code>is_unpaved</code>; raw <code>speed_limit_mph</code> is retained as provenance</li>
+<li><strong>Targets:</strong> <code>collision_count</code>, <code>fatal_count</code>, <code>serious_count</code></li>
+</ul>
+</section>
+<section id="post-event-diagnostics-are-excluded-from-stage-2-features" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="post-event-diagnostics-are-excluded-from-stage-2-features"><span class="header-section-number">6.2</span> Post-event diagnostics are excluded from Stage 2 features</h3>
+<p><code>road_link_annual.parquet</code> also contains contextual aggregates derived from snapped collision records, such as <code>pct_dark</code>, <code>pct_urban</code>, <code>pct_junction</code>, <code>pct_near_crossing</code>, and <code>mean_speed_limit</code>. These are post-event diagnostics, not pre-collision road attributes: they describe the circumstances of observed collisions on a link.</p>
+<p>Stage 2 now treats these columns as forbidden model inputs. They are excluded from the training dataframe and from <code>risk_scores.parquet</code>, and <code>collision.py</code> asserts that they cannot enter either the GLM or XGBoost feature list. This is a provenance guard rather than a fix for an active model leak: the current feature lists did not use these columns, but keeping them in the modelling table made future leakage too easy.</p>
+</section>
+<section id="why-poisson-with-log-offset" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="why-poisson-with-log-offset"><span class="header-section-number">6.3</span> Why Poisson with log-offset</h3>
+<p>Collision counts are non-negative integers with many zeros. Modelling the count directly with a Gaussian regression would be wrong on both grounds.</p>
+<p>The Poisson formulation is:</p>
+<p><span class="math display">\[
+\text{collision\_count} \sim \text{Poisson}(\lambda)
+\]</span> <span class="math display">\[
+\log \lambda = \beta_0 + X\beta + \underbrace{\log(\text{AADT} \cdot \text{length} \cdot 365 \cdot 10^{-6})}_{\text{offset}}
+\]</span></p>
+<p>The log-offset forces the coefficient on exposure to 1, so the model effectively learns <code>log(rate) = β₀ + Xβ</code> — a rate model expressed as a count regression. Without the offset, the model would learn counts directly and systematically overestimate risk on high-traffic links.</p>
+</section>
+<section id="two-models-trained-in-parallel" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="two-models-trained-in-parallel"><span class="header-section-number">6.4</span> Two models trained in parallel</h3>
+<p>Both are fit to the same table but differ in what they optimise and what they can represent.</p>
+<p><strong>Poisson GLM (<code>statsmodels</code>)</strong> — linear-in-log-rate, interpretable coefficients, standard errors, p-values. Used for diagnostic residual analysis (<code>residual_glm</code>) but <strong>not</strong> for the final risk ranking, because GLM zero-downsampling biases the intercept and makes absolute predictions unreliable.</p>
+<p><strong>XGBoost Poisson</strong> — captures non-linearities and interactions. Trained on the full dataset (no downsampling) and drives the final <code>risk_percentile</code> ranking via <code>predicted_xgb</code>. Comparing <code>predicted_glm</code> and <code>predicted_xgb</code> surfaces links where the GLM linear assumption breaks down.</p>
+</section>
+<section id="engineering-detail-glm-zero-downsampling" class="level3" data-number="6.5">
+<h3 data-number="6.5" class="anchored" data-anchor-id="engineering-detail-glm-zero-downsampling"><span class="header-section-number">6.5</span> Engineering detail: GLM zero-downsampling</h3>
+<p>The full training table is ~18M rows. <code>statsmodels</code> builds a dense design matrix — 18M rows × 15 features × float64 ≈ 2 GB+, which OOMs on many machines.</p>
+<p>The GLM training set downsamples zero-collision rows to 10× the number of positive rows. All ~391k positives are kept; ~3.9M zeros are sampled. This keeps the Poisson coefficient estimates stable while making the design matrix tractable.</p>
+<p><strong>Consequence:</strong> the GLM intercept is biased upward — the effective zero rate in training (~91% zeros instead of ~98%) implies a higher baseline rate than the true population. Feature coefficients are unaffected, so <strong>relative</strong> risk rankings are correct, but absolute predicted counts inherit the bias. XGBoost uses the full dataset and does not have this issue.</p>
+</section>
+<section id="engineering-detail-xgboost-base_margin" class="level3" data-number="6.6">
+<h3 data-number="6.6" class="anchored" data-anchor-id="engineering-detail-xgboost-base_margin"><span class="header-section-number">6.6</span> Engineering detail: XGBoost <code>base_margin</code></h3>
+<p>XGBoost’s Poisson objective learns <code>log(predicted)</code> directly. To pass the log-offset, the training call uses <code>base_margin=log_offset</code>, which sets the initial prediction in log-space so the model learns rate conditional on exposure rather than absolute count.</p>
+<p>Without <code>base_margin</code>, XGBoost would learn high-traffic motorway links have more collisions on average (trivially true by exposure) and over-predict their risk. With it, the model predicts collisions per unit vehicle-km and learns the residual risk after exposure is accounted for.</p>
+</section>
+<section id="feature-imputation" class="level3" data-number="6.7">
+<h3 data-number="6.7" class="anchored" data-anchor-id="feature-imputation"><span class="header-section-number">6.7</span> Feature imputation</h3>
+<p>Network features have varying coverage. The GLM applies a coverage-based rule:</p>
+<ul>
+<li><strong>&gt; 50% coverage</strong> — include as-is, drop rows with NaN.</li>
+<li><strong>5–50% coverage</strong> — median-impute into a new <code>{col}_imputed</code> feature.</li>
+<li><strong>&lt; 5% coverage</strong> — drop the feature entirely.</li>
+</ul>
+<p>This preserves rows with partial network data at the cost of some coefficient interpretability on imputed columns.</p>
+<hr>
+</section>
+</section>
+<section id="output-pooled-risk-scores" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="output-pooled-risk-scores"><span class="header-section-number">7</span> Output: pooled risk scores</h2>
+<p><code>score_and_save()</code> applies both models to the full dataset, then pools predictions to one row per link.</p>
+<section id="pooling-logic" class="level3" data-number="7.1">
+<h3 data-number="7.1" class="anchored" data-anchor-id="pooling-logic"><span class="header-section-number">7.1</span> Pooling logic</h3>
+<p>For each <code>link_id</code>, aggregate across years:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Aggregation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>collision_count</code></td>
+<td>sum</td>
+</tr>
+<tr class="even">
+<td><code>fatal_count</code>, <code>serious_count</code></td>
+<td>sum</td>
+</tr>
+<tr class="odd">
+<td><code>estimated_aadt</code></td>
+<td>mean</td>
+</tr>
+<tr class="even">
+<td><code>predicted_glm</code>, <code>predicted_xgb</code></td>
+<td>mean</td>
+</tr>
+<tr class="odd">
+<td>Road metadata</td>
+<td>first</td>
+</tr>
+</tbody>
+</table>
+<p>The key derived columns:</p>
+<ul>
+<li><code>residual_glm = collision_count - predicted_glm × n_years</code> — observed minus expected (diagnostic; GLM intercept is biased by downsampling, so use for relative comparison only).</li>
+<li><code>risk_percentile = rank(mean predicted_xgb) × 100 / n_links</code> — single stable ranking across the network, driven by XGBoost predictions.</li>
+</ul>
+</section>
+<section id="why-pool-instead-of-score-per-year" class="level3" data-number="7.2">
+<h3 data-number="7.2" class="anchored" data-anchor-id="why-pool-instead-of-score-per-year"><span class="header-section-number">7.2</span> Why pool instead of score per year</h3>
+<p>The app consuming these scores shouldn’t ask “which year?” — a road link that’s consistently risky is risky. Percentile is computed over the mean predicted rate, which is stable across small year-to-year fluctuations. Temporal features (<code>is_covid</code>, <code>year_norm</code>) remain in training so the model learns the year effect, but the output doesn’t expose it.</p>
+</section>
+<section id="residuals-as-under-over-performance" class="level3" data-number="7.3">
+<h3 data-number="7.3" class="anchored" data-anchor-id="residuals-as-under-over-performance"><span class="header-section-number">7.3</span> Residuals as under-/over-performance</h3>
+<p><code>residual_glm</code> is the signed excess collisions a link has relative to the model’s prediction given its road type, exposure, and network characteristics. Positive → worse than expected, negative → better than expected. This is the concrete form of the “underperforming roads” research question from the <a href="../index.html">project overview</a>.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Residuals are a statistical summary, not a causal diagnosis. A positive residual means “this link has more collisions than similar links” — it does not identify <em>why</em>, and does not mean any specific intervention would reduce collisions.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="feature-summary" class="level2" data-number="8">
+<h2 data-number="8" class="anchored" data-anchor-id="feature-summary"><span class="header-section-number">8</span> Feature summary</h2>
+<p>Condensed view of which columns reach the model and how they’re used.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Features</th>
+<th>Used by</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Exposure (via log-offset)</td>
+<td><code>estimated_aadt</code>, <code>link_length_km</code></td>
+<td>GLM + XGB</td>
+<td>Combined into <code>log_offset</code>; coefficient forced to 1</td>
+</tr>
+<tr class="even">
+<td>Road structure</td>
+<td><code>road_class_ord</code>, <code>form_of_way_ord</code>, 7 binary flags</td>
+<td>GLM + XGB</td>
+<td>Ordinals + flags for interaction capture</td>
+</tr>
+<tr class="odd">
+<td>Link length</td>
+<td><code>log_link_length_km</code></td>
+<td>GLM + XGB</td>
+<td>Captures non-exposure length effects</td>
+</tr>
+<tr class="even">
+<td>Temporal</td>
+<td><code>is_covid</code>, <code>year_norm</code></td>
+<td>GLM + XGB</td>
+<td>Training-only; pooled away in scoring</td>
+</tr>
+<tr class="odd">
+<td>Network</td>
+<td><code>degree_mean</code>, <code>betweenness</code>, <code>dist_to_major_km</code>, <code>pop_density_per_km2</code>, <code>speed_limit_mph_effective</code>, <code>lanes</code>, <code>is_unpaved</code></td>
+<td>GLM + XGB</td>
+<td>OSM-enriched where present; current models use <code>speed_limit_mph_effective</code>, with raw <code>speed_limit_mph</code> retained only as provenance</td>
+</tr>
+<tr class="even">
+<td>AADT raw</td>
+<td><code>estimated_aadt</code></td>
+<td>XGB only</td>
+<td>Also in offset; XGB can use both</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="known-limitations-and-tradeoffs" class="level2" data-number="9">
+<h2 data-number="9" class="anchored" data-anchor-id="known-limitations-and-tradeoffs"><span class="header-section-number">9</span> Known limitations and tradeoffs</h2>
+<section id="xgboost-validation-uses-groupshufflesplit-by-link" class="level3" data-number="9.1">
+<h3 data-number="9.1" class="anchored" data-anchor-id="xgboost-validation-uses-groupshufflesplit-by-link"><span class="header-section-number">9.1</span> XGBoost validation uses GroupShuffleSplit by link</h3>
+<p><code>GroupShuffleSplit(by=link_id, test_size=0.2)</code> ensures no link appears in both training and test sets across years. This gives honest generalisation performance — a link seen in 2019 cannot leak into the 2021 test fold. Reported pseudo-R² reflects out-of-link performance, not in-sample fit.</p>
+</section>
+<section id="pseudo-r-comparability" class="level3" data-number="9.2">
+<h3 data-number="9.2" class="anchored" data-anchor-id="pseudo-r-comparability"><span class="header-section-number">9.2</span> Pseudo-R² comparability between GLM and XGBoost</h3>
+<p>The current GLM pseudo-R² (0.301) and XGBoost pseudo-R² (0.858) are computed on different row subsets with different null models. <strong>They are not directly comparable.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>GLM</th>
+<th>XGBoost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Evaluation set</td>
+<td>In-sample (downsampled training table)</td>
+<td>Out-of-sample (held-out 20% of links)</td>
+</tr>
+<tr class="even">
+<td>Rows</td>
+<td>~3.97M (all positives + 1:10 zero sample)</td>
+<td>~4.34M (true link-year distribution)</td>
+</tr>
+<tr class="odd">
+<td>Zero rate in eval set</td>
+<td>~91% (downsampled)</td>
+<td>~98% (real distribution)</td>
+</tr>
+<tr class="even">
+<td>Null model</td>
+<td>Intercept-only Poisson on downsampled set</td>
+<td><code>y_test.mean()</code> on the real test set</td>
+</tr>
+</tbody>
+</table>
+<p>The current Stage 2 metrics reflect the state after four correctness-focused changes landed: the counted-only Stage 1a AADF filter, the Stage 2 post-event provenance guard, OSM network feature enrichment, and tiered speed-limit imputation using UK legal defaults with <code>ruc_urban_rural</code> context. These were shipped to improve methodological correctness rather than to optimise pseudo-R², and attribution of changes across them was not formally ablated. Future feature and modelling work will be evaluated using a five-seed rank stability harness (see TODO), against the current metrics as baseline.</p>
+<p>Because the GLM null model sees an artificially balanced zero rate, it is easier to beat — the true 98% zero rate would produce a higher null deviance and a lower pseudo-R² for the same model. Because XGBoost is evaluated on the real held-out distribution against that harder null, its 0.858 is the more conservative and honest metric.</p>
+<p>The practical implication: the 0.301 vs 0.858 gap overstates the genuine predictive lift of XGBoost over the GLM. A fair comparison would require both models evaluated on the same held-out set against the same null model. This has not been done; recomputing both on a common evaluation set is a known pending improvement.</p>
+</section>
+<section id="glm-intercept-bias" class="level3" data-number="9.3">
+<h3 data-number="9.3" class="anchored" data-anchor-id="glm-intercept-bias"><span class="header-section-number">9.3</span> GLM intercept bias</h3>
+<p>Zero-downsampling shifts the baseline rate upward. Absolute predicted counts from the GLM should not be taken at face value; percentiles and relative comparisons are the intended use.</p>
+</section>
+<section id="stage-1a-uncertainty-is-ignored" class="level3" data-number="9.4">
+<h3 data-number="9.4" class="anchored" data-anchor-id="stage-1a-uncertainty-is-ignored"><span class="header-section-number">9.4</span> Stage 1a uncertainty is ignored</h3>
+<p>AADT estimates feed Stage 2 as exact exposure. AADT validation MAE is reported in log-units by the traffic stage. This is not propagated, so confidence intervals on <code>predicted_glm</code> understate total uncertainty.</p>
+</section>
+<section id="no-inter-model-ensembling-or-disagreement-analysis" class="level3" data-number="9.5">
+<h3 data-number="9.5" class="anchored" data-anchor-id="no-inter-model-ensembling-or-disagreement-analysis"><span class="header-section-number">9.5</span> No inter-model ensembling or disagreement analysis</h3>
+<p>Both models are trained; XGBoost drives the final ranking, GLM is diagnostic. A future extension could flag links where the two disagree substantially — those are candidates for manual review or ensemble weighting.</p>
+</section>
+<section id="rare-event-instability" class="level3" data-number="9.6">
+<h3 data-number="9.6" class="anchored" data-anchor-id="rare-event-instability"><span class="header-section-number">9.6</span> Rare-event instability</h3>
+<p>Fatal-only collision modelling is not implemented as a separate target. <code>fatal_count</code> and <code>serious_count</code> are summed in the output but the primary model is on <code>collision_count</code> (all severities). Severity-specific risk would need a separate model — counts are small enough that regularisation or a hurdle model may be required.</p>
+</section>
+<section id="osm-and-network-feature-availability" class="level3" data-number="9.7">
+<h3 data-number="9.7" class="anchored" data-anchor-id="osm-and-network-feature-availability"><span class="header-section-number">9.7</span> OSM and network feature availability</h3>
+<p>The current Stage 2 run is OSM-enriched: <code>speed_limit_mph_effective</code> is included in both the GLM and XGBoost feature lists, while raw <code>speed_limit_mph</code> is retained in the scored output as provenance. <code>lanes</code> and <code>is_unpaved</code> are used by XGBoost and median-imputed for the GLM. Coverage remains class-conditional and uneven, but the speed-limit coverage edge case described below has been resolved by tiered imputation.</p>
+</section>
+<section id="glm-training-set-size-under-osm-coverage" class="level3" data-number="9.8">
+<h3 data-number="9.8" class="anchored" data-anchor-id="glm-training-set-size-under-osm-coverage"><span class="header-section-number">9.8</span> GLM training-set size under OSM coverage</h3>
+<p>The GLM feature-selection rule uses any column with <strong>&gt;50% coverage</strong> directly, then applies <code>.dropna()</code> to the assembled feature matrix. The previous raw OSM <code>speed_limit_mph</code> feature had 56.4% coverage, barely cleared that threshold, and reduced the GLM training table to <strong>10,892,180</strong> complete-case link-years. Replacing it with <code>speed_limit_mph_effective</code> resolved that threshold issue: the current retrain uses <strong>18,302,830</strong> complete-case link-years before GLM zero-downsampling, then <strong>3,967,414</strong> rows after the 1:10 positive-to-zero sample. The remaining complete-case loss is dominated by other network/context coverage, especially the RUC-related population/context tail.</p>
+<p>XGBoost is unaffected by this GLM threshold because <code>train_collision_xgb()</code> fills missing values with 0 rather than dropping rows. The Stage 2 base table remains <strong>21,675,570</strong> link-years, with the current grouped split yielding <code>xgb.n_train = 17,340,450</code> (80% of the full table). The production ranking therefore still covers all <strong>2,167,557</strong> links.</p>
+<p>The effective-speed retrain left the final rank surface stable relative to the raw-speed baseline: Spearman rank correlation across all links was <strong>0.9962</strong>, and the top-1% Jaccard overlap was <strong>0.9512</strong> (21,134 shared links out of 22,218 in the union). The feature swap changed local ordering but did not materially reshuffle the highest-risk set.</p>
+<p>The pipeline also reduces feature count if <code>network_features.parquet</code> is missing, producing lower-quality scores without an obvious downstream signal. The train log reports this, but consumers of <code>risk_scores.parquet</code> should check <code>data/models/collision_metrics.json</code> for the actual feature list used by a run.</p>
+<hr>
+</section>
+</section>
+<section id="running-the-pipeline" class="level2" data-number="10">
+<h2 data-number="10" class="anchored" data-anchor-id="running-the-pipeline"><span class="header-section-number">10</span> Running the pipeline</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run all stages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> all</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Individual stages</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> traffic    <span class="co"># Stage 1a: AADT</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> profile    <span class="co"># Stage 1b: Time-zone profiles</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> collision  <span class="co"># Stage 2: Risk model</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Stage 2 requires Stage 1a output (<code>aadt_estimates.parquet</code>) and will fail with a clear error if it’s missing.</p>
+<hr>
+</section>
+<section id="next-steps" class="level2" data-number="11">
+<h2 data-number="11" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">11</span> Next steps</h2>
+<p><code>risk_scores.parquet</code> feeds into:</p>
+<ul>
+<li><strong>Application layer</strong> — ranking, mapping, and exploratory UIs.</li>
+<li><strong>Residual analysis</strong> — identifying links with large positive residuals for review and investigation.</li>
+</ul>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Feature Engineering and Model Pipeline"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">    html:</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">        toc: true</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">        toc-depth: 3</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">        number-sections: true</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">        page-layout: full</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">## Why this matters</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>::: {.callout-important}</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>The model pipeline makes several design choices that are load-bearing but not</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>obvious from reading any single function. This page documents **what goes</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>in, what comes out, and why** — in particular the decisions that keep the</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>model from quietly producing biased or nonsensical risk scores.</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>The collision rate modelling problem has three awkward properties:</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Zero-collision links are genuine low-risk observations** — not missing</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>   data. An earlier pipeline (the now-deprecated <span class="in">`features.py`</span>) silently</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>   filtered to collision-positive links only, producing a biased training</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>   table that the model couldn't recover from.</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Traffic exposure is sparse** — AADF directly measures count points, but</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>   the expanded OS Open Roads network has over 2 million links. A per-link</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>   exposure denominator has to be estimated before rate modelling is</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>   possible.</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Collisions per link-year are rare events** — most link-years have zero</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>   collisions. Standard regression assumptions break; Poisson with log-offset</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>   is the correct framing, but has its own engineering issues at scale.</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## What this page answers</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>What are the pipeline stages, and what does each produce?</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>How is AADT estimated for links without a nearby count point?</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>How is the collision rate model specified, and why Poisson?</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Which features actually enter the model, and which are diagnostic only?</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>What are the main engineering trade-offs and their consequences?</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="fu">## Pipeline overview</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>Three stages, invoked from <span class="in">`python -m road_risk.model --stage &lt;name&gt;`</span>:</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Stage <span class="pp">|</span> File <span class="pp">|</span> Input <span class="pp">|</span> Output <span class="pp">|</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1a — AADT estimation <span class="pp">|</span> <span class="in">`model/aadt.py`</span> <span class="pp">|</span> AADF count points <span class="pp">|</span> <span class="in">`aadt_estimates.parquet`</span> (all links × years) <span class="pp">|</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1b — Time-zone profiles <span class="pp">|</span> <span class="in">`model/timezone_profile.py`</span> <span class="pp">|</span> WebTRIS + Stage 1a AADT <span class="pp">|</span> <span class="in">`timezone_profiles.parquet`</span> (context / future exposure weighting) <span class="pp">|</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 2 — Collision model <span class="pp">|</span> <span class="in">`model/collision.py`</span> <span class="pp">|</span> Stage 1a + <span class="in">`road_link_annual.parquet`</span> <span class="pp">|</span> <span class="in">`risk_scores.parquet`</span> (one row per link) <span class="pp">|</span></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>Stage 1b is currently diagnostic/contextual rather than part of the production</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>collision score. The production collision model consumes Stage 1a total AADT as</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>its exposure denominator.</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="fu">### A note on `features.py`</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>The file <span class="in">`road_risk/features.py`</span> self-deprecates on import. Its feature</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>builders were correct in principle but it joined only collision-positive</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>link-years, producing a biased training table. The current pipeline builds</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>its own feature table inside <span class="in">`collision.py`</span> — see below.</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## Stage 1a: AADT estimation</span></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="fu">### The problem</span></span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>AADF provides measured flows at count points across the expanded study area,</span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>but OS Open Roads contains over 2 million links. The join cap of 2 km (see</span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Joining the Datasets</span><span class="co">](data-joining.qmd)</span>) leaves many links without a direct</span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>AADF match. A rate model needs an exposure denominator for every link —</span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>otherwise uncounted-road collisions simply drop out.</span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="fu">### Approach</span></span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>A gradient boosting regressor (<span class="in">`HistGradientBoostingRegressor`</span>) is trained</span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a>on AADF count points and applied to every OS Open Roads link.</span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>**Target:** year-de-meaned <span class="in">`log1p(all_motor_vehicles)`</span>. The model learns each</span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>road's deviation from the network-wide mean for that year; the year mean is</span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a>stored separately and added back at inference. This prevents a constant</span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>per-year feature from dominating the model while still preserving temporal</span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a>level shifts.</span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>**Features used for training:**</span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Feature <span class="pp">|</span> Source <span class="pp">|</span> Type <span class="pp">|</span></span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`road_class_ord`</span> <span class="pp">|</span> AADF <span class="in">`road_name`</span> prefix <span class="pp">|</span> Ordinal: Motorway=6, A=5, B=4, other=1 <span class="pp">|</span></span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`is_trunk`</span> <span class="pp">|</span> AADF <span class="in">`road_name`</span> regex match <span class="pp">|</span> Binary <span class="pp">|</span></span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`latitude`</span>, <span class="in">`longitude`</span> <span class="pp">|</span> AADF <span class="pp">|</span> Coordinates (tree-based model can use raw) <span class="pp">|</span></span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`is_covid`</span> <span class="pp">|</span> <span class="in">`year ∈ {2020, 2021}`</span> <span class="pp">|</span> Binary <span class="pp">|</span></span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`hgv_proportion`</span> <span class="pp">|</span> AADF <span class="pp">|</span> Float <span class="pp">|</span></span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`link_length_km`</span> <span class="pp">|</span> AADF (via MRDB) <span class="pp">|</span> Float, median-imputed per road class <span class="pp">|</span></span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Network features <span class="pp">|</span> <span class="in">`network_features.parquet`</span> <span class="pp">|</span> See below if available <span class="pp">|</span></span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>WebTRIS-derived flow/profile features are intentionally excluded from Stage 1a:</span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>they are not available for every Open Roads link at inference time. Time-zone</span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>traffic shape is modelled separately in Stage 1b.</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>Network features (<span class="in">`degree_mean`</span>, <span class="in">`betweenness`</span>, <span class="in">`dist_to_major_km`</span>,</span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a><span class="in">`pop_density_per_km2`</span>, etc.) are joined by snapping each count point to its</span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>nearest OS Open Roads link via KD-tree (2 km cap). When present they</span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>materially improve CV R² — the train log at runtime reports how many</span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a>count points had network features attached.</span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="fu">### Network feature definitions</span></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a><span class="in">`network_features.py`</span> turns OS Open Roads into a NetworkX graph where road</span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>links are edges, road-link endpoints are nodes, and link length is the shortest</span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>path weight. These features are intended to capture network position rather</span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a>than raw latitude/longitude.</span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Feature <span class="pp">|</span> Definition <span class="pp">|</span> Interpretation <span class="pp">|</span> Used by <span class="pp">|</span></span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`degree_mean`</span> <span class="pp">|</span> Mean graph degree of the link's start and end nodes <span class="pp">|</span> Local junction complexity; higher values usually mean denser urban or interchange structure <span class="pp">|</span> Stage 1a, Stage 2 <span class="pp">|</span></span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`betweenness`</span> <span class="pp">|</span> Approximate node betweenness centrality, averaged across the link's start and end nodes <span class="pp">|</span> Through-route importance; higher values mean the link sits near many shortest paths through the road graph <span class="pp">|</span> Stage 1a, Stage 2 <span class="pp">|</span></span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`betweenness_relative`</span> <span class="pp">|</span> <span class="in">`log1p(betweenness / mean betweenness for the same road_classification)`</span> <span class="pp">|</span> Within-road-class centrality; distinguishes unusually central A-roads from ordinary A-roads, rather than just rediscovering road class <span class="pp">|</span> Stage 1a, Stage 2 <span class="pp">|</span></span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`dist_to_major_km`</span> <span class="pp">|</span> Graph distance from the link to the nearest Motorway or A-road node <span class="pp">|</span> Feeder-network position; lower values mean closer to the major-road network <span class="pp">|</span> Stage 1a, Stage 2 <span class="pp">|</span></span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`pop_density_per_km2`</span> <span class="pp">|</span> LSOA population density joined to the link centroid <span class="pp">|</span> Local demand / urbanisation proxy <span class="pp">|</span> Stage 1a, Stage 2 <span class="pp">|</span></span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ruc_class`</span> <span class="pp">|</span> ONS 2021 Rural-Urban Classification code joined via the same nearest-LSOA-centroid assignment <span class="pp">|</span> Categorical settlement-context feature at LSOA grain <span class="pp">|</span> OSM imputation / Stage 2 context (pending) <span class="pp">|</span></span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ruc_urban_rural`</span> <span class="pp">|</span> Top-level Urban/Rural split derived from <span class="in">`ruc_class`</span> <span class="pp">|</span> Coarser settlement-context feature for simpler modelling or reporting <span class="pp">|</span> OSM imputation / Stage 2 context (pending) <span class="pp">|</span></span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`speed_limit_mph`</span> <span class="pp">|</span> Raw OSM-tagged speed limit only <span class="pp">|</span> Sparse direct observation of signed / mapped speed limits <span class="pp">|</span> Retained as provenance; not modelled in current Stage 2 <span class="pp">|</span></span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`speed_limit_mph_effective`</span> <span class="pp">|</span> <span class="in">`speed_limit_mph`</span> when present, else UK legal-default lookup by <span class="in">`road_classification`</span> × <span class="in">`ruc_urban_rural`</span> <span class="pp">|</span> Fuller-coverage speed-limit proxy <span class="pp">|</span> Stage 2 model feature <span class="pp">|</span></span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`speed_limit_source`</span> <span class="pp">|</span> Audit label for whether the effective speed came from OSM or a lookup tier <span class="pp">|</span> Per-link provenance for speed-limit assignment <span class="pp">|</span> Audit only <span class="pp">|</span></span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>The current Stage 1a AADT path uses the numeric network/context features above,</span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a>but not the RUC columns. Those are listed here because they are generated in</span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>the broader link-level feature stack and are intended for downstream use rather</span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>than the current AADT estimator.</span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a>Raw <span class="in">`betweenness`</span> is heavily right-skewed and strongly related to road class:</span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a>motorways and A-roads are central partly by definition. <span class="in">`betweenness_relative`</span></span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a>therefore exists as the safer modelling version when the question is "is this</span>
+<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a>link unusually central compared with its peers?" rather than "is this road a</span>
+<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a>major road?".</span>
+<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a><span class="fu">### Rural-Urban Classification (RUC)</span></span>
+<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a><span class="in">`ruc_class`</span> and <span class="in">`ruc_urban_rural`</span> come from the ONS 2021 Rural-Urban</span>
+<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a>Classification at LSOA grain for **England and Wales only**. The link-level</span>
+<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a>assignment inherits the existing <span class="in">`pop_density_per_km2`</span> pipeline: each road link</span>
+<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a>is matched to the **nearest LSOA centroid** within the same 2 km cap, then the</span>
+<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a>RUC code is joined by <span class="in">`LSOA21CD`</span>.</span>
+<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-149"><a href="#cb2-149" aria-hidden="true" tabindex="-1"></a>This is a deliberate decadal-stability choice. The modelling window runs from</span>
+<span id="cb2-150"><a href="#cb2-150" aria-hidden="true" tabindex="-1"></a>2015 to 2024, but RUC is treated as structurally slow-moving, so a single 2021</span>
+<span id="cb2-151"><a href="#cb2-151" aria-hidden="true" tabindex="-1"></a>classification avoids an artificial boundary discontinuity at 2021 while still</span>
+<span id="cb2-152"><a href="#cb2-152" aria-hidden="true" tabindex="-1"></a>capturing broad urban/rural context across the full period.</span>
+<span id="cb2-153"><a href="#cb2-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-154"><a href="#cb2-154" aria-hidden="true" tabindex="-1"></a>The inherited limitation is that nearest-centroid assignment is an</span>
+<span id="cb2-155"><a href="#cb2-155" aria-hidden="true" tabindex="-1"></a>approximation, not a polygon-in-polygon spatial overlay. A small number of</span>
+<span id="cb2-156"><a href="#cb2-156" aria-hidden="true" tabindex="-1"></a>links near LSOA boundaries may therefore be assigned to a neighbouring LSOA,</span>
+<span id="cb2-157"><a href="#cb2-157" aria-hidden="true" tabindex="-1"></a>with the main risk concentrated around urban/rural transition edges where</span>
+<span id="cb2-158"><a href="#cb2-158" aria-hidden="true" tabindex="-1"></a>classification changes across the boundary. A polygon containment join would be</span>
+<span id="cb2-159"><a href="#cb2-159" aria-hidden="true" tabindex="-1"></a>more accurate, but that is a separate infrastructure change and is not pursued</span>
+<span id="cb2-160"><a href="#cb2-160" aria-hidden="true" tabindex="-1"></a>in this pipeline version.</span>
+<span id="cb2-161"><a href="#cb2-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-162"><a href="#cb2-162" aria-hidden="true" tabindex="-1"></a>Because the ONS RUC source is E+W only, links that would map to Scottish or</span>
+<span id="cb2-163"><a href="#cb2-163" aria-hidden="true" tabindex="-1"></a>Northern Irish small-area codes have <span class="in">`NaN`</span> for both <span class="in">`ruc_class`</span> and</span>
+<span id="cb2-164"><a href="#cb2-164" aria-hidden="true" tabindex="-1"></a><span class="in">`ruc_urban_rural`</span>.</span>
+<span id="cb2-165"><a href="#cb2-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-166"><a href="#cb2-166" aria-hidden="true" tabindex="-1"></a>**RUC 2021 coding.** The file used is the 6-class 2021 variant. Codes are</span>
+<span id="cb2-167"><a href="#cb2-167" aria-hidden="true" tabindex="-1"></a><span class="in">`UN1`</span>, <span class="in">`UF1`</span>, <span class="in">`RSN1`</span>, <span class="in">`RSF1`</span>, <span class="in">`RLN1`</span>, <span class="in">`RLF1`</span>, where <span class="in">`U`</span>-prefix indicates Urban</span>
+<span id="cb2-168"><a href="#cb2-168" aria-hidden="true" tabindex="-1"></a>and <span class="in">`R`</span>-prefix indicates Rural. The binary <span class="in">`ruc_urban_rural`</span> is derived by</span>
+<span id="cb2-169"><a href="#cb2-169" aria-hidden="true" tabindex="-1"></a>prefix: <span class="in">`U`</span> -&gt; Urban, <span class="in">`R`</span> -&gt; Rural.</span>
+<span id="cb2-170"><a href="#cb2-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-171"><a href="#cb2-171" aria-hidden="true" tabindex="-1"></a>**Coverage.** Across the current study area, 15.5% of links (~336k) have <span class="in">`NaN`</span></span>
+<span id="cb2-172"><a href="#cb2-172" aria-hidden="true" tabindex="-1"></a>for RUC. Investigation showed two mechanisms:</span>
+<span id="cb2-173"><a href="#cb2-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-174"><a href="#cb2-174" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Scottish border-area links (~3% of the network, concentrated above 55.0° N)</span>
+<span id="cb2-175"><a href="#cb2-175" aria-hidden="true" tabindex="-1"></a>  cannot be assigned because ONS RUC is E+W only.</span>
+<span id="cb2-176"><a href="#cb2-176" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The remaining nulls are long, sparse, edge-of-study-area rural links whose</span>
+<span id="cb2-177"><a href="#cb2-177" aria-hidden="true" tabindex="-1"></a>  centroids fall more than 2 km from any E+W LSOA centroid. Missingness</span>
+<span id="cb2-178"><a href="#cb2-178" aria-hidden="true" tabindex="-1"></a>  correlates strongly with link length (8% null for links under 100m, 66% null</span>
+<span id="cb2-179"><a href="#cb2-179" aria-hidden="true" tabindex="-1"></a>  for links over 1km).</span>
+<span id="cb2-180"><a href="#cb2-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-181"><a href="#cb2-181" aria-hidden="true" tabindex="-1"></a>**Interpreting Urban vs Rural.** RUC classifies the LSOA a link falls into, not</span>
+<span id="cb2-182"><a href="#cb2-182" aria-hidden="true" tabindex="-1"></a>the character of the road itself. An Unclassified residential street in an</span>
+<span id="cb2-183"><a href="#cb2-183" aria-hidden="true" tabindex="-1"></a>urban LSOA is Urban even where it looks locally like a quiet side road; a</span>
+<span id="cb2-184"><a href="#cb2-184" aria-hidden="true" tabindex="-1"></a>village high street in a rural LSOA is Rural. In this study area, 82% of</span>
+<span id="cb2-185"><a href="#cb2-185" aria-hidden="true" tabindex="-1"></a>Unclassified roads are Urban because dense residential street networks in</span>
+<span id="cb2-186"><a href="#cb2-186" aria-hidden="true" tabindex="-1"></a>cities dominate the Unclassified link count. This is a feature of LSOA-grain</span>
+<span id="cb2-187"><a href="#cb2-187" aria-hidden="true" tabindex="-1"></a>classification, not a classification error.</span>
+<span id="cb2-188"><a href="#cb2-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-189"><a href="#cb2-189" aria-hidden="true" tabindex="-1"></a><span class="fu">### Tiered speed-limit defaults</span></span>
+<span id="cb2-190"><a href="#cb2-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-191"><a href="#cb2-191" aria-hidden="true" tabindex="-1"></a>The network feature stack now keeps **raw** and **lookup-filled** speed-limit</span>
+<span id="cb2-192"><a href="#cb2-192" aria-hidden="true" tabindex="-1"></a>columns separate. <span class="in">`speed_limit_mph`</span> remains the raw OSM-tagged-only field.</span>
+<span id="cb2-193"><a href="#cb2-193" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_mph_effective`</span> is the fuller-coverage version created by using raw</span>
+<span id="cb2-194"><a href="#cb2-194" aria-hidden="true" tabindex="-1"></a>OSM where present, then applying UK legal speed-limit defaults via</span>
+<span id="cb2-195"><a href="#cb2-195" aria-hidden="true" tabindex="-1"></a><span class="in">`road_classification`</span> × <span class="in">`ruc_urban_rural`</span> where OSM is missing. The audit field</span>
+<span id="cb2-196"><a href="#cb2-196" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_source`</span> records which path each link took, and the boolean</span>
+<span id="cb2-197"><a href="#cb2-197" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_mph_imputed`</span> marks whether the effective value came from the lookup</span>
+<span id="cb2-198"><a href="#cb2-198" aria-hidden="true" tabindex="-1"></a>rather than a raw OSM tag.</span>
+<span id="cb2-199"><a href="#cb2-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-200"><a href="#cb2-200" aria-hidden="true" tabindex="-1"></a>The lookup hierarchy is deliberately simple and deterministic:</span>
+<span id="cb2-201"><a href="#cb2-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-202"><a href="#cb2-202" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Motorway = 70 mph</span>
+<span id="cb2-203"><a href="#cb2-203" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A-road dual carriageway = 70 mph</span>
+<span id="cb2-204"><a href="#cb2-204" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A-road trunk (non-dual) = 70 mph</span>
+<span id="cb2-205"><a href="#cb2-205" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A-road single carriageway = 60 mph</span>
+<span id="cb2-206"><a href="#cb2-206" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>B-road Urban = 30 mph</span>
+<span id="cb2-207"><a href="#cb2-207" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>B-road Rural = 60 mph</span>
+<span id="cb2-208"><a href="#cb2-208" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Minor roads (<span class="in">`Unclassified`</span>, <span class="in">`Not Classified`</span>, <span class="in">`Classified Unnumbered`</span>, <span class="in">`Unknown`</span>) Urban = 30 mph</span>
+<span id="cb2-209"><a href="#cb2-209" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Minor roads (<span class="in">`Unclassified`</span>, <span class="in">`Not Classified`</span>, <span class="in">`Classified Unnumbered`</span>, <span class="in">`Unknown`</span>) Rural = 60 mph</span>
+<span id="cb2-210"><a href="#cb2-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-211"><a href="#cb2-211" aria-hidden="true" tabindex="-1"></a>This is a feature-engineering layer, not a claim that the inferred value is the</span>
+<span id="cb2-212"><a href="#cb2-212" aria-hidden="true" tabindex="-1"></a>observed signed limit on every road. The lookup supplies the legal default in</span>
+<span id="cb2-213"><a href="#cb2-213" aria-hidden="true" tabindex="-1"></a>the absence of an OSM tag, so it will miss local exceptions such as 20 mph</span>
+<span id="cb2-214"><a href="#cb2-214" aria-hidden="true" tabindex="-1"></a>zones, signed 40 mph urban arterials, or rural 50 mph sections. It therefore</span>
+<span id="cb2-215"><a href="#cb2-215" aria-hidden="true" tabindex="-1"></a>represents the legal maximum implied by road type and settlement context, not</span>
+<span id="cb2-216"><a href="#cb2-216" aria-hidden="true" tabindex="-1"></a>necessarily the true enforced limit on that segment.</span>
+<span id="cb2-217"><a href="#cb2-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-218"><a href="#cb2-218" aria-hidden="true" tabindex="-1"></a>No extra fallback is applied where <span class="in">`ruc_urban_rural`</span> is missing. The broader</span>
+<span id="cb2-219"><a href="#cb2-219" aria-hidden="true" tabindex="-1"></a>RUC-missing tail is still about 15.5% of links, but only the subset with **both**</span>
+<span id="cb2-220"><a href="#cb2-220" aria-hidden="true" tabindex="-1"></a>missing raw OSM speed and missing <span class="in">`ruc_urban_rural`</span> stays unresolved in</span>
+<span id="cb2-221"><a href="#cb2-221" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_mph_effective`</span>. In the current build that unresolved subset is</span>
+<span id="cb2-222"><a href="#cb2-222" aria-hidden="true" tabindex="-1"></a>about 189k links (8.7% of the network). Those links are labelled</span>
+<span id="cb2-223"><a href="#cb2-223" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_source = "null_no_ruc"`</span> and remain unresolved until a broader</span>
+<span id="cb2-224"><a href="#cb2-224" aria-hidden="true" tabindex="-1"></a>geography-compatible context layer is added.</span>
+<span id="cb2-225"><a href="#cb2-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-226"><a href="#cb2-226" aria-hidden="true" tabindex="-1"></a><span class="fu">### Validation: `GroupKFold` by count point</span></span>
+<span id="cb2-227"><a href="#cb2-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-228"><a href="#cb2-228" aria-hidden="true" tabindex="-1"></a>Using vanilla <span class="in">`KFold`</span> would leak: the same count point appears in 2019,</span>
+<span id="cb2-229"><a href="#cb2-229" aria-hidden="true" tabindex="-1"></a>2021, and 2023, and a random split could put the 2019 and 2021 readings of</span>
+<span id="cb2-230"><a href="#cb2-230" aria-hidden="true" tabindex="-1"></a>station <span class="in">`X`</span> in the training fold and the 2023 reading in test. The model</span>
+<span id="cb2-231"><a href="#cb2-231" aria-hidden="true" tabindex="-1"></a>would then "predict" a station it has effectively memorised.</span>
+<span id="cb2-232"><a href="#cb2-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-233"><a href="#cb2-233" aria-hidden="true" tabindex="-1"></a><span class="in">`GroupKFold(n_splits=5)`</span> grouped by <span class="in">`count_point_id`</span> ensures a station</span>
+<span id="cb2-234"><a href="#cb2-234" aria-hidden="true" tabindex="-1"></a>appears in exactly one fold. The reported CV R² is genuine out-of-sample</span>
+<span id="cb2-235"><a href="#cb2-235" aria-hidden="true" tabindex="-1"></a>performance.</span>
+<span id="cb2-236"><a href="#cb2-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-237"><a href="#cb2-237" aria-hidden="true" tabindex="-1"></a><span class="fu">### Applying the estimator</span></span>
+<span id="cb2-238"><a href="#cb2-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-239"><a href="#cb2-239" aria-hidden="true" tabindex="-1"></a>The trained model predicts AADT for **every** OS Open Roads link × every</span>
+<span id="cb2-240"><a href="#cb2-240" aria-hidden="true" tabindex="-1"></a>AADF year. Prediction uses link centroids for <span class="in">`latitude`</span>/<span class="in">`longitude`</span>;</span>
+<span id="cb2-241"><a href="#cb2-241" aria-hidden="true" tabindex="-1"></a><span class="in">`road_class_ord`</span> is derived from <span class="in">`road_classification`</span> using the same ordinal</span>
+<span id="cb2-242"><a href="#cb2-242" aria-hidden="true" tabindex="-1"></a>space as training (Motorway=6, A Road=5, B Road=4, other=1);</span>
+<span id="cb2-243"><a href="#cb2-243" aria-hidden="true" tabindex="-1"></a><span class="in">`hgv_proportion`</span> and <span class="in">`link_length_km`</span> are imputed from AADF medians when not</span>
+<span id="cb2-244"><a href="#cb2-244" aria-hidden="true" tabindex="-1"></a>available. <span class="in">`HistGradientBoostingRegressor`</span> receives missing network features as</span>
+<span id="cb2-245"><a href="#cb2-245" aria-hidden="true" tabindex="-1"></a>NaN rather than zero so its native missing-value routing is preserved.</span>
+<span id="cb2-246"><a href="#cb2-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-247"><a href="#cb2-247" aria-hidden="true" tabindex="-1"></a>The output has <span class="in">`link_id × year × estimated_aadt`</span> — no link is dropped.</span>
+<span id="cb2-248"><a href="#cb2-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-249"><a href="#cb2-249" aria-hidden="true" tabindex="-1"></a>::: {.callout-warning}</span>
+<span id="cb2-250"><a href="#cb2-250" aria-hidden="true" tabindex="-1"></a><span class="fu">## AADT uncertainty is not propagated</span></span>
+<span id="cb2-251"><a href="#cb2-251" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-252"><a href="#cb2-252" aria-hidden="true" tabindex="-1"></a>Stage 1a produces point estimates with CV MAE reported in log-units. Stage</span>
+<span id="cb2-253"><a href="#cb2-253" aria-hidden="true" tabindex="-1"></a>2 treats these estimates as **exact exposure** via the log-offset. AADT</span>
+<span id="cb2-254"><a href="#cb2-254" aria-hidden="true" tabindex="-1"></a>uncertainty therefore contributes silently to Stage 2 residuals but is</span>
+<span id="cb2-255"><a href="#cb2-255" aria-hidden="true" tabindex="-1"></a>not represented in model uncertainty or confidence intervals. This is a</span>
+<span id="cb2-256"><a href="#cb2-256" aria-hidden="true" tabindex="-1"></a>standard simplification but worth knowing if you're interpreting residuals</span>
+<span id="cb2-257"><a href="#cb2-257" aria-hidden="true" tabindex="-1"></a>closely.</span>
+<span id="cb2-258"><a href="#cb2-258" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-259"><a href="#cb2-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-260"><a href="#cb2-260" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-261"><a href="#cb2-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-262"><a href="#cb2-262" aria-hidden="true" tabindex="-1"></a><span class="fu">## Stage 1b: Time-zone profiles</span></span>
+<span id="cb2-263"><a href="#cb2-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-264"><a href="#cb2-264" aria-hidden="true" tabindex="-1"></a>Builds daily time-zone fractions from WebTRIS cumulative 12/16/18/24-hour</span>
+<span id="cb2-265"><a href="#cb2-265" aria-hidden="true" tabindex="-1"></a>windows, then combines those fractions with Stage 1a AADT estimates to produce</span>
+<span id="cb2-266"><a href="#cb2-266" aria-hidden="true" tabindex="-1"></a>per-hour flow profiles. Current outputs are used for EDA and future temporal</span>
+<span id="cb2-267"><a href="#cb2-267" aria-hidden="true" tabindex="-1"></a>weighting, not the production collision model.</span>
+<span id="cb2-268"><a href="#cb2-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-269"><a href="#cb2-269" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-270"><a href="#cb2-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-271"><a href="#cb2-271" aria-hidden="true" tabindex="-1"></a><span class="fu">## Stage 2: Collision model</span></span>
+<span id="cb2-272"><a href="#cb2-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-273"><a href="#cb2-273" aria-hidden="true" tabindex="-1"></a>This is where most of the pipeline's design choices live.</span>
+<span id="cb2-274"><a href="#cb2-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-275"><a href="#cb2-275" aria-hidden="true" tabindex="-1"></a><span class="fu">### Building the training table</span></span>
+<span id="cb2-276"><a href="#cb2-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-277"><a href="#cb2-277" aria-hidden="true" tabindex="-1"></a><span class="in">`build_collision_dataset()`</span> constructs a table at <span class="in">`link_id × year`</span> grain</span>
+<span id="cb2-278"><a href="#cb2-278" aria-hidden="true" tabindex="-1"></a>covering **every** link × **every** year in the AADT output. Collision</span>
+<span id="cb2-279"><a href="#cb2-279" aria-hidden="true" tabindex="-1"></a>counts are left-joined from <span class="in">`road_link_annual.parquet`</span> and filled with 0</span>
+<span id="cb2-280"><a href="#cb2-280" aria-hidden="true" tabindex="-1"></a>where there's no match.</span>
+<span id="cb2-281"><a href="#cb2-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-282"><a href="#cb2-282" aria-hidden="true" tabindex="-1"></a>This is the fix for the <span class="in">`features.py`</span> bias: zero-collision links are kept,</span>
+<span id="cb2-283"><a href="#cb2-283" aria-hidden="true" tabindex="-1"></a>and are treated as genuine low-risk observations rather than absence of</span>
+<span id="cb2-284"><a href="#cb2-284" aria-hidden="true" tabindex="-1"></a>data.</span>
+<span id="cb2-285"><a href="#cb2-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-286"><a href="#cb2-286" aria-hidden="true" tabindex="-1"></a>Every row has:</span>
+<span id="cb2-287"><a href="#cb2-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-288"><a href="#cb2-288" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Exposure:** <span class="in">`estimated_aadt`</span>, <span class="in">`link_length_km`</span>, <span class="in">`log_offset`</span> = log(AADT</span>
+<span id="cb2-289"><a href="#cb2-289" aria-hidden="true" tabindex="-1"></a>  × length × 365 / 1e6)</span>
+<span id="cb2-290"><a href="#cb2-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Road structure:** <span class="in">`road_class_ord`</span>, <span class="in">`form_of_way_ord`</span>, and binary flags</span>
+<span id="cb2-291"><a href="#cb2-291" aria-hidden="true" tabindex="-1"></a>  for motorway / A-road / slip road / roundabout / dual carriageway / trunk</span>
+<span id="cb2-292"><a href="#cb2-292" aria-hidden="true" tabindex="-1"></a>  / primary</span>
+<span id="cb2-293"><a href="#cb2-293" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Link length:** <span class="in">`log_link_length_km`</span></span>
+<span id="cb2-294"><a href="#cb2-294" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Temporal:** <span class="in">`is_covid`</span>, <span class="in">`year_norm`</span></span>
+<span id="cb2-295"><a href="#cb2-295" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Network (when available):** <span class="in">`degree_mean`</span>, <span class="in">`betweenness`</span>,</span>
+<span id="cb2-296"><a href="#cb2-296" aria-hidden="true" tabindex="-1"></a>  <span class="in">`dist_to_major_km`</span>, <span class="in">`pop_density_per_km2`</span>, <span class="in">`speed_limit_mph_effective`</span>,</span>
+<span id="cb2-297"><a href="#cb2-297" aria-hidden="true" tabindex="-1"></a>  <span class="in">`lanes`</span>, <span class="in">`is_unpaved`</span>; raw <span class="in">`speed_limit_mph`</span> is retained as provenance</span>
+<span id="cb2-298"><a href="#cb2-298" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Targets:** <span class="in">`collision_count`</span>, <span class="in">`fatal_count`</span>, <span class="in">`serious_count`</span></span>
+<span id="cb2-299"><a href="#cb2-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-300"><a href="#cb2-300" aria-hidden="true" tabindex="-1"></a><span class="fu">### Post-event diagnostics are excluded from Stage 2 features</span></span>
+<span id="cb2-301"><a href="#cb2-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-302"><a href="#cb2-302" aria-hidden="true" tabindex="-1"></a><span class="in">`road_link_annual.parquet`</span> also contains contextual aggregates derived from</span>
+<span id="cb2-303"><a href="#cb2-303" aria-hidden="true" tabindex="-1"></a>snapped collision records, such as <span class="in">`pct_dark`</span>, <span class="in">`pct_urban`</span>, <span class="in">`pct_junction`</span>,</span>
+<span id="cb2-304"><a href="#cb2-304" aria-hidden="true" tabindex="-1"></a><span class="in">`pct_near_crossing`</span>, and <span class="in">`mean_speed_limit`</span>. These are post-event diagnostics,</span>
+<span id="cb2-305"><a href="#cb2-305" aria-hidden="true" tabindex="-1"></a>not pre-collision road attributes: they describe the circumstances of observed</span>
+<span id="cb2-306"><a href="#cb2-306" aria-hidden="true" tabindex="-1"></a>collisions on a link.</span>
+<span id="cb2-307"><a href="#cb2-307" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-308"><a href="#cb2-308" aria-hidden="true" tabindex="-1"></a>Stage 2 now treats these columns as forbidden model inputs. They are excluded</span>
+<span id="cb2-309"><a href="#cb2-309" aria-hidden="true" tabindex="-1"></a>from the training dataframe and from <span class="in">`risk_scores.parquet`</span>, and <span class="in">`collision.py`</span></span>
+<span id="cb2-310"><a href="#cb2-310" aria-hidden="true" tabindex="-1"></a>asserts that they cannot enter either the GLM or XGBoost feature list. This is</span>
+<span id="cb2-311"><a href="#cb2-311" aria-hidden="true" tabindex="-1"></a>a provenance guard rather than a fix for an active model leak: the current</span>
+<span id="cb2-312"><a href="#cb2-312" aria-hidden="true" tabindex="-1"></a>feature lists did not use these columns, but keeping them in the modelling</span>
+<span id="cb2-313"><a href="#cb2-313" aria-hidden="true" tabindex="-1"></a>table made future leakage too easy.</span>
+<span id="cb2-314"><a href="#cb2-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-315"><a href="#cb2-315" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why Poisson with log-offset</span></span>
+<span id="cb2-316"><a href="#cb2-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-317"><a href="#cb2-317" aria-hidden="true" tabindex="-1"></a>Collision counts are non-negative integers with many zeros. Modelling the</span>
+<span id="cb2-318"><a href="#cb2-318" aria-hidden="true" tabindex="-1"></a>count directly with a Gaussian regression would be wrong on both grounds.</span>
+<span id="cb2-319"><a href="#cb2-319" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-320"><a href="#cb2-320" aria-hidden="true" tabindex="-1"></a>The Poisson formulation is:</span>
+<span id="cb2-321"><a href="#cb2-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-322"><a href="#cb2-322" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb2-323"><a href="#cb2-323" aria-hidden="true" tabindex="-1"></a>\text{collision<span class="sc">\_</span>count} \sim \text{Poisson}(\lambda)</span>
+<span id="cb2-324"><a href="#cb2-324" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb2-325"><a href="#cb2-325" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb2-326"><a href="#cb2-326" aria-hidden="true" tabindex="-1"></a>\log \lambda = \beta_0 + X\beta + \underbrace{\log(\text{AADT} \cdot \text{length} \cdot 365 \cdot 10^{-6})}_{\text{offset}}</span>
+<span id="cb2-327"><a href="#cb2-327" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb2-328"><a href="#cb2-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-329"><a href="#cb2-329" aria-hidden="true" tabindex="-1"></a>The log-offset forces the coefficient on exposure to 1, so the model</span>
+<span id="cb2-330"><a href="#cb2-330" aria-hidden="true" tabindex="-1"></a>effectively learns <span class="in">`log(rate) = β₀ + Xβ`</span> — a rate model expressed as a count</span>
+<span id="cb2-331"><a href="#cb2-331" aria-hidden="true" tabindex="-1"></a>regression. Without the offset, the model would learn counts directly and</span>
+<span id="cb2-332"><a href="#cb2-332" aria-hidden="true" tabindex="-1"></a>systematically overestimate risk on high-traffic links.</span>
+<span id="cb2-333"><a href="#cb2-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-334"><a href="#cb2-334" aria-hidden="true" tabindex="-1"></a><span class="fu">### Two models trained in parallel</span></span>
+<span id="cb2-335"><a href="#cb2-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-336"><a href="#cb2-336" aria-hidden="true" tabindex="-1"></a>Both are fit to the same table but differ in what they optimise and what</span>
+<span id="cb2-337"><a href="#cb2-337" aria-hidden="true" tabindex="-1"></a>they can represent.</span>
+<span id="cb2-338"><a href="#cb2-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-339"><a href="#cb2-339" aria-hidden="true" tabindex="-1"></a>**Poisson GLM (`statsmodels`)** — linear-in-log-rate, interpretable</span>
+<span id="cb2-340"><a href="#cb2-340" aria-hidden="true" tabindex="-1"></a>coefficients, standard errors, p-values. Used for diagnostic residual</span>
+<span id="cb2-341"><a href="#cb2-341" aria-hidden="true" tabindex="-1"></a>analysis (<span class="in">`residual_glm`</span>) but **not** for the final risk ranking, because</span>
+<span id="cb2-342"><a href="#cb2-342" aria-hidden="true" tabindex="-1"></a>GLM zero-downsampling biases the intercept and makes absolute predictions</span>
+<span id="cb2-343"><a href="#cb2-343" aria-hidden="true" tabindex="-1"></a>unreliable.</span>
+<span id="cb2-344"><a href="#cb2-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-345"><a href="#cb2-345" aria-hidden="true" tabindex="-1"></a>**XGBoost Poisson** — captures non-linearities and interactions. Trained</span>
+<span id="cb2-346"><a href="#cb2-346" aria-hidden="true" tabindex="-1"></a>on the full dataset (no downsampling) and drives the final <span class="in">`risk_percentile`</span></span>
+<span id="cb2-347"><a href="#cb2-347" aria-hidden="true" tabindex="-1"></a>ranking via <span class="in">`predicted_xgb`</span>. Comparing <span class="in">`predicted_glm`</span> and <span class="in">`predicted_xgb`</span></span>
+<span id="cb2-348"><a href="#cb2-348" aria-hidden="true" tabindex="-1"></a>surfaces links where the GLM linear assumption breaks down.</span>
+<span id="cb2-349"><a href="#cb2-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-350"><a href="#cb2-350" aria-hidden="true" tabindex="-1"></a><span class="fu">### Engineering detail: GLM zero-downsampling</span></span>
+<span id="cb2-351"><a href="#cb2-351" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-352"><a href="#cb2-352" aria-hidden="true" tabindex="-1"></a>The full training table is ~18M rows. <span class="in">`statsmodels`</span> builds a dense design</span>
+<span id="cb2-353"><a href="#cb2-353" aria-hidden="true" tabindex="-1"></a>matrix — 18M rows × 15 features × float64 ≈ 2 GB+, which OOMs on many</span>
+<span id="cb2-354"><a href="#cb2-354" aria-hidden="true" tabindex="-1"></a>machines.</span>
+<span id="cb2-355"><a href="#cb2-355" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-356"><a href="#cb2-356" aria-hidden="true" tabindex="-1"></a>The GLM training set downsamples zero-collision rows to 10× the number of</span>
+<span id="cb2-357"><a href="#cb2-357" aria-hidden="true" tabindex="-1"></a>positive rows. All ~391k positives are kept; ~3.9M zeros are sampled. This</span>
+<span id="cb2-358"><a href="#cb2-358" aria-hidden="true" tabindex="-1"></a>keeps the Poisson coefficient estimates stable while making the design</span>
+<span id="cb2-359"><a href="#cb2-359" aria-hidden="true" tabindex="-1"></a>matrix tractable.</span>
+<span id="cb2-360"><a href="#cb2-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-361"><a href="#cb2-361" aria-hidden="true" tabindex="-1"></a>**Consequence:** the GLM intercept is biased upward — the effective zero</span>
+<span id="cb2-362"><a href="#cb2-362" aria-hidden="true" tabindex="-1"></a>rate in training (~91% zeros instead of ~98%) implies a higher baseline</span>
+<span id="cb2-363"><a href="#cb2-363" aria-hidden="true" tabindex="-1"></a>rate than the true population. Feature coefficients are unaffected, so</span>
+<span id="cb2-364"><a href="#cb2-364" aria-hidden="true" tabindex="-1"></a>**relative** risk rankings are correct, but absolute predicted counts</span>
+<span id="cb2-365"><a href="#cb2-365" aria-hidden="true" tabindex="-1"></a>inherit the bias. XGBoost uses the full dataset and does not have this</span>
+<span id="cb2-366"><a href="#cb2-366" aria-hidden="true" tabindex="-1"></a>issue.</span>
+<span id="cb2-367"><a href="#cb2-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-368"><a href="#cb2-368" aria-hidden="true" tabindex="-1"></a><span class="fu">### Engineering detail: XGBoost `base_margin`</span></span>
+<span id="cb2-369"><a href="#cb2-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-370"><a href="#cb2-370" aria-hidden="true" tabindex="-1"></a>XGBoost's Poisson objective learns <span class="in">`log(predicted)`</span> directly. To pass the</span>
+<span id="cb2-371"><a href="#cb2-371" aria-hidden="true" tabindex="-1"></a>log-offset, the training call uses <span class="in">`base_margin=log_offset`</span>, which sets</span>
+<span id="cb2-372"><a href="#cb2-372" aria-hidden="true" tabindex="-1"></a>the initial prediction in log-space so the model learns rate conditional</span>
+<span id="cb2-373"><a href="#cb2-373" aria-hidden="true" tabindex="-1"></a>on exposure rather than absolute count.</span>
+<span id="cb2-374"><a href="#cb2-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-375"><a href="#cb2-375" aria-hidden="true" tabindex="-1"></a>Without <span class="in">`base_margin`</span>, XGBoost would learn high-traffic motorway links</span>
+<span id="cb2-376"><a href="#cb2-376" aria-hidden="true" tabindex="-1"></a>have more collisions on average (trivially true by exposure) and</span>
+<span id="cb2-377"><a href="#cb2-377" aria-hidden="true" tabindex="-1"></a>over-predict their risk. With it, the model predicts collisions per unit</span>
+<span id="cb2-378"><a href="#cb2-378" aria-hidden="true" tabindex="-1"></a>vehicle-km and learns the residual risk after exposure is accounted for.</span>
+<span id="cb2-379"><a href="#cb2-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-380"><a href="#cb2-380" aria-hidden="true" tabindex="-1"></a><span class="fu">### Feature imputation</span></span>
+<span id="cb2-381"><a href="#cb2-381" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-382"><a href="#cb2-382" aria-hidden="true" tabindex="-1"></a>Network features have varying coverage. The GLM applies a coverage-based</span>
+<span id="cb2-383"><a href="#cb2-383" aria-hidden="true" tabindex="-1"></a>rule:</span>
+<span id="cb2-384"><a href="#cb2-384" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-385"><a href="#cb2-385" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**&gt; 50% coverage** — include as-is, drop rows with NaN.</span>
+<span id="cb2-386"><a href="#cb2-386" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**5–50% coverage** — median-impute into a new <span class="in">`{col}_imputed`</span> feature.</span>
+<span id="cb2-387"><a href="#cb2-387" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**&lt; 5% coverage** — drop the feature entirely.</span>
+<span id="cb2-388"><a href="#cb2-388" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-389"><a href="#cb2-389" aria-hidden="true" tabindex="-1"></a>This preserves rows with partial network data at the cost of some</span>
+<span id="cb2-390"><a href="#cb2-390" aria-hidden="true" tabindex="-1"></a>coefficient interpretability on imputed columns.</span>
+<span id="cb2-391"><a href="#cb2-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-392"><a href="#cb2-392" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-393"><a href="#cb2-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-394"><a href="#cb2-394" aria-hidden="true" tabindex="-1"></a><span class="fu">## Output: pooled risk scores</span></span>
+<span id="cb2-395"><a href="#cb2-395" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-396"><a href="#cb2-396" aria-hidden="true" tabindex="-1"></a><span class="in">`score_and_save()`</span> applies both models to the full dataset, then pools</span>
+<span id="cb2-397"><a href="#cb2-397" aria-hidden="true" tabindex="-1"></a>predictions to one row per link.</span>
+<span id="cb2-398"><a href="#cb2-398" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-399"><a href="#cb2-399" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pooling logic</span></span>
+<span id="cb2-400"><a href="#cb2-400" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-401"><a href="#cb2-401" aria-hidden="true" tabindex="-1"></a>For each <span class="in">`link_id`</span>, aggregate across years:</span>
+<span id="cb2-402"><a href="#cb2-402" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-403"><a href="#cb2-403" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Field <span class="pp">|</span> Aggregation <span class="pp">|</span></span>
+<span id="cb2-404"><a href="#cb2-404" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-405"><a href="#cb2-405" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`collision_count`</span> <span class="pp">|</span> sum <span class="pp">|</span></span>
+<span id="cb2-406"><a href="#cb2-406" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`fatal_count`</span>, <span class="in">`serious_count`</span> <span class="pp">|</span> sum <span class="pp">|</span></span>
+<span id="cb2-407"><a href="#cb2-407" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`estimated_aadt`</span> <span class="pp">|</span> mean <span class="pp">|</span></span>
+<span id="cb2-408"><a href="#cb2-408" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`predicted_glm`</span>, <span class="in">`predicted_xgb`</span> <span class="pp">|</span> mean <span class="pp">|</span></span>
+<span id="cb2-409"><a href="#cb2-409" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Road metadata <span class="pp">|</span> first <span class="pp">|</span></span>
+<span id="cb2-410"><a href="#cb2-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-411"><a href="#cb2-411" aria-hidden="true" tabindex="-1"></a>The key derived columns:</span>
+<span id="cb2-412"><a href="#cb2-412" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-413"><a href="#cb2-413" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`residual_glm = collision_count - predicted_glm × n_years`</span> — observed</span>
+<span id="cb2-414"><a href="#cb2-414" aria-hidden="true" tabindex="-1"></a>  minus expected (diagnostic; GLM intercept is biased by downsampling, so</span>
+<span id="cb2-415"><a href="#cb2-415" aria-hidden="true" tabindex="-1"></a>  use for relative comparison only).</span>
+<span id="cb2-416"><a href="#cb2-416" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`risk_percentile = rank(mean predicted_xgb) × 100 / n_links`</span> — single</span>
+<span id="cb2-417"><a href="#cb2-417" aria-hidden="true" tabindex="-1"></a>  stable ranking across the network, driven by XGBoost predictions.</span>
+<span id="cb2-418"><a href="#cb2-418" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-419"><a href="#cb2-419" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why pool instead of score per year</span></span>
+<span id="cb2-420"><a href="#cb2-420" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-421"><a href="#cb2-421" aria-hidden="true" tabindex="-1"></a>The app consuming these scores shouldn't ask "which year?" — a road link</span>
+<span id="cb2-422"><a href="#cb2-422" aria-hidden="true" tabindex="-1"></a>that's consistently risky is risky. Percentile is computed over the mean</span>
+<span id="cb2-423"><a href="#cb2-423" aria-hidden="true" tabindex="-1"></a>predicted rate, which is stable across small year-to-year fluctuations.</span>
+<span id="cb2-424"><a href="#cb2-424" aria-hidden="true" tabindex="-1"></a>Temporal features (<span class="in">`is_covid`</span>, <span class="in">`year_norm`</span>) remain in training so the</span>
+<span id="cb2-425"><a href="#cb2-425" aria-hidden="true" tabindex="-1"></a>model learns the year effect, but the output doesn't expose it.</span>
+<span id="cb2-426"><a href="#cb2-426" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-427"><a href="#cb2-427" aria-hidden="true" tabindex="-1"></a><span class="fu">### Residuals as under-/over-performance</span></span>
+<span id="cb2-428"><a href="#cb2-428" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-429"><a href="#cb2-429" aria-hidden="true" tabindex="-1"></a><span class="in">`residual_glm`</span> is the signed excess collisions a link has relative to the</span>
+<span id="cb2-430"><a href="#cb2-430" aria-hidden="true" tabindex="-1"></a>model's prediction given its road type, exposure, and network</span>
+<span id="cb2-431"><a href="#cb2-431" aria-hidden="true" tabindex="-1"></a>characteristics. Positive → worse than expected, negative → better than</span>
+<span id="cb2-432"><a href="#cb2-432" aria-hidden="true" tabindex="-1"></a>expected. This is the concrete form of the "underperforming roads"</span>
+<span id="cb2-433"><a href="#cb2-433" aria-hidden="true" tabindex="-1"></a>research question from the <span class="co">[</span><span class="ot">project overview</span><span class="co">](../index.qmd)</span>.</span>
+<span id="cb2-434"><a href="#cb2-434" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-435"><a href="#cb2-435" aria-hidden="true" tabindex="-1"></a>::: {.callout-warning}</span>
+<span id="cb2-436"><a href="#cb2-436" aria-hidden="true" tabindex="-1"></a>Residuals are a statistical summary, not a causal diagnosis. A positive</span>
+<span id="cb2-437"><a href="#cb2-437" aria-hidden="true" tabindex="-1"></a>residual means "this link has more collisions than similar links" — it</span>
+<span id="cb2-438"><a href="#cb2-438" aria-hidden="true" tabindex="-1"></a>does not identify *why*, and does not mean any specific intervention would</span>
+<span id="cb2-439"><a href="#cb2-439" aria-hidden="true" tabindex="-1"></a>reduce collisions.</span>
+<span id="cb2-440"><a href="#cb2-440" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-441"><a href="#cb2-441" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-442"><a href="#cb2-442" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-443"><a href="#cb2-443" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-444"><a href="#cb2-444" aria-hidden="true" tabindex="-1"></a><span class="fu">## Feature summary</span></span>
+<span id="cb2-445"><a href="#cb2-445" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-446"><a href="#cb2-446" aria-hidden="true" tabindex="-1"></a>Condensed view of which columns reach the model and how they're used.</span>
+<span id="cb2-447"><a href="#cb2-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-448"><a href="#cb2-448" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Category <span class="pp">|</span> Features <span class="pp">|</span> Used by <span class="pp">|</span> Notes <span class="pp">|</span></span>
+<span id="cb2-449"><a href="#cb2-449" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb2-450"><a href="#cb2-450" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Exposure (via log-offset) <span class="pp">|</span> <span class="in">`estimated_aadt`</span>, <span class="in">`link_length_km`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> Combined into <span class="in">`log_offset`</span>; coefficient forced to 1 <span class="pp">|</span></span>
+<span id="cb2-451"><a href="#cb2-451" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Road structure <span class="pp">|</span> <span class="in">`road_class_ord`</span>, <span class="in">`form_of_way_ord`</span>, 7 binary flags <span class="pp">|</span> GLM + XGB <span class="pp">|</span> Ordinals + flags for interaction capture <span class="pp">|</span></span>
+<span id="cb2-452"><a href="#cb2-452" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Link length <span class="pp">|</span> <span class="in">`log_link_length_km`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> Captures non-exposure length effects <span class="pp">|</span></span>
+<span id="cb2-453"><a href="#cb2-453" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Temporal <span class="pp">|</span> <span class="in">`is_covid`</span>, <span class="in">`year_norm`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> Training-only; pooled away in scoring <span class="pp">|</span></span>
+<span id="cb2-454"><a href="#cb2-454" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Network <span class="pp">|</span> <span class="in">`degree_mean`</span>, <span class="in">`betweenness`</span>, <span class="in">`dist_to_major_km`</span>, <span class="in">`pop_density_per_km2`</span>, <span class="in">`speed_limit_mph_effective`</span>, <span class="in">`lanes`</span>, <span class="in">`is_unpaved`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> OSM-enriched where present; current models use <span class="in">`speed_limit_mph_effective`</span>, with raw <span class="in">`speed_limit_mph`</span> retained only as provenance <span class="pp">|</span></span>
+<span id="cb2-455"><a href="#cb2-455" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> AADT raw <span class="pp">|</span> <span class="in">`estimated_aadt`</span> <span class="pp">|</span> XGB only <span class="pp">|</span> Also in offset; XGB can use both <span class="pp">|</span></span>
+<span id="cb2-456"><a href="#cb2-456" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-457"><a href="#cb2-457" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-458"><a href="#cb2-458" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-459"><a href="#cb2-459" aria-hidden="true" tabindex="-1"></a><span class="fu">## Known limitations and tradeoffs</span></span>
+<span id="cb2-460"><a href="#cb2-460" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-461"><a href="#cb2-461" aria-hidden="true" tabindex="-1"></a><span class="fu">### XGBoost validation uses GroupShuffleSplit by link</span></span>
+<span id="cb2-462"><a href="#cb2-462" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-463"><a href="#cb2-463" aria-hidden="true" tabindex="-1"></a><span class="in">`GroupShuffleSplit(by=link_id, test_size=0.2)`</span> ensures no link appears in</span>
+<span id="cb2-464"><a href="#cb2-464" aria-hidden="true" tabindex="-1"></a>both training and test sets across years. This gives honest generalisation</span>
+<span id="cb2-465"><a href="#cb2-465" aria-hidden="true" tabindex="-1"></a>performance — a link seen in 2019 cannot leak into the 2021 test fold.</span>
+<span id="cb2-466"><a href="#cb2-466" aria-hidden="true" tabindex="-1"></a>Reported pseudo-R² reflects out-of-link performance, not in-sample fit.</span>
+<span id="cb2-467"><a href="#cb2-467" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-468"><a href="#cb2-468" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}</span></span>
+<span id="cb2-469"><a href="#cb2-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-470"><a href="#cb2-470" aria-hidden="true" tabindex="-1"></a>The current GLM pseudo-R² (0.301) and XGBoost pseudo-R² (0.858) are computed on</span>
+<span id="cb2-471"><a href="#cb2-471" aria-hidden="true" tabindex="-1"></a>different row subsets with different null models. **They are not directly</span>
+<span id="cb2-472"><a href="#cb2-472" aria-hidden="true" tabindex="-1"></a>comparable.**</span>
+<span id="cb2-473"><a href="#cb2-473" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-474"><a href="#cb2-474" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="pp">|</span> GLM <span class="pp">|</span> XGBoost <span class="pp">|</span></span>
+<span id="cb2-475"><a href="#cb2-475" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb2-476"><a href="#cb2-476" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Evaluation set <span class="pp">|</span> In-sample (downsampled training table) <span class="pp">|</span> Out-of-sample (held-out 20% of links) <span class="pp">|</span></span>
+<span id="cb2-477"><a href="#cb2-477" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Rows <span class="pp">|</span> ~3.97M (all positives + 1:10 zero sample) <span class="pp">|</span> ~4.34M (true link-year distribution) <span class="pp">|</span></span>
+<span id="cb2-478"><a href="#cb2-478" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Zero rate in eval set <span class="pp">|</span> ~91% (downsampled) <span class="pp">|</span> ~98% (real distribution) <span class="pp">|</span></span>
+<span id="cb2-479"><a href="#cb2-479" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Null model <span class="pp">|</span> Intercept-only Poisson on downsampled set <span class="pp">|</span> <span class="in">`y_test.mean()`</span> on the real test set <span class="pp">|</span></span>
+<span id="cb2-480"><a href="#cb2-480" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-481"><a href="#cb2-481" aria-hidden="true" tabindex="-1"></a>The current Stage 2 metrics reflect the state after four correctness-focused</span>
+<span id="cb2-482"><a href="#cb2-482" aria-hidden="true" tabindex="-1"></a>changes landed: the counted-only Stage 1a AADF filter, the Stage 2 post-event</span>
+<span id="cb2-483"><a href="#cb2-483" aria-hidden="true" tabindex="-1"></a>provenance guard, OSM network feature enrichment, and tiered speed-limit</span>
+<span id="cb2-484"><a href="#cb2-484" aria-hidden="true" tabindex="-1"></a>imputation using UK legal defaults with <span class="in">`ruc_urban_rural`</span> context. These were</span>
+<span id="cb2-485"><a href="#cb2-485" aria-hidden="true" tabindex="-1"></a>shipped to improve methodological correctness rather than to optimise</span>
+<span id="cb2-486"><a href="#cb2-486" aria-hidden="true" tabindex="-1"></a>pseudo-R², and attribution of changes across them was not formally ablated.</span>
+<span id="cb2-487"><a href="#cb2-487" aria-hidden="true" tabindex="-1"></a>Future feature and modelling work will be evaluated using a five-seed rank</span>
+<span id="cb2-488"><a href="#cb2-488" aria-hidden="true" tabindex="-1"></a>stability harness (see TODO), against the current metrics as baseline.</span>
+<span id="cb2-489"><a href="#cb2-489" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-490"><a href="#cb2-490" aria-hidden="true" tabindex="-1"></a>Because the GLM null model sees an artificially balanced zero rate, it is</span>
+<span id="cb2-491"><a href="#cb2-491" aria-hidden="true" tabindex="-1"></a>easier to beat — the true 98% zero rate would produce a higher null deviance</span>
+<span id="cb2-492"><a href="#cb2-492" aria-hidden="true" tabindex="-1"></a>and a lower pseudo-R² for the same model. Because XGBoost is evaluated on</span>
+<span id="cb2-493"><a href="#cb2-493" aria-hidden="true" tabindex="-1"></a>the real held-out distribution against that harder null, its 0.858 is the</span>
+<span id="cb2-494"><a href="#cb2-494" aria-hidden="true" tabindex="-1"></a>more conservative and honest metric.</span>
+<span id="cb2-495"><a href="#cb2-495" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-496"><a href="#cb2-496" aria-hidden="true" tabindex="-1"></a>The practical implication: the 0.301 vs 0.858 gap overstates the genuine</span>
+<span id="cb2-497"><a href="#cb2-497" aria-hidden="true" tabindex="-1"></a>predictive lift of XGBoost over the GLM. A fair comparison would require</span>
+<span id="cb2-498"><a href="#cb2-498" aria-hidden="true" tabindex="-1"></a>both models evaluated on the same held-out set against the same null model.</span>
+<span id="cb2-499"><a href="#cb2-499" aria-hidden="true" tabindex="-1"></a>This has not been done; recomputing both on a common evaluation set is a</span>
+<span id="cb2-500"><a href="#cb2-500" aria-hidden="true" tabindex="-1"></a>known pending improvement.</span>
+<span id="cb2-501"><a href="#cb2-501" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-502"><a href="#cb2-502" aria-hidden="true" tabindex="-1"></a><span class="fu">### GLM intercept bias</span></span>
+<span id="cb2-503"><a href="#cb2-503" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-504"><a href="#cb2-504" aria-hidden="true" tabindex="-1"></a>Zero-downsampling shifts the baseline rate upward. Absolute predicted</span>
+<span id="cb2-505"><a href="#cb2-505" aria-hidden="true" tabindex="-1"></a>counts from the GLM should not be taken at face value; percentiles and</span>
+<span id="cb2-506"><a href="#cb2-506" aria-hidden="true" tabindex="-1"></a>relative comparisons are the intended use.</span>
+<span id="cb2-507"><a href="#cb2-507" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-508"><a href="#cb2-508" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 1a uncertainty is ignored</span></span>
+<span id="cb2-509"><a href="#cb2-509" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-510"><a href="#cb2-510" aria-hidden="true" tabindex="-1"></a>AADT estimates feed Stage 2 as exact exposure. AADT validation MAE is reported</span>
+<span id="cb2-511"><a href="#cb2-511" aria-hidden="true" tabindex="-1"></a>in log-units by the traffic stage. This is not propagated, so confidence</span>
+<span id="cb2-512"><a href="#cb2-512" aria-hidden="true" tabindex="-1"></a>intervals on <span class="in">`predicted_glm`</span> understate total uncertainty.</span>
+<span id="cb2-513"><a href="#cb2-513" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-514"><a href="#cb2-514" aria-hidden="true" tabindex="-1"></a><span class="fu">### No inter-model ensembling or disagreement analysis</span></span>
+<span id="cb2-515"><a href="#cb2-515" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-516"><a href="#cb2-516" aria-hidden="true" tabindex="-1"></a>Both models are trained; XGBoost drives the final ranking, GLM is</span>
+<span id="cb2-517"><a href="#cb2-517" aria-hidden="true" tabindex="-1"></a>diagnostic. A future extension could flag links where the two disagree</span>
+<span id="cb2-518"><a href="#cb2-518" aria-hidden="true" tabindex="-1"></a>substantially — those are candidates for manual review or ensemble weighting.</span>
+<span id="cb2-519"><a href="#cb2-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-520"><a href="#cb2-520" aria-hidden="true" tabindex="-1"></a><span class="fu">### Rare-event instability</span></span>
+<span id="cb2-521"><a href="#cb2-521" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-522"><a href="#cb2-522" aria-hidden="true" tabindex="-1"></a>Fatal-only collision modelling is not implemented as a separate target.</span>
+<span id="cb2-523"><a href="#cb2-523" aria-hidden="true" tabindex="-1"></a><span class="in">`fatal_count`</span> and <span class="in">`serious_count`</span> are summed in the output but the primary</span>
+<span id="cb2-524"><a href="#cb2-524" aria-hidden="true" tabindex="-1"></a>model is on <span class="in">`collision_count`</span> (all severities). Severity-specific risk</span>
+<span id="cb2-525"><a href="#cb2-525" aria-hidden="true" tabindex="-1"></a>would need a separate model — counts are small enough that regularisation</span>
+<span id="cb2-526"><a href="#cb2-526" aria-hidden="true" tabindex="-1"></a>or a hurdle model may be required.</span>
+<span id="cb2-527"><a href="#cb2-527" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-528"><a href="#cb2-528" aria-hidden="true" tabindex="-1"></a><span class="fu">### OSM and network feature availability</span></span>
+<span id="cb2-529"><a href="#cb2-529" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-530"><a href="#cb2-530" aria-hidden="true" tabindex="-1"></a>The current Stage 2 run is OSM-enriched: <span class="in">`speed_limit_mph_effective`</span> is included</span>
+<span id="cb2-531"><a href="#cb2-531" aria-hidden="true" tabindex="-1"></a>in both the GLM and XGBoost feature lists, while raw <span class="in">`speed_limit_mph`</span> is</span>
+<span id="cb2-532"><a href="#cb2-532" aria-hidden="true" tabindex="-1"></a>retained in the scored output as provenance. <span class="in">`lanes`</span> and <span class="in">`is_unpaved`</span> are used</span>
+<span id="cb2-533"><a href="#cb2-533" aria-hidden="true" tabindex="-1"></a>by XGBoost and median-imputed for the GLM. Coverage remains class-conditional</span>
+<span id="cb2-534"><a href="#cb2-534" aria-hidden="true" tabindex="-1"></a>and uneven, but the speed-limit coverage edge case described below has been</span>
+<span id="cb2-535"><a href="#cb2-535" aria-hidden="true" tabindex="-1"></a>resolved by tiered imputation.</span>
+<span id="cb2-536"><a href="#cb2-536" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-537"><a href="#cb2-537" aria-hidden="true" tabindex="-1"></a><span class="fu">### GLM training-set size under OSM coverage</span></span>
+<span id="cb2-538"><a href="#cb2-538" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-539"><a href="#cb2-539" aria-hidden="true" tabindex="-1"></a>The GLM feature-selection rule uses any column with **&gt;50% coverage** directly,</span>
+<span id="cb2-540"><a href="#cb2-540" aria-hidden="true" tabindex="-1"></a>then applies <span class="in">`.dropna()`</span> to the assembled feature matrix. The previous raw OSM</span>
+<span id="cb2-541"><a href="#cb2-541" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_mph`</span> feature had 56.4% coverage, barely cleared that threshold,</span>
+<span id="cb2-542"><a href="#cb2-542" aria-hidden="true" tabindex="-1"></a>and reduced the GLM training table to **10,892,180** complete-case link-years.</span>
+<span id="cb2-543"><a href="#cb2-543" aria-hidden="true" tabindex="-1"></a>Replacing it with <span class="in">`speed_limit_mph_effective`</span> resolved that threshold issue:</span>
+<span id="cb2-544"><a href="#cb2-544" aria-hidden="true" tabindex="-1"></a>the current retrain uses **18,302,830** complete-case link-years before GLM</span>
+<span id="cb2-545"><a href="#cb2-545" aria-hidden="true" tabindex="-1"></a>zero-downsampling, then **3,967,414** rows after the 1:10 positive-to-zero</span>
+<span id="cb2-546"><a href="#cb2-546" aria-hidden="true" tabindex="-1"></a>sample. The remaining complete-case loss is dominated by other network/context</span>
+<span id="cb2-547"><a href="#cb2-547" aria-hidden="true" tabindex="-1"></a>coverage, especially the RUC-related population/context tail.</span>
+<span id="cb2-548"><a href="#cb2-548" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-549"><a href="#cb2-549" aria-hidden="true" tabindex="-1"></a>XGBoost is unaffected by this GLM threshold because <span class="in">`train_collision_xgb()`</span></span>
+<span id="cb2-550"><a href="#cb2-550" aria-hidden="true" tabindex="-1"></a>fills missing values with 0 rather than dropping rows. The Stage 2 base table</span>
+<span id="cb2-551"><a href="#cb2-551" aria-hidden="true" tabindex="-1"></a>remains **21,675,570** link-years, with the current grouped split yielding</span>
+<span id="cb2-552"><a href="#cb2-552" aria-hidden="true" tabindex="-1"></a><span class="in">`xgb.n_train = 17,340,450`</span> (80% of the full table). The production ranking</span>
+<span id="cb2-553"><a href="#cb2-553" aria-hidden="true" tabindex="-1"></a>therefore still covers all **2,167,557** links.</span>
+<span id="cb2-554"><a href="#cb2-554" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-555"><a href="#cb2-555" aria-hidden="true" tabindex="-1"></a>The effective-speed retrain left the final rank surface stable relative to the</span>
+<span id="cb2-556"><a href="#cb2-556" aria-hidden="true" tabindex="-1"></a>raw-speed baseline: Spearman rank correlation across all links was **0.9962**,</span>
+<span id="cb2-557"><a href="#cb2-557" aria-hidden="true" tabindex="-1"></a>and the top-1% Jaccard overlap was **0.9512** (21,134 shared links out of</span>
+<span id="cb2-558"><a href="#cb2-558" aria-hidden="true" tabindex="-1"></a>22,218 in the union). The feature swap changed local ordering but did not</span>
+<span id="cb2-559"><a href="#cb2-559" aria-hidden="true" tabindex="-1"></a>materially reshuffle the highest-risk set.</span>
+<span id="cb2-560"><a href="#cb2-560" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-561"><a href="#cb2-561" aria-hidden="true" tabindex="-1"></a>The pipeline also reduces feature count if <span class="in">`network_features.parquet`</span> is</span>
+<span id="cb2-562"><a href="#cb2-562" aria-hidden="true" tabindex="-1"></a>missing, producing lower-quality scores without an obvious downstream signal.</span>
+<span id="cb2-563"><a href="#cb2-563" aria-hidden="true" tabindex="-1"></a>The train log reports this, but consumers of <span class="in">`risk_scores.parquet`</span> should check</span>
+<span id="cb2-564"><a href="#cb2-564" aria-hidden="true" tabindex="-1"></a><span class="in">`data/models/collision_metrics.json`</span> for the actual feature list used by a run.</span>
+<span id="cb2-565"><a href="#cb2-565" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-566"><a href="#cb2-566" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-567"><a href="#cb2-567" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-568"><a href="#cb2-568" aria-hidden="true" tabindex="-1"></a><span class="fu">## Running the pipeline</span></span>
+<span id="cb2-569"><a href="#cb2-569" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-570"><a href="#cb2-570" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb2-571"><a href="#cb2-571" aria-hidden="true" tabindex="-1"></a><span class="co"># Run all stages</span></span>
+<span id="cb2-572"><a href="#cb2-572" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> all</span>
+<span id="cb2-573"><a href="#cb2-573" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-574"><a href="#cb2-574" aria-hidden="true" tabindex="-1"></a><span class="co"># Individual stages</span></span>
+<span id="cb2-575"><a href="#cb2-575" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> traffic    <span class="co"># Stage 1a: AADT</span></span>
+<span id="cb2-576"><a href="#cb2-576" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> profile    <span class="co"># Stage 1b: Time-zone profiles</span></span>
+<span id="cb2-577"><a href="#cb2-577" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> collision  <span class="co"># Stage 2: Risk model</span></span>
+<span id="cb2-578"><a href="#cb2-578" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-579"><a href="#cb2-579" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-580"><a href="#cb2-580" aria-hidden="true" tabindex="-1"></a>Stage 2 requires Stage 1a output (<span class="in">`aadt_estimates.parquet`</span>) and will fail</span>
+<span id="cb2-581"><a href="#cb2-581" aria-hidden="true" tabindex="-1"></a>with a clear error if it's missing.</span>
+<span id="cb2-582"><a href="#cb2-582" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-583"><a href="#cb2-583" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-584"><a href="#cb2-584" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-585"><a href="#cb2-585" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next steps</span></span>
+<span id="cb2-586"><a href="#cb2-586" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-587"><a href="#cb2-587" aria-hidden="true" tabindex="-1"></a><span class="in">`risk_scores.parquet`</span> feeds into:</span>
+<span id="cb2-588"><a href="#cb2-588" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-589"><a href="#cb2-589" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Application layer** — ranking, mapping, and exploratory UIs.</span>
+<span id="cb2-590"><a href="#cb2-590" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Residual analysis** — identifying links with large positive residuals</span>
+<span id="cb2-591"><a href="#cb2-591" aria-hidden="true" tabindex="-1"></a>  for review and investigation.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

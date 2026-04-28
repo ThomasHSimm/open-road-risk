@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Future Work – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="./data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="./methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="./analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="./methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./analysis/model-results.html">
+ <span class="dropdown-text">Model Results &amp; SHAP</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" href="./future-work.html" aria-current="page"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./api-reference/index.html"> 
+<span class="menu-text">API Reference</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#scope-note" id="toc-scope-note" class="nav-link" data-scroll-target="#scope-note"><span class="header-section-number">2</span> Scope note</a></li>
+  <li><a href="#theme-1-alternative-ranking-targets" id="toc-theme-1-alternative-ranking-targets" class="nav-link" data-scroll-target="#theme-1-alternative-ranking-targets"><span class="header-section-number">3</span> Theme 1: Alternative ranking targets</a>
+  <ul class="collapse">
+  <li><a href="#weather-warning-analysis-temporal-rank-stability" id="toc-weather-warning-analysis-temporal-rank-stability" class="nav-link" data-scroll-target="#weather-warning-analysis-temporal-rank-stability"><span class="header-section-number">3.1</span> Weather warning analysis — temporal rank stability</a></li>
+  <li><a href="#severity-aware-risk-ranking-expected-ksi" id="toc-severity-aware-risk-ranking-expected-ksi" class="nav-link" data-scroll-target="#severity-aware-risk-ranking-expected-ksi"><span class="header-section-number">3.2</span> Severity-aware risk ranking (expected KSI)</a></li>
+  <li><a href="#fatal-only-collision-modelling" id="toc-fatal-only-collision-modelling" class="nav-link" data-scroll-target="#fatal-only-collision-modelling"><span class="header-section-number">3.3</span> Fatal-only collision modelling</a></li>
+  <li><a href="#vulnerable-road-user-weighted-target" id="toc-vulnerable-road-user-weighted-target" class="nav-link" data-scroll-target="#vulnerable-road-user-weighted-target"><span class="header-section-number">3.4</span> Vulnerable-road-user-weighted target</a></li>
+  </ul></li>
+  <li><a href="#theme-2-vehicle-type-specific-analyses" id="toc-theme-2-vehicle-type-specific-analyses" class="nav-link" data-scroll-target="#theme-2-vehicle-type-specific-analyses"><span class="header-section-number">4</span> Theme 2: Vehicle-type-specific analyses</a>
+  <ul class="collapse">
+  <li><a href="#motorcycle-specific-risk-layer" id="toc-motorcycle-specific-risk-layer" class="nav-link" data-scroll-target="#motorcycle-specific-risk-layer"><span class="header-section-number">4.1</span> Motorcycle-specific risk layer</a></li>
+  <li><a href="#cyclist-and-pedestrian-risk-without-direct-exposure" id="toc-cyclist-and-pedestrian-risk-without-direct-exposure" class="nav-link" data-scroll-target="#cyclist-and-pedestrian-risk-without-direct-exposure"><span class="header-section-number">4.2</span> Cyclist and pedestrian risk without direct exposure</a></li>
+  <li><a href="#vehicle-mix-as-risk-modifier" id="toc-vehicle-mix-as-risk-modifier" class="nav-link" data-scroll-target="#vehicle-mix-as-risk-modifier"><span class="header-section-number">4.3</span> Vehicle mix as risk modifier</a></li>
+  </ul></li>
+  <li><a href="#theme-3-structural-modelling-changes" id="toc-theme-3-structural-modelling-changes" class="nav-link" data-scroll-target="#theme-3-structural-modelling-changes"><span class="header-section-number">5</span> Theme 3: Structural modelling changes</a>
+  <ul class="collapse">
+  <li><a href="#temporal-disaggregation-of-stage-2" id="toc-temporal-disaggregation-of-stage-2" class="nav-link" data-scroll-target="#temporal-disaggregation-of-stage-2"><span class="header-section-number">5.1</span> Temporal disaggregation of Stage 2</a></li>
+  </ul></li>
+  <li><a href="#cross-theme-note" id="toc-cross-theme-note" class="nav-link" data-scroll-target="#cross-theme-note"><span class="header-section-number">6</span> Cross-theme note</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Future Work</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Research questions and extensions supported by the road-risk pipeline</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
+<p>This page catalogues research questions and analyses that the <code>road_risk_analysis</code> pipeline can support but which aren’t in the active backlog (see the repository <code>TODO.md</code>). It has two purposes:</p>
+<ol type="1">
+<li><strong>For future work on this repo</strong> — by me, collaborators, or contributors. Each entry has enough context to pick up without reconstructing the reasoning.</li>
+<li><strong>As a statement of platform scope</strong> — most UK road-safety research is regionally narrow (M25, single county) and methodologically narrow (one hypothesis per paper). This pipeline is designed to support multiple research questions on a common open-data substrate with consistent methodology. The questions below illustrate what that scope makes possible.</li>
+</ol>
+<p>Entries are not ranked against each other. They’re organised by theme.</p>
+<hr>
+</section>
+<section id="scope-note" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="scope-note"><span class="header-section-number">2</span> Scope note</h2>
+<p>The pipeline from raw DfT / OS / OSM data through to modelled outputs at OS Open Roads link-year grain is reusable infrastructure. The research questions below illustrate what that substrate supports beyond the headline risk ranking. Reproducibility documentation and contribution paths are in active development in the repository backlog.</p>
+<p><strong>Known platform gaps:</strong> hourly/daily temporal grain not supported at Stage 2; SCRIM and pavement-friction data not available; OSM speed-limit coverage is only partial (56.4% overall, 59.4% on Unclassified links) and lane/surface tags are much sparser; DfT-estimated AADF rows are excluded from Stage 1a training (see <a href="./methodology/exposure-model.html">Stage 1a: Traffic Volume</a>); Network Model GDB coverage is SRN-only.</p>
+<p><strong>To adapt the pipeline for a new research question:</strong> - Fork and reproduce the baseline pipeline. - Identify the grain your question needs. - For a new target, subset or reweight the collision data and re-run Stage 2. - For a new feature, add to <code>network_features.py</code> and check coverage before inclusion. - For a new analysis, operate on pipeline outputs without modifying the core model. - Use the evaluation harness (5-seed rank stability) to compare your variant against baseline on identical held-out links.</p>
+<hr>
+</section>
+<section id="theme-1-alternative-ranking-targets" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="theme-1-alternative-ranking-targets"><span class="header-section-number">3</span> Theme 1: Alternative ranking targets</h2>
+<p>Variants on “what should the production target be?” The current model ranks by expected all-injury collision count. Different stakeholders might want different targets. Each entry is a parallel Stage 2 training run rather than a replacement of the main model.</p>
+<hr>
+<section id="weather-warning-analysis-temporal-rank-stability" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="weather-warning-analysis-temporal-rank-stability"><span class="header-section-number">3.1</span> Weather warning analysis — temporal rank stability</h3>
+<p><strong>What it is:</strong> Use Met Office historical weather warnings (date × region) or ERA5-threshold-reconstructed equivalents to test whether the top-1% risk ranking holds up under extreme conditions. Diagnostic analysis, not a Stage 2 feature — link-year aggregation blurs the temporal signal that makes weather warnings predictive.</p>
+<p><strong>Why it’s interesting:</strong> Literature consistently identifies weather as a strong crash-risk predictor, but at the per-crash or hourly grain. At link-year grain, the honest use is as a robustness check: does the model’s top-1% list reshuffle under warnings? Either answer is useful — a shift identifies conditionally-risky links the annual model misses; stability demonstrates the ranking is robust across conditions.</p>
+<p><strong>Why not now:</strong> Scope-creep relative to current backlog. Requires the 5-seed stability harness (see <code>TODO.md</code> → Queued tasks) to be in place first, otherwise the analysis conflates warning-effect with seed-effect. Historical Met Office warnings may be hard to obtain cleanly; ERA5- threshold reconstruction is a fallback.</p>
+<p><strong>Good starting point for someone else:</strong> - Check data availability for Met Office historical warnings 2015–2024 (GB regional). May require direct correspondence with Met Office or an archive request. - If unavailable, use ERA5-Land hourly data thresholded to amber-equivalent events (e.g.&nbsp;rainfall &gt;20mm/day, wind gusts &gt;50mph). - Join to STATS19 collisions by date × region. - Report top-1% Jaccard stability and rank correlation, warning vs normal days, by warning type (snow/rain/wind/fog).</p>
+<p><strong>Related:</strong> Temporal risk modelling via Stage 1b would be a more thorough treatment; this is the cheaper diagnostic version.</p>
+<hr>
+</section>
+<section id="severity-aware-risk-ranking-expected-ksi" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="severity-aware-risk-ranking-expected-ksi"><span class="header-section-number">3.2</span> Severity-aware risk ranking (expected KSI)</h3>
+<p><strong>What it is:</strong> Replace all-injury collision count as the production target with severity-weighted count — fatal-only, KSI (Killed or Seriously Injured), or a social-cost weighting. Rank links by expected KSI rather than expected all-injury collisions.</p>
+<p><strong>Why it’s interesting:</strong> For intervention prioritisation, harm matters more than count. A link with many slight-injury collisions may rank below a link with one fatality under severity weighting. Relevant UK literature includes two-stage mixed multivariate frequency-severity modelling on UK motorway data (see Wang/Quddus/Ison-era work — verify specific citations before use; see note in <code>TODO.md</code> → Citation verification). FHWA/HSM methodology also treats severity-weighted screening as standard for intervention-led deployments.</p>
+<p><strong>Why not now:</strong> Unclear whether stakeholders want severity-weighted ranking. Some safety-team workflows are anchored on all-injury counts for operational reasons (council reporting, consistency with DfT summary statistics). Also: KSI counts at link grain are sparse — likely requires shrinkage or composite social-cost weighting rather than a fatal-only cut. Decision is partly user-research, not just modelling.</p>
+<p><strong>Good starting point for someone else:</strong> - Scope conversation: which severity weighting matches the end-use case (DVSA? Local authority safety teams? National Highways?). - DfT publishes a social-cost-per-casualty table alongside road safety statistics — use those weights as a defensible starting point. - Fit a parallel Stage 2 model with DfT social-cost weights as target. - Compare ranking to current all-injury ranking; identify links that shift substantially between the two.</p>
+<p><strong>Related:</strong> Facility-family split (see <code>TODO.md</code> → Queued tasks) would help here — severity modelling is noisier on minor roads where KSI events are rare, and a per-family model could use different severity treatments per class.</p>
+<hr>
+</section>
+<section id="fatal-only-collision-modelling" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="fatal-only-collision-modelling"><span class="header-section-number">3.3</span> Fatal-only collision modelling</h3>
+<p><strong>What it is:</strong> Train a separate Stage 2 model with <code>fatal_count</code> as target rather than all-injury <code>collision_count</code>. Either a direct Poisson/NB fit on fatal counts, or a hurdle model separating “any fatal?” from “how many fatal given any?”.</p>
+<p><strong>Why it’s interesting:</strong> Fatal collisions are substantively different from slight-injury collisions — different mechanisms (speed, vehicle mass, occupant age), different road environments (higher-speed roads disproportionately), different policy implications. A fatal-only model would identify a different set of high-risk links and could be used as a fatality-focused screening layer alongside the main ranking. The methodology page notes this is not yet implemented.</p>
+<p><strong>Why not now:</strong> Fatal counts are sparse at link grain — 7,402 fatals across 2.17M links over 10 years means most links have zero fatals even over the full window. Direct modelling will be noisy without shrinkage or hierarchical structure. Better approached after EB shrinkage is in place (see <code>TODO.md</code> → Queued tasks) so sparse fatal counts benefit from shrinkage toward facility-family averages, and after facility-family split so motorway-specific fatal patterns don’t blur with unclassified-road patterns.</p>
+<p><strong>Good starting point for someone else:</strong> - After EB shrinkage and facility-family split are in place, add <code>fatal_count</code> target as a parallel Stage 2 model. - Consider a hurdle approach: fit “P(any fatal in link-year)” as a logistic model, then “E(fatals | any fatal)” as a truncated Poisson. Avoids zero-inflation problems at high road-class levels. - Output a parallel <code>fatal_risk_percentile</code> alongside the main ranking. Compare which links appear in both top-1% lists vs which are divergent.</p>
+<p><strong>Related:</strong> Severity-aware ranking (above) is the composite alternative — fatal-only is the purist version of the same idea.</p>
+<hr>
+</section>
+<section id="vulnerable-road-user-weighted-target" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="vulnerable-road-user-weighted-target"><span class="header-section-number">3.4</span> Vulnerable-road-user-weighted target</h3>
+<p><strong>What it is:</strong> Weight the Stage 2 target by casualty type rather than treating all collisions equally — pedestrian, cyclist, and motorcycle casualties weighted higher than car-occupant. Produces a ranking that prioritises links where vulnerable users are at risk, not just where total collision counts are high.</p>
+<p><strong>Why it’s interesting:</strong> UK road safety strategy (Vision Zero, active travel priorities) explicitly prioritises vulnerable road users. A ranking that gives equal weight to a motorway rear-end collision and a pedestrian fatality doesn’t match that strategic frame. STATS19 has casualty-type detail per collision that this project currently doesn’t use beyond severity.</p>
+<p><strong>Why not now:</strong> Requires casualty-level data joined to each collision (STATS19 <code>Casualties.csv</code> table), then aggregated to link-year with weights. Moderate ingestion work and a weighting choice which is itself a policy question, not a modelling one. Justifiable only after the base model structure is settled — adding this on top of an unsettled model makes attribution impossible.</p>
+<p><strong>Good starting point for someone else:</strong> - Ingest STATS19 <code>Casualties.csv</code> (not just the collision-level table currently used) and join to collisions by accident_index. - Per collision, compute a vulnerability-weighted severity score: e.g. <code>pedestrian_serious = 3.0, cyclist_serious = 2.5, motorcycle_serious   = 2.0, car_occupant_serious = 1.0</code>, scaled similarly for fatal and slight. - Aggregate to link-year as <code>vru_weighted_casualties</code>. - Fit as a parallel Stage 2 target; compare top-1% list to the unweighted ranking.</p>
+<p><strong>Related:</strong> Pairs naturally with severity-aware ranking and fatal-only modelling — all three are variants on “what should the production target actually be?”</p>
+<hr>
+</section>
+</section>
+<section id="theme-2-vehicle-type-specific-analyses" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="theme-2-vehicle-type-specific-analyses"><span class="header-section-number">4</span> Theme 2: Vehicle-type-specific analyses</h2>
+<p>The data supports questions the aggregate risk model doesn’t directly answer. These analyses use the existing pipeline as substrate but subset or reframe the data to produce different outputs for different audiences.</p>
+<hr>
+<section id="motorcycle-specific-risk-layer" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="motorcycle-specific-risk-layer"><span class="header-section-number">4.1</span> Motorcycle-specific risk layer</h3>
+<p><strong>What it is:</strong> Produce a separate risk ranking for motorcycle-involved collisions. Subset STATS19 collisions to those involving a motorcycle, re-run Stage 2 on the subset, and identify where motorcycle risk concentrates.</p>
+<p><strong>Why it’s interesting:</strong> Motorcycle safety is a distinct UK road-safety policy area with different risk drivers than general crash risk — rural A-roads, seasonal/weather exposure, specific corridor patterns. A parallel ranking targeted at motorcycle safety would be operationally useful for audiences concerned with motorcyclist casualty reduction: local authorities, safer-roads partnerships, motorcycling groups.</p>
+<p><strong>Why not now:</strong> Uses the main pipeline as substrate, so depends on main model being settled. Also raises the exposure question — using general AADT as exposure for motorcycle risk is defensible but imperfect. DfT AADF distinguishes <code>two_wheeled_motor_vehicles</code> in its vehicle breakdown, so motorcycle AADT is partially recoverable as exposure.</p>
+<p><strong>Good starting point for someone else:</strong> - Use <code>two_wheeled_motor_vehicles</code> from AADF as a motorcycle-specific exposure proxy at count-point grain; let Stage 1a predict motorcycle AADT for all links. - Subset STATS19 to collisions with at least one motorcycle casualty or vehicle. - Fit a parallel Stage 2 model with motorcycle-AADT offset and motorcycle-collision target. - Report ranking, top-1% list, and compare against the main risk ranking to identify motorcycle-specific hotspots.</p>
+<hr>
+</section>
+<section id="cyclist-and-pedestrian-risk-without-direct-exposure" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="cyclist-and-pedestrian-risk-without-direct-exposure"><span class="header-section-number">4.2</span> Cyclist and pedestrian risk without direct exposure</h3>
+<p><strong>What it is:</strong> Produce risk rankings for cyclist and pedestrian casualties despite not having direct active-travel exposure data. Use motor-vehicle AADT as the denominator with the caveat that this measures “cyclist casualty rate per motor-vehicle-km” rather than “cyclist casualty rate per cyclist-km” — still operationally useful for identifying hotspots, but conceptually different from the main ranking.</p>
+<p><strong>Why it’s interesting:</strong> Vision Zero and active-travel policy priorities target vulnerable road users. The aggregate risk ranking doesn’t surface cyclist or pedestrian hotspots clearly because those casualties are a small fraction of total injuries. A dedicated ranking would make cyclist and pedestrian risk concentration visible to policy audiences.</p>
+<p><strong>Why not now:</strong> Without cyclist/pedestrian exposure data, the denominator is imperfect. Strava Metro is parked in <code>TODO.md</code> on licensing grounds. DfT publishes some LSOA-level active travel statistics that could improve the denominator but aren’t in the pipeline. Analysis is scoped but caveats matter.</p>
+<p><strong>Good starting point for someone else:</strong> - Subset STATS19 collisions to those with pedestrian or cyclist casualties. - Use motor-vehicle AADT as interim exposure, with explicit methodology note that this measures motor-vehicle-adjusted rate, not per-active- traveller rate. - Fit parallel Stage 2 models for cyclist-casualty-rate and pedestrian-casualty-rate. - If DfT LSOA-level active travel statistics can be joined, improve the denominator and report comparison.</p>
+<p><strong>Related:</strong> Links to the parked Strava Metro entry in <code>TODO.md</code> — if that ever becomes available, this analysis becomes the use case.</p>
+<hr>
+</section>
+<section id="vehicle-mix-as-risk-modifier" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="vehicle-mix-as-risk-modifier"><span class="header-section-number">4.3</span> Vehicle mix as risk modifier</h3>
+<p><strong>What it is:</strong> Test whether the mix of vehicles on a road (already captured as <code>hgv_proportion</code>) modifies risk for other vehicle types. Do cars have higher collision rates on links with high HGV share? Do motorcycles have different risk profiles on roads with heavier traffic mix?</p>
+<p><strong>Why it’s interesting:</strong> Vehicle-mix effects are mentioned in crash- frequency literature but the project currently treats <code>hgv_proportion</code> as a single feature for aggregate risk. A subgroup analysis would test whether the feature behaves differently by casualty-vehicle type, with implications for intervention design (segregation, speed differentials).</p>
+<p><strong>Why not now:</strong> Subgroup analyses on rare-event data are statistically demanding. Likely requires facility-family split to be in place so that within-family HGV-mix effects can be estimated without confounding by road class.</p>
+<p><strong>Good starting point for someone else:</strong> - After facility-family split is in place, fit interaction terms between <code>hgv_proportion</code> and casualty-vehicle-type (car, motorcycle, cyclist) in the Stage 2 model. - Report whether interactions are meaningful, per family. - If motorcycle × HGV-proportion interaction is significant, that’s a policy-relevant finding (motorcycle safety on HGV-heavy routes).</p>
+<hr>
+</section>
+</section>
+<section id="theme-3-structural-modelling-changes" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="theme-3-structural-modelling-changes"><span class="header-section-number">5</span> Theme 3: Structural modelling changes</h2>
+<p>Major refactors of the Stage 2 modelling approach — not feature additions, but changes to the grain, structure, or estimation method of the core model.</p>
+<hr>
+<section id="temporal-disaggregation-of-stage-2" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="temporal-disaggregation-of-stage-2"><span class="header-section-number">5.1</span> Temporal disaggregation of Stage 2</h3>
+<p><strong>What it is:</strong> Move Stage 2 from link × year grain to link × year × time-bucket grain (e.g.&nbsp;month, day-of-week × hour block). Would use Stage 1b temporal profiles as exposure-modifier infrastructure. Major refactor of the collision model; not a feature addition.</p>
+<p><strong>Why it’s interesting:</strong> Crash risk varies sharply by time of day and day of week in ways the current annual model cannot represent. Friday evenings and Saturday nights carry disproportionate risk; peak commute hours concentrate motorway collisions; school-run windows concentrate urban collisions near schools. A temporally disaggregated model would produce rankings that identify <em>when</em> a link is risky, not just which links are risky overall.</p>
+<p><strong>Why not now:</strong> Multi-session refactor requiring (a) Stage 1b to move from diagnostic to production output, (b) temporal joins to be rebuilt in Stage 2, (c) potentially different modelling approach entirely (hierarchical Poisson with time random effects, or stratified per time-bucket model). Also: today’s rank stability work suggests the current model has largely saturated what link-level features can explain — temporal is a plausible candidate for meaningful predictive lift beyond the current ceiling, but sizing that claim requires research.</p>
+<p><strong>Good starting point for someone else:</strong></p>
+<ul>
+<li>Deep-research pass on temporal disaggregation approaches in UK road safety literature. Specifically: how other STATS19-based analyses have handled time-of-day effects at link grain; whether hierarchical modelling or stratified models are preferred; what sample-size constraints per time-bucket apply.</li>
+<li>Scope out what Stage 1b would need to produce to feed temporal Stage 2.</li>
+<li>Design doc before implementation. Temporal work is methodology- heavy enough that a prompt can’t carry it.</li>
+</ul>
+<p><strong>Related:</strong> Would pair naturally with weather warning analysis (above) — temporal grain is the natural level for weather effects to manifest.</p>
+<hr>
+</section>
+</section>
+<section id="cross-theme-note" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="cross-theme-note"><span class="header-section-number">6</span> Cross-theme note</h2>
+<p>The ideas above are not independent. Several natural combinations:</p>
+<ul>
+<li><strong>Motorcycle × weather</strong> — motorcycle crash risk is known to be highly weather-sensitive. Combining the motorcycle-specific risk layer with weather warning analysis would produce a parallel ranking that’s likely more actionable than either alone.</li>
+<li><strong>HGV enforcement × vehicle-mix</strong> — HGV risk distribution combined with vehicle-mix-as-risk-modifier would identify links where HGV enforcement protects not just the HGV crash rate but also other vehicle types affected by HGV presence.</li>
+<li><strong>VRU-weighted × cyclist/pedestrian layers</strong> — these are closely related target reframings. The VRU-weighted version produces a single composite ranking; the cyclist/pedestrian layers produce separate rankings per casualty type. Both are defensible depending on stakeholder.</li>
+</ul>
+<p>These combinations are documented here rather than as separate entries because each needs the component analyses in place first.</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Future Work"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Research questions and extensions supported by the road-risk pipeline"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">## Overview</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>This page catalogues research questions and analyses that the</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="in">`road_risk_analysis`</span> pipeline can support but which aren't in the</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>active backlog (see the repository <span class="in">`TODO.md`</span>). It has two purposes:</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**For future work on this repo** — by me, collaborators, or</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>   contributors. Each entry has enough context to pick up without</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>   reconstructing the reasoning.</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**As a statement of platform scope** — most UK road-safety research</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>   is regionally narrow (M25, single county) and methodologically</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>   narrow (one hypothesis per paper). This pipeline is designed to</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>   support multiple research questions on a common open-data substrate</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>   with consistent methodology. The questions below illustrate what</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>   that scope makes possible.</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>Entries are not ranked against each other. They're organised by theme.</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Scope note</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>The pipeline from raw DfT / OS / OSM data through to modelled outputs</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>at OS Open Roads link-year grain is reusable infrastructure. The</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>research questions below illustrate what that substrate supports beyond</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>the headline risk ranking. Reproducibility documentation and</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>contribution paths are in active development in the repository backlog.</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>**Known platform gaps:** hourly/daily temporal grain not supported at</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>Stage 2; SCRIM and pavement-friction data not available; OSM speed-limit</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>coverage is only partial (56.4% overall, 59.4% on Unclassified links) and</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>lane/surface tags are much sparser; DfT-estimated AADF rows are excluded</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>from Stage 1a training (see <span class="co">[</span><span class="ot">Stage 1a: Traffic Volume</span><span class="co">](methodology/exposure-model.qmd)</span>);</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>Network Model GDB</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>coverage is SRN-only.</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>**To adapt the pipeline for a new research question:**</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fork and reproduce the baseline pipeline.</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Identify the grain your question needs.</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For a new target, subset or reweight the collision data and re-run</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>  Stage 2.</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For a new feature, add to <span class="in">`network_features.py`</span> and check coverage</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>  before inclusion.</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For a new analysis, operate on pipeline outputs without modifying</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>  the core model.</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use the evaluation harness (5-seed rank stability) to compare your</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  variant against baseline on identical held-out links.</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme 1: Alternative ranking targets</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>Variants on "what should the production target be?" The current model</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>ranks by expected all-injury collision count. Different stakeholders</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>might want different targets. Each entry is a parallel Stage 2 training</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>run rather than a replacement of the main model.</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="fu">### Weather warning analysis — temporal rank stability</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>**What it is:** Use Met Office historical weather warnings (date × region)</span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>or ERA5-threshold-reconstructed equivalents to test whether the top-1%</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>risk ranking holds up under extreme conditions. Diagnostic analysis,</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>not a Stage 2 feature — link-year aggregation blurs the temporal signal</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>that makes weather warnings predictive.</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Literature consistently identifies weather as</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>a strong crash-risk predictor, but at the per-crash or hourly grain. At</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>link-year grain, the honest use is as a robustness check: does the</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>model's top-1% list reshuffle under warnings? Either answer is useful</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a>— a shift identifies conditionally-risky links the annual model misses;</span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>stability demonstrates the ranking is robust across conditions.</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>**Why not now:** Scope-creep relative to current backlog. Requires the</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>5-seed stability harness (see <span class="in">`TODO.md`</span> → Queued tasks) to be in place</span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>first, otherwise the analysis conflates warning-effect with seed-effect.</span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>Historical Met Office warnings may be hard to obtain cleanly; ERA5-</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>threshold reconstruction is a fallback.</span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Check data availability for Met Office historical warnings 2015–2024</span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a>  (GB regional). May require direct correspondence with Met Office or</span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a>  an archive request.</span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If unavailable, use ERA5-Land hourly data thresholded to</span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a>  amber-equivalent events (e.g. rainfall &gt;20mm/day, wind gusts &gt;50mph).</span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Join to STATS19 collisions by date × region.</span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report top-1% Jaccard stability and rank correlation, warning vs</span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>  normal days, by warning type (snow/rain/wind/fog).</span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>**Related:** Temporal risk modelling via Stage 1b would be a more</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>thorough treatment; this is the cheaper diagnostic version.</span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a><span class="fu">### Severity-aware risk ranking (expected KSI)</span></span>
+<span id="cb1-108"><a href="#cb1-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-109"><a href="#cb1-109" aria-hidden="true" tabindex="-1"></a>**What it is:** Replace all-injury collision count as the production</span>
+<span id="cb1-110"><a href="#cb1-110" aria-hidden="true" tabindex="-1"></a>target with severity-weighted count — fatal-only, KSI (Killed or</span>
+<span id="cb1-111"><a href="#cb1-111" aria-hidden="true" tabindex="-1"></a>Seriously Injured), or a social-cost weighting. Rank links by expected</span>
+<span id="cb1-112"><a href="#cb1-112" aria-hidden="true" tabindex="-1"></a>KSI rather than expected all-injury collisions.</span>
+<span id="cb1-113"><a href="#cb1-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-114"><a href="#cb1-114" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** For intervention prioritisation, harm matters</span>
+<span id="cb1-115"><a href="#cb1-115" aria-hidden="true" tabindex="-1"></a>more than count. A link with many slight-injury collisions may rank</span>
+<span id="cb1-116"><a href="#cb1-116" aria-hidden="true" tabindex="-1"></a>below a link with one fatality under severity weighting. Relevant UK</span>
+<span id="cb1-117"><a href="#cb1-117" aria-hidden="true" tabindex="-1"></a>literature includes two-stage mixed multivariate frequency-severity</span>
+<span id="cb1-118"><a href="#cb1-118" aria-hidden="true" tabindex="-1"></a>modelling on UK motorway data (see Wang/Quddus/Ison-era work — verify</span>
+<span id="cb1-119"><a href="#cb1-119" aria-hidden="true" tabindex="-1"></a>specific citations before use; see note in <span class="in">`TODO.md`</span> → Citation</span>
+<span id="cb1-120"><a href="#cb1-120" aria-hidden="true" tabindex="-1"></a>verification). FHWA/HSM methodology also treats severity-weighted</span>
+<span id="cb1-121"><a href="#cb1-121" aria-hidden="true" tabindex="-1"></a>screening as standard for intervention-led deployments.</span>
+<span id="cb1-122"><a href="#cb1-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-123"><a href="#cb1-123" aria-hidden="true" tabindex="-1"></a>**Why not now:** Unclear whether stakeholders want severity-weighted</span>
+<span id="cb1-124"><a href="#cb1-124" aria-hidden="true" tabindex="-1"></a>ranking. Some safety-team workflows are anchored on all-injury counts</span>
+<span id="cb1-125"><a href="#cb1-125" aria-hidden="true" tabindex="-1"></a>for operational reasons (council reporting, consistency with DfT</span>
+<span id="cb1-126"><a href="#cb1-126" aria-hidden="true" tabindex="-1"></a>summary statistics). Also: KSI counts at link grain are sparse —</span>
+<span id="cb1-127"><a href="#cb1-127" aria-hidden="true" tabindex="-1"></a>likely requires shrinkage or composite social-cost weighting rather</span>
+<span id="cb1-128"><a href="#cb1-128" aria-hidden="true" tabindex="-1"></a>than a fatal-only cut. Decision is partly user-research, not just</span>
+<span id="cb1-129"><a href="#cb1-129" aria-hidden="true" tabindex="-1"></a>modelling.</span>
+<span id="cb1-130"><a href="#cb1-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-131"><a href="#cb1-131" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-132"><a href="#cb1-132" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Scope conversation: which severity weighting matches the end-use</span>
+<span id="cb1-133"><a href="#cb1-133" aria-hidden="true" tabindex="-1"></a>  case (DVSA? Local authority safety teams? National Highways?).</span>
+<span id="cb1-134"><a href="#cb1-134" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>DfT publishes a social-cost-per-casualty table alongside road safety</span>
+<span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a>  statistics — use those weights as a defensible starting point.</span>
+<span id="cb1-136"><a href="#cb1-136" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fit a parallel Stage 2 model with DfT social-cost weights as target.</span>
+<span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare ranking to current all-injury ranking; identify links that</span>
+<span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a>  shift substantially between the two.</span>
+<span id="cb1-139"><a href="#cb1-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-140"><a href="#cb1-140" aria-hidden="true" tabindex="-1"></a>**Related:** Facility-family split (see <span class="in">`TODO.md`</span> → Queued tasks)</span>
+<span id="cb1-141"><a href="#cb1-141" aria-hidden="true" tabindex="-1"></a>would help here — severity modelling is noisier on minor roads where</span>
+<span id="cb1-142"><a href="#cb1-142" aria-hidden="true" tabindex="-1"></a>KSI events are rare, and a per-family model could use different</span>
+<span id="cb1-143"><a href="#cb1-143" aria-hidden="true" tabindex="-1"></a>severity treatments per class.</span>
+<span id="cb1-144"><a href="#cb1-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fatal-only collision modelling</span></span>
+<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a>**What it is:** Train a separate Stage 2 model with <span class="in">`fatal_count`</span> as</span>
+<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a>target rather than all-injury <span class="in">`collision_count`</span>. Either a direct</span>
+<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a>Poisson/NB fit on fatal counts, or a hurdle model separating "any</span>
+<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a>fatal?" from "how many fatal given any?".</span>
+<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Fatal collisions are substantively different</span>
+<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a>from slight-injury collisions — different mechanisms (speed, vehicle</span>
+<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a>mass, occupant age), different road environments (higher-speed roads</span>
+<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a>disproportionately), different policy implications. A fatal-only model</span>
+<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a>would identify a different set of high-risk links and could be used as</span>
+<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a>a fatality-focused screening layer alongside the main ranking. The</span>
+<span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a>methodology page notes this is not yet implemented.</span>
+<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a>**Why not now:** Fatal counts are sparse at link grain — 7,402 fatals</span>
+<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a>across 2.17M links over 10 years means most links have zero fatals</span>
+<span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a>even over the full window. Direct modelling will be noisy without</span>
+<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a>shrinkage or hierarchical structure. Better approached after EB</span>
+<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a>shrinkage is in place (see <span class="in">`TODO.md`</span> → Queued tasks) so sparse fatal</span>
+<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a>counts benefit from shrinkage toward facility-family averages, and</span>
+<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a>after facility-family split so motorway-specific fatal patterns don't</span>
+<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a>blur with unclassified-road patterns.</span>
+<span id="cb1-170"><a href="#cb1-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-171"><a href="#cb1-171" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-172"><a href="#cb1-172" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After EB shrinkage and facility-family split are in place, add</span>
+<span id="cb1-173"><a href="#cb1-173" aria-hidden="true" tabindex="-1"></a>  <span class="in">`fatal_count`</span> target as a parallel Stage 2 model.</span>
+<span id="cb1-174"><a href="#cb1-174" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Consider a hurdle approach: fit "P(any fatal in link-year)" as a</span>
+<span id="cb1-175"><a href="#cb1-175" aria-hidden="true" tabindex="-1"></a>  logistic model, then "E(fatals | any fatal)" as a truncated Poisson.</span>
+<span id="cb1-176"><a href="#cb1-176" aria-hidden="true" tabindex="-1"></a>  Avoids zero-inflation problems at high road-class levels.</span>
+<span id="cb1-177"><a href="#cb1-177" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Output a parallel <span class="in">`fatal_risk_percentile`</span> alongside the main ranking.</span>
+<span id="cb1-178"><a href="#cb1-178" aria-hidden="true" tabindex="-1"></a>  Compare which links appear in both top-1% lists vs which are</span>
+<span id="cb1-179"><a href="#cb1-179" aria-hidden="true" tabindex="-1"></a>  divergent.</span>
+<span id="cb1-180"><a href="#cb1-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-181"><a href="#cb1-181" aria-hidden="true" tabindex="-1"></a>**Related:** Severity-aware ranking (above) is the composite alternative</span>
+<span id="cb1-182"><a href="#cb1-182" aria-hidden="true" tabindex="-1"></a>— fatal-only is the purist version of the same idea.</span>
+<span id="cb1-183"><a href="#cb1-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-184"><a href="#cb1-184" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a><span class="fu">### Vulnerable-road-user-weighted target</span></span>
+<span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a>**What it is:** Weight the Stage 2 target by casualty type rather than</span>
+<span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a>treating all collisions equally — pedestrian, cyclist, and motorcycle</span>
+<span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a>casualties weighted higher than car-occupant. Produces a ranking that</span>
+<span id="cb1-191"><a href="#cb1-191" aria-hidden="true" tabindex="-1"></a>prioritises links where vulnerable users are at risk, not just where</span>
+<span id="cb1-192"><a href="#cb1-192" aria-hidden="true" tabindex="-1"></a>total collision counts are high.</span>
+<span id="cb1-193"><a href="#cb1-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-194"><a href="#cb1-194" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** UK road safety strategy (Vision Zero, active</span>
+<span id="cb1-195"><a href="#cb1-195" aria-hidden="true" tabindex="-1"></a>travel priorities) explicitly prioritises vulnerable road users. A</span>
+<span id="cb1-196"><a href="#cb1-196" aria-hidden="true" tabindex="-1"></a>ranking that gives equal weight to a motorway rear-end collision and</span>
+<span id="cb1-197"><a href="#cb1-197" aria-hidden="true" tabindex="-1"></a>a pedestrian fatality doesn't match that strategic frame. STATS19 has</span>
+<span id="cb1-198"><a href="#cb1-198" aria-hidden="true" tabindex="-1"></a>casualty-type detail per collision that this project currently doesn't</span>
+<span id="cb1-199"><a href="#cb1-199" aria-hidden="true" tabindex="-1"></a>use beyond severity.</span>
+<span id="cb1-200"><a href="#cb1-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-201"><a href="#cb1-201" aria-hidden="true" tabindex="-1"></a>**Why not now:** Requires casualty-level data joined to each collision</span>
+<span id="cb1-202"><a href="#cb1-202" aria-hidden="true" tabindex="-1"></a>(STATS19 <span class="in">`Casualties.csv`</span> table), then aggregated to link-year with</span>
+<span id="cb1-203"><a href="#cb1-203" aria-hidden="true" tabindex="-1"></a>weights. Moderate ingestion work and a weighting choice which is itself</span>
+<span id="cb1-204"><a href="#cb1-204" aria-hidden="true" tabindex="-1"></a>a policy question, not a modelling one. Justifiable only after the base</span>
+<span id="cb1-205"><a href="#cb1-205" aria-hidden="true" tabindex="-1"></a>model structure is settled — adding this on top of an unsettled model</span>
+<span id="cb1-206"><a href="#cb1-206" aria-hidden="true" tabindex="-1"></a>makes attribution impossible.</span>
+<span id="cb1-207"><a href="#cb1-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-208"><a href="#cb1-208" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-209"><a href="#cb1-209" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Ingest STATS19 <span class="in">`Casualties.csv`</span> (not just the collision-level table</span>
+<span id="cb1-210"><a href="#cb1-210" aria-hidden="true" tabindex="-1"></a>  currently used) and join to collisions by accident_index.</span>
+<span id="cb1-211"><a href="#cb1-211" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per collision, compute a vulnerability-weighted severity score: e.g.</span>
+<span id="cb1-212"><a href="#cb1-212" aria-hidden="true" tabindex="-1"></a>  `pedestrian_serious = 3.0, cyclist_serious = 2.5, motorcycle_serious</span>
+<span id="cb1-213"><a href="#cb1-213" aria-hidden="true" tabindex="-1"></a>  = 2.0, car_occupant_serious = 1.0`, scaled similarly for fatal and</span>
+<span id="cb1-214"><a href="#cb1-214" aria-hidden="true" tabindex="-1"></a>  slight.</span>
+<span id="cb1-215"><a href="#cb1-215" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Aggregate to link-year as <span class="in">`vru_weighted_casualties`</span>.</span>
+<span id="cb1-216"><a href="#cb1-216" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fit as a parallel Stage 2 target; compare top-1% list to the</span>
+<span id="cb1-217"><a href="#cb1-217" aria-hidden="true" tabindex="-1"></a>  unweighted ranking.</span>
+<span id="cb1-218"><a href="#cb1-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-219"><a href="#cb1-219" aria-hidden="true" tabindex="-1"></a>**Related:** Pairs naturally with severity-aware ranking and fatal-only</span>
+<span id="cb1-220"><a href="#cb1-220" aria-hidden="true" tabindex="-1"></a>modelling — all three are variants on "what should the production</span>
+<span id="cb1-221"><a href="#cb1-221" aria-hidden="true" tabindex="-1"></a>target actually be?"</span>
+<span id="cb1-222"><a href="#cb1-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-223"><a href="#cb1-223" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-224"><a href="#cb1-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-225"><a href="#cb1-225" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme 2: Vehicle-type-specific analyses</span></span>
+<span id="cb1-226"><a href="#cb1-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-227"><a href="#cb1-227" aria-hidden="true" tabindex="-1"></a>The data supports questions the aggregate risk model doesn't directly</span>
+<span id="cb1-228"><a href="#cb1-228" aria-hidden="true" tabindex="-1"></a>answer. These analyses use the existing pipeline as substrate but</span>
+<span id="cb1-229"><a href="#cb1-229" aria-hidden="true" tabindex="-1"></a>subset or reframe the data to produce different outputs for different</span>
+<span id="cb1-230"><a href="#cb1-230" aria-hidden="true" tabindex="-1"></a>audiences.</span>
+<span id="cb1-231"><a href="#cb1-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-232"><a href="#cb1-232" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-233"><a href="#cb1-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-234"><a href="#cb1-234" aria-hidden="true" tabindex="-1"></a><span class="fu">### Motorcycle-specific risk layer</span></span>
+<span id="cb1-235"><a href="#cb1-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-236"><a href="#cb1-236" aria-hidden="true" tabindex="-1"></a>**What it is:** Produce a separate risk ranking for motorcycle-involved</span>
+<span id="cb1-237"><a href="#cb1-237" aria-hidden="true" tabindex="-1"></a>collisions. Subset STATS19 collisions to those involving a motorcycle,</span>
+<span id="cb1-238"><a href="#cb1-238" aria-hidden="true" tabindex="-1"></a>re-run Stage 2 on the subset, and identify where motorcycle risk</span>
+<span id="cb1-239"><a href="#cb1-239" aria-hidden="true" tabindex="-1"></a>concentrates.</span>
+<span id="cb1-240"><a href="#cb1-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-241"><a href="#cb1-241" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Motorcycle safety is a distinct UK road-safety</span>
+<span id="cb1-242"><a href="#cb1-242" aria-hidden="true" tabindex="-1"></a>policy area with different risk drivers than general crash risk — rural</span>
+<span id="cb1-243"><a href="#cb1-243" aria-hidden="true" tabindex="-1"></a>A-roads, seasonal/weather exposure, specific corridor patterns. A</span>
+<span id="cb1-244"><a href="#cb1-244" aria-hidden="true" tabindex="-1"></a>parallel ranking targeted at motorcycle safety would be operationally</span>
+<span id="cb1-245"><a href="#cb1-245" aria-hidden="true" tabindex="-1"></a>useful for audiences concerned with motorcyclist casualty reduction:</span>
+<span id="cb1-246"><a href="#cb1-246" aria-hidden="true" tabindex="-1"></a>local authorities, safer-roads partnerships, motorcycling groups.</span>
+<span id="cb1-247"><a href="#cb1-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-248"><a href="#cb1-248" aria-hidden="true" tabindex="-1"></a>**Why not now:** Uses the main pipeline as substrate, so depends on</span>
+<span id="cb1-249"><a href="#cb1-249" aria-hidden="true" tabindex="-1"></a>main model being settled. Also raises the exposure question — using</span>
+<span id="cb1-250"><a href="#cb1-250" aria-hidden="true" tabindex="-1"></a>general AADT as exposure for motorcycle risk is defensible but</span>
+<span id="cb1-251"><a href="#cb1-251" aria-hidden="true" tabindex="-1"></a>imperfect. DfT AADF distinguishes <span class="in">`two_wheeled_motor_vehicles`</span> in its</span>
+<span id="cb1-252"><a href="#cb1-252" aria-hidden="true" tabindex="-1"></a>vehicle breakdown, so motorcycle AADT is partially recoverable as</span>
+<span id="cb1-253"><a href="#cb1-253" aria-hidden="true" tabindex="-1"></a>exposure.</span>
+<span id="cb1-254"><a href="#cb1-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-255"><a href="#cb1-255" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-256"><a href="#cb1-256" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use <span class="in">`two_wheeled_motor_vehicles`</span> from AADF as a motorcycle-specific</span>
+<span id="cb1-257"><a href="#cb1-257" aria-hidden="true" tabindex="-1"></a>  exposure proxy at count-point grain; let Stage 1a predict motorcycle</span>
+<span id="cb1-258"><a href="#cb1-258" aria-hidden="true" tabindex="-1"></a>  AADT for all links.</span>
+<span id="cb1-259"><a href="#cb1-259" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Subset STATS19 to collisions with at least one motorcycle casualty</span>
+<span id="cb1-260"><a href="#cb1-260" aria-hidden="true" tabindex="-1"></a>  or vehicle.</span>
+<span id="cb1-261"><a href="#cb1-261" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fit a parallel Stage 2 model with motorcycle-AADT offset and</span>
+<span id="cb1-262"><a href="#cb1-262" aria-hidden="true" tabindex="-1"></a>  motorcycle-collision target.</span>
+<span id="cb1-263"><a href="#cb1-263" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report ranking, top-1% list, and compare against the main risk</span>
+<span id="cb1-264"><a href="#cb1-264" aria-hidden="true" tabindex="-1"></a>  ranking to identify motorcycle-specific hotspots.</span>
+<span id="cb1-265"><a href="#cb1-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-266"><a href="#cb1-266" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-267"><a href="#cb1-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-268"><a href="#cb1-268" aria-hidden="true" tabindex="-1"></a><span class="fu">### Cyclist and pedestrian risk without direct exposure</span></span>
+<span id="cb1-269"><a href="#cb1-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-270"><a href="#cb1-270" aria-hidden="true" tabindex="-1"></a>**What it is:** Produce risk rankings for cyclist and pedestrian</span>
+<span id="cb1-271"><a href="#cb1-271" aria-hidden="true" tabindex="-1"></a>casualties despite not having direct active-travel exposure data. Use</span>
+<span id="cb1-272"><a href="#cb1-272" aria-hidden="true" tabindex="-1"></a>motor-vehicle AADT as the denominator with the caveat that this</span>
+<span id="cb1-273"><a href="#cb1-273" aria-hidden="true" tabindex="-1"></a>measures "cyclist casualty rate per motor-vehicle-km" rather than</span>
+<span id="cb1-274"><a href="#cb1-274" aria-hidden="true" tabindex="-1"></a>"cyclist casualty rate per cyclist-km" — still operationally useful</span>
+<span id="cb1-275"><a href="#cb1-275" aria-hidden="true" tabindex="-1"></a>for identifying hotspots, but conceptually different from the main</span>
+<span id="cb1-276"><a href="#cb1-276" aria-hidden="true" tabindex="-1"></a>ranking.</span>
+<span id="cb1-277"><a href="#cb1-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-278"><a href="#cb1-278" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Vision Zero and active-travel policy</span>
+<span id="cb1-279"><a href="#cb1-279" aria-hidden="true" tabindex="-1"></a>priorities target vulnerable road users. The aggregate risk ranking</span>
+<span id="cb1-280"><a href="#cb1-280" aria-hidden="true" tabindex="-1"></a>doesn't surface cyclist or pedestrian hotspots clearly because those</span>
+<span id="cb1-281"><a href="#cb1-281" aria-hidden="true" tabindex="-1"></a>casualties are a small fraction of total injuries. A dedicated ranking</span>
+<span id="cb1-282"><a href="#cb1-282" aria-hidden="true" tabindex="-1"></a>would make cyclist and pedestrian risk concentration visible to policy</span>
+<span id="cb1-283"><a href="#cb1-283" aria-hidden="true" tabindex="-1"></a>audiences.</span>
+<span id="cb1-284"><a href="#cb1-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-285"><a href="#cb1-285" aria-hidden="true" tabindex="-1"></a>**Why not now:** Without cyclist/pedestrian exposure data, the</span>
+<span id="cb1-286"><a href="#cb1-286" aria-hidden="true" tabindex="-1"></a>denominator is imperfect. Strava Metro is parked in <span class="in">`TODO.md`</span> on</span>
+<span id="cb1-287"><a href="#cb1-287" aria-hidden="true" tabindex="-1"></a>licensing grounds. DfT publishes some LSOA-level active travel</span>
+<span id="cb1-288"><a href="#cb1-288" aria-hidden="true" tabindex="-1"></a>statistics that could improve the denominator but aren't in the</span>
+<span id="cb1-289"><a href="#cb1-289" aria-hidden="true" tabindex="-1"></a>pipeline. Analysis is scoped but caveats matter.</span>
+<span id="cb1-290"><a href="#cb1-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-291"><a href="#cb1-291" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-292"><a href="#cb1-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Subset STATS19 collisions to those with pedestrian or cyclist</span>
+<span id="cb1-293"><a href="#cb1-293" aria-hidden="true" tabindex="-1"></a>  casualties.</span>
+<span id="cb1-294"><a href="#cb1-294" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use motor-vehicle AADT as interim exposure, with explicit methodology</span>
+<span id="cb1-295"><a href="#cb1-295" aria-hidden="true" tabindex="-1"></a>  note that this measures motor-vehicle-adjusted rate, not per-active-</span>
+<span id="cb1-296"><a href="#cb1-296" aria-hidden="true" tabindex="-1"></a>  traveller rate.</span>
+<span id="cb1-297"><a href="#cb1-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Fit parallel Stage 2 models for cyclist-casualty-rate and</span>
+<span id="cb1-298"><a href="#cb1-298" aria-hidden="true" tabindex="-1"></a>  pedestrian-casualty-rate.</span>
+<span id="cb1-299"><a href="#cb1-299" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If DfT LSOA-level active travel statistics can be joined, improve</span>
+<span id="cb1-300"><a href="#cb1-300" aria-hidden="true" tabindex="-1"></a>  the denominator and report comparison.</span>
+<span id="cb1-301"><a href="#cb1-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-302"><a href="#cb1-302" aria-hidden="true" tabindex="-1"></a>**Related:** Links to the parked Strava Metro entry in <span class="in">`TODO.md`</span> — if</span>
+<span id="cb1-303"><a href="#cb1-303" aria-hidden="true" tabindex="-1"></a>that ever becomes available, this analysis becomes the use case.</span>
+<span id="cb1-304"><a href="#cb1-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-305"><a href="#cb1-305" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-306"><a href="#cb1-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-307"><a href="#cb1-307" aria-hidden="true" tabindex="-1"></a><span class="fu">### Vehicle mix as risk modifier</span></span>
+<span id="cb1-308"><a href="#cb1-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-309"><a href="#cb1-309" aria-hidden="true" tabindex="-1"></a>**What it is:** Test whether the mix of vehicles on a road (already</span>
+<span id="cb1-310"><a href="#cb1-310" aria-hidden="true" tabindex="-1"></a>captured as <span class="in">`hgv_proportion`</span>) modifies risk for other vehicle types.</span>
+<span id="cb1-311"><a href="#cb1-311" aria-hidden="true" tabindex="-1"></a>Do cars have higher collision rates on links with high HGV share? Do</span>
+<span id="cb1-312"><a href="#cb1-312" aria-hidden="true" tabindex="-1"></a>motorcycles have different risk profiles on roads with heavier traffic</span>
+<span id="cb1-313"><a href="#cb1-313" aria-hidden="true" tabindex="-1"></a>mix?</span>
+<span id="cb1-314"><a href="#cb1-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-315"><a href="#cb1-315" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Vehicle-mix effects are mentioned in crash-</span>
+<span id="cb1-316"><a href="#cb1-316" aria-hidden="true" tabindex="-1"></a>frequency literature but the project currently treats <span class="in">`hgv_proportion`</span></span>
+<span id="cb1-317"><a href="#cb1-317" aria-hidden="true" tabindex="-1"></a>as a single feature for aggregate risk. A subgroup analysis would test</span>
+<span id="cb1-318"><a href="#cb1-318" aria-hidden="true" tabindex="-1"></a>whether the feature behaves differently by casualty-vehicle type, with</span>
+<span id="cb1-319"><a href="#cb1-319" aria-hidden="true" tabindex="-1"></a>implications for intervention design (segregation, speed differentials).</span>
+<span id="cb1-320"><a href="#cb1-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-321"><a href="#cb1-321" aria-hidden="true" tabindex="-1"></a>**Why not now:** Subgroup analyses on rare-event data are statistically</span>
+<span id="cb1-322"><a href="#cb1-322" aria-hidden="true" tabindex="-1"></a>demanding. Likely requires facility-family split to be in place so that</span>
+<span id="cb1-323"><a href="#cb1-323" aria-hidden="true" tabindex="-1"></a>within-family HGV-mix effects can be estimated without confounding by</span>
+<span id="cb1-324"><a href="#cb1-324" aria-hidden="true" tabindex="-1"></a>road class.</span>
+<span id="cb1-325"><a href="#cb1-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-326"><a href="#cb1-326" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-327"><a href="#cb1-327" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>After facility-family split is in place, fit interaction terms</span>
+<span id="cb1-328"><a href="#cb1-328" aria-hidden="true" tabindex="-1"></a>  between <span class="in">`hgv_proportion`</span> and casualty-vehicle-type (car, motorcycle,</span>
+<span id="cb1-329"><a href="#cb1-329" aria-hidden="true" tabindex="-1"></a>  cyclist) in the Stage 2 model.</span>
+<span id="cb1-330"><a href="#cb1-330" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Report whether interactions are meaningful, per family.</span>
+<span id="cb1-331"><a href="#cb1-331" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If motorcycle × HGV-proportion interaction is significant, that's a</span>
+<span id="cb1-332"><a href="#cb1-332" aria-hidden="true" tabindex="-1"></a>  policy-relevant finding (motorcycle safety on HGV-heavy routes).</span>
+<span id="cb1-333"><a href="#cb1-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-334"><a href="#cb1-334" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-335"><a href="#cb1-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-336"><a href="#cb1-336" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme 3: Structural modelling changes</span></span>
+<span id="cb1-337"><a href="#cb1-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-338"><a href="#cb1-338" aria-hidden="true" tabindex="-1"></a>Major refactors of the Stage 2 modelling approach — not feature additions,</span>
+<span id="cb1-339"><a href="#cb1-339" aria-hidden="true" tabindex="-1"></a>but changes to the grain, structure, or estimation method of the core model.</span>
+<span id="cb1-340"><a href="#cb1-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-341"><a href="#cb1-341" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-342"><a href="#cb1-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-343"><a href="#cb1-343" aria-hidden="true" tabindex="-1"></a><span class="fu">### Temporal disaggregation of Stage 2</span></span>
+<span id="cb1-344"><a href="#cb1-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-345"><a href="#cb1-345" aria-hidden="true" tabindex="-1"></a>**What it is:** Move Stage 2 from link × year grain to link × year ×</span>
+<span id="cb1-346"><a href="#cb1-346" aria-hidden="true" tabindex="-1"></a>time-bucket grain (e.g. month, day-of-week × hour block). Would use</span>
+<span id="cb1-347"><a href="#cb1-347" aria-hidden="true" tabindex="-1"></a>Stage 1b temporal profiles as exposure-modifier infrastructure. Major</span>
+<span id="cb1-348"><a href="#cb1-348" aria-hidden="true" tabindex="-1"></a>refactor of the collision model; not a feature addition.</span>
+<span id="cb1-349"><a href="#cb1-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-350"><a href="#cb1-350" aria-hidden="true" tabindex="-1"></a>**Why it's interesting:** Crash risk varies sharply by time of day</span>
+<span id="cb1-351"><a href="#cb1-351" aria-hidden="true" tabindex="-1"></a>and day of week in ways the current annual model cannot represent.</span>
+<span id="cb1-352"><a href="#cb1-352" aria-hidden="true" tabindex="-1"></a>Friday evenings and Saturday nights carry disproportionate risk; peak</span>
+<span id="cb1-353"><a href="#cb1-353" aria-hidden="true" tabindex="-1"></a>commute hours concentrate motorway collisions; school-run windows</span>
+<span id="cb1-354"><a href="#cb1-354" aria-hidden="true" tabindex="-1"></a>concentrate urban collisions near schools. A temporally disaggregated</span>
+<span id="cb1-355"><a href="#cb1-355" aria-hidden="true" tabindex="-1"></a>model would produce rankings that identify *when* a link is risky,</span>
+<span id="cb1-356"><a href="#cb1-356" aria-hidden="true" tabindex="-1"></a>not just which links are risky overall.</span>
+<span id="cb1-357"><a href="#cb1-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-358"><a href="#cb1-358" aria-hidden="true" tabindex="-1"></a>**Why not now:** Multi-session refactor requiring (a) Stage 1b to</span>
+<span id="cb1-359"><a href="#cb1-359" aria-hidden="true" tabindex="-1"></a>move from diagnostic to production output, (b) temporal joins to be</span>
+<span id="cb1-360"><a href="#cb1-360" aria-hidden="true" tabindex="-1"></a>rebuilt in Stage 2, (c) potentially different modelling approach</span>
+<span id="cb1-361"><a href="#cb1-361" aria-hidden="true" tabindex="-1"></a>entirely (hierarchical Poisson with time random effects, or</span>
+<span id="cb1-362"><a href="#cb1-362" aria-hidden="true" tabindex="-1"></a>stratified per time-bucket model). Also: today's rank stability work</span>
+<span id="cb1-363"><a href="#cb1-363" aria-hidden="true" tabindex="-1"></a>suggests the current model has largely saturated what link-level</span>
+<span id="cb1-364"><a href="#cb1-364" aria-hidden="true" tabindex="-1"></a>features can explain — temporal is a plausible candidate for</span>
+<span id="cb1-365"><a href="#cb1-365" aria-hidden="true" tabindex="-1"></a>meaningful predictive lift beyond the current ceiling, but sizing</span>
+<span id="cb1-366"><a href="#cb1-366" aria-hidden="true" tabindex="-1"></a>that claim requires research.</span>
+<span id="cb1-367"><a href="#cb1-367" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-368"><a href="#cb1-368" aria-hidden="true" tabindex="-1"></a>**Good starting point for someone else:**</span>
+<span id="cb1-369"><a href="#cb1-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-370"><a href="#cb1-370" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Deep-research pass on temporal disaggregation approaches in UK</span>
+<span id="cb1-371"><a href="#cb1-371" aria-hidden="true" tabindex="-1"></a>  road safety literature. Specifically: how other STATS19-based</span>
+<span id="cb1-372"><a href="#cb1-372" aria-hidden="true" tabindex="-1"></a>  analyses have handled time-of-day effects at link grain; whether</span>
+<span id="cb1-373"><a href="#cb1-373" aria-hidden="true" tabindex="-1"></a>  hierarchical modelling or stratified models are preferred; what</span>
+<span id="cb1-374"><a href="#cb1-374" aria-hidden="true" tabindex="-1"></a>  sample-size constraints per time-bucket apply.</span>
+<span id="cb1-375"><a href="#cb1-375" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Scope out what Stage 1b would need to produce to feed temporal</span>
+<span id="cb1-376"><a href="#cb1-376" aria-hidden="true" tabindex="-1"></a>  Stage 2.</span>
+<span id="cb1-377"><a href="#cb1-377" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Design doc before implementation. Temporal work is methodology-</span>
+<span id="cb1-378"><a href="#cb1-378" aria-hidden="true" tabindex="-1"></a>  heavy enough that a prompt can't carry it.</span>
+<span id="cb1-379"><a href="#cb1-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-380"><a href="#cb1-380" aria-hidden="true" tabindex="-1"></a>**Related:** Would pair naturally with weather warning analysis</span>
+<span id="cb1-381"><a href="#cb1-381" aria-hidden="true" tabindex="-1"></a>(above) — temporal grain is the natural level for weather effects</span>
+<span id="cb1-382"><a href="#cb1-382" aria-hidden="true" tabindex="-1"></a>to manifest.</span>
+<span id="cb1-383"><a href="#cb1-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-384"><a href="#cb1-384" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-385"><a href="#cb1-385" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-386"><a href="#cb1-386" aria-hidden="true" tabindex="-1"></a><span class="fu">## Cross-theme note</span></span>
+<span id="cb1-387"><a href="#cb1-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-388"><a href="#cb1-388" aria-hidden="true" tabindex="-1"></a>The ideas above are not independent. Several natural combinations:</span>
+<span id="cb1-389"><a href="#cb1-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-390"><a href="#cb1-390" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorcycle × weather** — motorcycle crash risk is known to be</span>
+<span id="cb1-391"><a href="#cb1-391" aria-hidden="true" tabindex="-1"></a>  highly weather-sensitive. Combining the motorcycle-specific risk</span>
+<span id="cb1-392"><a href="#cb1-392" aria-hidden="true" tabindex="-1"></a>  layer with weather warning analysis would produce a parallel ranking</span>
+<span id="cb1-393"><a href="#cb1-393" aria-hidden="true" tabindex="-1"></a>  that's likely more actionable than either alone.</span>
+<span id="cb1-394"><a href="#cb1-394" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**HGV enforcement × vehicle-mix** — HGV risk distribution combined</span>
+<span id="cb1-395"><a href="#cb1-395" aria-hidden="true" tabindex="-1"></a>  with vehicle-mix-as-risk-modifier would identify links where HGV</span>
+<span id="cb1-396"><a href="#cb1-396" aria-hidden="true" tabindex="-1"></a>  enforcement protects not just the HGV crash rate but also other</span>
+<span id="cb1-397"><a href="#cb1-397" aria-hidden="true" tabindex="-1"></a>  vehicle types affected by HGV presence.</span>
+<span id="cb1-398"><a href="#cb1-398" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**VRU-weighted × cyclist/pedestrian layers** — these are closely</span>
+<span id="cb1-399"><a href="#cb1-399" aria-hidden="true" tabindex="-1"></a>  related target reframings. The VRU-weighted version produces a</span>
+<span id="cb1-400"><a href="#cb1-400" aria-hidden="true" tabindex="-1"></a>  single composite ranking; the cyclist/pedestrian layers produce</span>
+<span id="cb1-401"><a href="#cb1-401" aria-hidden="true" tabindex="-1"></a>  separate rankings per casualty type. Both are defensible depending</span>
+<span id="cb1-402"><a href="#cb1-402" aria-hidden="true" tabindex="-1"></a>  on stakeholder.</span>
+<span id="cb1-403"><a href="#cb1-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-404"><a href="#cb1-404" aria-hidden="true" tabindex="-1"></a>These combinations are documented here rather than as separate entries</span>
+<span id="cb1-405"><a href="#cb1-405" aria-hidden="true" tabindex="-1"></a>because each needs the component analyses in place first.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
