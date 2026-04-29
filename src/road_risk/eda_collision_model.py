@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 RISK_PATH    = ROOT / "data/models/risk_scores.parquet"
 RLA_PATH     = ROOT / "data/features/road_link_annual.parquet"
 NET_PATH     = ROOT / "data/features/network_features.parquet"
-OR_PATH      = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+OR_PATH      = ROOT / "data/processed/shapefiles/openroads.parquet"
 
 # ---------------------------------------------------------------------------
 # Style

@@ -111,7 +111,7 @@ class _Heartbeat:
 # ---------------------------------------------------------------------------
 
 PROCESSED      = _ROOT / "data/processed"
-OPENROADS_PATH = PROCESSED / "shapefiles/openroads_yorkshire.parquet"
+OPENROADS_PATH = PROCESSED / "shapefiles/openroads.parquet"
 LSOA_CENT_PATH = _ROOT / "data/raw/stats19/lsoa_centroids.csv"
 LSOA_POP_PATH  = _ROOT / "data/raw/stats19/lsoa_population.csv"
 RUC_PATH       = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
@@ -1224,7 +1224,7 @@ def build_network_features(
     Parameters
     ----------
     openroads       : pre-loaded GeoDataFrame (optional)
-    openroads_path  : path to openroads_yorkshire.parquet
+    openroads_path  : path to openroads.parquet
     output_path     : where to cache the feature table
     betweenness_k   : sample size for betweenness
     force_recompute : if True, ignores cache

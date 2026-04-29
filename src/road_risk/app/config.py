@@ -29,7 +29,7 @@ except ImportError:
 # Data paths
 # ---------------------------------------------------------------------------
 RISK_PATH     = _ROOT / "data/models/risk_scores.parquet"                       if _ROOT else None
-OR_PATH       = _ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet" if _ROOT else None
+OR_PATH       = _ROOT / "data/processed/shapefiles/openroads.parquet" if _ROOT else None
 NET_PATH      = _ROOT / "data/features/network_features.parquet"                if _ROOT else None
 TEMPORAL_PATH = _ROOT / "data/models/temporal_profiles.parquet"                 if _ROOT else None
 

@@ -49,7 +49,7 @@ with open(ROOT / "data/models/collision_metrics.json") as f:
     metrics = json.load(f)
 
 if HAS_GPD:
-    or_path = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+    or_path = ROOT / "data/processed/shapefiles/openroads.parquet"
     openroads = gpd.read_parquet(or_path) if or_path.exists() else None
 else:
     openroads = None

@@ -16,7 +16,7 @@ data-quality problem in AADF or Open Roads.
 
 Observed symptoms:
 
-- `GeoDataFrame.to_crs("EPSG:27700")` on `openroads_yorkshire.parquet`
+- `GeoDataFrame.to_crs("EPSG:27700")` on `openroads.parquet`
   produced projected bounds of `[inf, inf, inf, inf]`.
 - Centroids computed after that reprojection were empty/non-finite.
 - Direct `pyproj.Transformer.from_crs("EPSG:4326", "EPSG:27700",

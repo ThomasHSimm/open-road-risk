@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 GLM_ZERO_SAMPLE_RATIO = 10
 
 MODELS = _ROOT / cfg["paths"]["models"]
-OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads_yorkshire.parquet"
+OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads.parquet"
 RLA_PATH = _ROOT / cfg["paths"]["features"] / "road_link_annual.parquet"
 NET_PATH = _ROOT / cfg["paths"]["features"] / "network_features.parquet"
 AADT_PATH = MODELS / "aadt_estimates.parquet"

@@ -145,19 +145,11 @@ boundary, otherwise the snap quality degrades at the edges. The buffer
 is only applied to the network — collisions and AADF data are clipped
 to the study area itself.
 
-::: {.callout-warning}
-The output filename is currently `openroads_yorkshire.parquet`, retained
-from when the study area was Yorkshire only. The actual filter uses
-`cfg["study_area"]["bbox_bng"]`, which now covers Northern and Central
-England. The filename is a known cosmetic inaccuracy; see the engineering
-backlog.
-:::
-
 ## Output
 
 The ingest produces a single GeoParquet file:
 
-- **Path:** `data/processed/shapefiles/openroads_yorkshire.parquet`
+- **Path:** `data/processed/shapefiles/openroads.parquet`
 - **Schema:** the renamed columns listed above, plus `link_length_km`,
   `road_name_clean`, `street_name_clean`, and `geometry` in WGS84.
 - **Size:** ~2.17M rows for the current study area.
@@ -212,7 +204,7 @@ To regenerate the OS Open Roads layer:
    <https://osdatahub.os.uk/downloads/open/OpenRoads> and place in
    `data/raw/shapefiles/`.
 2. Run `python src/road_risk/ingest/ingest_openroads.py`.
-3. Output appears at `data/processed/shapefiles/openroads_yorkshire.parquet`.
+3. Output appears at `data/processed/shapefiles/openroads.parquet`.
 
 The bbox filter is read from `config/settings.yaml` under
 `study_area.bbox_bng`. Adjusting the study area requires editing that
