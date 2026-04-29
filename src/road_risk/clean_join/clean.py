@@ -41,13 +41,7 @@ logger = logging.getLogger(__name__)
 TARGET_YEARS: list[int] = cfg["webtris"]["target_years"]
 
 # STATS19 collision columns that are historic/superseded — drop these
-HISTORIC_COLS = [
-    "junction_detail_historic",
-    "pedestrian_crossing_human_control_historic",
-    "pedestrian_crossing_physical_facilities_historic",
-    "carriageway_hazards_historic",
-    "local_authority_highway_current",  # superseded by local_authority_highway
-]
+HISTORIC_COLS: list[str] = cfg["stats19"]["historic_cols"]
 
 # STATS19 first_road_class code → road prefix for name reconstruction
 ROAD_CLASS_PREFIX = {
@@ -64,7 +58,7 @@ GB_LAT = (49.9, 60.9)
 GB_LON = (-8.2, 2.0)
 
 # COVID years flag
-COVID_YEARS = {2020, 2021}
+COVID_YEARS: set[int] = set(cfg["years"]["covid"])
 
 
 # ---------------------------------------------------------------------------
@@ -189,8 +183,8 @@ def clean_stats19(
 # Coordinate correction helpers
 # ---------------------------------------------------------------------------
 
-# LSOA centroid file — place in data/raw/stats19/
-LSOA_CENTROIDS_PATH = _ROOT / "data/raw/stats19/lsoa_centroids.csv"
+# LSOA centroid file — place in configured STATS19 raw folder
+LSOA_CENTROIDS_PATH = _ROOT / cfg["paths"]["raw"]["stats19"] / "lsoa_centroids.csv"
 
 # Distance threshold for LSOA validation (metres)
 LSOA_DIST_THRESHOLD_M = 10000
@@ -757,32 +751,33 @@ def main() -> None:
     # --- STATS19 ------------------------------------------------------------
     logger.info("=== STATS19 ===")
     stats19_raw = load_stats19(
-        _ROOT / "data/raw/stats19",
-        years=list(range(2015, 2025)),   # 2015-2024 only — pre-2015 has unreliable coords
+        _ROOT / cfg["paths"]["raw"]["stats19"],
+        years=cfg["years"]["full_range"],  # 2015-2024 only — pre-2015 has unreliable coords
     )
     stats19_clean = clean_stats19(stats19_raw)
     save_cleaned(stats19_clean, "stats19")
 
     # --- AADF ---------------------------------------------------------------
     logger.info("=== AADF ===")
-    aadf_raw = load_aadf(_ROOT / "data/raw/aadf")
+    aadf_raw = load_aadf(_ROOT / cfg["paths"]["raw"]["aadf"])
     aadf_agg = aggregate_bidirectional(aadf_raw)
     aadf_clean = clean_aadf(aadf_agg)
     save_cleaned(aadf_clean, "aadf")
 
     # --- WebTRIS ------------------------------------------------------------
     logger.info("=== WebTRIS ===")
+    webtris_raw_folder = _ROOT / cfg["paths"]["raw"]["webtris"]
     webtris_chunks = sorted(
-        (_ROOT / "data/raw/webtris").glob("site_*_*.parquet")
+        webtris_raw_folder.glob("site_*_*.parquet")
     )
     if webtris_chunks:
         from road_risk.ingest.ingest_webtris import combine_raw
-        webtris_raw = combine_raw(_ROOT / "data/raw/webtris")
+        webtris_raw = combine_raw(webtris_raw_folder)
         webtris_clean = clean_webtris(webtris_raw)
 
         # Attach site coordinates — lat/lon lives in sites.parquet,
         # not in the per-site traffic chunks that combine_raw() loads.
-        sites_path = _ROOT / "data/raw/webtris/sites.parquet"
+        sites_path = webtris_raw_folder / "sites.parquet"
         if sites_path.exists():
             sites = pd.read_parquet(sites_path, columns=["site_id", "latitude", "longitude"])
             sites["site_id"] = sites["site_id"].astype(webtris_clean["site_id"].dtype)
@@ -801,7 +796,7 @@ def main() -> None:
 
     # --- MRDB ---------------------------------------------------------------
     logger.info("=== MRDB ===")
-    mrdb_raw = load_mrdb(_ROOT / "data/raw/shapefiles")
+    mrdb_raw = load_mrdb(_ROOT / cfg["paths"]["raw"]["shapefiles"])
     mrdb_clean = clean_mrdb(mrdb_raw)
     save_cleaned(mrdb_clean, "mrdb")
 

@@ -45,15 +45,15 @@ from sklearn.inspection import permutation_importance
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GroupKFold, cross_val_score
 
-from road_risk.config import _ROOT
+from road_risk.config import _ROOT, cfg
 from road_risk.model.constants import COVID_YEARS, RANDOM_STATE
 
 logger = logging.getLogger(__name__)
 
-OPENROADS_PATH = _ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
-NET_FEATURES_PATH = _ROOT / "data/features/network_features.parquet"
-WEBTRIS_PATH = _ROOT / "data/processed/webtris/webtris_clean.parquet"
-AADT_ESTIMATES_PATH = _ROOT / "data/models/aadt_estimates.parquet"
+OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads_yorkshire.parquet"
+NET_FEATURES_PATH = _ROOT / cfg["paths"]["features"] / "network_features.parquet"
+WEBTRIS_PATH = _ROOT / cfg["paths"]["processed"] / "webtris/webtris_clean.parquet"
+AADT_ESTIMATES_PATH = _ROOT / cfg["paths"]["models"] / "aadt_estimates.parquet"
 
 # WebTRIS features used in Stage 1a AADT training.
 # Must be empty: core_overnight_ratio is produced by Stage 1b (timezone_profile),
@@ -762,7 +762,7 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
         }
 
     # Save results as parquet for the QMD page
-    MODELS = _ROOT / "data/models"
+    MODELS = _ROOT / cfg["paths"]["models"]
     MODELS.mkdir(parents=True, exist_ok=True)
     rows = []
     for scheme, res in results.items():
@@ -794,7 +794,7 @@ def run_traffic_stage(aadf: pd.DataFrame, openroads) -> pd.DataFrame:
     """
     from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-    MODELS = _ROOT / "data/models"
+    MODELS = _ROOT / cfg["paths"]["models"]
     MODELS.mkdir(parents=True, exist_ok=True)
 
     # Stage 1a learns only from directly counted AADF rows. The full AADF table

@@ -41,7 +41,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
-from road_risk.config import _ROOT
+from road_risk.config import _ROOT, cfg
 
 logger = logging.getLogger(__name__)
 
@@ -666,7 +666,7 @@ def main() -> None:
         format="%(asctime)s  %(levelname)-8s  %(message)s",
     )
 
-    processed = _ROOT / "data/processed"
+    processed = _ROOT / cfg["paths"]["processed"]
 
     collisions = pd.read_parquet(processed / "stats19/collision_clean.parquet")
 

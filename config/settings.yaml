@@ -1,9 +1,10 @@
 # config/settings.yaml
 # Central config — import via src/road_risk/config.py
 
-project:
-  name: open-road-risk
-  version: "0.1.0"
+# TODO 29-Apr-2026: appears unused, delete after one full pipeline run if no breakage
+# project:
+#   name: open-road-risk
+#   version: "0.1.0"
 
 # ---------------------------------------------------------------------------
 # Study area — single source of truth for all geographic filters
@@ -29,7 +30,8 @@ study_area:
     max_northing: 660000
 
 geography:
-  pilot_region: midlands_to_yorkshire
+  # TODO 29-Apr-2026: appears unused, delete after one full pipeline run if no breakage
+  # pilot_region: midlands_to_yorkshire
   # Police force codes as used in the STATS19 collision CSV (police_force field).
   # Source: DfT data guide Excel, sheet '2024_code_list', filter field name = 'police_force'
   # Keys are snake_case labels; values are integer STATS19 codes.
@@ -77,54 +79,24 @@ paths:
     webtris:    data/raw/webtris/
   processed:    data/processed/
   features:     data/features/
+  models:       data/models/
 
 webtris:
   base_url: "https://webtris.highwaysengland.co.uk/api/v1"
-  report_type: daily
-  page_size: 100                        # max results per API page
+  # TODO 29-Apr-2026: appears unused, delete after one full pipeline run if no breakage
+  # report_type: daily
+  # page_size: 100                        # max results per API page
   # Sparse sampling years: pre-COVID baseline, COVID anomaly, recent normal.
   # Pull only these years to avoid 10× API cost for marginal AADF benefit.
   target_years: [2019, 2021, 2023]
 
 stats19:
-  # Columns to keep at each join stage (trim memory)
-  collision_cols:
-    - collision_index
-    - date
-    - time
-    - police_force
-    - collision_severity
-    - number_of_vehicles
-    - number_of_casualties
-    - road_type
-    - speed_limit
-    - junction_detail
-    - light_conditions
-    - weather_conditions
-    - road_surface_conditions
-    - urban_or_rural_area
-    - latitude
-    - longitude
-    - local_authority_highway
-  vehicle_cols:
-    - collision_index
-    - vehicle_reference
-    - vehicle_type
-    - vehicle_manoeuvre
-    - vehicle_location_restricted_lane
-    - skidding_and_overturning
-    - age_of_driver
-    - age_of_vehicle
-    - engine_capacity_cc
-  casualty_cols:
-    - collision_index
-    - vehicle_reference
-    - casualty_reference
-    - casualty_class
-    - sex_of_casualty
-    - age_of_casualty
-    - casualty_severity
-    - casualty_type
+  historic_cols:
+    - junction_detail_historic
+    - pedestrian_crossing_human_control_historic
+    - pedestrian_crossing_physical_facilities_historic
+    - carriageway_hazards_historic
+    - local_authority_highway_current
 
 model:
   target: collision_severity            # 1=fatal, 2=serious, 3=slight

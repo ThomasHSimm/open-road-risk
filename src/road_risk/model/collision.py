@@ -31,7 +31,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from road_risk.config import _ROOT
+from road_risk.config import _ROOT, cfg
 from road_risk.model.constants import (
     COVID_YEARS,
     FORM_OF_WAY_ORDINAL,
@@ -49,10 +49,10 @@ logger = logging.getLogger(__name__)
 # for stable GLM coefficient estimation on rare-event Poisson data.
 GLM_ZERO_SAMPLE_RATIO = 10
 
-MODELS = _ROOT / "data/models"
-OPENROADS_PATH = _ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
-RLA_PATH = _ROOT / "data/features/road_link_annual.parquet"
-NET_PATH = _ROOT / "data/features/network_features.parquet"
+MODELS = _ROOT / cfg["paths"]["models"]
+OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads_yorkshire.parquet"
+RLA_PATH = _ROOT / cfg["paths"]["features"] / "road_link_annual.parquet"
+NET_PATH = _ROOT / cfg["paths"]["features"] / "network_features.parquet"
 AADT_PATH = MODELS / "aadt_estimates.parquet"
 
 # Collision-derived context columns can be useful diagnostics, but they are

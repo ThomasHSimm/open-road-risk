@@ -200,7 +200,7 @@ def load_stats19(
     Parameters
     ----------
     raw_folder : path to data/raw/stats19/
-    years : list of years to filter by (e.g. list(range(2015, 2025)))
+    years : list of years to filter by (e.g. cfg["years"]["full_range"])
             Defaults to None (all years in the data). Only applied if 'year' column exists.
     police_force_codes : STATS19 police_force integers to keep.
                          Defaults to Yorkshire region (4, 5, 6, 7).
@@ -216,7 +216,7 @@ def load_stats19(
 
     Example
     -------
-    >>> data = load_stats19("data/raw/stats19", years=range(2015, 2025))
+    >>> data = load_stats19("data/raw/stats19", years=cfg["years"]["full_range"])
     >>> collisions = data["collision"]
     >>> vehicles   = data["vehicle"]
     >>> casualties = data["casualty"]
@@ -364,11 +364,11 @@ def main(
     police_force_codes : police force codes to filter; defaults to Yorkshire
     """
     if raw_folder is None:
-        raw_folder = _ROOT / "data/raw/stats19"
+        raw_folder = _ROOT / cfg["paths"]["raw"]["stats19"]
     if output_folder is None:
-        output_folder = _ROOT / "data/processed/stats19"
+        output_folder = _ROOT / cfg["paths"]["processed"] / "stats19"
     if years is None:
-        years = list(range(2015, 2025))
+        years = cfg["years"]["full_range"]
 
     logger.info(f"Loading from: {raw_folder}")
     data = load_stats19(raw_folder, years=years, police_force_codes=police_force_codes)

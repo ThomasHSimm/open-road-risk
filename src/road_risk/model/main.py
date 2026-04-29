@@ -15,7 +15,7 @@ import logging
 import pandas as pd
 import geopandas as gpd
 
-from road_risk.config import _ROOT
+from road_risk.config import _ROOT, cfg
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,10 +23,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-PROCESSED    = _ROOT / "data/processed"
+PROCESSED    = _ROOT / cfg["paths"]["processed"]
 AADF_PATH    = PROCESSED / "aadf/aadf_clean.parquet"
 OPENROADS_PATH = PROCESSED / "shapefiles/openroads_yorkshire.parquet"
-MODELS       = _ROOT / "data/models"
+MODELS       = _ROOT / cfg["paths"]["models"]
 
 
 def main(stage: str = "all") -> None:

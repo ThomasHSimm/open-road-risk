@@ -55,14 +55,14 @@ def build_temporal_profiles(
         if cfg_path.exists():
             cfg = yaml.safe_load(cfg_path.read_text())
             bbox = cfg.get("study_area", {}).get("bbox_wgs84", {})
-            lat_min = bbox.get("min_lat", 50.0)
-            lat_max = bbox.get("max_lat", 56.0)
-            lon_min = bbox.get("min_lon", -4.0)
-            lon_max = bbox.get("max_lon", 2.0)
-        else:
-            lat_min, lat_max, lon_min, lon_max = 50.0, 56.0, -4.0, 2.0
+            lat_min = bbox.get("min_lat", None)
+            lat_max = bbox.get("max_lat", None)
+            lon_min = bbox.get("min_lon", None)
+            lon_max = bbox.get("max_lon", None)
+        
     except Exception:
-        lat_min, lat_max, lon_min, lon_max = 50.0, 56.0, -4.0, 2.0
+        logger.error("Error loading study area from config, check file")
+        raise ValueError("Invalid study area config — check config/settings.yaml")
 
     study_sites = set(
         sites[

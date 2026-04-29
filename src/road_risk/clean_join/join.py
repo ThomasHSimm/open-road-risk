@@ -737,7 +737,7 @@ def main() -> None:
         format="%(asctime)s  %(levelname)-8s  %(message)s",
     )
 
-    processed = _ROOT / "data/processed"
+    processed = _ROOT / cfg["paths"]["processed"]
 
     # --- Load cleaned data --------------------------------------------------
     logger.info("Loading cleaned data ...")

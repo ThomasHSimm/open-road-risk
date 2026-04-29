@@ -215,7 +215,7 @@ def load_aadf(
 
     Example
     -------
-    >>> df = load_aadf("data/raw/aadf", years=list(range(2015, 2025)))
+    >>> df = load_aadf("data/raw/aadf", years=cfg["years"]["full_range"])
     >>> df.groupby("year")["all_motor_vehicles"].sum()
     """
     folder = Path(raw_folder)

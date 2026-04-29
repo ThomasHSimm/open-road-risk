@@ -1,2 +1,1 @@
-"""Feature builders and legacy feature-engineering helpers."""
-
+"""Feature builders for road risk analysis."""
