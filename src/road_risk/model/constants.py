@@ -46,5 +46,7 @@ FORM_OF_WAY_ORDINAL = {
 MONTH_ORDER = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+# Duplicated from cfg["years"]["covid"] pending model.yaml migration.
+# Keep in sync with config/settings.yaml until then.
 COVID_YEARS = {2020, 2021}
 RANDOM_STATE = 42
