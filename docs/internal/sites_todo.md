@@ -40,12 +40,10 @@ work, not just relocation.
 
 ## Documentation/code mismatches to resolve
 
-- **"Yorkshire" terminology is stale.** Filenames (`openroads_yorkshire.parquet`),
-  constants (`YORKSHIRE_BBOX_BNG`, `YORKSHIRE_BBOX`), and docstrings in
-  `ingest_openroads.py` still say Yorkshire. Actual study area is Northern
-  and Central England. Resolve in code, not by writing carefully around it
-  on the site. Cross-listed in `TODO.md`. Site OS Open Roads page contains
-  a callout flagging this as a known cosmetic inaccuracy.
+- **"Yorkshire" terminology is stale.** Several backwards-compat constants,
+  WebTRIS/MRDB names, and app module names still say Yorkshire. Actual study
+  area is Northern and Central England. Resolve in code, not by writing
+  carefully around it on the site. Cross-listed in `TODO.md`.
 - **`methodology/data-joining.qmd` does not mention OS Open Roads as the
   geometry backbone explicitly.** Could add a one-line cross-reference now
   that the OS Open Roads source page exists. Low priority.

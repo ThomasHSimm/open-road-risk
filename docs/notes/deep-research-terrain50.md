@@ -69,7 +69,7 @@ NETWORK_CANDIDATES = [
     Path("network_features.parquet"),
     Path("data/processed/current_network.parquet"),
     Path("current_network.parquet"),
-    Path("openroads_yorkshire.parquet"),
+    Path("openroads.parquet"),
 ]
 
 OSM_STRUCTURE_CANDIDATES = [

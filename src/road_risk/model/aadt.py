@@ -50,7 +50,7 @@ from road_risk.model.constants import COVID_YEARS, RANDOM_STATE
 
 logger = logging.getLogger(__name__)
 
-OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads_yorkshire.parquet"
+OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads.parquet"
 NET_FEATURES_PATH = _ROOT / cfg["paths"]["features"] / "network_features.parquet"
 WEBTRIS_PATH = _ROOT / cfg["paths"]["processed"] / "webtris/webtris_clean.parquet"
 AADT_ESTIMATES_PATH = _ROOT / cfg["paths"]["models"] / "aadt_estimates.parquet"
@@ -790,7 +790,7 @@ def run_traffic_stage(aadf: pd.DataFrame, openroads) -> pd.DataFrame:
 
     Saves aadt_estimates.parquet and returns the estimates DataFrame.
     Always regenerates — never loads from cache — so the network always
-    reflects the current openroads_yorkshire.parquet.
+    reflects the current openroads.parquet.
     """
     from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 

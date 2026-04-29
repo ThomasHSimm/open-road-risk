@@ -56,7 +56,7 @@ from road_risk.model.constants import COVID_YEARS, RANDOM_STATE
 logger = logging.getLogger(__name__)
 
 WEBTRIS_PATH      = _ROOT / "data/processed/webtris/webtris_clean.parquet"
-OPENROADS_PATH    = _ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+OPENROADS_PATH    = _ROOT / "data/processed/shapefiles/openroads.parquet"
 NET_FEATURES_PATH = _ROOT / "data/features/network_features.parquet"
 AADT_ESTIMATES    = _ROOT / "data/models/aadt_estimates.parquet"
 PROFILES_OUT      = _ROOT / "data/models/timezone_profiles.parquet"

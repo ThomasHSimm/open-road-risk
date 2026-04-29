@@ -57,10 +57,10 @@ SINUOSITY_COL = "sinuosity"
 CURVATURE_COLUMNS = [MEAN_CURVATURE_COL, MAX_CURVATURE_COL, SINUOSITY_COL]
 
 INPUT_CANDIDATES = [
-    _ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet",
+    _ROOT / "data/processed/shapefiles/openroads.parquet",
     _ROOT / "data/processed/current_network.parquet",
     _ROOT / "data/features/network_features.parquet",
-    Path("openroads_yorkshire.parquet"),
+    Path("openroads.parquet"),
     Path("current_network.parquet"),
     Path("network_features.parquet"),
 ]

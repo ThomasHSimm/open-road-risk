@@ -34,7 +34,7 @@ from road_risk.config import _ROOT as ROOT
 
 # ROOT = Path(__file__).resolve().parents[3]
 NET_PATH    = ROOT / "data/features/network_features.parquet"
-OR_PATH     = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+OR_PATH     = ROOT / "data/processed/shapefiles/openroads.parquet"
 REPORT_DIR  = ROOT / "quarto" / "analysis"
 OUT_CSV     = REPORT_DIR / "osm-coverage-by-class.csv"
 OUT_QMD     = REPORT_DIR / "osm-coverage.qmd"

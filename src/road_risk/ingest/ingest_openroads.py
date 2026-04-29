@@ -28,7 +28,7 @@ Coordinate system:
   Raw: EPSG:27700 (British National Grid)
   Output: EPSG:4326 (WGS84) to match STATS19 and AADF
 
-Yorkshire spatial filter:
+Study-area spatial filter:
   Applied at read time via bbox — avoids loading full GB (~4M links) into memory.
 """
 
@@ -192,19 +192,19 @@ def _build_road_name_clean(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
 def load_openroads(
     raw_folder: str | Path = _DEFAULT_RAW_FOLDER,
-    bbox_bng: tuple = YORKSHIRE_BBOX_BNG,
+    bbox_bng: tuple = STUDY_AREA_BBOX_BNG,
     target_crs: str = TARGET_CRS,
     layer: str = "road_link",
 ) -> gpd.GeoDataFrame:
     """
-    Load OS Open Roads road_link layer, filter to Yorkshire, reproject to WGS84.
+    Load OS Open Roads road_link layer, filter to the study area, reproject to WGS84.
 
     Parameters
     ----------
     raw_folder : folder containing oproad_gb.gpkg
     bbox_bng   : (minx, miny, maxx, maxy) in BNG metres for spatial filter.
                  Applied at read time so full GB is never loaded into memory.
-                 Defaults to generous Yorkshire bounds.
+                 Defaults to configured study-area bounds.
     target_crs : output CRS, defaults to EPSG:4326 (WGS84)
     layer      : GeoPackage layer name, defaults to 'road_link'
 
@@ -223,7 +223,7 @@ def load_openroads(
 
     # bbox filter at read time — avoids loading ~4M GB links
     gdf = gpd.read_file(gpkg_path, layer=layer, bbox=bbox_bng)
-    logger.info(f"  Loaded {len(gdf):,} road links within Yorkshire bbox")
+    logger.info(f"  Loaded {len(gdf):,} road links within study-area bbox")
 
     # Set CRS if not already set
     if gdf.crs is None:
@@ -291,7 +291,7 @@ def save_openroads(
     """Save OS Open Roads GeoDataFrame to GeoParquet."""
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
-    out_path = output_folder / "openroads_yorkshire.parquet"
+    out_path = output_folder / "openroads.parquet"
     gdf.to_parquet(out_path, index=False)
     logger.info(f"Saved OS Open Roads to {out_path} ({len(gdf):,} links)")
 
@@ -300,7 +300,7 @@ def main(
     raw_folder: str | Path = None,
     output_folder: str | Path = None,
 ) -> gpd.GeoDataFrame:
-    """Load, filter, and save OS Open Roads for Yorkshire."""
+    """Load, filter, and save OS Open Roads for the study area."""
     if raw_folder is None:
         raw_folder = _DEFAULT_RAW_FOLDER
     if output_folder is None:

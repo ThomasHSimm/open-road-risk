@@ -671,7 +671,7 @@ def main() -> None:
     collisions = pd.read_parquet(processed / "stats19/collision_clean.parquet")
 
     # Load OS Open Roads — regenerate from GeoPackage if cache missing
-    or_cache = processed / "shapefiles/openroads_yorkshire.parquet"
+    or_cache = processed / "shapefiles/openroads.parquet"
     if or_cache.exists():
         openroads = gpd.read_parquet(or_cache)
         logger.info(f"Loaded OS Open Roads from cache ({len(openroads):,} links)")

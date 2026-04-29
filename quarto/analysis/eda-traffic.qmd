@@ -50,7 +50,7 @@ aadt_path = ROOT / "data/models/aadt_estimates.parquet"
 aadt = pd.read_parquet(aadt_path) if aadt_path.exists() else pd.DataFrame()
 
 if HAS_GPD:
-    or_path = ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet"
+    or_path = ROOT / "data/processed/shapefiles/openroads.parquet"
     openroads = gpd.read_parquet(or_path) if or_path.exists() else None
 else:
     openroads = None

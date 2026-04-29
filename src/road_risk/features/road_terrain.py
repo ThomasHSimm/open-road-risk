@@ -61,9 +61,9 @@ POINT_CACHE_CANDIDATES = [
 ]
 
 NETWORK_CANDIDATES = [
-    _ROOT / "data/processed/shapefiles/openroads_yorkshire.parquet",
+    _ROOT / "data/processed/shapefiles/openroads.parquet",
     _ROOT / "data/processed/current_network.parquet",
-    Path("openroads_yorkshire.parquet"),
+    Path("openroads.parquet"),
     Path("current_network.parquet"),
 ]
 

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 PROCESSED    = _ROOT / cfg["paths"]["processed"]
 AADF_PATH    = PROCESSED / "aadf/aadf_clean.parquet"
-OPENROADS_PATH = PROCESSED / "shapefiles/openroads_yorkshire.parquet"
+OPENROADS_PATH = PROCESSED / "shapefiles/openroads.parquet"
 MODELS       = _ROOT / cfg["paths"]["models"]
 
 

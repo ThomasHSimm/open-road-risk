@@ -39,7 +39,7 @@ If a class narrowly misses the gate, the right sensitivity test is not to force 
 
 ## Reference implementation
 
-The script below does the exact pre-check and feature-engineering steps you described. It loads `openroads_yorkshire.parquet` if present, otherwise falls back to `current_network.parquet` or `network_features.parquet`; computes `vertices_per_km`; prints `describe()` by `road_classification`; chooses universal or gated coverage automatically from the observed distribution; resamples each eligible LineString at 15 m spacing; computes interior turning-angle density in degrees per km; writes `mean_curvature`, `max_curvature`, and `sinuosity`; and saves summary CSVs for the vertex-density and feature distributions. If `network_features.parquet` already exists, it updates that file when a stable key is available; otherwise it writes a new one. Because OS identifiers are not persistent across product versions, the join target must be from the same OS Open Roads release as the source parquet. citeturn3view1turn0search2
+The script below does the exact pre-check and feature-engineering steps you described. It loads `openroads.parquet` if present, otherwise falls back to `current_network.parquet` or `network_features.parquet`; computes `vertices_per_km`; prints `describe()` by `road_classification`; chooses universal or gated coverage automatically from the observed distribution; resamples each eligible LineString at 15 m spacing; computes interior turning-angle density in degrees per km; writes `mean_curvature`, `max_curvature`, and `sinuosity`; and saves summary CSVs for the vertex-density and feature distributions. If `network_features.parquet` already exists, it updates that file when a stable key is available; otherwise it writes a new one. Because OS identifiers are not persistent across product versions, the join target must be from the same OS Open Roads release as the source parquet. citeturn3view1turn0search2
 
 ```python
 from __future__ import annotations
@@ -54,7 +54,7 @@ from shapely.geometry import LineString, MultiLineString
 from shapely.ops import linemerge
 
 INPUT_CANDIDATES = [
-    Path("openroads_yorkshire.parquet"),
+    Path("openroads.parquet"),
     Path("current_network.parquet"),
     Path("network_features.parquet"),
 ]
@@ -340,6 +340,6 @@ This implementation defines `mean_curvature` as the length-weighted average of l
 
 ## Execution status in this workspace
 
-I could not run the entity["place","Yorkshire","county in england, uk"] pre-check here because neither `openroads_yorkshire.parquet` nor an alternative current network parquet was available in this workspace. So I cannot truthfully report the observed `vertices_per_km` distribution, the final all-classes-versus-gated decision from the data, the count of non-null curvature links, or the realised feature distributions from your network.
+At the time this note was written, I could not run the pre-check because neither `openroads.parquet` nor an alternative current network parquet was available in that workspace. So this note does not report the observed `vertices_per_km` distribution, the final all-classes-versus-gated decision from the data, the count of non-null curvature links, or the realised feature distributions from your network.
 
 When you do run it, the interpretation should be straightforward. If every road class clears the density gate, keep curvature as a universal-coverage feature. If the weaker classes are mainly `Unclassified`, `Not Classified`, or `Unknown`, keep the gated result and document those links as degraded by source simplification rather than backfilling zeros. The feature distributions you want to see are strongly right-skewed `mean_curvature` and `max_curvature`, with `sinuosity` tightly clustered above 1 and a longer tail on winding links. That is the correct place to stop for now, before any model retraining.

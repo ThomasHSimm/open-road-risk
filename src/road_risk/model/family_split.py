@@ -311,7 +311,7 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
     if n_missing_rf > 0:
         raise ValueError(
             f"{n_missing_rf:,} rows have no road_function after joining from openroads. "
-            "Check that openroads_yorkshire.parquet covers all link_ids in the dataset."
+            "Check that openroads.parquet covers all link_ids in the dataset."
         )
 
     df = assign_family(df)
