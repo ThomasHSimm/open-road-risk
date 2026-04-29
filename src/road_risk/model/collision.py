@@ -105,46 +105,57 @@ def build_collision_dataset(
     # Use only years that have AADT estimates
     years = sorted(aadt_estimates["year"].unique())
     logger.info(
-        f"Building collision dataset: {len(openroads):,} links × "
-        f"{len(years)} years ({years}) ..."
+        f"Building collision dataset: {len(openroads):,} links × {len(years)} years ({years}) ..."
     )
 
-    links = openroads[[
-        "link_id", "road_classification", "form_of_way",
-        "link_length_km", "is_trunk", "is_primary",
-    ]].copy()
+    links = openroads[
+        [
+            "link_id",
+            "road_classification",
+            "form_of_way",
+            "link_length_km",
+            "is_trunk",
+            "is_primary",
+        ]
+    ].copy()
 
     # Base: all links × all AADF years
-    base = pd.DataFrame({
-        "link_id": np.repeat(links["link_id"].values, len(years)),
-        "year":    np.tile(years, len(links)),
-    }).merge(links, on="link_id", how="left")
+    base = pd.DataFrame(
+        {
+            "link_id": np.repeat(links["link_id"].values, len(years)),
+            "year": np.tile(years, len(links)),
+        }
+    ).merge(links, on="link_id", how="left")
 
     logger.info(f"  Base table: {len(base):,} rows")
 
     # Join collision counts — NaN → 0 for links with no collisions
     rla_cols = [
-        "link_id", "year", "collision_count",
-        "fatal_count", "serious_count", "slight_count", "casualty_count",
+        "link_id",
+        "year",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
+        "slight_count",
+        "casualty_count",
         "hgv_proportion",
     ]
     excluded_post_event = sorted(FORBIDDEN_POST_EVENT_COLS & set(rla.columns))
     if excluded_post_event:
         logger.info(
-            "  Excluding post-event diagnostic columns from Stage 2 model "
-            "dataset: %s",
+            "  Excluding post-event diagnostic columns from Stage 2 model dataset: %s",
             ", ".join(excluded_post_event),
         )
     rla_trim = rla[[c for c in rla_cols if c in rla.columns]].copy()
     base = base.merge(rla_trim, on=["link_id", "year"], how="left")
     base["collision_count"] = base["collision_count"].fillna(0).astype(int)
-    base["fatal_count"]     = base["fatal_count"].fillna(0).astype(int)
-    base["serious_count"]   = base["serious_count"].fillna(0).astype(int)
+    base["fatal_count"] = base["fatal_count"].fillna(0).astype(int)
+    base["serious_count"] = base["serious_count"].fillna(0).astype(int)
 
     n_with = (base["collision_count"] > 0).sum()
     logger.info(
         f"  Collisions joined: {n_with:,} link-years with ≥1 collision "
-        f"({n_with/len(base):.2%} of all link-years)"
+        f"({n_with / len(base):.2%} of all link-years)"
     )
 
     # Join AADT — every link should have an estimate after Stage 1a
@@ -175,34 +186,33 @@ def build_collision_dataset(
         base["road_classification"].map(ROAD_CLASS_ORDINAL).fillna(0).astype(int)
     )
     base["form_of_way_ord"] = base["form_of_way"].map(FORM_OF_WAY_ORDINAL).fillna(1).astype(int)
-    base["is_motorway"]  = (base["road_classification"] == "Motorway").astype(int)
-    base["is_a_road"]    = (base["road_classification"] == "A Road").astype(int)
+    base["is_motorway"] = (base["road_classification"] == "Motorway").astype(int)
+    base["is_a_road"] = (base["road_classification"] == "A Road").astype(int)
     base["is_slip_road"] = (base["form_of_way"] == "Slip Road").astype(int)
-    base["is_roundabout"]= (base["form_of_way"] == "Roundabout").astype(int)
-    base["is_dual"]      = base["form_of_way"].isin(
-        ["Dual Carriageway", "Collapsed Dual Carriageway"]
-    ).astype(int)
-    base["is_trunk"]     = base["is_trunk"].fillna(False).astype(int)
-    base["is_primary"]   = base["is_primary"].fillna(False).astype(int)
+    base["is_roundabout"] = (base["form_of_way"] == "Roundabout").astype(int)
+    base["is_dual"] = (
+        base["form_of_way"].isin(["Dual Carriageway", "Collapsed Dual Carriageway"]).astype(int)
+    )
+    base["is_trunk"] = base["is_trunk"].fillna(False).astype(int)
+    base["is_primary"] = base["is_primary"].fillna(False).astype(int)
 
     # Temporal features (training only — pooled away in scoring output)
-    base["is_covid"]       = base["year"].isin(COVID_YEARS).astype(int)
-    year_min, year_max     = base["year"].min(), base["year"].max()
-    base["year_norm"]      = (base["year"] - year_min) / max(year_max - year_min, 1)
+    base["is_covid"] = base["year"].isin(COVID_YEARS).astype(int)
+    year_min, year_max = base["year"].min(), base["year"].max()
+    base["year_norm"] = (base["year"] - year_min) / max(year_max - year_min, 1)
     base["log_link_length"] = np.log(base["link_length_km"].clip(lower=0.001))
 
     if net_features is not None:
         base = base.merge(net_features, on="link_id", how="left")
         n_net = base["degree_mean"].notna().sum()
         logger.info(
-            f"  Network features joined: {n_net:,} / {len(base):,} rows "
-            f"({n_net/len(base):.1%})"
+            f"  Network features joined: {n_net:,} / {len(base):,} rows ({n_net / len(base):.1%})"
         )
 
     logger.info(
         f"  Collision dataset: {len(base):,} rows | "
-        f"zeros={(base['collision_count']==0).sum():,} "
-        f"({(base['collision_count']==0).mean():.1%})"
+        f"zeros={(base['collision_count'] == 0).sum():,} "
+        f"({(base['collision_count'] == 0).mean():.1%})"
     )
     return base
 
@@ -213,24 +223,36 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
     """
     try:
         import statsmodels.api as sm
-    except ImportError:
-        raise ImportError("pip install statsmodels")
+    except ImportError as e:
+        raise ImportError("pip install statsmodels") from e
 
     logger.info("Fitting Poisson GLM (statsmodels) ...")
 
     core_cols = [
-        "road_class_ord", "form_of_way_ord",
-        "is_motorway", "is_a_road", "is_slip_road",
-        "is_roundabout", "is_dual",
-        "is_trunk", "is_primary",
-        "log_link_length", "is_covid", "year_norm",
+        "road_class_ord",
+        "form_of_way_ord",
+        "is_motorway",
+        "is_a_road",
+        "is_slip_road",
+        "is_roundabout",
+        "is_dual",
+        "is_trunk",
+        "is_primary",
+        "log_link_length",
+        "is_covid",
+        "year_norm",
     ]
 
     network_candidates = [
         "hgv_proportion",
-        "degree_mean", "betweenness", "betweenness_relative",
-        "dist_to_major_km", "pop_density_per_km2",
-        "speed_limit_mph_effective", "lanes", "is_unpaved",
+        "degree_mean",
+        "betweenness",
+        "betweenness_relative",
+        "dist_to_major_km",
+        "pop_density_per_km2",
+        "speed_limit_mph_effective",
+        "lanes",
+        "is_unpaved",
     ]
 
     feature_cols = list(core_cols)
@@ -253,12 +275,12 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
     model_df = df[feature_cols + ["collision_count", "log_offset"]].dropna()
     logger.info(
         f"  GLM training rows: {len(model_df):,} "
-        f"(dropped {len(df)-len(model_df):,} with missing features)"
+        f"(dropped {len(df) - len(model_df):,} with missing features)"
     )
 
     # Downsample zero-collision rows for GLM to avoid OOM on large networks.
-    pos_mask     = model_df["collision_count"] > 0
-    n_pos        = pos_mask.sum()
+    pos_mask = model_df["collision_count"] > 0
+    n_pos = pos_mask.sum()
     n_zeros_keep = min((~pos_mask).sum(), n_pos * GLM_ZERO_SAMPLE_RATIO)
     zeros_sample = model_df[~pos_mask].sample(n=n_zeros_keep, random_state=RANDOM_STATE)
     glm_df = pd.concat([model_df[pos_mask], zeros_sample]).sort_index()
@@ -270,21 +292,22 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
     X = sm.add_constant(glm_df[feature_cols].astype(float))
     y = glm_df["collision_count"].astype(int)
     result = sm.GLM(
-        y, X,
+        y,
+        X,
         family=sm.families.Poisson(),
         offset=glm_df["log_offset"].astype(float),
     ).fit(maxiter=100)
 
     summary = {
-        "n_obs":        len(glm_df),
-        "n_pos":        int(n_pos),
-        "n_full":       len(model_df),
-        "deviance":     float(result.deviance),
-        "null_deviance":float(result.null_deviance),
-        "pseudo_r2":    float(1 - result.deviance / result.null_deviance),
-        "aic":          float(result.aic),
-        "converged":    result.converged,
-        "features":     feature_cols,
+        "n_obs": len(glm_df),
+        "n_pos": int(n_pos),
+        "n_full": len(model_df),
+        "deviance": float(result.deviance),
+        "null_deviance": float(result.null_deviance),
+        "pseudo_r2": float(1 - result.deviance / result.null_deviance),
+        "aic": float(result.aic),
+        "converged": result.converged,
+        "features": feature_cols,
     }
 
     logger.info(
@@ -293,10 +316,14 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         f"AIC={summary['aic']:,.0f} | converged={summary['converged']}"
     )
 
-    coef_df = pd.DataFrame({
-        "coef": result.params, "pvalue": result.pvalues,
-        "ci_low": result.conf_int()[0], "ci_high": result.conf_int()[1],
-    }).round(4)
+    coef_df = pd.DataFrame(
+        {
+            "coef": result.params,
+            "pvalue": result.pvalues,
+            "ci_low": result.conf_int()[0],
+            "ci_high": result.conf_int()[1],
+        }
+    ).round(4)
     sig = coef_df[coef_df["pvalue"] < 0.05].sort_values("coef", ascending=False)
     logger.info(f"  Significant coefficients (p<0.05):\n{sig.to_string()}")
 
@@ -309,25 +336,38 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
     """
     try:
         from xgboost import XGBRegressor
-    except ImportError:
-        raise ImportError("pip install xgboost")
+    except ImportError as e:
+        raise ImportError("pip install xgboost") from e
 
     from sklearn.model_selection import GroupShuffleSplit
 
     logger.info(f"Fitting XGBoost Poisson model (seed={seed}) ...")
 
     feature_cols = [
-        "road_class_ord", "form_of_way_ord",
-        "is_motorway", "is_a_road", "is_slip_road",
-        "is_roundabout", "is_dual",
-        "is_trunk", "is_primary",
-        "log_link_length", "estimated_aadt", "is_covid", "year_norm",
+        "road_class_ord",
+        "form_of_way_ord",
+        "is_motorway",
+        "is_a_road",
+        "is_slip_road",
+        "is_roundabout",
+        "is_dual",
+        "is_trunk",
+        "is_primary",
+        "log_link_length",
+        "estimated_aadt",
+        "is_covid",
+        "year_norm",
     ]
     for col in [
         "hgv_proportion",
-        "degree_mean", "betweenness", "betweenness_relative",
-        "dist_to_major_km", "pop_density_per_km2",
-        "speed_limit_mph_effective", "lanes", "is_unpaved",
+        "degree_mean",
+        "betweenness",
+        "betweenness_relative",
+        "dist_to_major_km",
+        "pop_density_per_km2",
+        "speed_limit_mph_effective",
+        "lanes",
+        "is_unpaved",
     ]:
         if col in df.columns:
             feature_cols.append(col)
@@ -350,10 +390,14 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
     # and systematically overestimates risk on high-traffic links.
     model = XGBRegressor(
         objective="count:poisson",
-        n_estimators=500, max_depth=6,
-        learning_rate=0.05, subsample=0.8,
+        n_estimators=500,
+        max_depth=6,
+        learning_rate=0.05,
+        subsample=0.8,
         colsample_bytree=0.8,
-        random_state=seed, n_jobs=1, verbosity=0,  # pin for cross-machine reproducibility
+        random_state=seed,
+        n_jobs=1,
+        verbosity=0,  # pin for cross-machine reproducibility
     )
 
     # GroupShuffleSplit by link_id: all years for a given link stay in one
@@ -368,7 +412,8 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
     off_train, off_test = offsets[idx_train], offsets[idx_test]
 
     model.fit(
-        X_train, y_train,
+        X_train,
+        y_train,
         base_margin=off_train,
         eval_set=[(X_test, y_test)],
         base_margin_eval_set=[off_test],
@@ -388,28 +433,31 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
     )
     pseudo_r2 = 1 - deviance / null_dev if null_dev > 0 else np.nan
 
-    importance = pd.Series(
-        model.feature_importances_, index=feature_cols
-    ).sort_values(ascending=False)
+    importance = pd.Series(model.feature_importances_, index=feature_cols).sort_values(
+        ascending=False
+    )
 
     metrics = {
-        "n_train": len(X_train), "n_test": len(X_test),
-        "pseudo_r2": float(pseudo_r2), "deviance": float(deviance),
-        "features": feature_cols, "seed": int(seed), "n_jobs": 1,
+        "n_train": len(X_train),
+        "n_test": len(X_test),
+        "pseudo_r2": float(pseudo_r2),
+        "deviance": float(deviance),
+        "features": feature_cols,
+        "seed": int(seed),
+        "n_jobs": 1,
     }
 
-    logger.info(
-        f"  XGBoost Poisson: pseudo-R²={pseudo_r2:.3f} | "
-        f"test deviance={deviance:,.0f}"
-    )
+    logger.info(f"  XGBoost Poisson: pseudo-R²={pseudo_r2:.3f} | test deviance={deviance:,.0f}")
     logger.info(f"  Feature importance (top 10):\n{importance.head(10).to_string()}")
 
     return model, feature_cols, metrics
 
 
 def score_collision_models(
-    glm_result, xgb_model,
-    glm_features: list, xgb_features: list,
+    glm_result,
+    xgb_model,
+    glm_features: list,
+    xgb_features: list,
     df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
@@ -446,16 +494,20 @@ def score_collision_models(
     # Pool to one row per link
     pool_agg = {
         "collision_count": "sum",
-        "fatal_count":     "sum",
-        "serious_count":   "sum",
-        "estimated_aadt":  "mean",
-        "predicted_glm":   "mean",
-        "predicted_xgb":   "mean",
+        "fatal_count": "sum",
+        "serious_count": "sum",
+        "estimated_aadt": "mean",
+        "predicted_glm": "mean",
+        "predicted_xgb": "mean",
     }
     # Include optional pre-collision attributes if present.
-    for col in ["hgv_proportion", "speed_limit_mph", "speed_limit_mph_effective",
-                "betweenness_relative",
-                "road_classification"]:
+    for col in [
+        "hgv_proportion",
+        "speed_limit_mph",
+        "speed_limit_mph_effective",
+        "betweenness_relative",
+        "road_classification",
+    ]:
         if col in df.columns:
             pool_agg[col] = "first"
 
@@ -466,9 +518,7 @@ def score_collision_models(
     # the intercept. Use residual_glm for spatial pattern diagnosis only —
     # not as a calibrated excess-collision count.
     n_years = df["year"].nunique()
-    pooled["residual_glm"] = (
-        pooled["collision_count"] - pooled["predicted_glm"] * n_years
-    )
+    pooled["residual_glm"] = pooled["collision_count"] - pooled["predicted_glm"] * n_years
 
     # Single stable risk percentile — ranked on XGBoost (higher pseudo-R² than GLM)
     pooled["risk_percentile"] = pooled["predicted_xgb"].rank(pct=True) * 100
@@ -480,11 +530,19 @@ def score_collision_models(
     )
 
     save_cols = [
-        "link_id", "collision_count", "fatal_count", "serious_count",
-        "estimated_aadt", "predicted_glm", "predicted_xgb",
-        "residual_glm", "risk_percentile",
+        "link_id",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
+        "estimated_aadt",
+        "predicted_glm",
+        "predicted_xgb",
+        "residual_glm",
+        "risk_percentile",
         "road_classification",
-        "hgv_proportion", "speed_limit_mph_effective", "speed_limit_mph",
+        "hgv_proportion",
+        "speed_limit_mph_effective",
+        "speed_limit_mph",
         "betweenness_relative",
     ]
     final_cols = [c for c in save_cols if c in pooled.columns]
@@ -493,9 +551,12 @@ def score_collision_models(
 
 
 def score_and_save(
-    glm_result, xgb_model,
-    glm_features: list, xgb_features: list,
-    glm_summary: dict, xgb_metrics: dict,
+    glm_result,
+    xgb_model,
+    glm_features: list,
+    xgb_features: list,
+    glm_summary: dict,
+    xgb_metrics: dict,
     df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
@@ -526,16 +587,15 @@ def run_collision_stage() -> pd.DataFrame:
 
     logger.info("=== Stage 2: Collision model ===")
 
-    openroads    = gpd.read_parquet(OPENROADS_PATH)
-    rla          = pd.read_parquet(RLA_PATH)
+    openroads = gpd.read_parquet(OPENROADS_PATH)
+    rla = pd.read_parquet(RLA_PATH)
     net_features = pd.read_parquet(NET_PATH) if NET_PATH.exists() else None
     if net_features is None:
         logger.warning("Network features not found — run network_features.py first")
 
     if not AADT_PATH.exists():
         raise FileNotFoundError(
-            f"AADT estimates not found at {AADT_PATH}. "
-            "Run --stage traffic first."
+            f"AADT estimates not found at {AADT_PATH}. Run --stage traffic first."
         )
     aadt_estimates = pd.read_parquet(AADT_PATH)
 
@@ -550,9 +610,12 @@ def run_collision_stage() -> pd.DataFrame:
         return None
 
     risk_scores = score_and_save(
-        glm_result, xgb_model,
-        glm_features, xgb_features,
-        glm_summary, xgb_metrics,
+        glm_result,
+        xgb_model,
+        glm_features,
+        xgb_features,
+        glm_summary,
+        xgb_metrics,
         df,
     )
 
@@ -564,8 +627,11 @@ def run_collision_stage() -> pd.DataFrame:
     print(f"  Links scored: {len(risk_scores):,} (pooled — no year dimension)")
     print(f"  Top 1% risk links: {(risk_scores['risk_percentile'] >= 99).sum():,}")
     if "road_classification" in risk_scores.columns:
-        print(risk_scores[risk_scores["risk_percentile"] >= 99][
-            "road_classification"
-        ].value_counts().head(6).to_string())
+        print(
+            risk_scores[risk_scores["risk_percentile"] >= 99]["road_classification"]
+            .value_counts()
+            .head(6)
+            .to_string()
+        )
 
     return risk_scores

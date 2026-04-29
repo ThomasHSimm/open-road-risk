@@ -195,8 +195,12 @@ def _global_heldout_link_year_pr2(
     logger.info("Loading data for %d held-out links", len(heldout_all))
 
     or_cols = [
-        "link_id", "road_classification", "form_of_way",
-        "link_length_km", "is_trunk", "is_primary",
+        "link_id",
+        "road_classification",
+        "form_of_way",
+        "link_length_km",
+        "is_trunk",
+        "is_primary",
     ]
     openroads = pd.read_parquet(OPENROADS_PATH, columns=or_cols)
     openroads = openroads[openroads["link_id"].isin(heldout_all)].copy()
@@ -232,18 +236,16 @@ def _global_heldout_link_year_pr2(
             continue
         y = sub["collision_count"].astype(float).to_numpy()
         y_pred = sub["predicted_global"].to_numpy()
-        deviance = 2.0 * float(np.sum(
-            np.where(y > 0, y * np.log((y + eps) / (y_pred + eps)), 0.0) - (y - y_pred)
-        ))
+        deviance = 2.0 * float(
+            np.sum(np.where(y > 0, y * np.log((y + eps) / (y_pred + eps)), 0.0) - (y - y_pred))
+        )
         null_val = float(y.mean())
-        null_dev = 2.0 * float(np.sum(
-            np.where(y > 0, y * np.log((y + eps) / (null_val + eps)), 0.0) - (y - null_val)
-        ))
+        null_dev = 2.0 * float(
+            np.sum(np.where(y > 0, y * np.log((y + eps) / (null_val + eps)), 0.0) - (y - null_val))
+        )
         r2 = float(1.0 - deviance / null_dev) if null_dev > 0 else float("nan")
         result[fam] = r2
-        logger.info(
-            "Global held-out link-year R² %s: %.6f (%d rows)", fam, r2, len(sub)
-        )
+        logger.info("Global held-out link-year R² %s: %.6f (%d rows)", fam, r2, len(sub))
     return result
 
 
@@ -356,24 +358,24 @@ def _section_62(
         else:
             global_held_out_pr2 = float("nan")
 
-        global_heldout_ly_pr2 = global_heldout_link_year_by_family.get(
-            fam, float("nan")
+        global_heldout_ly_pr2 = global_heldout_link_year_by_family.get(fam, float("nan"))
+        rows.append(
+            {
+                "family": fam,
+                "n_links": int(len(sub)),
+                "held_out_pr2": held_out_pr2,
+                "n_test_link_years": n_test,
+                "family_all_pr2": pr2_fam_all,
+                "global_subset_pr2": pr2_glob_sub,
+                "global_held_out_pr2": global_held_out_pr2,
+                "global_heldout_link_year_pr2": global_heldout_ly_pr2,
+                "mean_y_obs": float(y_obs.mean()),
+                "mean_y_pred_family": float(y_pred_fam.mean()),
+                "mean_resid_family": mean_resid_fam,
+                "mean_resid_global": mean_resid_glob,
+                "zero_collision_pct": float((y_obs == 0).mean() * 100),
+            }
         )
-        rows.append({
-            "family": fam,
-            "n_links": int(len(sub)),
-            "held_out_pr2": held_out_pr2,
-            "n_test_link_years": n_test,
-            "family_all_pr2": pr2_fam_all,
-            "global_subset_pr2": pr2_glob_sub,
-            "global_held_out_pr2": global_held_out_pr2,
-            "global_heldout_link_year_pr2": global_heldout_ly_pr2,
-            "mean_y_obs": float(y_obs.mean()),
-            "mean_y_pred_family": float(y_pred_fam.mean()),
-            "mean_resid_family": mean_resid_fam,
-            "mean_resid_global": mean_resid_glob,
-            "zero_collision_pct": float((y_obs == 0).mean() * 100),
-        })
 
     return pd.DataFrame(rows)
 
@@ -406,13 +408,15 @@ def _section_63(merged: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, float
             min_pred = (
                 float(fam_above["predicted_xgb_family"].min()) if len(fam_above) else float("nan")
             )
-            stat_rows.append({
-                "threshold": tname,
-                "k": k,
-                "family": fam,
-                "count_in_top_k": int(len(fam_above)),
-                "min_pred_in_top_k": min_pred,
-            })
+            stat_rows.append(
+                {
+                    "threshold": tname,
+                    "k": k,
+                    "family": fam,
+                    "count_in_top_k": int(len(fam_above)),
+                    "min_pred_in_top_k": min_pred,
+                }
+            )
     threshold_stats = pd.DataFrame(stat_rows)
 
     pair_rows = []
@@ -434,16 +438,18 @@ def _section_63(merged: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, float
             if fp not in by_pair:
                 continue
             gap = float(a["predicted_xgb_family"] - b["predicted_xgb_family"])
-            by_pair[fp].append({  # type: ignore[index]
-                "threshold": tname,
-                "rank_a": int(a["stitched_rank"]),
-                "rank_b": int(b["stitched_rank"]),
-                "family_a": a["family"],
-                "family_b": b["family"],
-                "pred_a": float(a["predicted_xgb_family"]),
-                "pred_b": float(b["predicted_xgb_family"]),
-                "gap": gap,
-            })
+            by_pair[fp].append(
+                {  # type: ignore[index]
+                    "threshold": tname,
+                    "rank_a": int(a["stitched_rank"]),
+                    "rank_b": int(b["stitched_rank"]),
+                    "family_a": a["family"],
+                    "family_b": b["family"],
+                    "pred_a": float(a["predicted_xgb_family"]),
+                    "pred_b": float(b["predicted_xgb_family"]),
+                    "gap": gap,
+                }
+            )
             if gap > max_gap:
                 max_gap = gap
 
@@ -465,16 +471,18 @@ def _section_64_rural(merged: pd.DataFrame) -> dict[str, Any]:
     for fam in FAMILIES:
         sub = merged[merged["family"] == fam]
         y_obs = sub["y_obs"].to_numpy()
-        summary_rows.append({
-            "family": fam,
-            "n_links": int(len(sub)),
-            "mean_collision_count": float(y_obs.mean()),
-            "median_collision_count": float(np.median(y_obs)),
-            "zero_collision_pct": float((y_obs == 0).mean() * 100),
-            "p95_collision_count": float(np.percentile(y_obs, 95)),
-            "mean_estimated_aadt": float(sub["estimated_aadt"].mean()),
-            "median_estimated_aadt": float(sub["estimated_aadt"].median()),
-        })
+        summary_rows.append(
+            {
+                "family": fam,
+                "n_links": int(len(sub)),
+                "mean_collision_count": float(y_obs.mean()),
+                "median_collision_count": float(np.median(y_obs)),
+                "zero_collision_pct": float((y_obs == 0).mean() * 100),
+                "p95_collision_count": float(np.percentile(y_obs, 95)),
+                "mean_estimated_aadt": float(sub["estimated_aadt"].mean()),
+                "median_estimated_aadt": float(sub["estimated_aadt"].median()),
+            }
+        )
 
     signal_df = pd.DataFrame(summary_rows)
 
@@ -503,14 +511,16 @@ def _section_65_urban(merged: pd.DataFrame) -> dict[str, Any]:
     for fam in ["other_urban", "other_rural", "motorway", "trunk_a"]:
         sub = merged[merged["family"] == fam]
         y_obs = sub["y_obs"].to_numpy()
-        rows.append({
-            "family": fam,
-            "n_links": int(len(sub)),
-            "mean_collision_count": float(y_obs.mean()),
-            "pct_zero_collision": float((y_obs == 0).mean() * 100),
-            "pct_collision_gt10": float((y_obs > 10).mean() * 100),
-            "collision_share_pct": float(y_obs.sum() / merged["y_obs"].sum() * 100),
-        })
+        rows.append(
+            {
+                "family": fam,
+                "n_links": int(len(sub)),
+                "mean_collision_count": float(y_obs.mean()),
+                "pct_zero_collision": float((y_obs == 0).mean() * 100),
+                "pct_collision_gt10": float((y_obs > 10).mean() * 100),
+                "collision_share_pct": float(y_obs.sum() / merged["y_obs"].sum() * 100),
+            }
+        )
     return {"coverage_df": pd.DataFrame(rows)}
 
 
@@ -757,130 +767,133 @@ def _write_report(
         float(s62_df.loc[s62_df["family"] == "motorway", "mean_resid_family"].iloc[0]), 4
     )
 
-    report = "\n\n".join([
-        "# Family-Split Session 2 Validation",
-        (
-            f"Session-1 artefacts: commit `{git_sha}`, scored at `{timestamp}`. "
-            "Held-out pseudo-R² in §6.1 is computed on the union of per-family held-out "
-            "links (20% of each family, seed=42) using link-grain collision counts from "
-            "`risk_scores_family.parquet`. The rank_stability.md baseline (0.859 ± 0.001) "
-            "is link-year grain; §6.2 column `held_out_pr2` (from session-1 training) is "
-            "the per-family link-year grain equivalent. Supporting CSVs are in "
-            "`reports/supporting/family_validation_*.csv`."
-        ),
-        "## §6.1 Headline: stitched vs global\n\n"
-        + headline_table
-        + "\n\n### Held-out comparison\n\n"
-        + "Pseudo-R² on the union of per-family held-out link_ids "
-        f"({s61['n_heldout']:,} links, ≈20% of network). "
-        "Both models evaluated on the same held-out set; this is apples-to-apples "
-        "between stitched and global, and directionally comparable to the rank_stability.md "
-        "baseline of 0.859 ± 0.001 (note: baseline is link-year grain; "
-        "these figures are link-grain).\n\n"
-        + heldout_table
-        + "\n\n### Top-1% entrants by family\n\n"
-        + _fam_count_table(s61["entrant_by_fam"])
-        + "\n\n### Top-1% leavers by family\n\n"
-        + _fam_count_table(s61["leaver_by_fam"]),
-        "## §6.2 Per-family metrics\n\n"
-        + "Columns: `held_out_pr2` = held-out link-year pseudo-R² from session-1 training "
-        "(authoritative, link-year grain). "
-        "`family_all_pr2` / `global_subset_pr2` = all-links link-grain pseudo-R² on family "
-        "subset. `global_held_out_pr2` = global model on family's held-out links, link-grain. "
-        "`global_heldout_link_year_pr2` = global model on family's held-out links, "
-        "link-year grain (same grain as `held_out_pr2`; apples-to-apples for §6.2.1). "
-        "`mean_resid` = mean(y_obs - y_pred) at link grain.\n\n"
-        + s62_table
-        + "\n\n### §6.2.1 Did separating help?\n\n"
-        + "**All-data comparison (link-grain; per-family model vs global on "
-        "same family subset):**\n\n"
-        + delta_alldata_table
-        + "\n\n"
-        + "Per-family models match or beat the global model on every family. "
-        "The largest gains are motorway and trunk_a, consistent with the design doc §9 "
-        "hypothesis that high-speed, access-controlled families would benefit most from "
-        "a dedicated model. Other-Urban and Other-Rural gains are small (+0.002 and +0.011), "
-        "also consistent with the design doc hypothesis that the global model already "
-        "captures the relevant feature signals for those populations.\n\n"
-        + "**Held-out comparison (both columns at link-year grain):**\n\n"
-        + delta_heldout_table
-        + "\n\n"
-        "Both columns are link-year grain Poisson pseudo-R² on the same per-family "
-        "held-out sets (seed=42, 20% of links). Per-family column: authoritative "
-        "figures from session-1 training provenance. Global column: global "
-        "`collision_xgb.json` scored on identical held-out link-years using the same "
-        "eps=1e-6 deviance formula. "
-        "trunk_a, other_urban, and other_rural deltas are consistent in sign with the "
-        "all-data comparison. **Motorway reverses sign**: per-family is -0.027 on "
-        "held-out but +0.052 on all-data. The all-data gain is real (link-grain, same "
-        "formula for both models), but the held-out reversal indicates the motorway "
-        "model over-fits its 4,084-link training set; the global model generalises "
-        "better out-of-sample on the 817 held-out motorway links (8,170 link-years). "
-        "The all-data comparison remains the primary surface for 'did separating help?' "
-        "because it uses the full population; the held-out reversal is a v2 signal for "
-        "regularisation or a larger motorway training window.",
-        "## §6.3 Family-boundary discontinuity\n\n"
-        + "### Per-family representation at each threshold\n\n"
-        + s63_stat_table
-        + "\n\n### Adjacent different-family pairs near threshold boundaries\n\n"
-        + "Consecutive-rank pairs in ±500 window around each threshold where adjacent "
-        "links are from different families. Up to 25 pairs per family-pair per threshold. "
-        f"Largest observed gap: {_format_float(s63_max_gap, 6)}. "
-        "The in-report sample below emphasises motorway/other_urban pairs at the top-1% "
-        "boundary because those families have the most rank-range overlap there. "
-        "The full CSV (`reports/supporting/family_validation_boundary_pairs.csv`) "
-        "contains all 6 family-pair combinations across all three thresholds. "
-        "Some pairs such as trunk_a × other_rural at narrow thresholds have very few "
-        "adjacent crossings because their rank ranges barely overlap — itself a calibration "
-        "signal indicating limited rank-range mixing between those families.\n\n"
-        + s63_pair_table,
-        "## §6.4 Rural pseudo-R² gap diagnostic\n\n"
-        + "other_rural held-out pseudo-R² = 0.648 vs global baseline 0.859. "
-        "Collision-count signal distribution by family:\n\n"
-        + s64_table
-        + "\n\n**Interpretation:** other_rural has a 93.78% zero-collision rate and mean "
-        "AADT of 1,137 vs 2,246 for other_urban. The gap is primarily a sparse-data / "
-        "low-signal problem: with most links recording no collisions over 10 years, "
-        "there is limited within-family variation for the model to explain. "
-        "Per-family EB k (v2 candidate) and per-family feature pruning would address "
-        "different aspects of this gap.",
-        "## §6.5 Urban pseudo-R² check\n\n"
-        + f"other_urban held-out pseudo-R² = 0.917. "
-        f"The correct within-experiment comparison (§6.2.1) is per-family "
-        f"other_urban R² ({urban_fam_all:.3f} all-data) vs global-on-urban-subset R² "
-        f"({urban_glob_sub:.3f} all-data), a delta of +{urban_delta:.3f} — essentially zero. "
-        "The 0.917 vs 0.859 global baseline gap is largely explained by urban roads being "
-        "inherently more predictable than the full mixed network, not by per-family "
-        "modelling adding value. The calibration table below confirms the 0.917 figure "
-        "reflects genuine discrimination across a large population, not concentration in "
-        "a small high-count subset:\n\n"
-        + s65_table
-        + "\n\n**Interpretation:** other_urban accounts for 73.9% of all network collisions "
-        "despite an 87% zero-collision rate, providing the calibration signal that drives "
-        "the high pseudo-R². The per-family gain for urban is ~0.002 (essentially zero); "
-        "the main benefit of per-family modelling accrues to motorway and trunk_a.",
-        "## Closing observations\n\n"
-        + "\n".join([
-            f"- Held-out stitched pseudo-R² (link-grain): "
-            f"{_format_float(s61['pr2_stitched_heldout'])} vs global "
-            f"{_format_float(s61['pr2_global_heldout'])} "
-            f"(rank_stability.md baseline 0.859 ± 0.001 is link-year grain).",
-            f"- Stitched pseudo-R² (all-links link-grain): "
-            f"{_format_float(s61['pr2_stitched'])} vs global "
-            f"{_format_float(s61['pr2_global'])}.",
-            f"- Top-1% intersection (stitched vs global): "
-            f"{s61['intersection']:,} / {s61['top_k']:,} "
-            f"({s61['intersection_pct']:.2f}%).",
-            f"- Motorway mean residual (family model, link-grain): {_mw_resid}.",
-            "- other_rural held-out pseudo-R²: 0.648 (global baseline 0.859); "
-            "gap consistent with sparse low-AADT signal.",
-            f"- other_urban per-family gain over global: +{urban_delta:.3f} "
-            "(all-data link-grain); elevation vs 0.859 baseline explained by urban "
-            "predictability, not per-family modelling.",
-            f"- Largest adjacent different-family predicted-value gap near boundary: "
-            f"{_format_float(s63_max_gap, 6)} — stitched ranking is smoothly calibrated.",
-        ]),
-    ])
+    report = "\n\n".join(
+        [
+            "# Family-Split Session 2 Validation",
+            (
+                f"Session-1 artefacts: commit `{git_sha}`, scored at `{timestamp}`. "
+                "Held-out pseudo-R² in §6.1 is computed on the union of per-family held-out "
+                "links (20% of each family, seed=42) using link-grain collision counts from "
+                "`risk_scores_family.parquet`. The rank_stability.md baseline (0.859 ± 0.001) "
+                "is link-year grain; §6.2 column `held_out_pr2` (from session-1 training) is "
+                "the per-family link-year grain equivalent. Supporting CSVs are in "
+                "`reports/supporting/family_validation_*.csv`."
+            ),
+            "## §6.1 Headline: stitched vs global\n\n"
+            + headline_table
+            + "\n\n### Held-out comparison\n\n"
+            + "Pseudo-R² on the union of per-family held-out link_ids "
+            f"({s61['n_heldout']:,} links, ≈20% of network). "
+            "Both models evaluated on the same held-out set; this is apples-to-apples "
+            "between stitched and global, and directionally comparable to the rank_stability.md "
+            "baseline of 0.859 ± 0.001 (note: baseline is link-year grain; "
+            "these figures are link-grain).\n\n"
+            + heldout_table
+            + "\n\n### Top-1% entrants by family\n\n"
+            + _fam_count_table(s61["entrant_by_fam"])
+            + "\n\n### Top-1% leavers by family\n\n"
+            + _fam_count_table(s61["leaver_by_fam"]),
+            "## §6.2 Per-family metrics\n\n"
+            + "Columns: `held_out_pr2` = held-out link-year pseudo-R² from session-1 training "
+            "(authoritative, link-year grain). "
+            "`family_all_pr2` / `global_subset_pr2` = all-links link-grain pseudo-R² on family "
+            "subset. `global_held_out_pr2` = global model on family's held-out links, link-grain. "
+            "`global_heldout_link_year_pr2` = global model on family's held-out links, "
+            "link-year grain (same grain as `held_out_pr2`; apples-to-apples for §6.2.1). "
+            "`mean_resid` = mean(y_obs - y_pred) at link grain.\n\n"
+            + s62_table
+            + "\n\n### §6.2.1 Did separating help?\n\n"
+            + "**All-data comparison (link-grain; per-family model vs global on "
+            "same family subset):**\n\n"
+            + delta_alldata_table
+            + "\n\n"
+            + "Per-family models match or beat the global model on every family. "
+            "The largest gains are motorway and trunk_a, consistent with the design doc §9 "
+            "hypothesis that high-speed, access-controlled families would benefit most from "
+            "a dedicated model. Other-Urban and Other-Rural gains are small (+0.002 and +0.011), "
+            "also consistent with the design doc hypothesis that the global model already "
+            "captures the relevant feature signals for those populations.\n\n"
+            + "**Held-out comparison (both columns at link-year grain):**\n\n"
+            + delta_heldout_table
+            + "\n\n"
+            "Both columns are link-year grain Poisson pseudo-R² on the same per-family "
+            "held-out sets (seed=42, 20% of links). Per-family column: authoritative "
+            "figures from session-1 training provenance. Global column: global "
+            "`collision_xgb.json` scored on identical held-out link-years using the same "
+            "eps=1e-6 deviance formula. "
+            "trunk_a, other_urban, and other_rural deltas are consistent in sign with the "
+            "all-data comparison. **Motorway reverses sign**: per-family is -0.027 on "
+            "held-out but +0.052 on all-data. The all-data gain is real (link-grain, same "
+            "formula for both models), but the held-out reversal indicates the motorway "
+            "model over-fits its 4,084-link training set; the global model generalises "
+            "better out-of-sample on the 817 held-out motorway links (8,170 link-years). "
+            "The all-data comparison remains the primary surface for 'did separating help?' "
+            "because it uses the full population; the held-out reversal is a v2 signal for "
+            "regularisation or a larger motorway training window.",
+            "## §6.3 Family-boundary discontinuity\n\n"
+            + "### Per-family representation at each threshold\n\n"
+            + s63_stat_table
+            + "\n\n### Adjacent different-family pairs near threshold boundaries\n\n"
+            + "Consecutive-rank pairs in ±500 window around each threshold where adjacent "
+            "links are from different families. Up to 25 pairs per family-pair per threshold. "
+            f"Largest observed gap: {_format_float(s63_max_gap, 6)}. "
+            "The in-report sample below emphasises motorway/other_urban pairs at the top-1% "
+            "boundary because those families have the most rank-range overlap there. "
+            "The full CSV (`reports/supporting/family_validation_boundary_pairs.csv`) "
+            "contains all 6 family-pair combinations across all three thresholds. "
+            "Some pairs such as trunk_a × other_rural at narrow thresholds have very few "
+            "adjacent crossings because their rank ranges barely overlap — itself a calibration "
+            "signal indicating limited rank-range mixing between those families.\n\n"
+            + s63_pair_table,
+            "## §6.4 Rural pseudo-R² gap diagnostic\n\n"
+            + "other_rural held-out pseudo-R² = 0.648 vs global baseline 0.859. "
+            "Collision-count signal distribution by family:\n\n"
+            + s64_table
+            + "\n\n**Interpretation:** other_rural has a 93.78% zero-collision rate and mean "
+            "AADT of 1,137 vs 2,246 for other_urban. The gap is primarily a sparse-data / "
+            "low-signal problem: with most links recording no collisions over 10 years, "
+            "there is limited within-family variation for the model to explain. "
+            "Per-family EB k (v2 candidate) and per-family feature pruning would address "
+            "different aspects of this gap.",
+            "## §6.5 Urban pseudo-R² check\n\n" + f"other_urban held-out pseudo-R² = 0.917. "
+            f"The correct within-experiment comparison (§6.2.1) is per-family "
+            f"other_urban R² ({urban_fam_all:.3f} all-data) vs global-on-urban-subset R² "
+            f"({urban_glob_sub:.3f} all-data), a delta of +{urban_delta:.3f} — essentially zero. "
+            "The 0.917 vs 0.859 global baseline gap is largely explained by urban roads being "
+            "inherently more predictable than the full mixed network, not by per-family "
+            "modelling adding value. The calibration table below confirms the 0.917 figure "
+            "reflects genuine discrimination across a large population, not concentration in "
+            "a small high-count subset:\n\n"
+            + s65_table
+            + "\n\n**Interpretation:** other_urban accounts for 73.9% of all network collisions "
+            "despite an 87% zero-collision rate, providing the calibration signal that drives "
+            "the high pseudo-R². The per-family gain for urban is ~0.002 (essentially zero); "
+            "the main benefit of per-family modelling accrues to motorway and trunk_a.",
+            "## Closing observations\n\n"
+            + "\n".join(
+                [
+                    f"- Held-out stitched pseudo-R² (link-grain): "
+                    f"{_format_float(s61['pr2_stitched_heldout'])} vs global "
+                    f"{_format_float(s61['pr2_global_heldout'])} "
+                    f"(rank_stability.md baseline 0.859 ± 0.001 is link-year grain).",
+                    f"- Stitched pseudo-R² (all-links link-grain): "
+                    f"{_format_float(s61['pr2_stitched'])} vs global "
+                    f"{_format_float(s61['pr2_global'])}.",
+                    f"- Top-1% intersection (stitched vs global): "
+                    f"{s61['intersection']:,} / {s61['top_k']:,} "
+                    f"({s61['intersection_pct']:.2f}%).",
+                    f"- Motorway mean residual (family model, link-grain): {_mw_resid}.",
+                    "- other_rural held-out pseudo-R²: 0.648 (global baseline 0.859); "
+                    "gap consistent with sparse low-AADT signal.",
+                    f"- other_urban per-family gain over global: +{urban_delta:.3f} "
+                    "(all-data link-grain); elevation vs 0.859 baseline explained by urban "
+                    "predictability, not per-family modelling.",
+                    f"- Largest adjacent different-family predicted-value gap near boundary: "
+                    f"{_format_float(s63_max_gap, 6)} — stitched ranking is smoothly calibrated.",
+                ]
+            ),
+        ]
+    )
 
     REPORT_PATH.write_text(report + "\n")
     logger.info("Wrote validation report to %s", REPORT_PATH)

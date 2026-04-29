@@ -372,8 +372,7 @@ def sample_elevation_from_tiles(
     )
 
     tile_lookup = {
-        (int(row.left), int(row.bottom)): row
-        for row in tile_index.itertuples(index=False)
+        (int(row.left), int(row.bottom)): row for row in tile_index.itertuples(index=False)
     }
 
     missing_tile_points = 0
@@ -467,8 +466,7 @@ def compute_grade_features(points_gdf: gpd.GeoDataFrame, link_col: str) -> pd.Da
     )
 
     points.loc[valid_grade, "grade_pct_abs"] = (
-        points.loc[valid_grade, "segment_dz_m"].abs()
-        / points.loc[valid_grade, "segment_dx_m"]
+        points.loc[valid_grade, "segment_dz_m"].abs() / points.loc[valid_grade, "segment_dx_m"]
     ) * 100.0
 
     def summarise(group: pd.DataFrame) -> pd.Series:

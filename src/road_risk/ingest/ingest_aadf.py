@@ -43,9 +43,9 @@ from road_risk.config import _ROOT, cfg
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_YEARS         = cfg["years"]["full_range"]
-_DEFAULT_REGION        = None   # No region filter — use bbox instead
-_DEFAULT_RAW_FOLDER    = _ROOT / cfg["paths"]["raw"]["aadf"]
+_DEFAULT_YEARS = cfg["years"]["full_range"]
+_DEFAULT_REGION = None  # No region filter — use bbox instead
+_DEFAULT_RAW_FOLDER = _ROOT / cfg["paths"]["raw"]["aadf"]
 _DEFAULT_OUTPUT_FOLDER = _ROOT / cfg["paths"]["processed"] / "aadf"
 
 # Study area bbox in WGS84 — read from config/settings.yaml.
@@ -104,15 +104,23 @@ KEEP_COLS = [
 ]
 
 EXPECTED_COLS = [
-    "count_point_id", "year", "region_name", "road_name", "road_type",
-    "direction_of_travel", "all_hgvs", "all_motor_vehicles",
-    "latitude", "longitude",
+    "count_point_id",
+    "year",
+    "region_name",
+    "road_name",
+    "road_type",
+    "direction_of_travel",
+    "all_hgvs",
+    "all_motor_vehicles",
+    "latitude",
+    "longitude",
 ]
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _find_csv_in_zip(zip_path: Path) -> str:
     """Return the name of the first CSV inside the zip."""
@@ -137,7 +145,7 @@ def _read_zip(zip_path: Path) -> pd.DataFrame:
     df = pd.read_csv(
         BytesIO(raw),
         low_memory=False,
-        dtype={"count_point_id": str},   # keep as string for joining
+        dtype={"count_point_id": str},  # keep as string for joining
     )
     df.columns = df.columns.str.lower().str.strip()
     logger.info(f"  Loaded {len(df):,} rows × {df.shape[1]} cols (pre-filter)")
@@ -163,10 +171,10 @@ def _add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     total = df["all_motor_vehicles"].replace(0, pd.NA)  # avoid div/0
 
-    df["hgv_proportion"]      = df["all_hgvs"] / total
-    df["lgv_proportion"]      = df["lgvs"] / total
-    df["cars_proportion"]     = df["cars_and_taxis"] / total
-    df["heavy_vehicle_prop"]  = (df["all_hgvs"] + df["lgvs"]) / total
+    df["hgv_proportion"] = df["all_hgvs"] / total
+    df["lgv_proportion"] = df["lgvs"] / total
+    df["cars_proportion"] = df["cars_and_taxis"] / total
+    df["heavy_vehicle_prop"] = (df["all_hgvs"] + df["lgvs"]) / total
 
     return df
 
@@ -174,6 +182,7 @@ def _add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def load_aadf(
     raw_folder: str | Path = _DEFAULT_RAW_FOLDER,
@@ -311,22 +320,37 @@ def aggregate_bidirectional(df: pd.DataFrame) -> pd.DataFrame:
     DataFrame at count_point_id × year grain.
     """
     meta_cols = [
-        "count_point_id", "year", "region_id", "region_name",
-        "local_authority_id", "local_authority_name",
-        "road_name", "road_type",
-        "start_junction_road_name", "end_junction_road_name",
-        "easting", "northing", "latitude", "longitude",
-        "link_length_km", "link_length_miles", "estimation_method",
+        "count_point_id",
+        "year",
+        "region_id",
+        "region_name",
+        "local_authority_id",
+        "local_authority_name",
+        "road_name",
+        "road_type",
+        "start_junction_road_name",
+        "end_junction_road_name",
+        "easting",
+        "northing",
+        "latitude",
+        "longitude",
+        "link_length_km",
+        "link_length_miles",
+        "estimation_method",
     ]
     flow_cols = [
-        "pedal_cycles", "two_wheeled_motor_vehicles", "cars_and_taxis",
-        "buses_and_coaches", "lgvs",
+        "pedal_cycles",
+        "two_wheeled_motor_vehicles",
+        "cars_and_taxis",
+        "buses_and_coaches",
+        "lgvs",
         *HGV_SUBTYPES,
-        "all_hgvs", "all_motor_vehicles",
+        "all_hgvs",
+        "all_motor_vehicles",
     ]
 
     directional = df[df["direction_of_travel"].isin(["N", "S", "E", "W"])]
-    combined    = df[df["direction_of_travel"] == "C"]
+    combined = df[df["direction_of_travel"] == "C"]
 
     if len(directional) == 0:
         logger.warning("No directional rows found — returning combined rows only")
@@ -334,20 +358,14 @@ def aggregate_bidirectional(df: pd.DataFrame) -> pd.DataFrame:
 
     # Take metadata from first row per group (stable within a count point)
     meta = (
-        directional
-        .sort_values("direction_of_travel")
+        directional.sort_values("direction_of_travel")
         .groupby(["count_point_id", "year"])[meta_cols[2:]]
         .first()
         .reset_index()
     )
 
     # Sum flows across directions
-    flows = (
-        directional
-        .groupby(["count_point_id", "year"])[flow_cols]
-        .sum()
-        .reset_index()
-    )
+    flows = directional.groupby(["count_point_id", "year"])[flow_cols].sum().reset_index()
 
     result = meta.merge(flows, on=["count_point_id", "year"])
     result["direction_of_travel"] = "combined"
@@ -434,8 +452,13 @@ def main(
         years = _DEFAULT_YEARS
 
     logger.info(f"Loading AADF from: {raw_folder}")
-    df = load_aadf(raw_folder, years=years, region_name=region_name,
-               lat_bounds=lat_bounds, lon_bounds=lon_bounds)
+    df = load_aadf(
+        raw_folder,
+        years=years,
+        region_name=region_name,
+        lat_bounds=lat_bounds,
+        lon_bounds=lon_bounds,
+    )
 
     print("\n=== AADF summary ===")
     print(f"  Rows:        {len(df):,}")
@@ -451,7 +474,7 @@ def main(
 
     # Aggregate and save bidirectional
     agg = aggregate_bidirectional(df)
-    print(f"\n=== Bidirectional aggregate ===")
+    print("\n=== Bidirectional aggregate ===")
     print(f"  Rows: {len(agg):,}  (count_point_id × year)")
     save_aadf_bidirectional(agg, output_folder)
 

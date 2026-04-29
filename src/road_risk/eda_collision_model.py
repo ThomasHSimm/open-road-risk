@@ -26,10 +26,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats
+
 from road_risk.config import _ROOT as ROOT
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s  %(levelname)-8s  %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-8s  %(message)s")
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -37,43 +37,45 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # ROOT = Path(__file__).parent.parent.parent  # src/road_risk/ -> src/ -> project root
 
-RISK_PATH    = ROOT / "data/models/risk_scores.parquet"
-RLA_PATH     = ROOT / "data/features/road_link_annual.parquet"
-NET_PATH     = ROOT / "data/features/network_features.parquet"
-OR_PATH      = ROOT / "data/processed/shapefiles/openroads.parquet"
+RISK_PATH = ROOT / "data/models/risk_scores.parquet"
+RLA_PATH = ROOT / "data/features/road_link_annual.parquet"
+NET_PATH = ROOT / "data/features/network_features.parquet"
+OR_PATH = ROOT / "data/processed/shapefiles/openroads.parquet"
 
 # ---------------------------------------------------------------------------
 # Style
 # ---------------------------------------------------------------------------
-plt.rcParams.update({
-    "figure.facecolor":  "white",
-    "axes.facecolor":    "#f8f8f8",
-    "axes.grid":          True,
-    "grid.alpha":         0.4,
-    "axes.spines.top":    False,
-    "axes.spines.right":  False,
-    "font.size":          11,
-})
+plt.rcParams.update(
+    {
+        "figure.facecolor": "white",
+        "axes.facecolor": "#f8f8f8",
+        "axes.grid": True,
+        "grid.alpha": 0.4,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "font.size": 11,
+    }
+)
 
 ROAD_COLOURS = {
-    "Motorway":              "#2563eb",
-    "A Road":                "#16a34a",
-    "B Road":                "#ca8a04",
+    "Motorway": "#2563eb",
+    "A Road": "#16a34a",
+    "B Road": "#ca8a04",
     "Classified Unnumbered": "#9333ea",
-    "Unclassified":          "#64748b",
-    "Unknown":               "#94a3b8",
-    "Not Classified":        "#cbd5e1",
+    "Unclassified": "#64748b",
+    "Unknown": "#94a3b8",
+    "Not Classified": "#cbd5e1",
 }
 
 FORM_COLOURS = {
-    "Motorway":                    "#2563eb",
-    "Dual Carriageway":            "#1d4ed8",
-    "Collapsed Dual Carriageway":  "#3b82f6",
-    "Single Carriageway":          "#16a34a",
-    "Roundabout":                  "#f59e0b",
-    "Slip Road":                   "#ef4444",
-    "Shared Use Carriageway":      "#94a3b8",
-    "Guided Busway":               "#cbd5e1",
+    "Motorway": "#2563eb",
+    "Dual Carriageway": "#1d4ed8",
+    "Collapsed Dual Carriageway": "#3b82f6",
+    "Single Carriageway": "#16a34a",
+    "Roundabout": "#f59e0b",
+    "Slip Road": "#ef4444",
+    "Shared Use Carriageway": "#94a3b8",
+    "Guided Busway": "#cbd5e1",
 }
 
 
@@ -87,6 +89,7 @@ def savefig(fig, output_dir: Path, name: str) -> None:
 # ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
+
 
 def load_data() -> dict:
     logger.info("Loading data ...")
@@ -106,6 +109,7 @@ def load_data() -> dict:
 
     if OR_PATH.exists():
         import geopandas as gpd
+
         data["or"] = gpd.read_parquet(OR_PATH).drop(columns=["geometry"])
         logger.info(f"  openroads: {len(data['or']):,} links")
 
@@ -120,20 +124,31 @@ def build_analysis_table(data: dict) -> pd.DataFrame:
     df = data["risk"].copy()
 
     if "or" in data:
-        or_cols = ["link_id", "road_classification", "form_of_way",
-                   "link_length_km", "is_trunk", "is_primary"]
+        or_cols = [
+            "link_id",
+            "road_classification",
+            "form_of_way",
+            "link_length_km",
+            "is_trunk",
+            "is_primary",
+        ]
         avail = [c for c in or_cols if c in data["or"].columns]
         # Always merge missing columns from openroads — risk_scores has
         # road_classification but not link_length_km or form_of_way
         missing = [c for c in avail if c != "link_id" and c not in df.columns]
         if missing:
-            df = df.merge(data["or"][["link_id"] + missing],
-                          on="link_id", how="left")
+            df = df.merge(data["or"][["link_id"] + missing], on="link_id", how="left")
 
     if "net" in data:
-        net_cols = ["link_id", "degree_mean", "betweenness_relative",
-                    "dist_to_major_km", "pop_density_per_km2",
-                    "speed_limit_mph", "lanes"]
+        net_cols = [
+            "link_id",
+            "degree_mean",
+            "betweenness_relative",
+            "dist_to_major_km",
+            "pop_density_per_km2",
+            "speed_limit_mph",
+            "lanes",
+        ]
         avail = [c for c in net_cols if c in data["net"].columns]
         df = df.merge(data["net"][avail], on="link_id", how="left")
 
@@ -143,6 +158,7 @@ def build_analysis_table(data: dict) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Section 1 — Exposure backbone
 # ---------------------------------------------------------------------------
+
 
 def section1_exposure(data: dict, output_dir: Path) -> None:
     logger.info("Section 1: Exposure backbone")
@@ -166,8 +182,10 @@ def section1_exposure(data: dict, output_dir: Path) -> None:
 
     needed = ["collision_count", "estimated_aadt", "link_length_km"]
     if not all(c in rla.columns for c in needed):
-        logger.warning(f"  Missing columns for exposure analysis: "
-                       f"{[c for c in needed if c not in rla.columns]}")
+        logger.warning(
+            f"  Missing columns for exposure analysis: "
+            f"{[c for c in needed if c not in rla.columns]}"
+        )
         return
 
     rla = rla.dropna(subset=needed)
@@ -182,14 +200,22 @@ def section1_exposure(data: dict, output_dir: Path) -> None:
     ax = axes[0]
     bins = np.percentile(rla["log_vkm"], np.linspace(5, 95, 20))
     rla["vkm_bin"] = pd.cut(rla["log_vkm"], bins=bins)
-    binned = rla.groupby("vkm_bin", observed=True).agg(
-        mean_count=("collision_count", "mean"),
-        mean_vkm=("log_vkm", "mean"),
-        n=("collision_count", "count")
-    ).dropna()
-    ax.scatter(binned["mean_vkm"], binned["mean_count"],
-               s=binned["n"] / binned["n"].max() * 200 + 20,
-               alpha=0.7, color="#2563eb")
+    binned = (
+        rla.groupby("vkm_bin", observed=True)
+        .agg(
+            mean_count=("collision_count", "mean"),
+            mean_vkm=("log_vkm", "mean"),
+            n=("collision_count", "count"),
+        )
+        .dropna()
+    )
+    ax.scatter(
+        binned["mean_vkm"],
+        binned["mean_count"],
+        s=binned["n"] / binned["n"].max() * 200 + 20,
+        alpha=0.7,
+        color="#2563eb",
+    )
     ax.set_xlabel("Log(vehicle-km/M)")
     ax.set_ylabel("Mean collision count")
     ax.set_title("Exposure vs collision count\n(bin size = circle area)")
@@ -204,8 +230,7 @@ def section1_exposure(data: dict, output_dir: Path) -> None:
         for rc, grp in with_collisions.groupby("road_classification"):
             colour = ROAD_COLOURS.get(rc, "#94a3b8")
             rates = grp["rate_per_Mvkm"].clip(upper=grp["rate_per_Mvkm"].quantile(0.99))
-            ax.hist(np.log1p(rates), bins=30, alpha=0.5,
-                    color=colour, label=rc, density=True)
+            ax.hist(np.log1p(rates), bins=30, alpha=0.5, color=colour, label=rc, density=True)
         ax.legend(fontsize=8, loc="upper right")
     else:
         ax.hist(np.log1p(with_collisions["rate_per_Mvkm"]), bins=40, color="#2563eb", alpha=0.7)
@@ -225,9 +250,14 @@ def section1_exposure(data: dict, output_dir: Path) -> None:
         bars = ax.barh(zero_rates.index, zero_rates.values, color=colours)
         ax.set_xlabel("Proportion of zero-collision link-years")
         ax.set_title("Zero-collision rate by road class")
-        for bar, val in zip(bars, zero_rates.values):
-            ax.text(val + 0.005, bar.get_y() + bar.get_height() / 2,
-                    f"{val:.1%}", va="center", fontsize=9)
+        for bar, val in zip(bars, zero_rates.values, strict=False):
+            ax.text(
+                val + 0.005,
+                bar.get_y() + bar.get_height() / 2,
+                f"{val:.1%}",
+                va="center",
+                fontsize=9,
+            )
 
     plt.tight_layout()
     savefig(fig, output_dir, "01_exposure_backbone")
@@ -236,6 +266,7 @@ def section1_exposure(data: dict, output_dir: Path) -> None:
 # ---------------------------------------------------------------------------
 # Section 2 — Road type stratification
 # ---------------------------------------------------------------------------
+
 
 def section2_road_types(data: dict, output_dir: Path) -> None:
     logger.info("Section 2: Road type stratification")
@@ -268,21 +299,32 @@ def section2_road_types(data: dict, output_dir: Path) -> None:
     fig.suptitle("Section 2 — Road type stratification", fontsize=13, fontweight="bold")
     gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.4, wspace=0.35)
 
-    road_order = ["Motorway", "A Road", "B Road",
-                  "Classified Unnumbered", "Unclassified", "Unknown", "Not Classified"]
+    road_order = [
+        "Motorway",
+        "A Road",
+        "B Road",
+        "Classified Unnumbered",
+        "Unclassified",
+        "Unknown",
+        "Not Classified",
+    ]
     road_order = [r for r in road_order if r in df["road_classification"].unique()]
 
     def boxplot_by_road(ax, col, label, log=True):
         data_by_road = [
-            df.loc[(df["road_classification"] == rc) & (df[col] > 0), col].clip(
-                upper=df.loc[df[col] > 0, col].quantile(0.99)
-            ).values
+            df.loc[(df["road_classification"] == rc) & (df[col] > 0), col]
+            .clip(upper=df.loc[df[col] > 0, col].quantile(0.99))
+            .values
             for rc in road_order
         ]
         colours = [ROAD_COLOURS.get(r, "#94a3b8") for r in road_order]
-        bp = ax.boxplot(data_by_road, patch_artist=True, showfliers=False,
-                        medianprops={"color": "black", "linewidth": 1.5})
-        for patch, colour in zip(bp["boxes"], colours):
+        bp = ax.boxplot(
+            data_by_road,
+            patch_artist=True,
+            showfliers=False,
+            medianprops={"color": "black", "linewidth": 1.5},
+        )
+        for patch, colour in zip(bp["boxes"], colours, strict=False):
             patch.set_facecolor(colour)
             patch.set_alpha(0.7)
         ax.set_xticks(range(1, len(road_order) + 1))
@@ -341,6 +383,7 @@ def section2_road_types(data: dict, output_dir: Path) -> None:
 # Section 3 — Frequency vs severity decoupling
 # ---------------------------------------------------------------------------
 
+
 def section3_severity(data: dict, output_dir: Path) -> None:
     logger.info("Section 3: Frequency vs severity decoupling")
 
@@ -348,13 +391,14 @@ def section3_severity(data: dict, output_dir: Path) -> None:
     if df.empty:
         return
 
-    if not all(c in df.columns for c in ["fatal_count", "serious_count",
-                                          "collision_count", "estimated_aadt"]):
+    if not all(
+        c in df.columns
+        for c in ["fatal_count", "serious_count", "collision_count", "estimated_aadt"]
+    ):
         logger.warning("  Missing severity columns — skipping")
         return
 
-    needed = ["estimated_aadt", "link_length_km", "fatal_count",
-               "serious_count", "collision_count"]
+    needed = ["estimated_aadt", "link_length_km", "fatal_count", "serious_count", "collision_count"]
     missing = [c for c in needed if c not in df.columns]
     if missing:
         logger.warning(f"  Missing columns for severity analysis: {missing} — skipping")
@@ -362,8 +406,8 @@ def section3_severity(data: dict, output_dir: Path) -> None:
     df = df.dropna(subset=["estimated_aadt", "link_length_km"])
     df["vehicle_km_M"] = df["estimated_aadt"] * df["link_length_km"] * 365 / 1e6
     df["collision_rate"] = df["collision_count"] / df["vehicle_km_M"].clip(lower=1e-6)
-    df["ksi_count"]  = df["fatal_count"].fillna(0) + df["serious_count"].fillna(0)
-    df["ksi_rate"]   = df["ksi_count"] / df["vehicle_km_M"].clip(lower=1e-6)
+    df["ksi_count"] = df["fatal_count"].fillna(0) + df["serious_count"].fillna(0)
+    df["ksi_rate"] = df["ksi_count"] / df["vehicle_km_M"].clip(lower=1e-6)
 
     # Only links with at least one collision
     pos = df[df["collision_count"] > 0].copy()
@@ -371,8 +415,11 @@ def section3_severity(data: dict, output_dir: Path) -> None:
     pos_sev = pos[pos["collision_count"] >= 5].copy()
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    fig.suptitle("Section 3 — Frequency vs severity decoupling\n"
-                 "(justification for two-target model)", fontsize=13, fontweight="bold")
+    fig.suptitle(
+        "Section 3 — Frequency vs severity decoupling\n(justification for two-target model)",
+        fontsize=13,
+        fontweight="bold",
+    )
 
     # 3a: frequency vs KSI rate scatter (coloured by road type)
     ax = axes[0, 0]
@@ -380,13 +427,19 @@ def section3_severity(data: dict, output_dir: Path) -> None:
         for rc, grp in pos.groupby("road_classification"):
             colour = ROAD_COLOURS.get(rc, "#94a3b8")
             cap_freq = grp["collision_rate"].clip(upper=grp["collision_rate"].quantile(0.99))
-            cap_ksi  = grp["ksi_rate"].clip(upper=grp["ksi_rate"].quantile(0.99))
-            ax.scatter(np.log1p(cap_freq), np.log1p(cap_ksi),
-                       alpha=0.15, s=6, color=colour, label=rc)
+            cap_ksi = grp["ksi_rate"].clip(upper=grp["ksi_rate"].quantile(0.99))
+            ax.scatter(
+                np.log1p(cap_freq), np.log1p(cap_ksi), alpha=0.15, s=6, color=colour, label=rc
+            )
         ax.legend(fontsize=7, markerscale=2, loc="upper left")
     else:
-        ax.scatter(np.log1p(pos["collision_rate"]), np.log1p(pos["ksi_rate"]),
-                   alpha=0.1, s=5, color="#2563eb")
+        ax.scatter(
+            np.log1p(pos["collision_rate"]),
+            np.log1p(pos["ksi_rate"]),
+            alpha=0.1,
+            s=5,
+            color="#2563eb",
+        )
     ax.set_xlabel("Log(1 + collision rate)")
     ax.set_ylabel("Log(1 + KSI rate)")
     ax.set_title("Frequency vs KSI rate\n(where they diverge = different risk character)")
@@ -397,51 +450,63 @@ def section3_severity(data: dict, output_dir: Path) -> None:
 
     # 3b: severity ratio by road type (key plot)
     ax = axes[0, 1]
-    road_order = ["Motorway", "A Road", "B Road",
-                  "Classified Unnumbered", "Unclassified"]
+    road_order = ["Motorway", "A Road", "B Road", "Classified Unnumbered", "Unclassified"]
     if "road_classification" in pos.columns:
         median_sev = pos_sev.groupby("road_classification")["severity_ratio"].median()
         median_sev = median_sev.reindex(road_order).dropna()
         colours = [ROAD_COLOURS.get(r, "#94a3b8") for r in median_sev.index]
         bars = ax.barh(median_sev.index, median_sev.values, color=colours)
         ax.set_xlabel("Median KSI / total collisions")
-        ax.set_title("Severity ratio by road type\n"
-                     "(links with 5+ collisions for stability)")
-        for bar, val in zip(bars, median_sev.values):
-            ax.text(val + 0.002, bar.get_y() + bar.get_height() / 2,
-                    f"{val:.2f}", va="center", fontsize=9)
+        ax.set_title("Severity ratio by road type\n(links with 5+ collisions for stability)")
+        for bar, val in zip(bars, median_sev.values, strict=False):
+            ax.text(
+                val + 0.002,
+                bar.get_y() + bar.get_height() / 2,
+                f"{val:.2f}",
+                va="center",
+                fontsize=9,
+            )
 
     # 3c: links ranking differently on frequency vs severity
     ax = axes[1, 0]
     q75_freq = pos["collision_rate"].quantile(0.75)
-    q75_ksi  = pos["ksi_rate"].quantile(0.75)
+    q75_ksi = pos["ksi_rate"].quantile(0.75)
     pos["high_freq"] = pos["collision_rate"] > q75_freq
-    pos["high_ksi"]  = pos["ksi_rate"]  > q75_ksi
+    pos["high_ksi"] = pos["ksi_rate"] > q75_ksi
     quadrants = {
-        "High freq,\nHigh KSI":   (pos["high_freq"] & pos["high_ksi"]).sum(),
-        "High freq,\nLow KSI":    (pos["high_freq"] & ~pos["high_ksi"]).sum(),
-        "Low freq,\nHigh KSI":    (~pos["high_freq"] & pos["high_ksi"]).sum(),
-        "Low freq,\nLow KSI":     (~pos["high_freq"] & ~pos["high_ksi"]).sum(),
+        "High freq,\nHigh KSI": (pos["high_freq"] & pos["high_ksi"]).sum(),
+        "High freq,\nLow KSI": (pos["high_freq"] & ~pos["high_ksi"]).sum(),
+        "Low freq,\nHigh KSI": (~pos["high_freq"] & pos["high_ksi"]).sum(),
+        "Low freq,\nLow KSI": (~pos["high_freq"] & ~pos["high_ksi"]).sum(),
     }
     colours_q = ["#ef4444", "#f97316", "#3b82f6", "#94a3b8"]
     bars = ax.barh(list(quadrants.keys()), list(quadrants.values()), color=colours_q)
     ax.set_xlabel("Number of links")
     ax.set_title("Frequency vs KSI quadrants\n(top quartile threshold)")
-    for bar, val in zip(bars, quadrants.values()):
-        ax.text(val + 50, bar.get_y() + bar.get_height() / 2,
-                f"{val:,}", va="center", fontsize=9)
+    for bar, val in zip(bars, quadrants.values(), strict=False):
+        ax.text(val + 50, bar.get_y() + bar.get_height() / 2, f"{val:,}", va="center", fontsize=9)
 
     # 3d: weighted severity score options
     ax = axes[1, 1]
     # Show how rankings shift under different weight schemes
     weights = [
-        ("KSI only",        lambda d: d["ksi_count"]),
-        ("1·slight + 3·serious + 10·fatal",
-         lambda d: d.get("slight_count", d["collision_count"] - d["ksi_count"]) +
-                   3 * d["serious_count"].fillna(0) + 10 * d["fatal_count"].fillna(0)),
-        ("1·slight + 5·serious + 20·fatal",
-         lambda d: d.get("slight_count", d["collision_count"] - d["ksi_count"]) +
-                   5 * d["serious_count"].fillna(0) + 20 * d["fatal_count"].fillna(0)),
+        ("KSI only", lambda d: d["ksi_count"]),
+        (
+            "1·slight + 3·serious + 10·fatal",
+            lambda d: (
+                d.get("slight_count", d["collision_count"] - d["ksi_count"])
+                + 3 * d["serious_count"].fillna(0)
+                + 10 * d["fatal_count"].fillna(0)
+            ),
+        ),
+        (
+            "1·slight + 5·serious + 20·fatal",
+            lambda d: (
+                d.get("slight_count", d["collision_count"] - d["ksi_count"])
+                + 5 * d["serious_count"].fillna(0)
+                + 20 * d["fatal_count"].fillna(0)
+            ),
+        ),
     ]
     if "road_classification" in pos.columns:
         road_order2 = ["Motorway", "A Road", "B Road", "Classified Unnumbered", "Unclassified"]
@@ -471,6 +536,7 @@ def section3_severity(data: dict, output_dir: Path) -> None:
 # Section 4 — Lane / flow intensity
 # ---------------------------------------------------------------------------
 
+
 def section4_lanes(data: dict, output_dir: Path) -> None:
     logger.info("Section 4: Lane/flow intensity")
 
@@ -481,9 +547,9 @@ def section4_lanes(data: dict, output_dir: Path) -> None:
 
     df = df.dropna(subset=["lanes", "estimated_aadt", "link_length_km", "collision_count"])
     df = df[df["lanes"] > 0]
-    df["vehicle_km_M"]   = df["estimated_aadt"] * df["link_length_km"] * 365 / 1e6
+    df["vehicle_km_M"] = df["estimated_aadt"] * df["link_length_km"] * 365 / 1e6
     df["collision_rate"] = df["collision_count"] / df["vehicle_km_M"].clip(lower=1e-6)
-    df["aadt_per_lane"]  = df["estimated_aadt"] / df["lanes"]
+    df["aadt_per_lane"] = df["estimated_aadt"] / df["lanes"]
     baseline_rate = df["collision_count"].sum() / df["vehicle_km_M"].sum()
     df["expected_count_baseline"] = baseline_rate * df["vehicle_km_M"]
     df["log_excess_risk"] = np.log(
@@ -494,18 +560,20 @@ def section4_lanes(data: dict, output_dir: Path) -> None:
         logger.warning(f"  Only {len(df)} links with lane data — results may be unstable")
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    fig.suptitle(f"Section 4 — Lane/flow intensity (n={len(df):,} links with lane data)",
-                 fontsize=13, fontweight="bold")
+    fig.suptitle(
+        f"Section 4 — Lane/flow intensity (n={len(df):,} links with lane data)",
+        fontsize=13,
+        fontweight="bold",
+    )
 
     # 4a: AADT per lane vs excess risk after simple exposure adjustment
     ax = axes[0]
     pos = df[df["collision_count"] > 0]
-    ax.scatter(np.log1p(pos["aadt_per_lane"]),
-               pos["log_excess_risk"],
-               alpha=0.15, s=8, color="#2563eb")
+    ax.scatter(
+        np.log1p(pos["aadt_per_lane"]), pos["log_excess_risk"], alpha=0.15, s=8, color="#2563eb"
+    )
     if len(pos) > 10:
-        r, p = stats.pearsonr(np.log1p(pos["aadt_per_lane"]),
-                               pos["log_excess_risk"])
+        r, p = stats.pearsonr(np.log1p(pos["aadt_per_lane"]), pos["log_excess_risk"])
         ax.set_title(f"AADT per lane vs excess risk\nr={r:.2f}, p={p:.3f}")
     else:
         ax.set_title("AADT per lane vs excess risk")
@@ -515,18 +583,20 @@ def section4_lanes(data: dict, output_dir: Path) -> None:
     # 4b: collision rate by lane count (box)
     ax = axes[1]
     lane_vals = sorted(df["lanes"].unique())
-    lane_vals = [
-        lane for lane in lane_vals
-        if df[df["lanes"] == lane]["collision_count"].sum() > 0
-    ]
+    lane_vals = [lane for lane in lane_vals if df[df["lanes"] == lane]["collision_count"].sum() > 0]
     data_by_lane = [
         df.loc[(df["lanes"] == lane) & (df["collision_count"] > 0), "collision_rate"]
-        .clip(upper=df["collision_rate"].quantile(0.99)).values
+        .clip(upper=df["collision_rate"].quantile(0.99))
+        .values
         for lane in lane_vals
     ]
     if data_by_lane:
-        bp = ax.boxplot(data_by_lane, patch_artist=True, showfliers=False,
-                        medianprops={"color": "black", "linewidth": 1.5})
+        bp = ax.boxplot(
+            data_by_lane,
+            patch_artist=True,
+            showfliers=False,
+            medianprops={"color": "black", "linewidth": 1.5},
+        )
         for patch in bp["boxes"]:
             patch.set_facecolor("#3b82f6")
             patch.set_alpha(0.7)
@@ -542,13 +612,13 @@ def section4_lanes(data: dict, output_dir: Path) -> None:
     ax = axes[2]
     pos2 = df[(df["collision_count"] > 0) & df["estimated_aadt"].notna()]
     if len(pos2) > 10:
-        r_total, _ = stats.pearsonr(
-            np.log1p(pos2["estimated_aadt"]), pos2["log_excess_risk"])
-        r_lane, _  = stats.pearsonr(
-            np.log1p(pos2["aadt_per_lane"]),  pos2["log_excess_risk"])
-        ax.barh(["Total AADT", "AADT per lane"],
-                [abs(r_total), abs(r_lane)],
-                color=["#2563eb", "#16a34a"])
+        r_total, _ = stats.pearsonr(np.log1p(pos2["estimated_aadt"]), pos2["log_excess_risk"])
+        r_lane, _ = stats.pearsonr(np.log1p(pos2["aadt_per_lane"]), pos2["log_excess_risk"])
+        ax.barh(
+            ["Total AADT", "AADT per lane"],
+            [abs(r_total), abs(r_lane)],
+            color=["#2563eb", "#16a34a"],
+        )
         ax.set_xlabel("|r| with excess risk")
         ax.set_title("Association with excess risk\n(after simple exposure baseline)")
         ax.set_xlim(0, 1)
@@ -562,6 +632,7 @@ def section4_lanes(data: dict, output_dir: Path) -> None:
 # ---------------------------------------------------------------------------
 # Section 5 — Residual diagnostics
 # ---------------------------------------------------------------------------
+
 
 def section5_residuals(data: dict, output_dir: Path) -> None:
     logger.info("Section 5: Residual diagnostics")
@@ -577,12 +648,21 @@ def section5_residuals(data: dict, output_dir: Path) -> None:
     df["log_residual"] = np.log(df["residual_ratio"])
 
     fig, axes = plt.subplots(2, 2, figsize=(13, 10))
-    fig.suptitle("Section 5 — Residual diagnostics\n"
-                 "(where does the pooled model under/over-predict?)",
-                 fontsize=13, fontweight="bold")
+    fig.suptitle(
+        "Section 5 — Residual diagnostics\n(where does the pooled model under/over-predict?)",
+        fontsize=13,
+        fontweight="bold",
+    )
 
-    road_order = ["Motorway", "A Road", "B Road",
-                  "Classified Unnumbered", "Unclassified", "Unknown", "Not Classified"]
+    road_order = [
+        "Motorway",
+        "A Road",
+        "B Road",
+        "Classified Unnumbered",
+        "Unclassified",
+        "Unknown",
+        "Not Classified",
+    ]
     road_order = [r for r in road_order if r in df["road_classification"].unique()]
 
     # 5a: mean log-residual by road type
@@ -598,8 +678,9 @@ def section5_residuals(data: dict, output_dir: Path) -> None:
     # 5b: residuals vs predicted (fitted vs residual)
     ax = axes[0, 1]
     sample = df.sample(min(10000, len(df)), random_state=42)
-    ax.scatter(np.log1p(sample["predicted_glm"]), sample["log_residual"],
-               alpha=0.08, s=4, color="#64748b")
+    ax.scatter(
+        np.log1p(sample["predicted_glm"]), sample["log_residual"], alpha=0.08, s=4, color="#64748b"
+    )
     ax.axhline(0, color="red", linewidth=0.8, linestyle="--")
     ax.set_xlabel("Log(1 + predicted GLM)")
     ax.set_ylabel("Log residual")
@@ -619,9 +700,13 @@ def section5_residuals(data: dict, output_dir: Path) -> None:
     if "predicted_xgb" in df.columns:
         ax = axes[1, 1]
         sample2 = df.sample(min(10000, len(df)), random_state=42)
-        ax.scatter(np.log1p(sample2["predicted_glm"]),
-                   np.log1p(sample2["predicted_xgb"]),
-                   alpha=0.08, s=4, color="#7c3aed")
+        ax.scatter(
+            np.log1p(sample2["predicted_glm"]),
+            np.log1p(sample2["predicted_xgb"]),
+            alpha=0.08,
+            s=4,
+            color="#7c3aed",
+        )
         lim = max(ax.get_xlim()[1], ax.get_ylim()[1])
         ax.plot([0, lim], [0, lim], "r--", alpha=0.5, linewidth=0.8)
         ax.set_xlabel("Log(1 + predicted GLM)")
@@ -636,6 +721,7 @@ def section5_residuals(data: dict, output_dir: Path) -> None:
 # Section 7 — Top/bottom risk links profile
 # ---------------------------------------------------------------------------
 
+
 def section7_risk_profile(data: dict, output_dir: Path) -> None:
     logger.info("Section 7: Risk percentile profiles")
 
@@ -644,27 +730,35 @@ def section7_risk_profile(data: dict, output_dir: Path) -> None:
         return
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    fig.suptitle("Section 7 — Risk percentile profiles",
-                 fontsize=13, fontweight="bold")
+    fig.suptitle("Section 7 — Risk percentile profiles", fontsize=13, fontweight="bold")
 
-    df["risk_tier"] = pd.cut(df["risk_percentile"],
-                              bins=[-1e-9, 50, 75, 90, 99, 100],
-                              labels=["Low (<50)", "Med (50-75)",
-                                      "High (75-90)", "Very high (90-99)",
-                                      "Top 1%"],
-                              include_lowest=True)
+    df["risk_tier"] = pd.cut(
+        df["risk_percentile"],
+        bins=[-1e-9, 50, 75, 90, 99, 100],
+        labels=["Low (<50)", "Med (50-75)", "High (75-90)", "Very high (90-99)", "Top 1%"],
+        include_lowest=True,
+    )
 
     # 7a: road class composition by risk tier
     ax = axes[0]
     if "road_classification" in df.columns:
-        tier_rc = (df.groupby(["risk_tier", "road_classification"], observed=True)
-                   .size().unstack(fill_value=0))
+        tier_rc = (
+            df.groupby(["risk_tier", "road_classification"], observed=True)
+            .size()
+            .unstack(fill_value=0)
+        )
         tier_rc = tier_rc.div(tier_rc.sum(axis=1), axis=0)
         bottom = np.zeros(len(tier_rc))
         for rc in tier_rc.columns:
             colour = ROAD_COLOURS.get(rc, "#94a3b8")
-            ax.bar(range(len(tier_rc)), tier_rc[rc].values,
-                   bottom=bottom, label=rc, color=colour, alpha=0.85)
+            ax.bar(
+                range(len(tier_rc)),
+                tier_rc[rc].values,
+                bottom=bottom,
+                label=rc,
+                color=colour,
+                alpha=0.85,
+            )
             bottom += tier_rc[rc].values
         ax.set_xticks(range(len(tier_rc)))
         ax.set_xticklabels(tier_rc.index, rotation=20, ha="right", fontsize=8)
@@ -675,8 +769,11 @@ def section7_risk_profile(data: dict, output_dir: Path) -> None:
     # 7b: mean AADT by risk tier
     ax = axes[1]
     mean_aadt = df.groupby("risk_tier", observed=True)["estimated_aadt"].median()
-    ax.bar(range(len(mean_aadt)), mean_aadt.values,
-           color=["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#991b1b"])
+    ax.bar(
+        range(len(mean_aadt)),
+        mean_aadt.values,
+        color=["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#991b1b"],
+    )
     ax.set_xticks(range(len(mean_aadt)))
     ax.set_xticklabels(mean_aadt.index, rotation=20, ha="right", fontsize=8)
     ax.set_ylabel("Median estimated AADT")
@@ -686,8 +783,11 @@ def section7_risk_profile(data: dict, output_dir: Path) -> None:
     ax = axes[2]
     if "degree_mean" in df.columns:
         mean_deg = df.groupby("risk_tier", observed=True)["degree_mean"].median()
-        ax.bar(range(len(mean_deg)), mean_deg.values,
-               color=["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#991b1b"])
+        ax.bar(
+            range(len(mean_deg)),
+            mean_deg.values,
+            color=["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#991b1b"],
+        )
         ax.set_xticks(range(len(mean_deg)))
         ax.set_xticklabels(mean_deg.index, rotation=20, ha="right", fontsize=8)
         ax.set_ylabel("Median node degree (junction complexity)")
@@ -700,6 +800,7 @@ def section7_risk_profile(data: dict, output_dir: Path) -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main(output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -723,7 +824,8 @@ def main(output_dir: Path) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output-dir", default="quarto/analysis/figures/eda",
-                        help="Directory to save PNG figures")
+    parser.add_argument(
+        "--output-dir", default="quarto/analysis/figures/eda", help="Directory to save PNG figures"
+    )
     args = parser.parse_args()
     main(Path(args.output_dir))

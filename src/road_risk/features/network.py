@@ -70,6 +70,7 @@ logger = logging.getLogger(__name__)
 # Heartbeat — logs progress every N seconds for long-running steps
 # ---------------------------------------------------------------------------
 
+
 class _Heartbeat:
     """
     Context manager that logs a 'still running' message every interval_s
@@ -80,20 +81,18 @@ class _Heartbeat:
         with _Heartbeat("Computing betweenness", interval_s=30):
             result = nx.betweenness_centrality(G, k=200)
     """
+
     def __init__(self, label: str, interval_s: int = 30):
-        self.label     = label
-        self.interval  = interval_s
-        self._stop     = threading.Event()
-        self._thread   = threading.Thread(target=self._run, daemon=True)
-        self._started  = None
+        self.label = label
+        self.interval = interval_s
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._started = None
 
     def _run(self):
         while not self._stop.wait(self.interval):
             elapsed = int(time.time() - self._started)
-            logger.info(
-                f"  ... {self.label} still running "
-                f"({elapsed}s elapsed, be patient)"
-            )
+            logger.info(f"  ... {self.label} still running ({elapsed}s elapsed, be patient)")
 
     def __enter__(self):
         self._started = time.time()
@@ -106,17 +105,18 @@ class _Heartbeat:
         elapsed = int(time.time() - self._started)
         logger.info(f"  ... {self.label} finished in {elapsed}s")
 
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 
-PROCESSED      = _ROOT / "data/processed"
+PROCESSED = _ROOT / "data/processed"
 OPENROADS_PATH = PROCESSED / "shapefiles/openroads.parquet"
 LSOA_CENT_PATH = _ROOT / "data/raw/stats19/lsoa_centroids.csv"
-LSOA_POP_PATH  = _ROOT / "data/raw/stats19/lsoa_population.csv"
-RUC_PATH       = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
-OUTPUT_PATH    = _ROOT / "data/features/network_features.parquet"
-RUC_PROV_PATH  = _ROOT / "data/provenance/ruc_provenance.json"
+LSOA_POP_PATH = _ROOT / "data/raw/stats19/lsoa_population.csv"
+RUC_PATH = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
+OUTPUT_PATH = _ROOT / "data/features/network_features.parquet"
+RUC_PROV_PATH = _ROOT / "data/provenance/ruc_provenance.json"
 SPEED_LIMIT_PROV_PATH = _ROOT / "data/provenance/speed_limit_effective_provenance.json"
 
 # Betweenness centrality sample size — higher = more accurate, slower
@@ -243,8 +243,7 @@ def load_ruc_lookup(ruc_path: Path = RUC_PATH) -> pd.DataFrame:
     """
     if not ruc_path.exists():
         raise FileNotFoundError(
-            f"RUC CSV not found at {ruc_path}. Expected columns: "
-            f"{', '.join(RUC_REQUIRED_COLUMNS)}."
+            f"RUC CSV not found at {ruc_path}. Expected columns: {', '.join(RUC_REQUIRED_COLUMNS)}."
         )
 
     header = pd.read_csv(ruc_path, nrows=0, encoding="utf-8-sig")
@@ -335,10 +334,7 @@ def write_ruc_provenance(features: pd.DataFrame) -> None:
 
 
 def _speed_limit_source_counts(series: pd.Series) -> dict[str, int]:
-    counts = (
-        pd.Categorical(series, categories=SPEED_LIMIT_SOURCE_ORDER)
-        .value_counts(dropna=False)
-    )
+    counts = pd.Categorical(series, categories=SPEED_LIMIT_SOURCE_ORDER).value_counts(dropna=False)
     return {
         str(label): int(count)
         for label, count in counts.items()
@@ -377,9 +373,7 @@ def apply_speed_limit_effective_lookup(
         :,
         ["link_id", "road_classification", "form_of_way", "is_trunk"],
     ].copy()
-    meta["is_dual"] = meta["form_of_way"].isin(
-        ["Dual Carriageway", "Collapsed Dual Carriageway"]
-    )
+    meta["is_dual"] = meta["form_of_way"].isin(["Dual Carriageway", "Collapsed Dual Carriageway"])
 
     df = features.merge(meta, on="link_id", how="left", validate="one_to_one")
     raw_speed = pd.to_numeric(df["speed_limit_mph"], errors="coerce")
@@ -490,6 +484,7 @@ def write_speed_limit_effective_provenance(features: pd.DataFrame) -> None:
 # Graph building
 # ---------------------------------------------------------------------------
 
+
 def build_graph(openroads: gpd.GeoDataFrame) -> nx.Graph:
     """
     Build an undirected NetworkX graph from OS Open Roads links.
@@ -510,28 +505,27 @@ def build_graph(openroads: gpd.GeoDataFrame) -> nx.Graph:
     n = len(openroads)
     for i, (_, row) in enumerate(openroads.iterrows()):
         if i % 100_000 == 0 and i > 0:
-            logger.info(f"  ... graph build {i:,} / {n:,} links ({i/n:.0%})")
+            logger.info(f"  ... graph build {i:,} / {n:,} links ({i / n:.0%})")
         u = row["start_node"]
         v = row["end_node"]
         if pd.isna(u) or pd.isna(v):
             continue
         G.add_edge(
-            u, v,
+            u,
+            v,
             link_id=row["link_id"],
             weight=max(row.get("link_length_km", 0.1) or 0.1, 0.001),
             road_classification=row.get("road_classification", "Unknown"),
         )
 
-    logger.info(
-        f"  Graph: {G.number_of_nodes():,} nodes, "
-        f"{G.number_of_edges():,} edges"
-    )
+    logger.info(f"  Graph: {G.number_of_nodes():,} nodes, {G.number_of_edges():,} edges")
     return G
 
 
 # ---------------------------------------------------------------------------
 # Feature 1: Node degree
 # ---------------------------------------------------------------------------
+
 
 def compute_node_degree(
     G: nx.Graph,
@@ -557,8 +551,7 @@ def compute_node_degree(
 
     s = pd.Series(results, name="degree_mean")
     logger.info(
-        f"  degree_mean: median={s.median():.1f}, "
-        f"max={s.max():.0f} (high = complex junction area)"
+        f"  degree_mean: median={s.median():.1f}, max={s.max():.0f} (high = complex junction area)"
     )
     return s
 
@@ -566,6 +559,7 @@ def compute_node_degree(
 # ---------------------------------------------------------------------------
 # Feature 2: Betweenness centrality
 # ---------------------------------------------------------------------------
+
 
 def compute_betweenness(
     G: nx.Graph,
@@ -585,9 +579,7 @@ def compute_betweenness(
     -------
     Series indexed by link_id with betweenness values.
     """
-    logger.info(
-        f"Computing node betweenness centrality (k={k}, ~1-3 mins) ..."
-    )
+    logger.info(f"Computing node betweenness centrality (k={k}, ~1-3 mins) ...")
 
     # Node betweenness — faster than edge betweenness on large graphs
     with _Heartbeat("betweenness centrality", interval_s=30):
@@ -601,9 +593,7 @@ def compute_betweenness(
         bc_v = node_bc.get(v, 0.0)
         results[row["link_id"]] = (bc_u + bc_v) / 2
 
-    s = pd.Series(results, name="betweenness").reindex(
-        openroads["link_id"], fill_value=0.0
-    )
+    s = pd.Series(results, name="betweenness").reindex(openroads["link_id"], fill_value=0.0)
 
     logger.info(
         f"  betweenness: median={s.median():.6f}, "
@@ -616,6 +606,7 @@ def compute_betweenness(
 # ---------------------------------------------------------------------------
 # Feature 3: Distance to nearest major road
 # ---------------------------------------------------------------------------
+
 
 def compute_dist_to_major(
     G: nx.Graph,
@@ -634,9 +625,7 @@ def compute_dist_to_major(
     logger.info("Computing distance to nearest major road ...")
 
     # Identify major road nodes
-    major_links = openroads[
-        openroads["road_classification"].isin(MAJOR_CLASSES)
-    ]
+    major_links = openroads[openroads["road_classification"].isin(MAJOR_CLASSES)]
     major_nodes = set()
     for _, row in major_links.iterrows():
         if pd.notna(row["start_node"]):
@@ -653,9 +642,7 @@ def compute_dist_to_major(
 
     # Multi-source Dijkstra — distance from each node to nearest major node
     with _Heartbeat("dist_to_major Dijkstra", interval_s=15):
-        node_dist = nx.multi_source_dijkstra_path_length(
-            G, sources=major_nodes, weight="weight"
-        )
+        node_dist = nx.multi_source_dijkstra_path_length(G, sources=major_nodes, weight="weight")
 
     # Assign to links: use minimum of start/end node distances
     results = {}
@@ -673,16 +660,14 @@ def compute_dist_to_major(
             results[row["link_id"]] = np.nan
 
     s = pd.Series(results, name="dist_to_major_km")
-    logger.info(
-        f"  dist_to_major_km: median={s.median():.2f}km, "
-        f"p90={s.quantile(0.9):.2f}km"
-    )
+    logger.info(f"  dist_to_major_km: median={s.median():.2f}km, p90={s.quantile(0.9):.2f}km")
     return s
 
 
 # ---------------------------------------------------------------------------
 # Feature 4: Population density
 # ---------------------------------------------------------------------------
+
 
 def compute_population_density(
     openroads: gpd.GeoDataFrame,
@@ -714,8 +699,7 @@ def compute_population_density(
     """
     if not lsoa_cent_path.exists():
         logger.warning(
-            f"LSOA centroids not found at {lsoa_cent_path} — "
-            "population density feature will be NaN"
+            f"LSOA centroids not found at {lsoa_cent_path} — population density feature will be NaN"
         )
         density = pd.Series(
             np.nan,
@@ -751,8 +735,8 @@ def compute_population_density(
             raw = pd.read_excel(
                 xl_path,
                 sheet_name="Mid-2024 LSOA 2021",
-                header=3,          # row 4 = index 3 is the header
-                usecols=[2, 4],    # LSOA 2021 Code, Total
+                header=3,  # row 4 = index 3 is the header
+                usecols=[2, 4],  # LSOA 2021 Code, Total
             )
             raw.columns = ["LSOA21CD", "population"]
             raw = raw.dropna(subset=["LSOA21CD", "population"])
@@ -778,12 +762,10 @@ def compute_population_density(
         raw.columns = raw.columns.str.strip()
         # Find LSOA code and total columns
         code_col = next(
-            (c for c in raw.columns if "lsoa" in c.lower() and "code" in c.lower()),
-            None
+            (c for c in raw.columns if "lsoa" in c.lower() and "code" in c.lower()), None
         )
         tot_col = next(
-            (c for c in raw.columns if c.lower() in ("total", "population", "all ages")),
-            None
+            (c for c in raw.columns if c.lower() in ("total", "population", "all ages")), None
         )
         if code_col and tot_col:
             raw = raw.rename(columns={code_col: "LSOA21CD", tot_col: "population"})
@@ -801,9 +783,7 @@ def compute_population_density(
     if pop_loaded and lsoa_pop is not None:
         lsoa_cent = lsoa_cent.merge(lsoa_pop, on="LSOA21CD", how="left")
         n_matched = lsoa_cent["population"].notna().sum()
-        logger.info(
-            f"  Population matched for {n_matched:,} / {len(lsoa_cent):,} LSOAs"
-        )
+        logger.info(f"  Population matched for {n_matched:,} / {len(lsoa_cent):,} LSOAs")
 
         # Load actual LSOA area from ONS Standard Area Measurements file
         area_path = _ROOT / "data/raw/stats19/lsoa_area.csv"
@@ -828,9 +808,8 @@ def compute_population_density(
             )
             lsoa_cent["area_km2"] = 2.9
 
-        lsoa_cent["pop_density"] = (
-            lsoa_cent["population"] /
-            lsoa_cent["area_km2"].replace(0, np.nan)
+        lsoa_cent["pop_density"] = lsoa_cent["population"] / lsoa_cent["area_km2"].replace(
+            0, np.nan
         )
         use_density = True
     else:
@@ -845,12 +824,14 @@ def compute_population_density(
         use_density = False
 
     # --- Spatial join -------------------------------------------------------
-    lsoa_xy  = lsoa_cent[["x", "y"]].values
-    or_bng   = openroads.to_crs("EPSG:27700").copy()
-    road_xy  = np.column_stack([
-        or_bng.geometry.centroid.x,
-        or_bng.geometry.centroid.y,
-    ])
+    lsoa_xy = lsoa_cent[["x", "y"]].values
+    or_bng = openroads.to_crs("EPSG:27700").copy()
+    road_xy = np.column_stack(
+        [
+            or_bng.geometry.centroid.x,
+            or_bng.geometry.centroid.y,
+        ]
+    )
 
     tree = cKDTree(lsoa_xy)
     dists, indices = tree.query(road_xy, k=1, distance_upper_bound=cap_m)
@@ -868,10 +849,7 @@ def compute_population_density(
         dists_5, _ = tree.query(road_xy, k=5, distance_upper_bound=1000)
         lsoa_count = (dists_5 < 1000).sum(axis=1).astype(float)
         lsoa_count[~valid] = np.nan
-        s = pd.Series(
-            lsoa_count, index=openroads["link_id"],
-            name="pop_density_per_km2"
-        )
+        s = pd.Series(lsoa_count, index=openroads["link_id"], name="pop_density_per_km2")
 
     n_valid = s.notna().sum()
     logger.info(
@@ -892,6 +870,7 @@ def compute_population_density(
 # ---------------------------------------------------------------------------
 # Feature 5: Betweenness relative to road class
 # ---------------------------------------------------------------------------
+
 
 def compute_betweenness_relative(
     features: pd.DataFrame,
@@ -940,6 +919,7 @@ def compute_betweenness_relative(
 # ---------------------------------------------------------------------------
 # Feature 6: OSM attributes (speed limit, lanes, lighting, surface)
 # ---------------------------------------------------------------------------
+
 
 def _rss_mb() -> float:
     """Return current process RSS in MB (Linux /proc/self/status)."""
@@ -1010,7 +990,7 @@ def fetch_osm_features(
             f"Found {len(pbf_files)} .osm.pbf files but osmnx cannot read pbf directly.\n"
             f"Convert first with osmium:\n"
             "  for f in data/raw/osm/*.osm.pbf; do\n"
-            "      osmium cat \"$f\" -o \"${f%.osm.pbf}.osm\"\n"
+            '      osmium cat "$f" -o "${f%.osm.pbf}.osm"\n'
             "  done"
         )
         return pd.DataFrame({"link_id": openroads["link_id"]})
@@ -1024,9 +1004,9 @@ def fetch_osm_features(
 
     logger.info(f"Reading {len(read_files)} OSM files from {osm_dir} ...")
 
-    ox.settings.useful_tags_way = list(set(
-        ox.settings.useful_tags_way + ["lit", "surface", "lanes", "maxspeed"]
-    ))
+    ox.settings.useful_tags_way = list(
+        set(ox.settings.useful_tags_way + ["lit", "surface", "lanes", "maxspeed"])
+    )
 
     # --- Attribute parsers --------------------------------------------------
 
@@ -1070,9 +1050,7 @@ def fetch_osm_features(
         if pd.isna(val):
             return np.nan
         v = str(val).lower().split(";")[0].strip()
-        return float(
-            v in ("unpaved", "gravel", "dirt", "grass", "ground", "sand", "compacted")
-        )
+        return float(v in ("unpaved", "gravel", "dirt", "grass", "ground", "sand", "compacted"))
 
     # --- Per-county loop ----------------------------------------------------
 
@@ -1093,19 +1071,20 @@ def fetch_osm_features(
                 edges = edges.reset_index()
 
             logger.info(
-                f"  [{osm_file.name}] graph loaded — {len(edges):,} edges, "
-                f"RSS {_rss_mb():.0f} MB"
+                f"  [{osm_file.name}] graph loaded — {len(edges):,} edges, RSS {_rss_mb():.0f} MB"
             )
 
             # Parse attributes into slim columns while edges is still available
             if "speed_kph" in edges.columns:
                 speed = (
-                    pd.to_numeric(edges["speed_kph"], errors="coerce") * 0.621371
-                ).round().astype("Int64")
+                    (pd.to_numeric(edges["speed_kph"], errors="coerce") * 0.621371)
+                    .round()
+                    .astype("Int64")
+                )
             else:
-                speed = edges.get(
-                    "maxspeed", pd.Series(dtype=object, index=edges.index)
-                ).apply(parse_speed)
+                speed = edges.get("maxspeed", pd.Series(dtype=object, index=edges.index)).apply(
+                    parse_speed
+                )
 
             slim = gpd.GeoDataFrame(
                 {
@@ -1155,15 +1134,9 @@ def fetch_osm_features(
 
     # --- Concatenate slim partials and spatial join -------------------------
 
-    logger.info(
-        f"Concatenating {len(partial_paths)} county partials — RSS {_rss_mb():.0f} MB"
-    )
-    all_slim = pd.concat(
-        [gpd.read_parquet(p) for p in partial_paths], ignore_index=True
-    )
-    logger.info(
-        f"  Combined: {len(all_slim):,} OSM edges — RSS {_rss_mb():.0f} MB"
-    )
+    logger.info(f"Concatenating {len(partial_paths)} county partials — RSS {_rss_mb():.0f} MB")
+    all_slim = pd.concat([gpd.read_parquet(p) for p in partial_paths], ignore_index=True)
+    logger.info(f"  Combined: {len(all_slim):,} OSM edges — RSS {_rss_mb():.0f} MB")
 
     osm_gdf = gpd.GeoDataFrame(all_slim, geometry="geometry", crs="EPSG:4326").to_crs("EPSG:27700")
     del all_slim
@@ -1178,7 +1151,8 @@ def fetch_osm_features(
     logger.info(f"  Spatial joining OSM → OS Open Roads — RSS {_rss_mb():.0f} MB")
     with _Heartbeat("spatial join OSM→OpenRoads", interval_s=15):
         joined = gpd.sjoin_nearest(
-            or_centroids, osm_gdf,
+            or_centroids,
+            osm_gdf,
             how="left",
             max_distance=50,
             distance_col="osm_dist",
@@ -1186,8 +1160,7 @@ def fetch_osm_features(
 
     joined = joined.sort_values("osm_dist").drop_duplicates(subset="link_id")
 
-    result = joined[["link_id", "speed_limit_mph", "lanes_parsed",
-                      "lit", "is_unpaved"]].rename(
+    result = joined[["link_id", "speed_limit_mph", "lanes_parsed", "lit", "is_unpaved"]].rename(
         columns={"lanes_parsed": "lanes"}
     )
 
@@ -1196,9 +1169,9 @@ def fetch_osm_features(
     n_lit = result["lit"].fillna(False).sum()
     logger.info(
         f"  OSM features matched: "
-        f"speed={n_speed:,} ({n_speed/len(result):.1%}), "
-        f"lanes={n_lanes:,} ({n_lanes/len(result):.1%}), "
-        f"lit={n_lit:,} ({n_lit/len(result):.1%})"
+        f"speed={n_speed:,} ({n_speed / len(result):.1%}), "
+        f"lanes={n_lanes:,} ({n_lanes / len(result):.1%}), "
+        f"lit={n_lit:,} ({n_lit / len(result):.1%})"
     )
     return result
 
@@ -1206,6 +1179,7 @@ def fetch_osm_features(
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
+
 
 def build_network_features(
     openroads: gpd.GeoDataFrame = None,
@@ -1258,9 +1232,7 @@ def build_network_features(
                 sorted(missing_required),
             )
         elif include_osm and not osm_cols.intersection(cached.columns):
-            logger.info(
-                "Cache exists but has no OSM columns — recomputing with OSM features."
-            )
+            logger.info("Cache exists but has no OSM columns — recomputing with OSM features.")
         elif include_osm and speed_limit_effective_cols.difference(cached.columns):
             logger.info(
                 "Cache exists but is missing effective speed-limit columns — "
@@ -1293,9 +1265,9 @@ def build_network_features(
     G = build_graph(openroads)
 
     # Compute features
-    degree      = compute_node_degree(G, openroads)
+    degree = compute_node_degree(G, openroads)
     betweenness = compute_betweenness(G, openroads, k=betweenness_k)
-    dist_major  = compute_dist_to_major(G, openroads)
+    dist_major = compute_dist_to_major(G, openroads)
     pop_density, lsoa_assignment = compute_population_density(
         openroads,
         return_lsoa_assignment=True,
@@ -1304,15 +1276,17 @@ def build_network_features(
     ruc_urban_rural = derive_ruc_urban_rural(ruc_class)
 
     # Combine base features
-    features = pd.DataFrame({
-        "link_id":             openroads["link_id"].values,
-        "degree_mean":         degree.values,
-        "betweenness":         betweenness.values,
-        "dist_to_major_km":    dist_major.values,
-        "pop_density_per_km2": pop_density.values,
-        "ruc_class":           ruc_class.values,
-        "ruc_urban_rural":     ruc_urban_rural.values,
-    })
+    features = pd.DataFrame(
+        {
+            "link_id": openroads["link_id"].values,
+            "degree_mean": degree.values,
+            "betweenness": betweenness.values,
+            "dist_to_major_km": dist_major.values,
+            "pop_density_per_km2": pop_density.values,
+            "ruc_class": ruc_class.values,
+            "ruc_urban_rural": ruc_urban_rural.values,
+        }
+    )
 
     # Betweenness relative to road class
     bc_rel = compute_betweenness_relative(features, openroads)
@@ -1336,7 +1310,7 @@ def build_network_features(
         vals = features[col].dropna()
         if len(vals) == 0:
             continue
-        if vals.dtype == bool or set(vals.unique()).issubset({0, 1, True, False}):
+        if vals.dtype == bool or set(vals.unique()).issubset({0, 1}):
             logger.info(
                 f"  {col:28s}: "
                 f"True={vals.sum():.0f} ({vals.mean():.1%}), "
@@ -1351,13 +1325,8 @@ def build_network_features(
             )
         else:
             top_counts = vals.astype(str).value_counts().head(3)
-            top_text = ", ".join(
-                f"{label}={count:,}" for label, count in top_counts.items()
-            )
-            logger.info(
-                f"  {col:28s}: top={top_text}, "
-                f"nulls={features[col].isna().sum():,}"
-            )
+            top_text = ", ".join(f"{label}={count:,}" for label, count in top_counts.items())
+            logger.info(f"  {col:28s}: top={top_text}, nulls={features[col].isna().sum():,}")
 
     # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1369,7 +1338,6 @@ def build_network_features(
     return features
 
 
-
 def main() -> None:
     logging.basicConfig(
         level=logging.INFO,
@@ -1377,21 +1345,22 @@ def main() -> None:
     )
 
     import argparse
+
     parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true", help="Recompute even if cache exists")
     parser.add_argument(
-        "--force", action="store_true",
-        help="Recompute even if cache exists"
+        "--k",
+        type=int,
+        default=BETWEENNESS_K,
+        help=f"Betweenness sample size (default: {BETWEENNESS_K})",
     )
     parser.add_argument(
-        "--k", type=int, default=BETWEENNESS_K,
-        help=f"Betweenness sample size (default: {BETWEENNESS_K})"
-    )
-    parser.add_argument(
-        "--osm", action="store_true",
+        "--osm",
+        action="store_true",
         help=(
             "Include OSM features (speed limit, lanes, lit, surface). "
             "Requires osmnx. Adds ~10 mins."
-        )
+        ),
     )
     args = parser.parse_args()
 
@@ -1409,5 +1378,5 @@ def main() -> None:
     print(f"\nSaved to: {OUTPUT_PATH}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

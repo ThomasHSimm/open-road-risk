@@ -267,9 +267,7 @@ def turning_angle_features(ls: LineString, spacing_m: float = 15.0) -> dict[str,
 
     # Total absolute turning angle per kilometre of link.
     mean_curvature = float(np.sum(angle_deg) / (length_m / 1000.0))
-    max_curvature = float(
-        min(np.max(curvature_deg_per_km), MAX_CURVATURE_DEG_PER_KM_CAP)
-    )
+    max_curvature = float(min(np.max(curvature_deg_per_km), MAX_CURVATURE_DEG_PER_KM_CAP))
 
     return {
         MEAN_CURVATURE_COL: mean_curvature,
@@ -461,9 +459,7 @@ def main(check_only: bool = False):
 
     if "road_classification" not in gdf.columns:
         candidates = [
-            c
-            for c in gdf.columns
-            if c.lower() in {"roadclassification", "road_classification"}
+            c for c in gdf.columns if c.lower() in {"roadclassification", "road_classification"}
         ]
         if not candidates:
             raise KeyError("Expected a road_classification column.")
@@ -476,9 +472,7 @@ def main(check_only: bool = False):
     gdf["vertices_per_km"] = gdf["vertex_count"] / (gdf["link_length_m"] / 1000.0)
 
     vertex_summary = (
-        gdf.groupby("road_classification", dropna=False)["vertices_per_km"]
-        .describe()
-        .sort_index()
+        gdf.groupby("road_classification", dropna=False)["vertices_per_km"].describe().sort_index()
     )
 
     print("\nVertices per km by road_classification:\n")
@@ -534,11 +528,7 @@ def main(check_only: bool = False):
     print("\nOverall feature distribution:\n")
     print(curv_summary.to_string())
 
-    by_class_curv = (
-        gdf.groupby("road_classification")[CURVATURE_COLUMNS]
-        .describe()
-        .round(3)
-    )
+    by_class_curv = gdf.groupby("road_classification")[CURVATURE_COLUMNS].describe().round(3)
     print("\nFeature distribution by road_classification:\n")
     print(by_class_curv.to_string())
 
@@ -557,13 +547,17 @@ def main(check_only: bool = False):
                 raise ValueError(f"Existing feature table has duplicate {left_key} values.")
 
             features_only = gdf_save[[right_key, *CURVATURE_COLUMNS]].copy()
-            updated = existing.drop(columns=CURVATURE_COLUMNS, errors="ignore").merge(
-                features_only,
-                left_on=left_key,
-                right_on=right_key,
-                how="left",
-                validate="one_to_one",
-            ).drop(columns=[right_key] if left_key != right_key else [], errors="ignore")
+            updated = (
+                existing.drop(columns=CURVATURE_COLUMNS, errors="ignore")
+                .merge(
+                    features_only,
+                    left_on=left_key,
+                    right_on=right_key,
+                    how="left",
+                    validate="one_to_one",
+                )
+                .drop(columns=[right_key] if left_key != right_key else [], errors="ignore")
+            )
             OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
             updated.to_parquet(OUTPUT_PATH, index=False)
         else:

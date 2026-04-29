@@ -11,7 +11,7 @@ Road risk modelling pipeline.
 Entrypoint: python -m road_risk.model --stage traffic|profile|temporal|collision|all
 """
 
-from road_risk.model.aadt import train_aadt_estimator, apply_aadt_estimator
+from road_risk.model.aadt import apply_aadt_estimator, train_aadt_estimator
 from road_risk.model.collision import build_collision_dataset, run_collision_stage
 from road_risk.model.timezone_profile import run_profile_stage
 

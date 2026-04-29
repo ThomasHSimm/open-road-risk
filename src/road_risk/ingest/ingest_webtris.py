@@ -133,9 +133,7 @@ def _add_length_proportions(df: pd.DataFrame) -> pd.DataFrame:
     total = df[available].sum(axis=1).replace(0, pd.NA)
     hgv_bands = [c for c in ["len_1160_1260_cm", "len_gt_1260_cm"] if c in df.columns]
     long_bands = [
-        c
-        for c in ["len_901_1160_cm", "len_1160_1260_cm", "len_gt_1260_cm"]
-        if c in df.columns
+        c for c in ["len_901_1160_cm", "len_1160_1260_cm", "len_gt_1260_cm"] if c in df.columns
     ]
 
     if hgv_bands:
@@ -289,9 +287,7 @@ def pull_site_year_daily(
     # Flow columns are summed; keep date as the group key
     date_col = next((c for c in ["report_date", "date"] if c in df.columns), None)
     if date_col:
-        flow_cols = [
-            c for c in df.columns if c not in [date_col, "site_id", "_pull_year"]
-        ]
+        flow_cols = [c for c in df.columns if c not in [date_col, "site_id", "_pull_year"]]
         numeric = df[flow_cols].apply(pd.to_numeric, errors="coerce")
         df = numeric.groupby(df[date_col]).sum().reset_index()
         df.rename(columns={date_col: "report_date"}, inplace=True)
@@ -395,15 +391,11 @@ def pull_yorkshire(
         site_cache = raw_folder / f"site_{site_id}.parquet"
 
         if site_cache.exists():
-            logger.info(
-                f"[{i}/{len(sites)}] Site {site_id} ({row.description}): from cache"
-            )
+            logger.info(f"[{i}/{len(sites)}] Site {site_id} ({row.description}): from cache")
             all_frames.append(pd.read_parquet(site_cache))
             continue
 
-        logger.info(
-            f"[{i}/{len(sites)}] Site {site_id} ({row.description}): pulling ..."
-        )
+        logger.info(f"[{i}/{len(sites)}] Site {site_id} ({row.description}): pulling ...")
         site_frames: list[pd.DataFrame] = []
 
         for year in years:
@@ -472,10 +464,9 @@ def combine_raw(
     if sites_cache.exists():
         all_sites = pd.read_parquet(sites_cache)
         is_active = all_sites["status"].str.strip().str.lower() == "active"
-        in_bbox = (
-            all_sites["latitude"].between(YORKSHIRE_BBOX["min_lat"], YORKSHIRE_BBOX["max_lat"])
-            & all_sites["longitude"].between(YORKSHIRE_BBOX["min_lon"], YORKSHIRE_BBOX["max_lon"])
-        )
+        in_bbox = all_sites["latitude"].between(
+            YORKSHIRE_BBOX["min_lat"], YORKSHIRE_BBOX["max_lat"]
+        ) & all_sites["longitude"].between(YORKSHIRE_BBOX["min_lon"], YORKSHIRE_BBOX["max_lon"])
         yorkshire_ids = set(all_sites[is_active & in_bbox]["site_id"].astype(str))
         logger.info(f"Filtering to {len(yorkshire_ids)} Yorkshire active sites")
 
@@ -552,16 +543,12 @@ def main(
     if sites_only:
         sites = get_yorkshire_sites(cache_folder=Path(raw_folder))
         print(f"\n=== Yorkshire WebTRIS sites ({len(sites)}) ===")
-        print(
-            sites[["site_id", "description", "latitude", "longitude"]].to_string(
-                index=False
-            )
-        )
+        print(sites[["site_id", "description", "latitude", "longitude"]].to_string(index=False))
         return
 
     df = pull_yorkshire(years=years, raw_folder=raw_folder, output_folder=output_folder)
 
-    print(f"\n=== WebTRIS pull complete ===")
+    print("\n=== WebTRIS pull complete ===")
     print(f"  Rows  : {len(df):,}")
     print(f"  Sites : {df['site_id'].nunique()}")
     print(f"  Cols  : {df.columns.tolist()}")

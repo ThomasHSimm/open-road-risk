@@ -7,12 +7,12 @@ No Streamlit dependency.
 
 import pandas as pd
 
-from config import RISK_PALETTE, ROAD_WEIGHTS, DEFAULT_ROAD_WEIGHT
+from config import DEFAULT_ROAD_WEIGHT, RISK_PALETTE, ROAD_WEIGHTS
 
 
 def _palette_lookup(normalised: float) -> str:
     """Map a value already in [0, 100] to a hex colour via RISK_PALETTE."""
-    for i, (thresh, col) in enumerate(RISK_PALETTE):
+    for i, (thresh, _) in enumerate(RISK_PALETTE):
         if normalised <= thresh:
             return RISK_PALETTE[max(0, i - 1)][1]
     return RISK_PALETTE[-1][1]

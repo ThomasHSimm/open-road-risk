@@ -77,14 +77,9 @@ def compute_eb_scores(
 
     n_pred = result["predicted_xgb"] * result["n_years"]
     result["eb_weight"] = 1 / (1 + k * n_pred)
-    n_eb = (
-        result["eb_weight"] * n_pred
-        + (1 - result["eb_weight"]) * result["collision_count"]
-    )
+    n_eb = result["eb_weight"] * n_pred + (1 - result["eb_weight"]) * result["collision_count"]
     result["predicted_eb"] = n_eb / result["n_years"]
-    result["risk_percentile_eb"] = (
-        result["predicted_eb"].rank(method="average", pct=True) * 100
-    )
+    result["risk_percentile_eb"] = result["predicted_eb"].rank(method="average", pct=True) * 100
     return result
 
 

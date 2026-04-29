@@ -23,6 +23,7 @@ from config import NET_PATH, OR_PATH, RISK_PATH, TEMPORAL_PATH
 # Raw loaders
 # ---------------------------------------------------------------------------
 
+
 @st.cache_data
 def load_risk() -> pd.DataFrame | None:
     if RISK_PATH is None or not RISK_PATH.exists():
@@ -65,14 +66,14 @@ def load_temporal() -> pd.DataFrame | None:
 # Rename map: {output_col: source_col}. Missing columns are skipped gracefully.
 _RISK_COLS = {
     "risk_percentile": "risk_percentile",
-    "predicted_glm":   "predicted_glm",
-    "residual_glm":    "residual_glm",
+    "predicted_glm": "predicted_glm",
+    "residual_glm": "residual_glm",
     "collision_count": "collision_count",
-    "fatal_count":     "fatal_count",
-    "serious_count":   "serious_count",
-    "estimated_aadt":  "estimated_aadt",
-    "hgv_pct":         "hgv_proportion",
-    "speed_limit":     "speed_limit_mph",
+    "fatal_count": "fatal_count",
+    "serious_count": "serious_count",
+    "estimated_aadt": "estimated_aadt",
+    "hgv_pct": "hgv_proportion",
+    "speed_limit": "speed_limit_mph",
 }
 
 
@@ -92,9 +93,9 @@ def build_map_gdf(
     All ~998k links are scored (including zero-collision links), so no
     two-layer grey-skeleton rendering is needed.
     """
-    risk      = load_risk()
+    risk = load_risk()
     openroads = load_openroads()
-    net       = load_network()
+    net = load_network()
 
     if risk is None or openroads is None:
         return None
@@ -111,14 +112,19 @@ def build_map_gdf(
         risk_renamed = risk_renamed.drop(columns=drop_from_risk)
 
     gdf = openroads[
-        ["link_id", "geometry", "road_classification",
-         "road_name", "link_length_km", "form_of_way"]
+        ["link_id", "geometry", "road_classification", "road_name", "link_length_km", "form_of_way"]
     ].merge(risk_renamed, on="link_id", how="left")
 
     # Join network features
     if net is not None:
-        net_want  = ["link_id", "betweenness_relative", "degree_mean",
-                     "betweenness", "dist_to_major_km", "pop_density_per_km2"]
+        net_want = [
+            "link_id",
+            "betweenness_relative",
+            "degree_mean",
+            "betweenness",
+            "dist_to_major_km",
+            "pop_density_per_km2",
+        ]
         available = [c for c in net_want if c in net.columns]
         gdf = gdf.merge(net[available], on="link_id", how="left")
 

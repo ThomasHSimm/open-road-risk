@@ -59,15 +59,16 @@ FAMILIES = ["motorway", "trunk_a", "other_urban", "other_rural"]
 # Active-network family link counts from design doc §2 (road_link_annual.parquet
 # distinct link_ids). Any family differing by more than _TOLERANCE halts the run.
 _EXPECTED_ACTIVE_COUNTS: dict[str, int] = {
-    "motorway":    2_279,
-    "trunk_a":     5_465,
+    "motorway": 2_279,
+    "trunk_a": 5_465,
     "other_urban": 177_296,
-    "other_rural":  48_564,
+    "other_rural": 48_564,
 }
 _FAMILY_COUNT_TOLERANCE = 0.01  # 1 %
 
 
 # ── Family assignment ──────────────────────────────────────────────────────────
+
 
 def assign_family(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -122,6 +123,7 @@ def _verify_family_counts(active_family_counts: dict[str, int]) -> None:
 
 # ── Per-family training ────────────────────────────────────────────────────────
 
+
 def train_family_xgb(df: pd.DataFrame, family: str, seed: int = 42) -> tuple:
     """
     Filter df to family and delegate to train_collision_xgb unchanged.
@@ -144,6 +146,7 @@ def train_family_xgb(df: pd.DataFrame, family: str, seed: int = 42) -> tuple:
 
 # ── Scoring and pooling ────────────────────────────────────────────────────────
 
+
 def score_family_xgb(
     df: pd.DataFrame,
     models_by_family: dict[str, tuple],
@@ -165,7 +168,9 @@ def score_family_xgb(
         parts.append(fam_df)
         logger.info(
             "Scored %s: %s rows, mean predicted_xgb_family = %.5f",
-            family, f"{len(fam_df):,}", float(fam_df["predicted_xgb_family"].mean()),
+            family,
+            f"{len(fam_df):,}",
+            float(fam_df["predicted_xgb_family"].mean()),
         )
 
     scored = pd.concat(parts, ignore_index=True)
@@ -179,10 +184,10 @@ def score_family_xgb(
         )
 
     agg: dict[str, str] = {
-        "collision_count":       "sum",
-        "estimated_aadt":        "mean",
-        "predicted_xgb_family":  "mean",
-        "family":                "first",
+        "collision_count": "sum",
+        "estimated_aadt": "mean",
+        "predicted_xgb_family": "mean",
+        "family": "first",
     }
     for col in ("fatal_count", "serious_count"):
         if col in scored.columns:
@@ -206,13 +211,13 @@ def compute_family_rankings(pooled: pd.DataFrame) -> pd.DataFrame:
         pooled["predicted_xgb_family"].rank(method="average", pct=True) * 100
     )
     pooled["risk_percentile_within_family"] = (
-        pooled.groupby("family")["predicted_xgb_family"]
-              .rank(method="average", pct=True) * 100
+        pooled.groupby("family")["predicted_xgb_family"].rank(method="average", pct=True) * 100
     )
     return pooled
 
 
 # ── Provenance helpers ─────────────────────────────────────────────────────────
+
 
 def _read_fingerprint(path: Path) -> dict[str, Any]:
     stat = path.stat()
@@ -236,9 +241,7 @@ def _file_hash(path: Path) -> str:
 
 def _git_sha() -> str | None:
     try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=_ROOT, text=True
-        ).strip()
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=_ROOT, text=True).strip()
     except Exception:
         return None
 
@@ -248,6 +251,7 @@ def _write_provenance(payload: dict[str, Any]) -> None:
 
 
 # ── Main run ───────────────────────────────────────────────────────────────────
+
 
 def run_family_split(seed: int = 42) -> dict[str, Any]:
     """
@@ -265,7 +269,8 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
     expected_rows = production_before["row_count"]
     logger.info(
         "Production risk_scores.parquet: %s rows, mtime_ns=%s",
-        f"{expected_rows:,}", production_before["mtime_ns"],
+        f"{expected_rows:,}",
+        production_before["mtime_ns"],
     )
 
     # ── Load inputs ───────────────────────────────────────────────────────────
@@ -273,9 +278,9 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
 
     t0 = time.time()
     logger.info("Loading input data ...")
-    openroads     = gpd.read_parquet(OPENROADS_PATH)
-    rla           = pd.read_parquet(RLA_PATH)
-    net_features  = pd.read_parquet(NET_PATH)
+    openroads = gpd.read_parquet(OPENROADS_PATH)
+    rla = pd.read_parquet(RLA_PATH)
+    net_features = pd.read_parquet(NET_PATH)
     aadt_estimates = pd.read_parquet(AADT_PATH)
     logger.info("Input data loaded in %.0f s", time.time() - t0)
 
@@ -302,9 +307,7 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
     # build_collision_dataset extracts is_trunk but not road_function from openroads.
     # ruc_urban_rural is already in df via the net_features merge.
     if "road_function" not in df.columns:
-        road_func = pd.DataFrame(
-            openroads[["link_id", "road_function"]]
-        ).drop_duplicates("link_id")
+        road_func = pd.DataFrame(openroads[["link_id", "road_function"]]).drop_duplicates("link_id")
         df = df.merge(road_func, on="link_id", how="left")
 
     n_missing_rf = int(df["road_function"].isna().sum())
@@ -341,9 +344,7 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
         try:
             model, feature_list, metrics = train_family_xgb(df, family, seed=seed)
         except RuntimeError as exc:
-            raise RuntimeError(
-                f"Training halted for family '{family}': {exc}"
-            ) from exc
+            raise RuntimeError(f"Training halted for family '{family}': {exc}") from exc
 
         elapsed = round(time.time() - t_fam, 1)
 
@@ -351,18 +352,20 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
             logger.warning(
                 "Family '%s' pseudo-R2 = %.4f is negative — worse than a null model. "
                 "Session 2 will diagnose; proceeding as instructed.",
-                family, metrics["pseudo_r2"],
+                family,
+                metrics["pseudo_r2"],
             )
         elif metrics["pseudo_r2"] < 0.3:
             logger.warning(
                 "Family '%s' pseudo-R2 = %.4f is below 0.3. "
                 "This may indicate overfitting on a small family. Session 2 will diagnose.",
-                family, metrics["pseudo_r2"],
+                family,
+                metrics["pseudo_r2"],
             )
 
         per_family_metrics[family] = {
             "n_train": int(metrics["n_train"]),
-            "n_test":  int(metrics["n_test"]),
+            "n_test": int(metrics["n_test"]),
             "pseudo_r2": float(metrics["pseudo_r2"]),
             "seed": int(seed),
             "features": list(feature_list),
@@ -372,8 +375,10 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
         logger.info(
             "%s: n_train=%s  n_test=%s  pseudo_R2=%.4f  time=%.0f s",
             family,
-            f"{metrics['n_train']:,}", f"{metrics['n_test']:,}",
-            metrics["pseudo_r2"], elapsed,
+            f"{metrics['n_train']:,}",
+            f"{metrics['n_test']:,}",
+            metrics["pseudo_r2"],
+            elapsed,
         )
 
     # ── Score all families, pool, rank ────────────────────────────────────────
@@ -404,28 +409,33 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
 
     # ── Column selection and ordering ─────────────────────────────────────────
     save_cols = [
-        "link_id", "family",
-        "collision_count", "fatal_count", "serious_count",
+        "link_id",
+        "family",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
         "estimated_aadt",
         "predicted_xgb_family",
         "risk_percentile_family",
         "risk_percentile_within_family",
         "risk_percentile",
-        "ruc_imputed", "ruc_fill_method",
+        "ruc_imputed",
+        "ruc_fill_method",
     ]
     out_df = pooled[[c for c in save_cols if c in pooled.columns]]
 
     # ── Verification assertions ───────────────────────────────────────────────
-    assert out_df["risk_percentile_family"].between(0, 100).all(), \
+    assert out_df["risk_percentile_family"].between(0, 100).all(), (
         "risk_percentile_family contains values outside [0, 100]"
-    assert out_df["risk_percentile_within_family"].between(0, 100).all(), \
+    )
+    assert out_df["risk_percentile_within_family"].between(0, 100).all(), (
         "risk_percentile_within_family contains values outside [0, 100]"
-    assert out_df["predicted_xgb_family"].notna().all(), \
-        "predicted_xgb_family contains NaN"
-    assert (out_df["predicted_xgb_family"] >= 0).all(), \
+    )
+    assert out_df["predicted_xgb_family"].notna().all(), "predicted_xgb_family contains NaN"
+    assert (out_df["predicted_xgb_family"] >= 0).all(), (
         "predicted_xgb_family contains negative values"
-    assert out_df["family"].isin(FAMILIES).all(), \
-        "Unknown values in family column"
+    )
+    assert out_df["family"].isin(FAMILIES).all(), "Unknown values in family column"
 
     # ── Save ──────────────────────────────────────────────────────────────────
     out_df.to_parquet(OUT_PATH, index=False)
@@ -491,7 +501,7 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
     print("\n=== Family Split — Session 1 Summary ===")
     print(f"\nPer-family training (seed={seed}):")
     print(f"  {'family':<15} {'n_train':>10} {'n_test':>8} {'pseudo_R2':>10} {'time_s':>8}")
-    print(f"  {'-'*15} {'-'*10} {'-'*8} {'-'*10} {'-'*8}")
+    print(f"  {'-' * 15} {'-' * 10} {'-' * 8} {'-' * 10} {'-' * 8}")
     for family in FAMILIES:
         m = per_family_metrics[family]
         print(
