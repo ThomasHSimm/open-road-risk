@@ -8,7 +8,7 @@ time-resolved flow data). Predicts the *fraction* of daily traffic
 in each time band — a dimensionless ratio independent of total volume.
 
 Time bands (from differencing cumulative 12h/16h/18h/24h windows):
-  
+
     | Code label | True period | Hours |
    |------------|-------------|------:|
    | `core_daytime_frac` | 07:00–18:59 | 12 |
@@ -47,7 +47,6 @@ import logging
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingRegressor
-from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.model_selection import GroupKFold, cross_val_score
 
 from road_risk.config import _ROOT
@@ -55,11 +54,11 @@ from road_risk.model.constants import COVID_YEARS, RANDOM_STATE
 
 logger = logging.getLogger(__name__)
 
-WEBTRIS_PATH      = _ROOT / "data/processed/webtris/webtris_clean.parquet"
-OPENROADS_PATH    = _ROOT / "data/processed/shapefiles/openroads.parquet"
+WEBTRIS_PATH = _ROOT / "data/processed/webtris/webtris_clean.parquet"
+OPENROADS_PATH = _ROOT / "data/processed/shapefiles/openroads.parquet"
 NET_FEATURES_PATH = _ROOT / "data/features/network_features.parquet"
-AADT_ESTIMATES    = _ROOT / "data/models/aadt_estimates.parquet"
-PROFILES_OUT      = _ROOT / "data/models/timezone_profiles.parquet"
+AADT_ESTIMATES = _ROOT / "data/models/aadt_estimates.parquet"
+PROFILES_OUT = _ROOT / "data/models/timezone_profiles.parquet"
 
 # Fractions predicted by the model (all four — normalised to sum=1 on output)
 FRACTION_TARGETS = [
@@ -77,6 +76,7 @@ HGV_TARGET = "hgv_core_daytime_frac"
 # Training data
 # ---------------------------------------------------------------------------
 
+
 def build_profile_training(webtris: pd.DataFrame) -> pd.DataFrame:
     """
     Build training DataFrame from WebTRIS sensor data.
@@ -92,10 +92,10 @@ def build_profile_training(webtris: pd.DataFrame) -> pd.DataFrame:
     df = df[df["all_flow"] > 0].copy()
 
     # --- Compute fraction targets -------------------------------------------
-    df["core_daytime_frac"]        = (df["flow_ph_core_daytime"]       * 12) / df["all_flow"]
-    df["shoulder_frac"]     = (df["flow_ph_shoulder"]     *  4) / df["all_flow"]
-    df["late_evening_frac"]  = (df["flow_ph_late_evening"]  *  2) / df["all_flow"]
-    df["overnight_frac"]     = (df["flow_ph_overnight"]     *  6) / df["all_flow"]
+    df["core_daytime_frac"] = (df["flow_ph_core_daytime"] * 12) / df["all_flow"]
+    df["shoulder_frac"] = (df["flow_ph_shoulder"] * 4) / df["all_flow"]
+    df["late_evening_frac"] = (df["flow_ph_late_evening"] * 2) / df["all_flow"]
+    df["overnight_frac"] = (df["flow_ph_overnight"] * 6) / df["all_flow"]
 
     # HGV fraction of peak traffic relative to all HGVs on that road
     total_hgv = df["all_flow"] * df["hgv_pct"] / 100
@@ -114,7 +114,7 @@ def build_profile_training(webtris: pd.DataFrame) -> pd.DataFrame:
 
     year_min, year_max = df["year"].min(), df["year"].max()
     df["year_norm"] = (df["year"] - year_min) / max(year_max - year_min, 1)
-    df["is_covid"]  = df["year"].isin(COVID_YEARS).astype(int)
+    df["is_covid"] = df["year"].isin(COVID_YEARS).astype(int)
 
     # --- Snap to nearest OpenRoads link and join network features -----------
     df = _snap_to_network(df)
@@ -134,19 +134,21 @@ def _snap_to_network(df: pd.DataFrame) -> pd.DataFrame:
     import pyproj
     from scipy.spatial import cKDTree
 
-    net    = pd.read_parquet(NET_FEATURES_PATH)
+    net = pd.read_parquet(NET_FEATURES_PATH)
     or_gdf = gpd.read_parquet(OPENROADS_PATH)
     or_bng = or_gdf.to_crs("EPSG:27700")
 
-    link_xy = np.column_stack([
-        or_bng.geometry.centroid.x,
-        or_bng.geometry.centroid.y,
-    ])
+    link_xy = np.column_stack(
+        [
+            or_bng.geometry.centroid.x,
+            or_bng.geometry.centroid.y,
+        ]
+    )
     tree = cKDTree(link_xy)
 
     transformer = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
-    e, n_coord  = transformer.transform(df["longitude"].values, df["latitude"].values)
-    dists, idx  = tree.query(np.column_stack([e, n_coord]), k=1, distance_upper_bound=2000)
+    e, n_coord = transformer.transform(df["longitude"].values, df["latitude"].values)
+    dists, idx = tree.query(np.column_stack([e, n_coord]), k=1, distance_upper_bound=2000)
 
     valid = dists < 2000
     snapped_link_ids = or_gdf["link_id"].values
@@ -157,13 +159,14 @@ def _snap_to_network(df: pd.DataFrame) -> pd.DataFrame:
     net_cols = [c for c in net.columns if c != "link_id"]
     df = df.merge(
         net[["link_id"] + net_cols].rename(columns={"link_id": "_link_id"}),
-        on="_link_id", how="left",
+        on="_link_id",
+        how="left",
     ).drop(columns=["_link_id"])
 
     n_joined = df["degree_mean"].notna().sum()
     logger.info(
         f"  Network features joined for {n_joined:,} / {len(df):,} "
-        f"WebTRIS sites ({n_joined/len(df):.1%})"
+        f"WebTRIS sites ({n_joined / len(df):.1%})"
     )
     return df
 
@@ -172,11 +175,15 @@ def _feature_cols(df: pd.DataFrame) -> list[str]:
     """Return feature columns present in df."""
     candidates = [
         "log_all_flow",
-        "latitude", "longitude",
-        "year_norm", "is_covid",
+        "latitude",
+        "longitude",
+        "year_norm",
+        "is_covid",
         # network features (present when snap succeeded)
-        "betweenness_relative", "betweenness",
-        "dist_to_major_km", "pop_density_per_km2",
+        "betweenness_relative",
+        "betweenness",
+        "dist_to_major_km",
+        "pop_density_per_km2",
         "degree_mean",
     ]
     return [c for c in candidates if c in df.columns]
@@ -185,6 +192,7 @@ def _feature_cols(df: pd.DataFrame) -> list[str]:
 # ---------------------------------------------------------------------------
 # Train
 # ---------------------------------------------------------------------------
+
 
 def train_profile_estimator(train_df: pd.DataFrame) -> tuple:
     """
@@ -204,7 +212,7 @@ def train_profile_estimator(train_df: pd.DataFrame) -> tuple:
     X = train_df[feat_cols].copy()
     groups = train_df["site_id"].values
 
-    models  = {}
+    models = {}
     metrics = {}
 
     targets = FRACTION_TARGETS + [HGV_TARGET]
@@ -222,26 +230,28 @@ def train_profile_estimator(train_df: pd.DataFrame) -> tuple:
         g_t = groups[valid]
 
         model = HistGradientBoostingRegressor(
-            max_iter=300, max_depth=4, learning_rate=0.05,
-            random_state=RANDOM_STATE, verbose=0,
+            max_iter=300,
+            max_depth=4,
+            learning_rate=0.05,
+            random_state=RANDOM_STATE,
+            verbose=0,
         )
         cv = GroupKFold(n_splits=5)
-        cv_r2  = cross_val_score(model, X_t, y_t, groups=g_t, cv=cv,
-                                  scoring="r2", n_jobs=-1)
-        cv_mae = cross_val_score(model, X_t, y_t, groups=g_t, cv=cv,
-                                  scoring="neg_mean_absolute_error", n_jobs=-1)
+        cv_r2 = cross_val_score(model, X_t, y_t, groups=g_t, cv=cv, scoring="r2", n_jobs=-1)
+        cv_mae = cross_val_score(
+            model, X_t, y_t, groups=g_t, cv=cv, scoring="neg_mean_absolute_error", n_jobs=-1
+        )
         model.fit(X_t, y_t)
 
         metrics[target] = {
-            "cv_r2_mean":  float(cv_r2.mean()),
-            "cv_r2_std":   float(cv_r2.std()),
+            "cv_r2_mean": float(cv_r2.mean()),
+            "cv_r2_std": float(cv_r2.std()),
             "cv_mae_mean": float(-cv_mae.mean()),
-            "n_train":     int(valid.sum()),
+            "n_train": int(valid.sum()),
         }
         models[target] = model
         logger.info(
-            f"  {target}: CV R²={cv_r2.mean():.3f} (±{cv_r2.std():.3f}) | "
-            f"MAE={-cv_mae.mean():.4f}"
+            f"  {target}: CV R²={cv_r2.mean():.3f} (±{cv_r2.std():.3f}) | MAE={-cv_mae.mean():.4f}"
         )
 
     return models, metrics, feat_cols
@@ -250,6 +260,7 @@ def train_profile_estimator(train_df: pd.DataFrame) -> tuple:
 # ---------------------------------------------------------------------------
 # Apply to all links
 # ---------------------------------------------------------------------------
+
 
 def apply_profile_estimator(
     models: dict,
@@ -275,18 +286,18 @@ def apply_profile_estimator(
 
     or_df = openroads.copy()
     if isinstance(or_df, gpd.GeoDataFrame):
-        bng       = or_df.to_crs("EPSG:27700")
+        bng = or_df.to_crs("EPSG:27700")
         centroids = bng.geometry.centroid.to_crs("EPSG:4326")
-        or_df["latitude"]  = centroids.y
+        or_df["latitude"] = centroids.y
         or_df["longitude"] = centroids.x
 
     # Join network features
     if NET_FEATURES_PATH.exists():
-        net      = pd.read_parquet(NET_FEATURES_PATH)
+        net = pd.read_parquet(NET_FEATURES_PATH)
         net_cols = [c for c in net.columns if c != "link_id"]
-        or_df    = or_df.merge(net[["link_id"] + net_cols], on="link_id", how="left")
+        or_df = or_df.merge(net[["link_id"] + net_cols], on="link_id", how="left")
 
-    years     = sorted(aadt_estimates["year"].unique())
+    years = sorted(aadt_estimates["year"].unique())
     year_min, year_max = years[0], years[-1]
 
     # Build a lookup: link_id × year → estimated_aadt
@@ -295,9 +306,9 @@ def apply_profile_estimator(
     frames = []
     for year in years:
         pred_df = or_df.copy()
-        pred_df["year"]      = year
+        pred_df["year"] = year
         pred_df["year_norm"] = (year - year_min) / max(year_max - year_min, 1)
-        pred_df["is_covid"]  = int(year in COVID_YEARS)
+        pred_df["is_covid"] = int(year in COVID_YEARS)
 
         # Traffic volume feature — use measured AADT where available, else estimate
         estimated = aadt_lookup.reindex(
@@ -338,18 +349,15 @@ def apply_profile_estimator(
             out[target] = vals
 
         # Reconstruct absolute per-hour flows from estimated_aadt × fraction
-        aadt_vals = np.where(
-            estimated > 0, estimated,
-            np.expm1(pred_df["log_all_flow"].values)
-        )
+        aadt_vals = np.where(estimated > 0, estimated, np.expm1(pred_df["log_all_flow"].values))
         if "core_daytime_frac" in out.columns:
-            out["flow_ph_core_daytime"]       = aadt_vals * out["core_daytime_frac"]        / 12
-            out["flow_ph_shoulder"]    = aadt_vals * out["shoulder_frac"]     /  4
-            out["flow_ph_late_evening"] = aadt_vals * out["late_evening_frac"]  /  2
-            out["flow_ph_overnight"]    = aadt_vals * out["overnight_frac"]     /  6
-            out["core_overnight_ratio"] = (
-                out["flow_ph_core_daytime"] / out["flow_ph_overnight"].replace(0, np.nan)
-            )
+            out["flow_ph_core_daytime"] = aadt_vals * out["core_daytime_frac"] / 12
+            out["flow_ph_shoulder"] = aadt_vals * out["shoulder_frac"] / 4
+            out["flow_ph_late_evening"] = aadt_vals * out["late_evening_frac"] / 2
+            out["flow_ph_overnight"] = aadt_vals * out["overnight_frac"] / 6
+            out["core_overnight_ratio"] = out["flow_ph_core_daytime"] / out[
+                "flow_ph_overnight"
+            ].replace(0, np.nan)
 
         if HGV_TARGET in out.columns:
             # hgv_ph_core_daytime needs hgv proportion — use 0.05 as fallback
@@ -373,6 +381,7 @@ def apply_profile_estimator(
 # End-to-end stage runner
 # ---------------------------------------------------------------------------
 
+
 def run_profile_stage(openroads) -> pd.DataFrame:
     """
     Run Stage 1b end-to-end: train profile estimator on WebTRIS data,
@@ -395,7 +404,7 @@ def run_profile_stage(openroads) -> pd.DataFrame:
             "Run Stage 1a first: python -m road_risk.model --stage traffic"
         )
 
-    webtris       = pd.read_parquet(WEBTRIS_PATH)
+    webtris = pd.read_parquet(WEBTRIS_PATH)
     aadt_estimates = pd.read_parquet(AADT_ESTIMATES)
 
     logger.info("Building profile training data ...")

@@ -45,9 +45,7 @@ NEGATIVE_BIN_FAIL_FRACTION = 0.25
 
 def _git_sha() -> str | None:
     try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=_ROOT, text=True
-        ).strip()
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=_ROOT, text=True).strip()
     except Exception:
         return None
 
@@ -84,9 +82,7 @@ def _load_stage2_dataset() -> tuple[pd.DataFrame, dict[str, Any]]:
         "road_link_annual": _fingerprint_dataframe(RLA_PATH, rla),
         "aadt_estimates": _fingerprint_dataframe(AADT_PATH, aadt_estimates),
         "network_features": (
-            _fingerprint_dataframe(NET_PATH, net_features)
-            if net_features is not None
-            else None
+            _fingerprint_dataframe(NET_PATH, net_features) if net_features is not None else None
         ),
         "collision_xgb_model": _fingerprint_file(XGB_MODEL_PATH),
         "collision_metrics": _fingerprint_file(METRICS_PATH),
@@ -111,8 +107,8 @@ def _load_xgb_features() -> list[str]:
 def _score_link_year_predictions(df: pd.DataFrame, feature_cols: list[str]) -> np.ndarray:
     try:
         from xgboost import XGBRegressor
-    except ImportError:
-        raise ImportError("pip install xgboost")
+    except ImportError as e:
+        raise ImportError("pip install xgboost") from e
 
     missing = [col for col in feature_cols if col not in df.columns]
     if missing:
@@ -142,11 +138,13 @@ def _initial_bin_ids(predicted: np.ndarray, n_bins: int) -> tuple[np.ndarray, li
 
     definitions = []
     for bin_index in range(len(unique_edges) - 1):
-        definitions.append({
-            "initial_bin_index": int(bin_index),
-            "predicted_xgb_lower": float(unique_edges[bin_index]),
-            "predicted_xgb_upper": float(unique_edges[bin_index + 1]),
-        })
+        definitions.append(
+            {
+                "initial_bin_index": int(bin_index),
+                "predicted_xgb_lower": float(unique_edges[bin_index]),
+                "predicted_xgb_upper": float(unique_edges[bin_index + 1]),
+            }
+        )
     return bin_ids.astype(np.int16, copy=False), definitions
 
 
@@ -163,9 +161,7 @@ def _summarize_bin(
     mean_y = float(np.mean(y))
     var_y = float(np.var(y, ddof=1)) if len(y) > 1 else float("nan")
     k_bin = (
-        float((var_y - mean_y) / (mean_y**2))
-        if mean_y > 0 and np.isfinite(var_y)
-        else float("nan")
+        float((var_y - mean_y) / (mean_y**2)) if mean_y > 0 and np.isfinite(var_y) else float("nan")
     )
     return {
         "bin_index": int(bin_index),
@@ -196,12 +192,14 @@ def _make_retained_bins(
         source_bins.append(initial_bin)
         member_indices.extend(idx.tolist())
         n_positive = int(np.sum(observed[idx] > 0))
-        merge_actions.append({
-            "initial_bin": int(initial_bin),
-            "n_link_years": int(len(idx)),
-            "n_positive": n_positive,
-            "action": "accumulated",
-        })
+        merge_actions.append(
+            {
+                "initial_bin": int(initial_bin),
+                "n_link_years": int(len(idx)),
+                "n_positive": n_positive,
+                "action": "accumulated",
+            }
+        )
 
         if (
             len(member_indices) >= MIN_LINK_YEARS_PER_BIN
@@ -247,11 +245,13 @@ def _make_retained_bins(
                     combined_sources,
                 )
             )
-            merge_actions.append({
-                "action": "merged_trailing_bins_into_previous",
-                "source_initial_bins": [int(v) for v in source_bins],
-                "retained_bin_index": int(len(retained) - 1),
-            })
+            merge_actions.append(
+                {
+                    "action": "merged_trailing_bins_into_previous",
+                    "source_initial_bins": [int(v) for v in source_bins],
+                    "retained_bin_index": int(len(retained) - 1),
+                }
+            )
         else:
             retained.append(
                 _summarize_bin(
@@ -262,11 +262,13 @@ def _make_retained_bins(
                     source_bins,
                 )
             )
-            merge_actions.append({
-                "action": "single_retained_bin_from_all_initial_bins",
-                "source_initial_bins": [int(v) for v in source_bins],
-                "retained_bin_index": 0,
-            })
+            merge_actions.append(
+                {
+                    "action": "single_retained_bin_from_all_initial_bins",
+                    "source_initial_bins": [int(v) for v in source_bins],
+                    "retained_bin_index": 0,
+                }
+            )
 
     return retained, merge_actions
 
@@ -274,11 +276,13 @@ def _make_retained_bins(
 def _aggregate_k(retained_bins: list[dict[str, Any]]) -> dict[str, Any]:
     n_bins_after_merge = len(retained_bins)
     kept = [
-        row for row in retained_bins
+        row
+        for row in retained_bins
         if np.isfinite(row["k_bin"]) and row["var_y"] > row["mean_y"] and row["k_bin"] >= 0
     ]
     dropped = [
-        row for row in retained_bins
+        row
+        for row in retained_bins
         if not (np.isfinite(row["k_bin"]) and row["var_y"] > row["mean_y"] and row["k_bin"] >= 0)
     ]
     dropped_fraction = len(dropped) / n_bins_after_merge if n_bins_after_merge else 0.0
@@ -398,49 +402,60 @@ def _write_report(
         )
     )
 
-    report = "\n\n".join([
-        "# EB Dispersion Method-of-Moments Estimate",
-        (
-            "This report estimates a global NB2 dispersion parameter k for "
-            "EB-style shrinkage using method-of-moments. Link-years are binned "
-            "by existing Stage 2 XGBoost predicted collision count, and each "
-            "bin's observed mean and variance imply k_bin = (Var(y) - E(y)) / "
-            "E(y)^2."
-        ),
-        "## k_bin Values\n\n" + _markdown_table(
-            ["bin", "predicted_xgb_range", "n_link_years", "n_positive", "E(y)", "Var(y)", "k_bin"],
-            bin_rows,
-        ),
-        "## k Aggregations\n\n" + _markdown_table(["aggregation", "k"], k_rows),
-        (
-            "Divergence between the primary link-year weighted k and the "
-            "diagnostic alternatives indicates non-constant dispersion and a "
-            "potentially fragile global-k assumption."
-        ),
-        (
-            "## Dropped Bins\n\n"
-            f"Dropped bins: {dropped_count} of {n_bins_after_merge} after merging "
-            f"({_format_float(dropped_fraction * 100)}%)."
-        ),
-        "## Bin Merges\n\n" + merge_summary,
-        (
-            "Merge rule: start with 20 quantile bins by predicted_xgb, walk bins "
-            "from low to high prediction, and accumulate adjacent bins until the "
-            f"candidate bin has at least {MIN_LINK_YEARS_PER_BIN:,} link-years "
-            f"and {MIN_POSITIVE_ROWS_PER_BIN:,} positive-collision link-years; "
-            "any trailing low-count bin is merged into the previous retained bin."
-        ),
-        (
-            "## Interpretation\n\n"
-            f"{dropped_sentence} {spread_sentence} {divergence_sentence} "
-            "These diagnostics describe the MoM estimate only; they do not decide "
-            "whether EB shrinkage should be adopted."
-        ),
-        (
-            "Full provenance, bin definitions, and merge actions are in "
-            "`data/provenance/eb_dispersion_provenance.json`."
-        ),
-    ])
+    report = "\n\n".join(
+        [
+            "# EB Dispersion Method-of-Moments Estimate",
+            (
+                "This report estimates a global NB2 dispersion parameter k for "
+                "EB-style shrinkage using method-of-moments. Link-years are binned "
+                "by existing Stage 2 XGBoost predicted collision count, and each "
+                "bin's observed mean and variance imply k_bin = (Var(y) - E(y)) / "
+                "E(y)^2."
+            ),
+            "## k_bin Values\n\n"
+            + _markdown_table(
+                [
+                    "bin",
+                    "predicted_xgb_range",
+                    "n_link_years",
+                    "n_positive",
+                    "E(y)",
+                    "Var(y)",
+                    "k_bin",
+                ],
+                bin_rows,
+            ),
+            "## k Aggregations\n\n" + _markdown_table(["aggregation", "k"], k_rows),
+            (
+                "Divergence between the primary link-year weighted k and the "
+                "diagnostic alternatives indicates non-constant dispersion and a "
+                "potentially fragile global-k assumption."
+            ),
+            (
+                "## Dropped Bins\n\n"
+                f"Dropped bins: {dropped_count} of {n_bins_after_merge} after merging "
+                f"({_format_float(dropped_fraction * 100)}%)."
+            ),
+            "## Bin Merges\n\n" + merge_summary,
+            (
+                "Merge rule: start with 20 quantile bins by predicted_xgb, walk bins "
+                "from low to high prediction, and accumulate adjacent bins until the "
+                f"candidate bin has at least {MIN_LINK_YEARS_PER_BIN:,} link-years "
+                f"and {MIN_POSITIVE_ROWS_PER_BIN:,} positive-collision link-years; "
+                "any trailing low-count bin is merged into the previous retained bin."
+            ),
+            (
+                "## Interpretation\n\n"
+                f"{dropped_sentence} {spread_sentence} {divergence_sentence} "
+                "These diagnostics describe the MoM estimate only; they do not decide "
+                "whether EB shrinkage should be adopted."
+            ),
+            (
+                "Full provenance, bin definitions, and merge actions are in "
+                "`data/provenance/eb_dispersion_provenance.json`."
+            ),
+        ]
+    )
     REPORT_PATH.write_text(report + "\n")
 
 

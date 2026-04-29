@@ -1,5 +1,6 @@
-from road_risk.model.main import main
 import argparse
+
+from road_risk.model.main import main
 
 parser = argparse.ArgumentParser(description="Road risk model pipeline")
 parser.add_argument(

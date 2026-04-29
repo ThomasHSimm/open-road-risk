@@ -113,8 +113,7 @@ def _find_file(folder: Path, table: str) -> Path | None:
     all_csvs = sorted(folder.glob("*.csv"))
     if all_csvs:
         logger.debug(
-            f"  No match for table='{table}'. "
-            f"Files in folder: {[f.name for f in all_csvs]}"
+            f"  No match for table='{table}'. Files in folder: {[f.name for f in all_csvs]}"
         )
     else:
         logger.debug(f"  Folder appears empty or has no CSVs: {folder}")
@@ -170,8 +169,7 @@ def _load_single(
         before = len(df)
         df = df[df["police_force"].isin(force_codes)]
         logger.info(
-            f"    Filtered {before:,} → {len(df):,} rows "
-            f"(police_force in {sorted(force_codes)})"
+            f"    Filtered {before:,} → {len(df):,} rows (police_force in {sorted(force_codes)})"
         )
 
     # Validate expected columns are present
@@ -245,13 +243,9 @@ def load_stats19(
         logger.info(f"Loading table '{table}'")
         path = _find_file(folder, table)
         if path is None:
-            logger.warning(
-                f"  No file found for table='{table}' in {folder} — skipping"
-            )
+            logger.warning(f"  No file found for table='{table}' in {folder} — skipping")
             continue
-        df = _load_single(
-            path, table, force_set, years=years, valid_indices=valid_indices
-        )
+        df = _load_single(path, table, force_set, years=years, valid_indices=valid_indices)
         results[table] = df
         logger.info(f"'{table}' total rows loaded: {len(df):,}")
 
@@ -380,9 +374,7 @@ def main(
     if len(data) == 3:
         logger.info("Joining tables on collision_index...")
         joined = join_stats19(data)
-        print(
-            f"\n=== Joined table ===\n  {len(joined):,} rows  x  {joined.shape[1]} cols"
-        )
+        print(f"\n=== Joined table ===\n  {len(joined):,} rows  x  {joined.shape[1]} cols")
 
         # Save individual tables
         logger.info(f"Saving to: {output_folder}")

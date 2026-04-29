@@ -45,12 +45,12 @@ HISTORIC_COLS: list[str] = cfg["stats19"]["historic_cols"]
 
 # STATS19 first_road_class code → road prefix for name reconstruction
 ROAD_CLASS_PREFIX = {
-    1: "M",   # Motorway
-    2: "A",   # A(M) — motorway-standard A road
-    3: "A",   # A road
-    4: "B",   # B road
-    5: "C",   # C road
-    6: "",    # Unclassified
+    1: "M",  # Motorway
+    2: "A",  # A(M) — motorway-standard A road
+    3: "A",  # A road
+    4: "B",  # B road
+    5: "C",  # C road
+    6: "",  # Unclassified
 }
 
 # GB bounding box for coordinate validation
@@ -64,6 +64,7 @@ COVID_YEARS: set[int] = set(cfg["years"]["covid"])
 # ---------------------------------------------------------------------------
 # STATS19
 # ---------------------------------------------------------------------------
+
 
 def clean_stats19(
     data: dict[str, pd.DataFrame],
@@ -117,9 +118,7 @@ def clean_stats19(
             col["day_name"] = col["date"].dt.day_name()
 
         if "time" in col.columns:
-            col["hour"] = pd.to_datetime(
-                col["time"], format="%H:%M", errors="coerce"
-            ).dt.hour
+            col["hour"] = pd.to_datetime(col["time"], format="%H:%M", errors="coerce").dt.hour
 
         # Use collision_year if available, else derive from date
         if "collision_year" not in col.columns and "date" in col.columns:
@@ -129,8 +128,7 @@ def clean_stats19(
         if "collision_year" in col.columns:
             col["is_covid"] = col["collision_year"].isin(COVID_YEARS)
             logger.info(
-                f"  COVID rows flagged: {col['is_covid'].sum():,} "
-                f"({col['is_covid'].mean():.1%})"
+                f"  COVID rows flagged: {col['is_covid'].sum():,} ({col['is_covid'].mean():.1%})"
             )
 
         # Coordinate note: spatial work uses lat/lon. Current raw STATS19 BNG
@@ -152,7 +150,7 @@ def clean_stats19(
             n_bad = bad_coords.sum()
             if n_bad:
                 logger.warning(
-                    f"  {n_bad:,} rows ({n_bad/len(col):.1%}) have invalid/suspect "
+                    f"  {n_bad:,} rows ({n_bad / len(col):.1%}) have invalid/suspect "
                     f"coordinates — flagged as coords_valid=False (not dropped)"
                 )
 
@@ -176,7 +174,6 @@ def clean_stats19(
         logger.info(f"Casualties: {len(cas):,} rows (no changes)")
 
     return cleaned
-
 
 
 # ---------------------------------------------------------------------------
@@ -235,24 +232,18 @@ def _validate_lsoa_coords(col: pd.DataFrame) -> pd.DataFrame:
         lsoa[["LSOA21CD", "lsoa_lat", "lsoa_lon"]],
         left_on="lsoa_of_accident_location",
         right_on="LSOA21CD",
-        how="left"
+        how="left",
     )
 
-    has_both = (
-        col["latitude"].notna() & col["longitude"].notna() &
-        col["lsoa_lat"].notna()
-    )
+    has_both = col["latitude"].notna() & col["longitude"].notna() & col["lsoa_lat"].notna()
 
     # Haversine distance (metres) between collision and LSOA centroid
     R = 6_371_000.0
     lat1 = np.radians(col.loc[has_both, "latitude"].values)
     lat2 = np.radians(col.loc[has_both, "lsoa_lat"].values)
     dlat = lat2 - lat1
-    dlon = np.radians(
-        col.loc[has_both, "longitude"].values -
-        col.loc[has_both, "lsoa_lon"].values
-    )
-    a = np.sin(dlat/2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2)**2
+    dlon = np.radians(col.loc[has_both, "longitude"].values - col.loc[has_both, "lsoa_lon"].values)
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
     dist_m = 2 * R * np.arcsin(np.sqrt(a))
 
     col.loc[has_both, "lsoa_dist_m"] = dist_m
@@ -263,7 +254,7 @@ def _validate_lsoa_coords(col: pd.DataFrame) -> pd.DataFrame:
     n_suspect = col["coords_suspect"].sum()
     logger.info(
         f"  LSOA validation: {n_suspect:,} collisions flagged as coords_suspect "
-        f"({n_suspect/len(col):.1%}) | using haversine lat/lon distance"
+        f"({n_suspect / len(col):.1%}) | using haversine lat/lon distance"
     )
     return col
 
@@ -301,7 +292,7 @@ def _add_road_name_clean(col: pd.DataFrame) -> pd.DataFrame:
     n_named = (col["road_name_clean"] != "").sum()
     logger.info(
         f"  road_name_clean: {n_named:,} / {len(col):,} collisions have a named road "
-        f"({n_named/len(col):.1%}) — remainder will use Stage 2 spatial snap"
+        f"({n_named / len(col):.1%}) — remainder will use Stage 2 spatial snap"
     )
     return col
 
@@ -309,6 +300,7 @@ def _add_road_name_clean(col: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # AADF
 # ---------------------------------------------------------------------------
+
 
 def clean_aadf(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -382,6 +374,7 @@ def clean_aadf(df: pd.DataFrame) -> pd.DataFrame:
 # WebTRIS
 # ---------------------------------------------------------------------------
 
+
 def clean_webtris(df: pd.DataFrame) -> pd.DataFrame:
     """
     Clean and aggregate WebTRIS monthly data to annual grain.
@@ -434,8 +427,8 @@ def clean_webtris(df: pd.DataFrame) -> pd.DataFrame:
 
     # Identify flow and percentage columns
     flow_cols = [c for c in df.columns if c.startswith("adt") or c.startswith("awt")]
-    pct_cols  = [c for c in flow_cols if "percentage" in c]
-    vol_cols  = [c for c in flow_cols if "percentage" not in c]
+    pct_cols = [c for c in flow_cols if "percentage" in c]
+    vol_cols = [c for c in flow_cols if "percentage" not in c]
 
     if not flow_cols:
         logger.warning("No adt/awt columns found in WebTRIS data — check column names")
@@ -449,8 +442,11 @@ def clean_webtris(df: pd.DataFrame) -> pd.DataFrame:
     # Volumes: mean daily flow across months (already a daily average)
     # Percentages: mean across months
     group_cols = ["site_id", "year"] if year_col else ["site_id"]
-    non_numeric = [c for c in df.columns if c not in flow_cols + group_cols
-                   and df[c].dtype == object and c != "monthname"]
+    non_numeric = [
+        c
+        for c in df.columns
+        if c not in flow_cols + group_cols and df[c].dtype == object and c != "monthname"
+    ]
 
     agg_dict = {c: "mean" for c in vol_cols + pct_cols if c in df.columns}
 
@@ -465,32 +461,30 @@ def clean_webtris(df: pd.DataFrame) -> pd.DataFrame:
     #   large_vehicle → hgv      |   hour window kept as suffix _Nh
     rename_map = {
         # 24-hour (all-day totals)
-        "adt24hour":                    "all_flow",
-        "adt24largevehiclepercentage":  "hgv_pct",
-        "awt24hour":                    "weekday_flow",
-        "awt24largevehiclepercentage":  "hgv_weekday_pct",
+        "adt24hour": "all_flow",
+        "adt24largevehiclepercentage": "hgv_pct",
+        "awt24hour": "weekday_flow",
+        "awt24largevehiclepercentage": "hgv_weekday_pct",
         # Sub-day windows used for time-zone derivation
-        "adt18hour":                    "all_flow_18h",
-        "adt18largevehiclepercentage":  "hgv_pct_18h",
-        "awt18hour":                    "weekday_flow_18h",
-        "awt18largevehiclepercentage":  "hgv_weekday_pct_18h",
-        "adt16hour":                    "all_flow_16h",
-        "adt16largevehiclepercentage":  "hgv_pct_16h",
-        "awt16hour":                    "weekday_flow_16h",
-        "awt16largevehiclepercentage":  "hgv_weekday_pct_16h",
-        "adt12hour":                    "all_flow_12h",
-        "adt12largevehiclepercentage":  "hgv_pct_12h",
-        "awt12hour":                    "weekday_flow_12h",
-        "awt12largevehiclepercentage":  "hgv_weekday_pct_12h",
+        "adt18hour": "all_flow_18h",
+        "adt18largevehiclepercentage": "hgv_pct_18h",
+        "awt18hour": "weekday_flow_18h",
+        "awt18largevehiclepercentage": "hgv_weekday_pct_18h",
+        "adt16hour": "all_flow_16h",
+        "adt16largevehiclepercentage": "hgv_pct_16h",
+        "awt16hour": "weekday_flow_16h",
+        "awt16largevehiclepercentage": "hgv_weekday_pct_16h",
+        "adt12hour": "all_flow_12h",
+        "adt12largevehiclepercentage": "hgv_pct_12h",
+        "awt12hour": "weekday_flow_12h",
+        "awt12largevehiclepercentage": "hgv_weekday_pct_12h",
     }
     annual = annual.rename(columns={k: v for k, v in rename_map.items() if k in annual.columns})
 
     # Derived weekend flow: (7 × all_flow - 5 × weekday_flow) / 2
     # Guard: negative values indicate data inconsistency → set to NaN
     if "all_flow" in annual.columns and "weekday_flow" in annual.columns:
-        annual["weekend_flow"] = (
-            7 * annual["all_flow"] - 5 * annual["weekday_flow"]
-        ) / 2
+        annual["weekend_flow"] = (7 * annual["all_flow"] - 5 * annual["weekday_flow"]) / 2
         n_neg = (annual["weekend_flow"] < 0).sum()
         if n_neg:
             logger.warning(
@@ -544,16 +538,16 @@ def _derive_time_zones(df: pd.DataFrame) -> pd.DataFrame:
         return df
 
     # Zone vehicle totals (full window, not per-hour)
-    zone_peak       = df["all_flow_12h"]
-    zone_prepeak    = df["all_flow_16h"] - df["all_flow_12h"]
+    zone_peak = df["all_flow_12h"]
+    zone_prepeak = df["all_flow_16h"] - df["all_flow_12h"]
     zone_preoffpeak = df["all_flow_18h"] - df["all_flow_16h"]
-    zone_offpeak    = df["all_flow"]     - df["all_flow_18h"]
+    zone_offpeak = df["all_flow"] - df["all_flow_18h"]
 
     # Per-hour flow rates
-    df["flow_ph_core_daytime"]       = zone_peak       / 12
-    df["flow_ph_shoulder"]    = zone_prepeak     / 4
-    df["flow_ph_late_evening"] = zone_preoffpeak  / 2
-    df["flow_ph_overnight"]    = zone_offpeak     / 6
+    df["flow_ph_core_daytime"] = zone_peak / 12
+    df["flow_ph_shoulder"] = zone_prepeak / 4
+    df["flow_ph_late_evening"] = zone_preoffpeak / 2
+    df["flow_ph_overnight"] = zone_offpeak / 6
 
     # HGV per-hour — derive by differencing *cumulative HGV counts*, not by
     # applying cumulative HGV% to marginal flow bands (which mixes cumulative
@@ -568,37 +562,36 @@ def _derive_time_zones(df: pd.DataFrame) -> pd.DataFrame:
         cum_hgv_12h = df["all_flow_12h"] * df["hgv_pct_12h"] / 100
         cum_hgv_16h = df["all_flow_16h"] * df["hgv_pct_16h"] / 100
         cum_hgv_18h = df["all_flow_18h"] * df["hgv_pct_18h"] / 100
-        cum_hgv_24h = df["all_flow"]     * df["hgv_pct"]     / 100
+        cum_hgv_24h = df["all_flow"] * df["hgv_pct"] / 100
 
-        zone_hgv_peak       = cum_hgv_12h
-        zone_hgv_prepeak    = cum_hgv_16h - cum_hgv_12h
+        zone_hgv_peak = cum_hgv_12h
+        zone_hgv_prepeak = cum_hgv_16h - cum_hgv_12h
         zone_hgv_preoffpeak = cum_hgv_18h - cum_hgv_16h
-        zone_hgv_offpeak    = cum_hgv_24h - cum_hgv_18h
+        zone_hgv_offpeak = cum_hgv_24h - cum_hgv_18h
 
-        df["hgv_ph_core_daytime"]       = zone_hgv_peak       / 12
-        df["hgv_ph_shoulder"]    = zone_hgv_prepeak     / 4
-        df["hgv_ph_late_evening"] = zone_hgv_preoffpeak  / 2
-        df["hgv_ph_overnight"]    = zone_hgv_offpeak     / 6
+        df["hgv_ph_core_daytime"] = zone_hgv_peak / 12
+        df["hgv_ph_shoulder"] = zone_hgv_prepeak / 4
+        df["hgv_ph_late_evening"] = zone_hgv_preoffpeak / 2
+        df["hgv_ph_overnight"] = zone_hgv_offpeak / 6
 
         # Sanity check: reconstructed daily HGV should equal cum_hgv_24h
         recon = zone_hgv_peak + zone_hgv_prepeak + zone_hgv_preoffpeak + zone_hgv_offpeak
         recon_ratio = (recon / cum_hgv_24h.replace(0, np.nan)).dropna()
         n_bad = ((recon_ratio < 0.98) | (recon_ratio > 1.02)).sum()
         if n_bad:
-            logger.warning(
-                f"  HGV time-zone: {n_bad} rows outside 98–102% reconciliation band"
-            )
+            logger.warning(f"  HGV time-zone: {n_bad} rows outside 98–102% reconciliation band")
     else:
-        logger.warning("HGV time-zone columns skipped — missing: "
-                       + str([c for c in hgv_needed if c not in df.columns]))
+        logger.warning(
+            "HGV time-zone columns skipped — missing: "
+            + str([c for c in hgv_needed if c not in df.columns])
+        )
 
     # Peakiness ratio — how much more intense is peak vs night
-    df["core_overnight_ratio"] = (
-        df["flow_ph_core_daytime"] / df["flow_ph_overnight"].replace(0, np.nan)
+    df["core_overnight_ratio"] = df["flow_ph_core_daytime"] / df["flow_ph_overnight"].replace(
+        0, np.nan
     )
 
-    new_cols = [c for c in df.columns
-                if c.startswith(("flow_ph_", "hgv_ph_", "peak_offpeak"))]
+    new_cols = [c for c in df.columns if c.startswith(("flow_ph_", "hgv_ph_", "peak_offpeak"))]
     logger.info(
         f"  Time-zone features derived: {len(new_cols)} columns | "
         f"{df[new_cols].notna().all(axis=1).sum():,} / {len(df):,} rows fully populated"
@@ -609,6 +602,7 @@ def _derive_time_zones(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # MRDB
 # ---------------------------------------------------------------------------
+
 
 def clean_mrdb(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
@@ -651,16 +645,14 @@ def clean_mrdb(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     gdf["link_id"] = gdf.index + 1
 
     # Standardise road name: 'M62', 'A64', 'B1234' etc.
-    road_col = "road_name" if "road_name" in gdf.columns else (
-        "RoadNumber" if "RoadNumber" in gdf.columns else None
+    road_col = (
+        "road_name"
+        if "road_name" in gdf.columns
+        else ("RoadNumber" if "RoadNumber" in gdf.columns else None)
     )
     if road_col:
         gdf["road_name_clean"] = (
-            gdf[road_col]
-            .fillna("")
-            .str.strip()
-            .str.upper()
-            .str.replace(r"\s+", "", regex=True)
+            gdf[road_col].fillna("").str.strip().str.upper().str.replace(r"\s+", "", regex=True)
         )
         # Ensure road_name column exists with standard name
         if road_col != "road_name":
@@ -670,8 +662,10 @@ def clean_mrdb(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         gdf["road_name_clean"] = ""
 
     # count_point_id — normalise to string for joining to AADF
-    cp_col = "count_point_id" if "count_point_id" in gdf.columns else (
-        "CP_Number" if "CP_Number" in gdf.columns else None
+    cp_col = (
+        "count_point_id"
+        if "count_point_id" in gdf.columns
+        else ("CP_Number" if "CP_Number" in gdf.columns else None)
     )
     if cp_col:
         gdf["count_point_id"] = gdf[cp_col].astype(str).str.strip()
@@ -679,9 +673,7 @@ def clean_mrdb(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         if cp_col != "count_point_id":
             gdf = gdf.drop(columns=[cp_col])
         n_with_cp = gdf["count_point_id"].notna().sum()
-        logger.info(
-            f"  count_point_id: {n_with_cp:,} / {len(gdf):,} links have a CP number"
-        )
+        logger.info(f"  count_point_id: {n_with_cp:,} / {len(gdf):,} links have a CP number")
 
     logger.info(
         f"MRDB cleaned: {len(gdf):,} links | "
@@ -693,6 +685,7 @@ def clean_mrdb(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 # ---------------------------------------------------------------------------
 # Save helpers
 # ---------------------------------------------------------------------------
+
 
 def save_cleaned(
     data: dict | pd.DataFrame | gpd.GeoDataFrame,
@@ -733,6 +726,7 @@ def save_cleaned(
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     """
     Load all processed parquets, clean each source, and save to
@@ -740,8 +734,8 @@ def main() -> None:
     """
 
     from road_risk.ingest.ingest_aadf import aggregate_bidirectional, load_aadf
-    from road_risk.ingest.legacy_ingest_mrdb import load_mrdb
     from road_risk.ingest.ingest_stats19 import load_stats19
+    from road_risk.ingest.legacy_ingest_mrdb import load_mrdb
 
     logging.basicConfig(
         level=logging.INFO,
@@ -767,11 +761,10 @@ def main() -> None:
     # --- WebTRIS ------------------------------------------------------------
     logger.info("=== WebTRIS ===")
     webtris_raw_folder = _ROOT / cfg["paths"]["raw"]["webtris"]
-    webtris_chunks = sorted(
-        webtris_raw_folder.glob("site_*_*.parquet")
-    )
+    webtris_chunks = sorted(webtris_raw_folder.glob("site_*_*.parquet"))
     if webtris_chunks:
         from road_risk.ingest.ingest_webtris import combine_raw
+
         webtris_raw = combine_raw(webtris_raw_folder)
         webtris_clean = clean_webtris(webtris_raw)
 
@@ -784,8 +777,7 @@ def main() -> None:
             webtris_clean = webtris_clean.merge(sites, on="site_id", how="left")
             n_with_coords = webtris_clean["latitude"].notna().sum()
             logger.info(
-                f"  Site coordinates attached: {n_with_coords:,} / "
-                f"{len(webtris_clean):,} rows"
+                f"  Site coordinates attached: {n_with_coords:,} / {len(webtris_clean):,} rows"
             )
         else:
             logger.warning("sites.parquet not found — WebTRIS lat/lon will be missing")

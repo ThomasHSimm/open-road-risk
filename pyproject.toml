@@ -60,7 +60,29 @@ include = ["road_risk", "road_risk.*"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-select = ["E", "F", "W", "I", "UP"]
+extend-exclude = [
+    "*.ipynb",
+    "docs/",
+    "quarto/",
+    "reports/",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "B",   # flake8-bugbear
+    "I",   # isort
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long — formatter handles this
+    "B008",  # function call in default argument — common false positive
+]
+
+[tool.ruff.format]
+line-ending = "lf"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

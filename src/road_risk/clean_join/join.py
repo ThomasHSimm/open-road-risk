@@ -154,8 +154,7 @@ def snap_collisions_to_roads(
       snap_method      : 'attribute', 'spatial', or 'unmatched'
     """
     logger.info(
-        f"Snapping {len(collisions):,} collisions to "
-        f"{len(openroads):,} OS Open Roads links"
+        f"Snapping {len(collisions):,} collisions to {len(openroads):,} OS Open Roads links"
     )
 
     # --- Prepare collisions GeoDataFrame ------------------------------------
@@ -185,9 +184,7 @@ def snap_collisions_to_roads(
     coll_bng["snap_method"] = "unmatched"
 
     # --- Stage 1: Attribute match -------------------------------------------
-    named = coll_bng[
-        coll_bng["road_name_clean"].notna() & (coll_bng["road_name_clean"] != "")
-    ]
+    named = coll_bng[coll_bng["road_name_clean"].notna() & (coll_bng["road_name_clean"] != "")]
     logger.info(f"  Stage 1: {len(named):,} collisions have a named road")
 
     stage1_matched = 0
@@ -197,15 +194,13 @@ def snap_collisions_to_roads(
             continue
         matched = _nearest_link(group, road_links)
         coll_bng.loc[matched.index, "link_id"] = matched["link_id"].values
-        coll_bng.loc[matched.index, "snap_distance_m"] = matched[
-            "snap_distance_m"
-        ].values
+        coll_bng.loc[matched.index, "snap_distance_m"] = matched["snap_distance_m"].values
         coll_bng.loc[matched.index, "snap_method"] = "attribute"
         stage1_matched += len(matched)
 
     logger.info(
         f"  Stage 1 matched: {stage1_matched:,} / {len(named):,} "
-        f"({stage1_matched/max(len(named),1):.1%})"
+        f"({stage1_matched / max(len(named), 1):.1%})"
     )
 
     # --- Stage 2: Spatial fallback ------------------------------------------
@@ -218,14 +213,12 @@ def snap_collisions_to_roads(
         n_within = within_cap.sum()
 
         coll_bng.loc[matched2.index, "link_id"] = matched2["link_id"].values
-        coll_bng.loc[matched2.index, "snap_distance_m"] = matched2[
-            "snap_distance_m"
-        ].values
+        coll_bng.loc[matched2.index, "snap_distance_m"] = matched2["snap_distance_m"].values
         coll_bng.loc[matched2[within_cap].index, "snap_method"] = "spatial"
 
         logger.info(
             f"  Stage 2 matched within {spatial_cap_m}m: {n_within:,} / {len(unmatched):,} "
-            f"({n_within/max(len(unmatched),1):.1%})"
+            f"({n_within / max(len(unmatched), 1):.1%})"
         )
 
     # --- Reproject back to WGS84 and add invalid-coord rows ----------------
@@ -237,9 +230,7 @@ def snap_collisions_to_roads(
         invalid_rows["link_id"] = pd.NA
         invalid_rows["snap_distance_m"] = np.nan
         invalid_rows["snap_method"] = "invalid_coords"
-        invalid_gdf = gpd.GeoDataFrame(
-            invalid_rows, geometry=[None] * len(invalid_rows), crs=WGS84
-        )
+        invalid_gdf = gpd.GeoDataFrame(invalid_rows, geometry=[None] * len(invalid_rows), crs=WGS84)
         coll_out = pd.concat([coll_out, invalid_gdf], ignore_index=True)
 
     # Summary
@@ -366,9 +357,7 @@ def build_road_features(
         joined = joined[~joined.index.duplicated(keep="first")]
 
         # Nullify features beyond snap cap — distant match is not meaningful
-        feature_cols = [
-            c for c in aadf_keep if c not in ["latitude", "longitude", "year"]
-        ]
+        feature_cols = [c for c in aadf_keep if c not in ["latitude", "longitude", "year"]]
         beyond_cap = joined["aadf_snap_distance_m"] > aadf_snap_cap_m
         n_beyond = beyond_cap.sum()
         if n_beyond:
@@ -385,10 +374,7 @@ def build_road_features(
         # --- Street name fallback for links still beyond cap ----------------
         # For OpenRoads links with a street_name_clean, try matching to AADF
         # road_name_clean (normalised) — recovers named roads without numbers.
-        if (
-            "street_name_clean" in openroads.columns
-            and "road_name_clean" in aadf_trim.columns
-        ):
+        if "street_name_clean" in openroads.columns and "road_name_clean" in aadf_trim.columns:
             still_beyond = (
                 beyond_cap
                 & (
@@ -402,10 +388,7 @@ def build_road_features(
             )
 
             aadf_named = (
-                aadf_yr[
-                    aadf_yr.get("road_name_clean", pd.Series("", index=aadf_yr.index))
-                    != ""
-                ]
+                aadf_yr[aadf_yr.get("road_name_clean", pd.Series("", index=aadf_yr.index)) != ""]
                 if "road_name_clean" in aadf_yr.columns
                 else pd.DataFrame()
             )
@@ -432,14 +415,11 @@ def build_road_features(
                             if fc in row.index:
                                 joined.loc[joined["link_id"] == lid, fc] = row[fc]
                         joined.loc[joined["link_id"] == lid, "aadf_snap_distance_m"] = 0
-                        joined.loc[joined["link_id"] == lid, "aadf_join_method"] = (
-                            "name_match"
-                        )
+                        joined.loc[joined["link_id"] == lid, "aadf_join_method"] = "name_match"
                         n_name_matched += 1
                 if n_name_matched:
                     logger.info(
-                        f"    {year}: {n_name_matched:,} additional links matched "
-                        f"via street name"
+                        f"    {year}: {n_name_matched:,} additional links matched via street name"
                     )
 
         joined["aadf_join_method"] = joined.get(
@@ -451,14 +431,10 @@ def build_road_features(
             f"    {year}: {n_matched:,} / {len(roads_centroids):,} links matched "
             f"(mean dist: {joined.loc[~beyond_cap, 'aadf_snap_distance_m'].mean():.0f}m)"
         )
-        spatial_rows.append(
-            joined.drop(columns=["geometry", "index_right"], errors="ignore")
-        )
+        spatial_rows.append(joined.drop(columns=["geometry", "index_right"], errors="ignore"))
 
     if not spatial_rows:
-        logger.error(
-            "No AADF data joined — check aadf_clean.parquet exists and has rows"
-        )
+        logger.error("No AADF data joined — check aadf_clean.parquet exists and has rows")
         return pd.DataFrame()
 
     road_features = pd.concat(spatial_rows, ignore_index=True)
@@ -526,20 +502,17 @@ def _attach_webtris_to_aadf(
         # Null out WebTRIS features for AADF points beyond the distance cap.
         # sjoin_nearest with max_distance sets index_right=NaN for unmatched
         # rows but may still carry stale column values — explicitly null them.
-        wt_feature_cols = [c for c in wt_cols
-                           if c not in ["year", "latitude", "longitude"]]
+        wt_feature_cols = [c for c in wt_cols if c not in ["year", "latitude", "longitude"]]
         far = joined["webtris_snap_distance_m"].isna()
         if far.any():
             joined.loc[far, wt_feature_cols] = float("nan")
             logger.info(
                 f"  WebTRIS year {year}: {far.sum():,} / {len(joined):,} "
-                f"AADF points beyond {WEBTRIS_MAX_DIST_M/1000:.0f}km cap "
+                f"AADF points beyond {WEBTRIS_MAX_DIST_M / 1000:.0f}km cap "
                 f"— WebTRIS features set to NaN"
             )
 
-        result_frames.append(
-            joined.drop(columns=["geometry", "index_right"], errors="ignore")
-        )
+        result_frames.append(joined.drop(columns=["geometry", "index_right"], errors="ignore"))
 
     return pd.concat(result_frames, ignore_index=True)
 
@@ -585,12 +558,12 @@ def build_road_link_annual(
         logger.info(
             f"  Snap quality filter (score>=0.6): "
             f"{n_after:,} / {n_before:,} collisions retained "
-            f"({n_after/n_before:.1%})"
+            f"({n_after / n_before:.1%})"
         )
 
     logger.info(
         f"  Using {len(snapped):,} / {len(col):,} snapped collisions "
-        f"({len(snapped)/len(col):.1%})"
+        f"({len(snapped) / len(col):.1%})"
     )
 
     if "vehicle_type" in snapped.columns:
@@ -693,9 +666,7 @@ def build_road_link_annual(
 
         result["is_covid"] = result["year"].isin(COVID_YEARS)
 
-    logger.info(
-        f"Final road_link × year table: {len(result):,} rows × {result.shape[1]} cols"
-    )
+    logger.info(f"Final road_link × year table: {len(result):,} rows × {result.shape[1]} cols")
     if "collision_rate_per_mvkm" in result.columns:
         median_rate = result["collision_rate_per_mvkm"].median()
         logger.info(f"  Collision rate (median): {median_rate:.4f} per M veh-km")
@@ -760,9 +731,7 @@ def main() -> None:
     webtris_path = processed / "webtris/webtris_clean.parquet"
     webtris = pd.read_parquet(webtris_path) if webtris_path.exists() else None
     if webtris is None:
-        logger.warning(
-            "WebTRIS clean parquet not found — proceeding without sensor features"
-        )
+        logger.warning("WebTRIS clean parquet not found — proceeding without sensor features")
 
     # --- Run pipeline -------------------------------------------------------
     # Prefer clean_join/snap.py weighted output if it exists — it uses multi-criteria
@@ -792,18 +761,12 @@ def main() -> None:
     print(f"  Years   : {sorted(result['year'].unique())}")
     print(f"  Columns : {result.columns.tolist()}")
     if "collision_rate_per_mvkm" in result.columns:
-        print(
-            f"  Collision rate (median): {result['collision_rate_per_mvkm'].median():.4f}"
-        )
+        print(f"  Collision rate (median): {result['collision_rate_per_mvkm'].median():.4f}")
     if "pct_attribute_snapped" in result.columns:
-        print(
-            f"  Mean % attribute-snapped: {result['pct_attribute_snapped'].mean():.1%}"
-        )
+        print(f"  Mean % attribute-snapped: {result['pct_attribute_snapped'].mean():.1%}")
     if "road_classification" in result.columns:
         print("\n  Road classification breakdown:")
-        print(
-            result.groupby("road_classification")["collision_count"].sum().to_string()
-        )
+        print(result.groupby("road_classification")["collision_count"].sum().to_string())
 
     save_road_link_annual(result)
 

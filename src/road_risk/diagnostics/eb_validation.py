@@ -51,11 +51,7 @@ def _markdown_table(headers: list[str], rows: list[list[Any]]) -> str:
 def _n_years_by_link() -> pd.DataFrame:
     logger.info("Computing n_years by link from %s", AADT_PATH)
     aadt = pd.read_parquet(AADT_PATH, columns=["link_id", "year"])
-    return (
-        aadt.groupby("link_id", sort=False)["year"]
-        .nunique()
-        .reset_index(name="n_years")
-    )
+    return aadt.groupby("link_id", sort=False)["year"].nunique().reset_index(name="n_years")
 
 
 def _top_set(df: pd.DataFrame, score_col: str, k: int) -> set[Any]:
@@ -88,10 +84,7 @@ def _churn_set(k: int) -> set[Any]:
 
 def _percentile_rows(series: pd.Series, percentiles: list[float]) -> list[list[str]]:
     quantiles = series.quantile(percentiles)
-    return [
-        [f"p{int(p * 100)}", _format_float(float(quantiles.loc[p]))]
-        for p in percentiles
-    ]
+    return [[f"p{int(p * 100)}", _format_float(float(quantiles.loc[p]))] for p in percentiles]
 
 
 def _rank_array(df: pd.DataFrame, score_col: str) -> np.ndarray:
@@ -164,19 +157,21 @@ def _qualitative_rows(
             kind="mergesort",
         ).head(5)
         for _, row in subset[cols].iterrows():
-            rows.append([
-                label,
-                row["link_id"],
-                row.get("road_classification", ""),
-                _format_float(float(row["estimated_aadt"])),
-                int(row["collision_count"]),
-                int(row["n_years"]),
-                _format_float(float(row["predicted_xgb"])),
-                _format_float(float(row["predicted_eb"])),
-                _format_float(float(row["eb_weight"])),
-                _format_float(float(row["risk_percentile"])),
-                _format_float(float(row["risk_percentile_eb"])),
-            ])
+            rows.append(
+                [
+                    label,
+                    row["link_id"],
+                    row.get("road_classification", ""),
+                    _format_float(float(row["estimated_aadt"])),
+                    int(row["collision_count"]),
+                    int(row["n_years"]),
+                    _format_float(float(row["predicted_xgb"])),
+                    _format_float(float(row["predicted_eb"])),
+                    _format_float(float(row["eb_weight"])),
+                    _format_float(float(row["risk_percentile"])),
+                    _format_float(float(row["risk_percentile_eb"])),
+                ]
+            )
     return rows
 
 
@@ -209,37 +204,40 @@ def _k_sensitivity(
     for col, values in sensitivity.items():
         sensitivity_df[col] = values
 
-    membership_rows = [
-        [label, f"{len(top_sets[label]):,}"]
-        for label in k_values
-    ]
+    membership_rows = [[label, f"{len(top_sets[label]):,}"] for label in k_values]
     overlap_rows = []
     spearman_rows = []
     labels = list(k_values)
     for left, right in itertools.combinations(labels, 2):
         inter = len(top_sets[left] & top_sets[right])
         union = len(top_sets[left] | top_sets[right])
-        overlap_rows.append([
-            f"{left} vs {right}",
-            f"{inter:,}",
-            f"{union:,}",
-            _format_float(inter / union if union else float("nan")),
-        ])
-        spearman_rows.append([
-            f"{left} vs {right}",
-            _format_float(_pearson_corr(ranks[left], ranks[right])),
-        ])
+        overlap_rows.append(
+            [
+                f"{left} vs {right}",
+                f"{inter:,}",
+                f"{union:,}",
+                _format_float(inter / union if union else float("nan")),
+            ]
+        )
+        spearman_rows.append(
+            [
+                f"{left} vs {right}",
+                _format_float(_pearson_corr(ranks[left], ranks[right])),
+            ]
+        )
 
     production = sensitivity_df["risk_percentile_eb_positive_weighted"]
     movement_rows = []
     for label in ["link_year_weighted", "median"]:
         delta = (sensitivity_df[f"risk_percentile_eb_{label}"] - production).abs()
-        movement_rows.append([
-            f"{label} vs positive_weighted",
-            f"{int((delta > 1).sum()):,}",
-            f"{int((delta > 5).sum()):,}",
-            f"{int((delta > 10).sum()):,}",
-        ])
+        movement_rows.append(
+            [
+                f"{label} vs positive_weighted",
+                f"{int((delta > 1).sum()):,}",
+                f"{int((delta > 5).sum()):,}",
+                f"{int((delta > 10).sum()):,}",
+            ]
+        )
 
     return sensitivity_df, membership_rows, overlap_rows, spearman_rows, movement_rows
 
@@ -303,102 +301,103 @@ def _write_report(
         ),
     ]
 
-    report = "\n\n".join([
-        "# EB Single-Run Validation",
-        (
-            "This report applies EB-style shrinkage to the current pooled Stage 2 "
-            "risk scores without modifying production `risk_scores.parquet`. The "
-            "production EB run uses the positive-event weighted dispersion from "
-            "`data/provenance/eb_dispersion_provenance.json`; see "
-            "`quarto/methodology/empirical-bayes-shrinkage.qmd` for the design "
-            "and `reports/eb_dispersion.md` for the MoM k diagnostics."
-        ),
-        "## 6.1 Single-Run Ranking Movement\n\n"
-        + "### n_years Distribution\n\n"
-        + _markdown_table(["metric", "value"], n_year_rows)
-        + "\n\n### k Values\n\n"
-        + _markdown_table(["k", "value"], k_rows)
-        + "\n\n### eb_weight Distribution\n\n"
-        + _markdown_table(["percentile", "eb_weight"], weight_rows)
-        + "\n\n### Percentile Movement\n\n"
-        + _markdown_table(["metric", "value"], move_rows),
-        "## 6.2 Top-1% Comparison\n\n"
-        + _markdown_table(
-            ["metric", "value"],
-            [
-                ["top_1pct_count", f"{top_stats['top_k']:,}"],
-                ["intersection", f"{top_stats['intersection']:,}"],
-                ["intersection_pct_of_top1", f"{top_stats['intersection_pct']:.2f}%"],
-                ["entering_EB_top1", f"{len(top_stats['entrants']):,}"],
-                ["leaving_EB_top1", f"{len(top_stats['leavers']):,}"],
-            ],
-        )
-        + "\n\n### Entrants By Road Class\n\n"
-        + _markdown_table(["road_classification", "count"], entrant_class_rows)
-        + "\n\n### Leavers By Road Class\n\n"
-        + _markdown_table(["road_classification", "count"], leaver_class_rows),
-        "## 6.3 Qualitative Link Review\n\n"
-        + _markdown_table(
-            [
-                "direction",
-                "link_id",
-                "road_classification",
-                "estimated_aadt",
-                "collision_count",
-                "n_years",
-                "predicted_xgb",
-                "predicted_eb",
-                "eb_weight",
-                "risk_percentile",
-                "risk_percentile_eb",
-            ],
-            qualitative,
-        ),
-        (
-            "## 6.4 Seed-Churn Intersection Diagnostic\n\n"
-            "EB should disproportionately affect borderline links, which should "
-            "overlap with the population that seed-churns. If churning links do "
-            "not show systematically larger EB movement than the general "
-            "population, EB is probably not addressing the source of seed-induced "
-            "ranking instability. This is a diagnostic, not a pass/fail criterion.\n\n"
+    report = "\n\n".join(
+        [
+            "# EB Single-Run Validation",
+            (
+                "This report applies EB-style shrinkage to the current pooled Stage 2 "
+                "risk scores without modifying production `risk_scores.parquet`. The "
+                "production EB run uses the positive-event weighted dispersion from "
+                "`data/provenance/eb_dispersion_provenance.json`; see "
+                "`quarto/methodology/empirical-bayes-shrinkage.qmd` for the design "
+                "and `reports/eb_dispersion.md` for the MoM k diagnostics."
+            ),
+            "## 6.1 Single-Run Ranking Movement\n\n"
+            + "### n_years Distribution\n\n"
+            + _markdown_table(["metric", "value"], n_year_rows)
+            + "\n\n### k Values\n\n"
+            + _markdown_table(["k", "value"], k_rows)
+            + "\n\n### eb_weight Distribution\n\n"
+            + _markdown_table(["percentile", "eb_weight"], weight_rows)
+            + "\n\n### Percentile Movement\n\n"
+            + _markdown_table(["metric", "value"], move_rows),
+            "## 6.2 Top-1% Comparison\n\n"
+            + _markdown_table(
+                ["metric", "value"],
+                [
+                    ["top_1pct_count", f"{top_stats['top_k']:,}"],
+                    ["intersection", f"{top_stats['intersection']:,}"],
+                    ["intersection_pct_of_top1", f"{top_stats['intersection_pct']:.2f}%"],
+                    ["entering_EB_top1", f"{len(top_stats['entrants']):,}"],
+                    ["leaving_EB_top1", f"{len(top_stats['leavers']):,}"],
+                ],
+            )
+            + "\n\n### Entrants By Road Class\n\n"
+            + _markdown_table(["road_classification", "count"], entrant_class_rows)
+            + "\n\n### Leavers By Road Class\n\n"
+            + _markdown_table(["road_classification", "count"], leaver_class_rows),
+            "## 6.3 Qualitative Link Review\n\n"
             + _markdown_table(
                 [
-                    "population",
-                    "n_links",
-                    "abs_delta_gt5",
-                    "abs_delta_gt5_pct",
-                    "gt5_toward_top1",
-                    "gt5_away_top1",
-                    "abs_delta_gt10",
-                    "abs_delta_gt10_pct",
-                    "gt10_toward_top1",
-                    "gt10_away_top1",
+                    "direction",
+                    "link_id",
+                    "road_classification",
+                    "estimated_aadt",
+                    "collision_count",
+                    "n_years",
+                    "predicted_xgb",
+                    "predicted_eb",
+                    "eb_weight",
+                    "risk_percentile",
+                    "risk_percentile_eb",
                 ],
-                churn_rows,
+                qualitative,
+            ),
+            (
+                "## 6.4 Seed-Churn Intersection Diagnostic\n\n"
+                "EB should disproportionately affect borderline links, which should "
+                "overlap with the population that seed-churns. If churning links do "
+                "not show systematically larger EB movement than the general "
+                "population, EB is probably not addressing the source of seed-induced "
+                "ranking instability. This is a diagnostic, not a pass/fail criterion.\n\n"
+                + _markdown_table(
+                    [
+                        "population",
+                        "n_links",
+                        "abs_delta_gt5",
+                        "abs_delta_gt5_pct",
+                        "gt5_toward_top1",
+                        "gt5_away_top1",
+                        "abs_delta_gt10",
+                        "abs_delta_gt10_pct",
+                        "gt10_toward_top1",
+                        "gt10_away_top1",
+                    ],
+                    churn_rows,
+                )
+            ),
+            "## 7 k Sensitivity\n\n"
+            + "### Top-1% Membership Count\n\n"
+            + _markdown_table(["k", "top_1pct_count"], sensitivity_membership)
+            + "\n\n### Pairwise Top-1% Overlap\n\n"
+            + _markdown_table(["pair", "intersection", "union", "jaccard"], sensitivity_overlap)
+            + "\n\n### Pairwise Spearman\n\n"
+            + _markdown_table(["pair", "spearman"], sensitivity_spearman)
+            + "\n\n### Percentile Movement Versus Production k\n\n"
+            + _markdown_table(
+                ["comparison", "abs_delta_gt1", "abs_delta_gt5", "abs_delta_gt10"],
+                sensitivity_movement,
             )
-        ),
-        "## 7 k Sensitivity\n\n"
-        + "### Top-1% Membership Count\n\n"
-        + _markdown_table(["k", "top_1pct_count"], sensitivity_membership)
-        + "\n\n### Pairwise Top-1% Overlap\n\n"
-        + _markdown_table(["pair", "intersection", "union", "jaccard"], sensitivity_overlap)
-        + "\n\n### Pairwise Spearman\n\n"
-        + _markdown_table(["pair", "spearman"], sensitivity_spearman)
-        + "\n\n### Percentile Movement Versus Production k\n\n"
-        + _markdown_table(
-            ["comparison", "abs_delta_gt1", "abs_delta_gt5", "abs_delta_gt10"],
-            sensitivity_movement,
-        )
-        + "\n\nIf top-1% membership or Spearman moves materially across the three k values, "
-        "the borrowed-k method is operationally fragile under non-constant dispersion. "
-        "Material vs not-material is left for human review from the numbers above.",
-        "## Closing Recommendation\n\n"
-        "The diagnostics above should be read as evidence for whether EB is useful, "
-        "ambiguous, or problematic. This run produces the EB-adjusted scores and "
-        "single-run validation only; cross-seed EB stability is reserved for session 3.\n\n"
-        "### Observations Against Priors\n\n"
-        + "\n".join(f"- {item}" for item in observations),
-    ])
+            + "\n\nIf top-1% membership or Spearman moves materially across the three k values, "
+            "the borrowed-k method is operationally fragile under non-constant dispersion. "
+            "Material vs not-material is left for human review from the numbers above.",
+            "## Closing Recommendation\n\n"
+            "The diagnostics above should be read as evidence for whether EB is useful, "
+            "ambiguous, or problematic. This run produces the EB-adjusted scores and "
+            "single-run validation only; cross-seed EB stability is reserved for session 3.\n\n"
+            "### Observations Against Priors\n\n" + "\n".join(f"- {item}" for item in observations),
+        ]
+    )
     REPORT_PATH.write_text(report + "\n")
 
 
@@ -451,30 +450,34 @@ def run_validation() -> dict[str, Any]:
         summary = _movement_summary(scores, churn)
         if k == 1000:
             top1000_gt10 = summary["gt10_count"]
-        churn_table_rows.append([
-            label,
-            f"{summary['n']:,}",
-            f"{summary['gt5_count']:,}",
-            f"{summary['gt5_pct']:.2f}%",
-            f"{summary['gt5_toward_top1']:,}",
-            f"{summary['gt5_away_top1']:,}",
-            f"{summary['gt10_count']:,}",
-            f"{summary['gt10_pct']:.2f}%",
-            f"{summary['gt10_toward_top1']:,}",
-            f"{summary['gt10_away_top1']:,}",
-        ])
-    churn_table_rows.append([
-        "full_scored_population",
-        f"{full_summary['n']:,}",
-        f"{full_summary['gt5_count']:,}",
-        f"{full_summary['gt5_pct']:.2f}%",
-        f"{full_summary['gt5_toward_top1']:,}",
-        f"{full_summary['gt5_away_top1']:,}",
-        f"{full_summary['gt10_count']:,}",
-        f"{full_summary['gt10_pct']:.2f}%",
-        f"{full_summary['gt10_toward_top1']:,}",
-        f"{full_summary['gt10_away_top1']:,}",
-    ])
+        churn_table_rows.append(
+            [
+                label,
+                f"{summary['n']:,}",
+                f"{summary['gt5_count']:,}",
+                f"{summary['gt5_pct']:.2f}%",
+                f"{summary['gt5_toward_top1']:,}",
+                f"{summary['gt5_away_top1']:,}",
+                f"{summary['gt10_count']:,}",
+                f"{summary['gt10_pct']:.2f}%",
+                f"{summary['gt10_toward_top1']:,}",
+                f"{summary['gt10_away_top1']:,}",
+            ]
+        )
+    churn_table_rows.append(
+        [
+            "full_scored_population",
+            f"{full_summary['n']:,}",
+            f"{full_summary['gt5_count']:,}",
+            f"{full_summary['gt5_pct']:.2f}%",
+            f"{full_summary['gt5_toward_top1']:,}",
+            f"{full_summary['gt5_away_top1']:,}",
+            f"{full_summary['gt10_count']:,}",
+            f"{full_summary['gt10_pct']:.2f}%",
+            f"{full_summary['gt10_toward_top1']:,}",
+            f"{full_summary['gt10_away_top1']:,}",
+        ]
+    )
 
     (
         _,
@@ -517,8 +520,7 @@ def main() -> None:
     result = run_validation()
     print(f"production_k_used={result['production_k']:.10g}")
     print(
-        "top1_intersection="
-        f"{result['top1_intersection']} ({result['top1_intersection_pct']:.2f}%)"
+        f"top1_intersection={result['top1_intersection']} ({result['top1_intersection_pct']:.2f}%)"
     )
     print(f"median_abs_percentile_change={result['median_abs_delta']:.10g}")
     print(f"top1000_churn_links_eb_change_gt10={result['top1000_churn_gt10']}")

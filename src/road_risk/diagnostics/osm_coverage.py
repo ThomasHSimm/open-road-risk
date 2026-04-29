@@ -26,32 +26,37 @@ The script will exit early with a clear message if OSM columns are absent.
 
 import sys
 import textwrap
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
 from road_risk.config import _ROOT as ROOT
 
 # ROOT = Path(__file__).resolve().parents[3]
-NET_PATH    = ROOT / "data/features/network_features.parquet"
-OR_PATH     = ROOT / "data/processed/shapefiles/openroads.parquet"
-REPORT_DIR  = ROOT / "quarto" / "analysis"
-OUT_CSV     = REPORT_DIR / "osm-coverage-by-class.csv"
-OUT_QMD     = REPORT_DIR / "osm-coverage.qmd"
+NET_PATH = ROOT / "data/features/network_features.parquet"
+OR_PATH = ROOT / "data/processed/shapefiles/openroads.parquet"
+REPORT_DIR = ROOT / "quarto" / "analysis"
+OUT_CSV = REPORT_DIR / "osm-coverage-by-class.csv"
+OUT_QMD = REPORT_DIR / "osm-coverage.qmd"
 
 OSM_COLUMNS = ["speed_limit_mph", "lanes", "lit", "is_unpaved"]
 NUMERIC_OSM = ["speed_limit_mph", "lanes"]
 
 ROAD_CLASS_ORDER = [
-    "Motorway", "A Road", "B Road",
-    "Classified Unnumbered", "Unclassified",
-    "Not Classified", "Unknown",
+    "Motorway",
+    "A Road",
+    "B Road",
+    "Classified Unnumbered",
+    "Unclassified",
+    "Not Classified",
+    "Unknown",
 ]
 
 
 # ---------------------------------------------------------------------------
 # Load
 # ---------------------------------------------------------------------------
+
 
 def load_data():
     if not NET_PATH.exists():
@@ -67,7 +72,7 @@ def load_data():
 
     # Check OSM columns are present
     present = [c for c in OSM_COLUMNS if c in net.columns]
-    absent  = [c for c in OSM_COLUMNS if c not in net.columns]
+    absent = [c for c in OSM_COLUMNS if c not in net.columns]
 
     if not present:
         sys.exit(
@@ -87,6 +92,7 @@ def load_data():
     print("Loading OpenRoads for road_classification ...")
     try:
         import geopandas as gpd
+
         or_gdf = gpd.read_parquet(OR_PATH)
         or_df = pd.DataFrame(or_gdf[["link_id", "road_classification"]].copy())
 
@@ -112,7 +118,7 @@ def load_data():
 
     # Coarse regional band: 1° latitude bands (roughly 111 km)
     merged["lat_band"] = merged["latitude"].apply(
-        lambda x: f"{int(x):.0f}–{int(x)+1:.0f}°N" if pd.notna(x) else "Unknown"
+        lambda x: f"{int(x):.0f}–{int(x) + 1:.0f}°N" if pd.notna(x) else "Unknown"
     )
 
     return merged, present
@@ -121,6 +127,7 @@ def load_data():
 # ---------------------------------------------------------------------------
 # Coverage by road class
 # ---------------------------------------------------------------------------
+
 
 def coverage_by_class(df: pd.DataFrame, osm_cols: list) -> pd.DataFrame:
     rows = []
@@ -131,15 +138,15 @@ def coverage_by_class(df: pd.DataFrame, osm_cols: list) -> pd.DataFrame:
         for col in osm_cols:
             if col not in df.columns:
                 continue
-            n_total   = len(sub)
-            n_filled  = sub[col].notna().sum()
-            pct       = n_filled / n_total * 100
+            n_total = len(sub)
+            n_filled = sub[col].notna().sum()
+            pct = n_filled / n_total * 100
 
             row = {
-                "road_class":  rc,
-                "column":      col,
-                "n_links":     n_total,
-                "n_filled":    int(n_filled),
+                "road_class": rc,
+                "column": col,
+                "n_links": n_total,
+                "n_filled": int(n_filled),
                 "pct_coverage": round(pct, 1),
             }
 
@@ -148,11 +155,11 @@ def coverage_by_class(df: pd.DataFrame, osm_cols: list) -> pd.DataFrame:
                 vals = sub[col].dropna()
                 if len(vals) > 0:
                     q = vals.quantile([0.25, 0.5, 0.75])
-                    row["min"]    = round(float(vals.min()), 1)
-                    row["q25"]    = round(float(q[0.25]), 1)
+                    row["min"] = round(float(vals.min()), 1)
+                    row["q25"] = round(float(q[0.25]), 1)
                     row["median"] = round(float(q[0.50]), 1)
-                    row["q75"]    = round(float(q[0.75]), 1)
-                    row["max"]    = round(float(vals.max()), 1)
+                    row["q75"] = round(float(q[0.75]), 1)
+                    row["max"] = round(float(vals.max()), 1)
                     row["n_distinct"] = int(vals.nunique())
                 else:
                     row["min"] = row["q25"] = row["median"] = row["q75"] = row["max"] = np.nan
@@ -167,6 +174,7 @@ def coverage_by_class(df: pd.DataFrame, osm_cols: list) -> pd.DataFrame:
 # Coverage by region (lat band)
 # ---------------------------------------------------------------------------
 
+
 def coverage_by_region(df: pd.DataFrame, osm_cols: list) -> pd.DataFrame:
     rows = []
     for band in sorted(df["lat_band"].unique()):
@@ -174,21 +182,24 @@ def coverage_by_region(df: pd.DataFrame, osm_cols: list) -> pd.DataFrame:
         for col in osm_cols:
             if col not in df.columns:
                 continue
-            n_total  = len(sub)
+            n_total = len(sub)
             n_filled = sub[col].notna().sum()
-            rows.append({
-                "lat_band":    band,
-                "column":      col,
-                "n_links":     n_total,
-                "n_filled":    int(n_filled),
-                "pct_coverage": round(n_filled / n_total * 100, 1),
-            })
+            rows.append(
+                {
+                    "lat_band": band,
+                    "column": col,
+                    "n_links": n_total,
+                    "n_filled": int(n_filled),
+                    "pct_coverage": round(n_filled / n_total * 100, 1),
+                }
+            )
     return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
 # Markdown summary
 # ---------------------------------------------------------------------------
+
 
 def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: list) -> str:
     lines = [
@@ -206,21 +217,25 @@ def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: li
 
     # Overall
     lines.append("## Overall coverage\n")
-    total = by_class.groupby("column").apply(
-        lambda g: pd.Series({
-            "n_links":     g["n_links"].sum(),
-            "n_filled":    g["n_filled"].sum(),
-        })
-    ).reset_index()
+    total = (
+        by_class.groupby("column")
+        .apply(
+            lambda g: pd.Series(
+                {
+                    "n_links": g["n_links"].sum(),
+                    "n_filled": g["n_filled"].sum(),
+                }
+            )
+        )
+        .reset_index()
+    )
     total["pct_coverage"] = (total["n_filled"] / total["n_links"] * 100).round(1)
     lines.append(total[["column", "n_links", "n_filled", "pct_coverage"]].to_markdown(index=False))
     lines.append("\n")
 
     # By road class — pivot
     lines.append("## Coverage by road class (%)\n")
-    pivot = by_class.pivot_table(
-        index="column", columns="road_class", values="pct_coverage"
-    )
+    pivot = by_class.pivot_table(index="column", columns="road_class", values="pct_coverage")
     # Reorder columns
     ordered_cols = [c for c in ROAD_CLASS_ORDER if c in pivot.columns]
     pivot = pivot[ordered_cols]
@@ -230,9 +245,7 @@ def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: li
     # By region — pivot
     if not by_region.empty:
         lines.append("## Coverage by latitude band (%)\n")
-        pivot_r = by_region.pivot_table(
-            index="column", columns="lat_band", values="pct_coverage"
-        )
+        pivot_r = by_region.pivot_table(index="column", columns="lat_band", values="pct_coverage")
         lines.append(pivot_r.round(1).fillna("—").to_markdown())
         lines.append("\n")
 
@@ -269,8 +282,7 @@ def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: li
     lines.append("\n")
 
     lines.append(
-        "### Columns with <20% coverage by road class "
-        "(imputation would invent most values)\n"
+        "### Columns with <20% coverage by road class (imputation would invent most values)\n"
     )
     low = by_class[by_class["pct_coverage"] < 20][
         ["road_class", "column", "pct_coverage", "n_links", "n_filled"]
@@ -308,6 +320,7 @@ def build_markdown(by_class: pd.DataFrame, by_region: pd.DataFrame, osm_cols: li
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main():
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -321,23 +334,19 @@ def main():
     print("=== Overall OSM coverage ===")
     for col in osm_cols:
         pct = df[col].notna().mean() * 100
-        n   = df[col].notna().sum()
+        n = df[col].notna().sum()
         print(f"  {col:20s}: {pct:5.1f}%  ({n:,} / {len(df):,} links)")
 
     # By road class
     print("\n=== Coverage by road class ===")
     by_class = coverage_by_class(df, osm_cols)
-    pivot = by_class.pivot_table(
-        index="road_class", columns="column", values="pct_coverage"
-    )
+    pivot = by_class.pivot_table(index="road_class", columns="column", values="pct_coverage")
     print(pivot.round(1).fillna("—").to_string())
 
     # By region
     by_region = coverage_by_region(df, osm_cols)
     print("\n=== Coverage by latitude band ===")
-    pivot_r = by_region.pivot_table(
-        index="lat_band", columns="column", values="pct_coverage"
-    )
+    pivot_r = by_region.pivot_table(index="lat_band", columns="column", values="pct_coverage")
     print(pivot_r.round(1).fillna("—").to_string())
 
     # Value distributions for numeric columns
@@ -370,7 +379,7 @@ def main():
     low = by_class[by_class["pct_coverage"] < 20]
     if not low.empty:
         print(f"Noisy when imputed (<20%): {len(low)} combinations")
-        print(low[["column","road_class","pct_coverage"]].to_string(index=False))
+        print(low[["column", "road_class", "pct_coverage"]].to_string(index=False))
 
 
 if __name__ == "__main__":

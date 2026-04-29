@@ -197,9 +197,7 @@ def _transform_wgs84_to_bng(
     lon = np.asarray(lon, dtype=float)
     lat = np.asarray(lat, dtype=float)
 
-    transformer = pyproj.Transformer.from_crs(
-        "EPSG:4326", "EPSG:27700", always_xy=True
-    )
+    transformer = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
     x, y = transformer.transform(lon, lat)
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
@@ -223,9 +221,7 @@ def _transform_wgs84_to_bng(
         np.nanmax(lat),
     )
 
-    fallback = pyproj.Transformer.from_crs(
-        "EPSG:4326", BNG_FALLBACK_PROJ, always_xy=True
-    )
+    fallback = pyproj.Transformer.from_crs("EPSG:4326", BNG_FALLBACK_PROJ, always_xy=True)
     x, y = fallback.transform(lon, lat)
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
@@ -287,22 +283,24 @@ def build_aadt_features(aadf: pd.DataFrame) -> tuple:
             return 1
         n = str(name).strip()
         if n.startswith("M"):
-            return ROAD_CLASS_ORDINAL["Motorway"]   # 6
+            return ROAD_CLASS_ORDINAL["Motorway"]  # 6
         if n.startswith("A"):
-            return ROAD_CLASS_ORDINAL["A Road"]     # 5
+            return ROAD_CLASS_ORDINAL["A Road"]  # 5
         if n.startswith("B"):
-            return ROAD_CLASS_ORDINAL["B Road"]     # 4
+            return ROAD_CLASS_ORDINAL["B Road"]  # 4
         return 1  # Unclassified / minor
 
     df["road_class_ord"] = df["road_name"].apply(_road_name_to_ord)
-    df["is_trunk"]       = df["road_name"].str.match(r"^[MA]\d", na=False).astype(int)
+    df["is_trunk"] = df["road_name"].str.match(r"^[MA]\d", na=False).astype(int)
 
     # is_covid stays as a binary indicator: captures residual within-year
     # variation (different road types may respond differently to COVID). The
     # global COVID level is already captured by year_means de-meaning.
     feature_cols = [
-        "road_class_ord", "is_trunk",
-        "latitude", "longitude",
+        "road_class_ord",
+        "is_trunk",
+        "latitude",
+        "longitude",
         "is_covid",
         "hgv_proportion",
     ]
@@ -325,7 +323,7 @@ def build_aadt_features(aadf: pd.DataFrame) -> tuple:
         import geopandas as gpd
         from scipy.spatial import cKDTree
 
-        net      = pd.read_parquet(NET_FEATURES_PATH)
+        net = pd.read_parquet(NET_FEATURES_PATH)
         net_cols = [c for c in net.columns if c != "link_id"]
 
         or_gdf = gpd.read_parquet(OPENROADS_PATH)
@@ -338,9 +336,7 @@ def build_aadt_features(aadf: pd.DataFrame) -> tuple:
         link_xy = np.column_stack([link_e, link_n])
         finite_links = np.isfinite(link_xy).all(axis=1)
         if not finite_links.any():
-            raise ValueError(
-                "No finite OpenRoads reference points available for AADF snapping."
-            )
+            raise ValueError("No finite OpenRoads reference points available for AADF snapping.")
         if not finite_links.all():
             logger.warning(
                 "  Skipping %s OpenRoads links with non-finite centroids for "
@@ -360,15 +356,15 @@ def build_aadt_features(aadf: pd.DataFrame) -> tuple:
         finite_aadf = np.isfinite(aadf_xy).all(axis=1)
         if not finite_aadf.all():
             logger.warning(
-                "  Skipping %s AADF rows with non-finite coordinates for "
-                "network-feature snap",
+                "  Skipping %s AADF rows with non-finite coordinates for network-feature snap",
                 f"{(~finite_aadf).sum():,}",
             )
         dists = np.full(len(df), np.inf)
         idx = np.full(len(df), len(snapped_ids))
         dists[finite_aadf], idx[finite_aadf] = tree.query(
             aadf_xy[finite_aadf],
-            k=1, distance_upper_bound=2000,
+            k=1,
+            distance_upper_bound=2000,
         )
         valid = dists < 2000
         df["_snapped_link_id"] = None
@@ -376,21 +372,21 @@ def build_aadt_features(aadf: pd.DataFrame) -> tuple:
 
         df = df.merge(
             net[["link_id"] + net_cols].rename(columns={"link_id": "_snapped_link_id"}),
-            on="_snapped_link_id", how="left",
+            on="_snapped_link_id",
+            how="left",
         ).drop(columns=["_snapped_link_id"])
 
         n_joined = df["degree_mean"].notna().sum()
         logger.info(
             f"  Network features joined for {n_joined:,} / {len(df):,} "
-            f"AADF count points ({n_joined/len(df):.1%}) via direct KD-tree snap"
+            f"AADF count points ({n_joined / len(df):.1%}) via direct KD-tree snap"
         )
         for col in net_cols:
             if col in df.columns:
                 feature_cols.append(col)
     else:
         logger.info(
-            "  Network features or OpenRoads not found — "
-            "training without (CV R² will be lower)"
+            "  Network features or OpenRoads not found — training without (CV R² will be lower)"
         )
 
     X = df[feature_cols].copy()
@@ -453,12 +449,10 @@ def _attach_webtris_features(aadf: pd.DataFrame) -> pd.DataFrame:
             far = joined["_wt_dist"].isna()
             if far.any():
                 joined.loc[far, wt_feature_cols] = np.nan
-            joined = joined.drop(columns=["_wt_dist", "geometry", "index_right"],
-                                  errors="ignore")
+            joined = joined.drop(columns=["_wt_dist", "geometry", "index_right"], errors="ignore")
             n_matched = (~far).sum()
             logger.info(
-                f"  WebTRIS {year}: {n_matched:,} / {len(aadf_yr):,} AADF points "
-                f"matched within 5km"
+                f"  WebTRIS {year}: {n_matched:,} / {len(aadf_yr):,} AADF points matched within 5km"
             )
         else:
             joined = aadf_yr.drop(columns=["geometry"])
@@ -489,34 +483,34 @@ def train_aadt_estimator(aadf: pd.DataFrame, *, counted_only: bool = True) -> tu
     n_groups = df["count_point_id"].nunique()
     if n_groups < 5:
         raise ValueError(
-            "AADT estimator needs at least 5 count_point_id groups for "
-            "GroupKFold(n_splits=5)."
+            "AADT estimator needs at least 5 count_point_id groups for GroupKFold(n_splits=5)."
         )
 
     model = HistGradientBoostingRegressor(
-        max_iter=300, max_depth=5, learning_rate=0.05,
-        random_state=RANDOM_STATE, verbose=0,
+        max_iter=300,
+        max_depth=5,
+        learning_rate=0.05,
+        random_state=RANDOM_STATE,
+        verbose=0,
     )
 
     cv = GroupKFold(n_splits=5)
-    cv_r2  = cross_val_score(model, X, y, groups=groups, cv=cv,
-                              scoring="r2", n_jobs=-1)
-    cv_mae = cross_val_score(model, X, y, groups=groups, cv=cv,
-                              scoring="neg_mean_absolute_error", n_jobs=-1)
+    cv_r2 = cross_val_score(model, X, y, groups=groups, cv=cv, scoring="r2", n_jobs=-1)
+    cv_mae = cross_val_score(
+        model, X, y, groups=groups, cv=cv, scoring="neg_mean_absolute_error", n_jobs=-1
+    )
 
     model.fit(X, y)
 
     perm = permutation_importance(model, X, y, n_repeats=5, random_state=RANDOM_STATE)
-    importance = pd.Series(perm.importances_mean, index=X.columns).sort_values(
-        ascending=False
-    )
+    importance = pd.Series(perm.importances_mean, index=X.columns).sort_values(ascending=False)
 
     metrics = {
-        "cv_r2_mean":  float(cv_r2.mean()),
-        "cv_r2_std":   float(cv_r2.std()),
+        "cv_r2_mean": float(cv_r2.mean()),
+        "cv_r2_std": float(cv_r2.std()),
         "cv_mae_mean": float(-cv_mae.mean()),
-        "cv_mae_std":  float(cv_mae.std()),
-        "n_train":     len(X),
+        "cv_mae_std": float(cv_mae.std()),
+        "n_train": len(X),
     }
 
     logger.info(
@@ -549,14 +543,12 @@ def apply_aadt_estimator(
     """
     import geopandas as gpd
 
-    logger.info(
-        f"Applying AADT estimator to {len(openroads):,} OS Open Roads links ..."
-    )
+    logger.info(f"Applying AADT estimator to {len(openroads):,} OS Open Roads links ...")
 
     or_df = openroads.copy()
     if isinstance(or_df, gpd.GeoDataFrame):
         lon, lat = _openroads_reference_lonlat(or_df)
-        or_df["latitude"]  = lat
+        or_df["latitude"] = lat
         or_df["longitude"] = lon
 
     # road_class_ord: must use the same 4-level bucketing as build_aadt_features().
@@ -571,29 +563,25 @@ def apply_aadt_estimator(
     or_df["road_class_ord"] = (
         or_df["road_classification"].map(_INFER_CLASS_MAP).fillna(1).astype(int)
     )
-    or_df["is_trunk"] = or_df["road_classification"].isin(
-        ["Motorway", "A Road"]
-    ).astype(int)
+    or_df["is_trunk"] = or_df["road_classification"].isin(["Motorway", "A Road"]).astype(int)
 
     if NET_FEATURES_PATH.exists():
         net = pd.read_parquet(NET_FEATURES_PATH)
         net_cols = [c for c in net.columns if c != "link_id"]
         or_df = or_df.merge(net[["link_id"] + net_cols], on="link_id", how="left")
         n_joined = or_df["degree_mean"].notna().sum()
-        logger.info(
-            f"  Network features joined for {n_joined:,} / {len(or_df):,} links"
-        )
+        logger.info(f"  Network features joined for {n_joined:,} / {len(or_df):,} links")
 
     years = sorted(aadf["year"].unique())
 
     # Median fallbacks for features not present on all OpenRoads links
-    hgv_median    = aadf["hgv_proportion"].median()
+    hgv_median = aadf["hgv_proportion"].median()
     length_median = aadf["link_length_km"].median() if "link_length_km" in aadf.columns else 1.0
 
     frames = []
     for year in years:
         pred_df = or_df.copy()
-        pred_df["year"]     = year
+        pred_df["year"] = year
         pred_df["is_covid"] = int(year in COVID_YEARS)
 
         # Fill missing AADF-derived columns with overall medians
@@ -619,9 +607,9 @@ def apply_aadt_estimator(
         # Model predicts year-de-meaned log-AADT; add the training year mean back.
         # Falls back to the nearest observed year if this year is outside the
         # training range (e.g. a future prediction year).
-        year_mean = year_means.get(year, year_means.iloc[
-            np.argmin(np.abs(year_means.index - year))
-        ])
+        year_mean = year_means.get(
+            year, year_means.iloc[np.argmin(np.abs(year_means.index - year))]
+        )
         log_pred = model.predict(X_pred) + year_mean
         pred_df["estimated_aadt"] = np.expm1(log_pred).round().clip(1).astype(int)
         frames.append(pred_df[["link_id", "year", "estimated_aadt"]])
@@ -686,7 +674,7 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
             holdout_mask = aadf["latitude"] > lat_thresh
 
         train_df = aadf[~holdout_mask].copy()
-        test_df  = aadf[holdout_mask].copy()
+        test_df = aadf[holdout_mask].copy()
 
         if train_df.empty or test_df.empty:
             logger.warning(f"  {scheme}: empty train or test split — skipping")
@@ -694,7 +682,7 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
 
         # --- Train on held-in, predict on held-out --------------------------
         X_train, y_train, _, train_year_means = build_aadt_features(train_df)
-        X_test,  _,        df_test, _         = build_aadt_features(test_df)
+        X_test, _, df_test, _ = build_aadt_features(test_df)
 
         # y_test: raw observed log-scale (not de-meaned). Using the test set's
         # own log1p directly avoids shifting observed values by (train_mean -
@@ -705,11 +693,14 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
         # Align columns — test may have columns train doesn't (or vice versa)
         shared = [c for c in X_train.columns if c in X_test.columns]
         X_train = X_train[shared]
-        X_test  = X_test[shared]
+        X_test = X_test[shared]
 
         model = HistGradientBoostingRegressor(
-            max_iter=300, max_depth=5, learning_rate=0.05,
-            random_state=RANDOM_STATE, verbose=0,
+            max_iter=300,
+            max_depth=5,
+            learning_rate=0.05,
+            random_state=RANDOM_STATE,
+            verbose=0,
         )
         model.fit(X_train, y_train)
         # Reconstruct raw log predictions: de-meaned model output + training year mean.
@@ -718,8 +709,8 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
         year_adj = df_test["year"].map(train_year_means).fillna(train_year_means.mean()).values
         y_pred = model.predict(X_test) + year_adj
 
-        r2   = r2_score(y_test, y_pred)
-        mae  = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
         rmse = mean_squared_error(y_test, y_pred) ** 0.5
 
         logger.info(
@@ -740,12 +731,14 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
             by_class = (
                 test_with_pred.groupby(road_class_col)
                 .apply(
-                    lambda g: pd.Series({
-                        "r2":   r2_score(g["_y_true"], g["_y_pred"]) if len(g) > 1 else np.nan,
-                        "mae":  mean_absolute_error(g["_y_true"], g["_y_pred"]),
-                        "rmse": mean_squared_error(g["_y_true"], g["_y_pred"]) ** 0.5,
-                        "n":    len(g),
-                    }),
+                    lambda g: pd.Series(
+                        {
+                            "r2": r2_score(g["_y_true"], g["_y_pred"]) if len(g) > 1 else np.nan,
+                            "mae": mean_absolute_error(g["_y_true"], g["_y_pred"]),
+                            "rmse": mean_squared_error(g["_y_true"], g["_y_pred"]) ** 0.5,
+                            "n": len(g),
+                        }
+                    ),
                     include_groups=False,
                 )
                 .reset_index()
@@ -754,11 +747,11 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
             by_class = pd.DataFrame()
 
         results[scheme] = {
-            "r2":        r2,
-            "mae":       mae,
-            "rmse":      rmse,
+            "r2": r2,
+            "mae": mae,
+            "rmse": rmse,
             "n_holdout": int(len(y_test)),
-            "by_class":  by_class,
+            "by_class": by_class,
         }
 
     # Save results as parquet for the QMD page
@@ -766,13 +759,15 @@ def validate_aadt_external(aadf: pd.DataFrame, *, counted_only: bool = True) -> 
     MODELS.mkdir(parents=True, exist_ok=True)
     rows = []
     for scheme, res in results.items():
-        rows.append({
-            "scheme": scheme,
-            "r2": res["r2"],
-            "mae": res["mae"],
-            "rmse": res["rmse"],
-            "n_holdout": res["n_holdout"],
-        })
+        rows.append(
+            {
+                "scheme": scheme,
+                "r2": res["r2"],
+                "mae": res["mae"],
+                "rmse": res["rmse"],
+                "n_holdout": res["n_holdout"],
+            }
+        )
         if not res["by_class"].empty:
             bc = res["by_class"].copy()
             bc["scheme"] = scheme
@@ -822,7 +817,7 @@ def run_traffic_stage(aadf: pd.DataFrame, openroads) -> pd.DataFrame:
     logger.info(
         f"  Training residuals (log scale):\n"
         f"    MAE  : {mean_absolute_error(y_train, y_pred):.4f}\n"
-        f"    RMSE : {mean_squared_error(y_train, y_pred)**0.5:.4f}\n"
+        f"    RMSE : {mean_squared_error(y_train, y_pred) ** 0.5:.4f}\n"
         f"    R²   : {r2_score(y_train, y_pred):.4f}"
     )
 
@@ -833,6 +828,7 @@ def run_traffic_stage(aadf: pd.DataFrame, openroads) -> pd.DataFrame:
     )
 
     import pickle
+
     with open(MODELS / "aadt_model.pkl", "wb") as fh:
         pickle.dump({"model": model, "features": features, "year_means": year_means}, fh)
     logger.info("  Saved aadt_model.pkl")

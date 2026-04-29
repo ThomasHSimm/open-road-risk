@@ -11,6 +11,7 @@ from road_risk.model.main import main
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser(description="Road risk model pipeline")
     parser.add_argument(
         "--stage",

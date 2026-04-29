@@ -33,11 +33,9 @@ Study-area spatial filter:
 """
 
 import logging
-import zipfile
 from pathlib import Path
 
 import geopandas as gpd
-import numpy as np
 
 from road_risk.config import _ROOT, cfg
 
@@ -47,7 +45,7 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-_DEFAULT_RAW_FOLDER    = _ROOT / cfg["paths"]["raw"]["shapefiles"]
+_DEFAULT_RAW_FOLDER = _ROOT / cfg["paths"]["raw"]["shapefiles"]
 _DEFAULT_OUTPUT_FOLDER = _ROOT / cfg["paths"]["processed"] / "shapefiles"
 
 TARGET_CRS = "EPSG:4326"
@@ -82,33 +80,34 @@ KEEP_COLS = [
 
 # Map OS road_classification → short prefix for road_name_clean
 CLASSIFICATION_PREFIX = {
-    "Motorway":    "M",
-    "A Road":      "A",
-    "B Road":      "B",
-    "Minor Road":  "",
-    "Local Road":  "",
+    "Motorway": "M",
+    "A Road": "A",
+    "B Road": "B",
+    "Minor Road": "",
+    "Local Road": "",
     "Local Street": "",
-    "Unknown":     "",
+    "Unknown": "",
 }
 
 COL_RENAMES = {
-    "id":                        "link_id",
-    "road_classification":       "road_classification",
-    "road_function":             "road_function",
-    "form_of_way":               "form_of_way",
+    "id": "link_id",
+    "road_classification": "road_classification",
+    "road_function": "road_function",
+    "form_of_way": "form_of_way",
     "road_classification_number": "road_number",
-    "name_1":                    "road_name",
-    "length":                    "link_length_m",
-    "trunk_road":                "is_trunk",
-    "primary_route":             "is_primary",
-    "start_node":                "start_node",
-    "end_node":                  "end_node",
+    "name_1": "road_name",
+    "length": "link_length_m",
+    "trunk_road": "is_trunk",
+    "primary_route": "is_primary",
+    "start_node": "start_node",
+    "end_node": "end_node",
 }
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _find_gpkg(folder: Path) -> Path:
     """Find the OS Open Roads GeoPackage in the given folder."""
@@ -161,7 +160,7 @@ def _build_road_name_clean(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     n_numbered = (gdf["road_name_clean"] != "").sum()
     logger.info(
         f"  road_name_clean (M/A/B number): {n_numbered:,} / {len(gdf):,} links "
-        f"({n_numbered/len(gdf):.1%})"
+        f"({n_numbered / len(gdf):.1%})"
     )
 
     # --- street_name_clean: normalised name_1 (Dale Close → DALECLOSE) ------
@@ -181,7 +180,7 @@ def _build_road_name_clean(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     n_street = (gdf["street_name_clean"] != "").sum()
     logger.info(
         f"  street_name_clean (named streets): {n_street:,} / {len(gdf):,} links "
-        f"({n_street/len(gdf):.1%})"
+        f"({n_street / len(gdf):.1%})"
     )
     return gdf
 
@@ -189,6 +188,7 @@ def _build_road_name_clean(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def load_openroads(
     raw_folder: str | Path = _DEFAULT_RAW_FOLDER,
@@ -316,14 +316,13 @@ def main(
     if "form_of_way" in gdf.columns:
         print(f"\n  Form of way:\n{gdf['form_of_way'].value_counts().to_string()}")
     n_named = (gdf["road_name_clean"] != "").sum()
-    print(f"\n  Named roads: {n_named:,} / {len(gdf):,} ({n_named/len(gdf):.1%})")
+    print(f"\n  Named roads: {n_named:,} / {len(gdf):,} ({n_named / len(gdf):.1%})")
 
     save_openroads(gdf, output_folder)
     return gdf
 
 
 if __name__ == "__main__":
-    import sys
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s  %(levelname)-8s  %(message)s",

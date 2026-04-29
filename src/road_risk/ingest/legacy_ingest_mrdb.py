@@ -61,19 +61,19 @@ YORKSHIRE_BBOX = (
 
 # Columns to keep — drop OS-internal fields we don't need
 KEEP_COLS = [
-    "CP_Number",        # → count_point_id join key for AADF
-    "RoadNumber",       # road name
-    "RoadType",         # Motorway / A Road / B Road
-    "LenNet",           # link length in metres
+    "CP_Number",  # → count_point_id join key for AADF
+    "RoadNumber",  # road name
+    "RoadType",  # Motorway / A Road / B Road
+    "LenNet",  # link length in metres
     "geometry",
 ]
 
 # Normalised column names after loading
 COL_RENAMES = {
-    "CP_Number":  "count_point_id",
+    "CP_Number": "count_point_id",
     "RoadNumber": "road_name",
-    "RoadType":   "road_type",
-    "LenNet":     "link_length_m",
+    "RoadType": "road_type",
+    "LenNet": "link_length_m",
 }
 
 EXPECTED_COLS = ["road_name", "road_type", "geometry"]
@@ -82,6 +82,7 @@ EXPECTED_COLS = ["road_name", "road_type", "geometry"]
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _find_shapefile(folder: Path) -> Path:
     """
@@ -136,6 +137,7 @@ def _bbox_filter(gdf: gpd.GeoDataFrame, bbox: tuple) -> gpd.GeoDataFrame:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def load_mrdb(
     raw_folder: str | Path = _DEFAULT_RAW_FOLDER,
@@ -208,8 +210,10 @@ def load_mrdb(
     if missing_exp:
         logger.warning(f"  Expected columns still missing after rename: {missing_exp}")
 
-    logger.info(f"MRDB loaded: {len(gdf):,} links | road types: "
-                f"{gdf['road_type'].value_counts().to_dict() if 'road_type' in gdf.columns else 'n/a'}")
+    logger.info(
+        f"MRDB loaded: {len(gdf):,} links | road types: "
+        f"{gdf['road_type'].value_counts().to_dict() if 'road_type' in gdf.columns else 'n/a'}"
+    )
     return gdf
 
 

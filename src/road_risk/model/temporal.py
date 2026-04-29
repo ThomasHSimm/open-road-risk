@@ -20,8 +20,8 @@ from road_risk.model.constants import MONTH_ORDER
 logger = logging.getLogger(__name__)
 
 WEBTRIS_RAW = _ROOT / "data/raw/webtris"
-SITES_PATH  = _ROOT / "data/raw/webtris/sites.parquet"
-MODELS      = _ROOT / "data/models"
+SITES_PATH = _ROOT / "data/raw/webtris/sites.parquet"
+MODELS = _ROOT / "data/models"
 
 
 def build_temporal_profiles(
@@ -38,9 +38,7 @@ def build_temporal_profiles(
     """
     logger.info("Building temporal traffic profiles from WebTRIS ...")
 
-    sites = pd.read_parquet(sites_path)[
-        ["site_id", "description", "latitude", "longitude"]
-    ]
+    sites = pd.read_parquet(sites_path)[["site_id", "description", "latitude", "longitude"]]
     sites["road_prefix"] = sites["description"].str[:4].str.strip()
 
     chunks = sorted(raw_folder.glob("site_*_*.parquet"))
@@ -49,8 +47,10 @@ def build_temporal_profiles(
 
     # Filter to study area — read from config if available, else use full dataset
     try:
-        from road_risk.config import _ROOT
         import yaml
+
+        from road_risk.config import _ROOT
+
         cfg_path = _ROOT / "config/settings.yaml"
         if cfg_path.exists():
             cfg = yaml.safe_load(cfg_path.read_text())
@@ -59,15 +59,15 @@ def build_temporal_profiles(
             lat_max = bbox.get("max_lat", None)
             lon_min = bbox.get("min_lon", None)
             lon_max = bbox.get("max_lon", None)
-        
-    except Exception:
+
+    except Exception as e:
         logger.error("Error loading study area from config, check file")
-        raise ValueError("Invalid study area config — check config/settings.yaml")
+        raise ValueError("Invalid study area config — check config/settings.yaml") from e
 
     study_sites = set(
         sites[
-            sites["latitude"].between(lat_min, lat_max) &
-            sites["longitude"].between(lon_min, lon_max)
+            sites["latitude"].between(lat_min, lat_max)
+            & sites["longitude"].between(lon_min, lon_max)
         ]["site_id"]
     )
 
@@ -93,9 +93,7 @@ def build_temporal_profiles(
     raw["month_num"] = (
         pd.Categorical(raw["monthname"], categories=MONTH_ORDER, ordered=True).codes + 1
     )
-    raw["monthname"] = pd.Categorical(
-        raw["monthname"], categories=MONTH_ORDER, ordered=True
-    )
+    raw["monthname"] = pd.Categorical(raw["monthname"], categories=MONTH_ORDER, ordered=True)
 
     profile = (
         raw.groupby(["road_prefix", "monthname", "month_num"])
@@ -111,13 +109,11 @@ def build_temporal_profiles(
 
     annual_mean = profile.groupby("road_prefix")["mean_adt24"].transform("mean")
     profile["seasonal_index"] = profile["mean_adt24"] / annual_mean.replace(0, np.nan)
-    profile["weekday_weekend_ratio"] = (
-        profile["mean_awt24"] / profile["mean_adt24"].replace(0, np.nan)
+    profile["weekday_weekend_ratio"] = profile["mean_awt24"] / profile["mean_adt24"].replace(
+        0, np.nan
     )
 
-    logger.info(
-        f"  Profiles built: {profile['road_prefix'].nunique()} road types × 12 months"
-    )
+    logger.info(f"  Profiles built: {profile['road_prefix'].nunique()} road types × 12 months")
 
     out = MODELS / "temporal_profiles.parquet"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -135,19 +131,21 @@ def plot_temporal_profiles(profiles: pd.DataFrame) -> None:
         logger.warning("matplotlib not available — skipping plot")
         return
 
-    top_roads = (
-        profiles.groupby("road_prefix")["n_site_months"]
-        .sum().nlargest(6).index.tolist()
-    )
+    top_roads = profiles.groupby("road_prefix")["n_site_months"].sum().nlargest(6).index.tolist()
 
     fig, axes = plt.subplots(2, 3, figsize=(15, 8))
-    for ax, road in zip(axes.flatten(), top_roads):
+    for ax, road in zip(axes.flatten(), top_roads, strict=False):
         data = profiles[profiles["road_prefix"] == road].sort_values("month_num")
-        ax.bar(data["monthname"], data["seasonal_index"],
-               color="steelblue", alpha=0.8)
+        ax.bar(data["monthname"], data["seasonal_index"], color="steelblue", alpha=0.8)
         ax2 = ax.twinx()
-        ax2.plot(data["monthname"], data["mean_large_pct"],
-                 color="crimson", marker="o", linewidth=2, markersize=4)
+        ax2.plot(
+            data["monthname"],
+            data["mean_large_pct"],
+            color="crimson",
+            marker="o",
+            linewidth=2,
+            markersize=4,
+        )
         ax2.set_ylabel("Large vehicle %", color="crimson")
         ax.axhline(1.0, color="black", linestyle="--", linewidth=0.8)
         ax.set_title(f"{road} (n={data['n_site_months'].sum():,})")
@@ -156,7 +154,8 @@ def plot_temporal_profiles(profiles: pd.DataFrame) -> None:
 
     plt.suptitle(
         "WebTRIS seasonal traffic profiles — study area motorways/trunk roads",
-        fontsize=13, y=1.02,
+        fontsize=13,
+        y=1.02,
     )
     plt.tight_layout()
 

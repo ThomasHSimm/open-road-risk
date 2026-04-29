@@ -29,15 +29,13 @@ cfg: dict = _load()
 
 # --- Convenience aliases ---------------------------------------------------
 
-YEARS       = cfg["years"]
+YEARS = cfg["years"]
 FORCE_CODES = cfg["geography"]["police_force_codes"]
 WEBTRIS_URL = cfg["webtris"]["base_url"]
 
 # Resolve paths relative to project root
 PATHS = {
-    section: {k: _ROOT / v for k, v in vals.items()}
-    if isinstance(vals, dict)
-    else _ROOT / vals
+    section: {k: _ROOT / v for k, v in vals.items()} if isinstance(vals, dict) else _ROOT / vals
     for section, vals in cfg["paths"].items()
 }
 

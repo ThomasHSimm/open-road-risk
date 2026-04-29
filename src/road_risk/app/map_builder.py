@@ -41,13 +41,18 @@ _NET_TOOLTIP_COLS = [
 ]
 
 # Integer rounding for these columns before serialisation
-_INT_COLS   = {"risk_percentile", "collision_count", "fatal_count",
-               "serious_count", "estimated_aadt"}
+_INT_COLS = {"risk_percentile", "collision_count", "fatal_count", "serious_count", "estimated_aadt"}
 # 1 dp
-_ONE_DP     = {"hgv_pct", "speed_limit"}
+_ONE_DP = {"hgv_pct", "speed_limit"}
 # 3 dp
-_THREE_DP   = {"residual_glm", "link_length_km", "betweenness_relative",
-               "degree_mean", "dist_to_major_km", "pop_density_per_km2"}
+_THREE_DP = {
+    "residual_glm",
+    "link_length_km",
+    "betweenness_relative",
+    "degree_mean",
+    "dist_to_major_km",
+    "pop_density_per_km2",
+}
 
 
 def _legend_html(
@@ -59,9 +64,9 @@ def _legend_html(
     if rank_based:
         entries = [
             (RISK_PALETTE[-1][1], f"High {colour_label}"),
-            (RISK_PALETTE[4][1],  ""),
-            (RISK_PALETTE[2][1],  ""),
-            (RISK_PALETTE[0][1],  f"Low {colour_label}"),
+            (RISK_PALETTE[4][1], ""),
+            (RISK_PALETTE[2][1], ""),
+            (RISK_PALETTE[0][1], f"Low {colour_label}"),
         ]
     else:
         entries = [
@@ -78,17 +83,18 @@ def _legend_html(
         f'  <div style="width:18px;height:8px;background:{col};'
         f'              border-radius:2px;margin-right:8px;flex-shrink:0;"></div>'
         f'  <span style="font-size:11px;">{label}</span>'
-        f'</div>'
+        f"</div>"
         for col, label in entries
     )
 
     scale_note = (
         f'<div style="font-size:10px;color:#aaa;margin-top:5px;">'
-        f'Scale: {scale_min}–{scale_max}th pct.</div>'
-        if (scale_min != 0 or scale_max != 99) else ""
+        f"Scale: {scale_min}–{scale_max}th pct.</div>"
+        if (scale_min != 0 or scale_max != 99)
+        else ""
     )
 
-    no_data_row = ''  # All links scored — no 'no data' legend entry needed
+    no_data_row = ""  # All links scored — no 'no data' legend entry needed
 
     return f"""
     <div style="position:fixed;bottom:30px;left:30px;z-index:1000;
@@ -135,16 +141,16 @@ def build_folium_map(
         # Priority sampling: motorways + A roads always rendered fully.
         # B roads and others fill the remaining budget.
         motorways = scored_gdf[scored_gdf["road_classification"] == "Motorway"]
-        a_roads   = scored_gdf[scored_gdf["road_classification"] == "A Road"]
-        b_roads   = scored_gdf[scored_gdf["road_classification"] == "B Road"]
-        other     = scored_gdf[~scored_gdf["road_classification"].isin(
-                        ["Motorway", "A Road", "B Road"])]
+        a_roads = scored_gdf[scored_gdf["road_classification"] == "A Road"]
+        b_roads = scored_gdf[scored_gdf["road_classification"] == "B Road"]
+        other = scored_gdf[
+            ~scored_gdf["road_classification"].isin(["Motorway", "A Road", "B Road"])
+        ]
 
-        budget     = max(0, MAX_LINKS_SCORED - len(motorways) - len(a_roads))
-        b_sample   = b_roads.sample(min(len(b_roads),   budget // 2), random_state=42)
-        oth_sample = other.sample(  min(len(other),     budget // 2), random_state=42)
-        scored_gdf = pd.concat([motorways, a_roads, b_sample, oth_sample],
-                               ignore_index=True)
+        budget = max(0, MAX_LINKS_SCORED - len(motorways) - len(a_roads))
+        b_sample = b_roads.sample(min(len(b_roads), budget // 2), random_state=42)
+        oth_sample = other.sample(min(len(other), budget // 2), random_state=42)
+        scored_gdf = pd.concat([motorways, a_roads, b_sample, oth_sample], ignore_index=True)
 
     n_shown = len(scored_gdf)
 
@@ -160,11 +166,11 @@ def build_folium_map(
 
         scored_gdf["_weight"] = scored_gdf["road_classification"].map(road_weight)
 
-        all_wanted    = _BASE_TOOLTIP_COLS + _NET_TOOLTIP_COLS
-        tooltip_cols  = [c for c in all_wanted if c in scored_gdf.columns]
+        all_wanted = _BASE_TOOLTIP_COLS + _NET_TOOLTIP_COLS
+        tooltip_cols = [c for c in all_wanted if c in scored_gdf.columns]
         active_aliases = [TOOLTIP_ALIASES.get(c, c) for c in tooltip_cols]
 
-        scored_gdf["road_name"]   = scored_gdf["road_name"].fillna("Unnamed")
+        scored_gdf["road_name"] = scored_gdf["road_name"].fillna("Unnamed")
         scored_gdf["form_of_way"] = scored_gdf["form_of_way"].fillna("Unknown")
 
         for col in tooltip_cols:
@@ -181,8 +187,8 @@ def build_folium_map(
         folium.GeoJson(
             scored_gdf[geojson_cols],
             style_function=lambda f: {
-                "color":   f["properties"]["_colour"],
-                "weight":  f["properties"]["_weight"],
+                "color": f["properties"]["_colour"],
+                "weight": f["properties"]["_weight"],
                 "opacity": 0.85,
             },
             tooltip=folium.GeoJsonTooltip(
@@ -197,10 +203,7 @@ def build_folium_map(
     # ---- Legend ----
     if show_legend:
         m.get_root().html.add_child(
-            folium.Element(
-                _legend_html(colour_label, scale_min, scale_max,
-                             rank_based)
-            )
+            folium.Element(_legend_html(colour_label, scale_min, scale_max, rank_based))
         )
 
     folium.LayerControl().add_to(m)
