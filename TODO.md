@@ -84,6 +84,13 @@ Tracked here so nothing gets lost. Cross off as done.
 - [ ] `data/README.md` — download instructions for all large raw files not in git
   (STATS19 CSV, OS Open Roads GeoPackage, AADF zip, OSM pbf files, MRDB).
 
+- [ ] Add "Related work / where this fits" page — short, written from
+  your perspective with verified citations. Position project relative
+  to Lovelace / Leeds ITS active travel work, any UK SPF-style work
+  surfaced by OS conversation, and proprietary commercial work. Wait
+  until after OS contact response so the page reflects specific
+  references rather than generic ecosystem framing.
+
 - [ ] Kaggle dataset — upload processed parquets so others can skip ingest/clean/snap.
 
 - [ ] Provenance directory restructure (small session) — move
