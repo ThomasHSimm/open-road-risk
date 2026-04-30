@@ -383,6 +383,113 @@ to manifest.
 
 ---
 
+## Theme 4: Exposure and network-data extensions
+
+Larger platform extensions that would improve the denominator or add
+new open-road network signal. These are not active backlog items because
+they need new data infrastructure, non-trivial validation, or access to
+datasets outside the current open-data stack.
+
+---
+
+### Synthetic flow estimation via Census OD routing
+
+**What it is:** Use Census Origin-Destination data routed across the
+network graph (via pgRouting or equivalent) to estimate per-link demand
+on minor and unclassified roads where AADF has no measurement coverage.
+
+**Why it's interesting:** Stage 1a currently estimates AADT on uncounted
+roads via proxy features (road class, location, betweenness). OD-routed
+synthetic flow is closer to a direct estimate of demand and could
+materially improve Stage 1a accuracy on minor roads — exactly where
+AADF coverage is weakest. Methodology used by the Propensity to Cycle
+Tool (Lovelace et al., Leeds ITS) for cycling demand; same approach
+applies to motor vehicles.
+
+**Why not now:** 2-4 weeks of focused work to integrate routing
+infrastructure (pgRouting needs PostGIS; stplanr needs R). Adds
+non-trivial dependencies. Validation against AADF on counted minor roads
+required. Lower priority than current methodology experiments.
+
+**Good starting point for someone else:**
+- Identify Census OD year matching study window (2011 or 2021).
+- Set up pgRouting on the OS Open Roads network.
+- Route OD pairs and accumulate per-link contributions.
+- Validate against AADF on counted minor roads.
+- Compare resulting Stage 1a accuracy with and without synthetic flow
+  feature.
+
+**Related:** PCT methodology and any recent UK STATS19 + active travel
+papers from Leeds ITS.
+
+---
+
+### NTS-derived active travel exposure
+
+**What it is:** Use National Travel Survey per-capita mileage by mode,
+demographic, and region, combined with LSOA population demographics, to
+estimate pedestrian-hours and cyclist-km denominators for active travel
+risk analysis.
+
+**Why it's interesting:** The cyclist/pedestrian risk entries in this
+doc note that motor-vehicle AADT is an imperfect denominator for active
+travel. Strava Metro is parked on licensing grounds. NTS is open and
+the methodology of using it as an exposure denominator is established
+in road safety literature.
+
+**Why not now:** Resolution caveat — NTS gives regional/demographic
+averages, not link-specific exposure. So it supports LSOA-level analysis
+of pedestrian/cyclist risk but not link-grain. Different output grain
+from the rest of the pipeline; would be a parallel layer not an
+integrated feature.
+
+**Good starting point for someone else:**
+- Pull NTS data from the gov.uk archive.
+- Compute per-capita pedestrian-hours and cyclist-km by demographic.
+- Join to LSOA population data to estimate exposure per LSOA.
+- Apply as denominator for cyclist/pedestrian collision rate at LSOA
+  grain.
+- Compare hotspot identification at LSOA grain to motor-vehicle-AADT
+  denominator approach.
+
+**Related:** Builds on the cyclist/pedestrian risk entries already in
+this doc.
+
+---
+
+### Junction-density features from MasterMap RoadNode
+
+**What it is:** Count of road-node intersections within a spatial buffer
+per link, derived from OS MasterMap Highways Network RoadNode data.
+Likely a strong predictor for non-motorway collisions where most events
+are at or near junctions.
+
+**Why it's interesting:** Junctions concentrate collision risk on minor
+and A-roads. Current network features (`betweenness`, `degree_mean`)
+capture this indirectly via graph structure but not directly as junction
+density. Direct measurement could materially improve Stage 2 predictions
+on non-motorway links. Standard feature in academic crash modelling work
+that has access to MasterMap.
+
+**Why not now:** Requires OS MasterMap Highways access — not in the open
+licensing tier. Overlaps with the existing RAMI licensing entry but is
+methodologically distinct (network attributes vs routing extension).
+Both share the same access constraint.
+
+**Good starting point for someone else:**
+- Resolve MasterMap Highways access via PSGA or equivalent route.
+- Compute junction-density-per-km within several buffer radii (250m,
+  500m, 1km) per link.
+- Add as Stage 2 feature; assess feature importance and predictive
+  lift.
+- Compare against current betweenness/degree_mean to confirm distinct
+  signal.
+
+**Related:** RAMI licensing entry in `TODO.md`; both blocked by same
+access question.
+
+---
+
 ## Cross-theme note
 
 The ideas above are not independent. Several natural combinations:
