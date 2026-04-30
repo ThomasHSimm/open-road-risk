@@ -49,6 +49,25 @@ Tracked here so nothing gets lost. Cross off as done.
 - [ ] Remove `smartmotorway`, `parentlinkref`, `enddate` from any feature derivation
   lists — all empty (100% null) in current Network Model GDB release.
 
+- [ ] Test exposure-as-offset vs exposure-as-feature in Stage 2 GLM —
+  current implementation uses `log(AADT × length_km × 365 / 1e6)` as
+  fixed offset (forces β_AADT = β_length = 1). Re-fit GLM with
+  `log(AADT)` and `log(length)` as features and compare. SPF literature
+  suggests β_AADT ≈ 0.7-0.9 is typical; if confirmed, the offset
+  formulation distorts predictions at AADT extremes (over-predicts at
+  high AADT, under-predicts at low). XGBoost partly compensates via
+  `estimated_aadt` as a feature on top of the offset, but a cleaner
+  formulation is preferable. Affects ranking interpretation: motorways
+  may rank higher than they should, unclassified roads lower. Document
+  result on methodology page regardless of outcome.
+
+- [ ] Test for Poisson overdispersion in Stage 2 — compute
+  variance/mean ratio of `collision_count`. If > ~1.5, switch GLM to
+  Negative Binomial via `sm.families.NegativeBinomial(alpha=...)`.
+  Independent of the offset/feature decision: NB mostly affects
+  standard errors and inference, not point estimates. Do in the same
+  session as the offset experiment since the data inspection overlaps.
+
 ---
 
 ## 🟢 Infrastructure / Output
@@ -64,6 +83,13 @@ Tracked here so nothing gets lost. Cross off as done.
 
 - [ ] `data/README.md` — download instructions for all large raw files not in git
   (STATS19 CSV, OS Open Roads GeoPackage, AADF zip, OSM pbf files, MRDB).
+
+- [ ] Add "Related work / where this fits" page — short, written from
+  your perspective with verified citations. Position project relative
+  to Lovelace / Leeds ITS active travel work, any UK SPF-style work
+  surfaced by OS conversation, and proprietary commercial work. Wait
+  until after OS contact response so the page reflects specific
+  references rather than generic ecosystem framing.
 
 - [ ] Kaggle dataset — upload processed parquets so others can skip ingest/clean/snap.
 
