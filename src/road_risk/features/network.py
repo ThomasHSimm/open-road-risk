@@ -243,7 +243,7 @@ SPEED_LIMIT_LOOKUP_RULES = [
 def get_script_git_sha() -> str:
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+            ["git", "rev-parse", "--short=8", "HEAD"],
             cwd=_ROOT,
             check=True,
             capture_output=True,
@@ -252,6 +252,11 @@ def get_script_git_sha() -> str:
         return result.stdout.strip()
     except Exception:
         return "unknown"
+
+
+def repo_display_path(path: Path) -> str:
+    """Return a repo-relative display path without local machine details."""
+    return f"{_ROOT.name}/{path.resolve().relative_to(_ROOT)}"
 
 
 def load_ruc_lookup(ruc_path: Path = RUC_PATH) -> pd.DataFrame:
@@ -411,7 +416,7 @@ def write_ruc_provenance(features: pd.DataFrame) -> None:
     coverage_pct = (100.0 * n_links_with_ruc / n_links_total) if n_links_total else 0.0
 
     provenance = {
-        "script_path": str(Path(__file__).resolve()),
+        "script_path": repo_display_path(Path(__file__)),
         "git_sha": get_script_git_sha(),
         "timestamp_utc": datetime.now(UTC).isoformat(),
         "ruc_source": "ONS 2021 RUC at LSOA grain, E+W, geoportal.statistics.gov.uk",
@@ -432,20 +437,19 @@ def write_imd_provenance(features: pd.DataFrame) -> None:
     """Write IMD coverage stats and decile distributions to JSON."""
 
     def _decile_counts(series: pd.Series) -> dict[str, int]:
-        counts = (
-            series.astype("object")
-            .where(series.notna(), "NaN")
-            .value_counts(dropna=False)
-            .sort_index()
-        )
-        return {str(k): int(v) for k, v in counts.items()}
+        counts = series.value_counts(dropna=True).sort_index()
+        result = {str(k): int(v) for k, v in counts.items()}
+        missing = int(series.isna().sum())
+        if missing:
+            result["NaN"] = missing
+        return result
 
     n_links_total = int(len(features))
     n_links_with_imd = int(features["imd_decile"].notna().sum())
     coverage_pct = (100.0 * n_links_with_imd / n_links_total) if n_links_total else 0.0
 
     provenance = {
-        "script_path": str(Path(__file__).resolve()),
+        "script_path": repo_display_path(Path(__file__)),
         "git_sha": get_script_git_sha(),
         "timestamp_utc": datetime.now(UTC).isoformat(),
         "imd_source": (
@@ -605,7 +609,7 @@ def write_speed_limit_effective_provenance(features: pd.DataFrame) -> None:
     source_counts = _speed_limit_source_counts(features["speed_limit_source"])
 
     provenance = {
-        "script_path": str(Path(__file__).resolve()),
+        "script_path": repo_display_path(Path(__file__)),
         "git_sha": get_script_git_sha(),
         "timestamp_utc": datetime.now(UTC).isoformat(),
         "lookup_rules": SPEED_LIMIT_LOOKUP_RULES,

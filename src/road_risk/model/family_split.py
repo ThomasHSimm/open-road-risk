@@ -241,7 +241,9 @@ def _file_hash(path: Path) -> str:
 
 def _git_sha() -> str | None:
     try:
-        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=_ROOT, text=True).strip()
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short=8", "HEAD"], cwd=_ROOT, text=True
+        ).strip()
     except Exception:
         return None
 

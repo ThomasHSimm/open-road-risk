@@ -394,7 +394,7 @@ def choose_valid_classes(vertex_summary: pd.DataFrame) -> tuple[list, str]:
 def get_script_git_sha() -> str:
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+            ["git", "rev-parse", "--short=8", "HEAD"],
             cwd=_ROOT,
             check=True,
             capture_output=True,
@@ -403,6 +403,11 @@ def get_script_git_sha() -> str:
         return result.stdout.strip()
     except Exception:
         return "unknown"
+
+
+def repo_display_path(path: Path) -> str:
+    """Return a repo-relative display path without local machine details."""
+    return f"{_ROOT.name}/{path.resolve().relative_to(_ROOT)}"
 
 
 def write_provenance(
@@ -415,10 +420,10 @@ def write_provenance(
     n_links_with_curvature: int,
 ) -> None:
     provenance = {
-        "script_path": str(Path(__file__).resolve()),
+        "script_path": repo_display_path(Path(__file__)),
         "script_git_sha": get_script_git_sha(),
         "timestamp_utc": datetime.now(UTC).isoformat(),
-        "input_parquet_path": str(input_path.resolve()),
+        "input_parquet_path": repo_display_path(input_path),
         "spacing_m": SPACING_M,
         "median_vertices_per_km_min": MEDIAN_VERTICES_PER_KM_MIN,
         "p25_vertices_per_km_min": P25_VERTICES_PER_KM_MIN,
