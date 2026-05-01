@@ -385,9 +385,13 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
 
     logger.info(f"  XGBoost training rows: {len(model_df):,}")
 
-    X = model_df[feature_cols].astype(float)
+    # XGBoost computes in float32 internally; explicit downcast avoids
+    # silent float64 copies of the 21.7M-row training matrix and resolves
+    # the Int8/extension-dtype interop where pd.NA -> np.nan upcast forces
+    # an additional copy.
+    X = model_df[feature_cols].astype("float32")
     y = model_df["collision_count"].astype(int)
-    offsets = model_df["log_offset"].values.astype(float)
+    offsets = model_df["log_offset"].values.astype("float32")
 
     # XGBoost Poisson with exposure offset via base_margin.
     # base_margin sets the initial prediction in log-space so the model
@@ -493,8 +497,8 @@ def score_collision_models(
     df = df.copy()
     df["predicted_glm"] = glm_result.predict(X_glm, offset=df["log_offset"].fillna(0))
     df["predicted_xgb"] = xgb_model.predict(
-        df[xgb_features].fillna(0).astype(float),
-        base_margin=df["log_offset"].fillna(0).values,
+        df[xgb_features].fillna(0).astype("float32"),
+        base_margin=df["log_offset"].fillna(0).astype("float32").values,
     )
 
     # Pool to one row per link

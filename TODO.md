@@ -79,6 +79,20 @@ Tracked here so nothing gets lost. Cross off as done.
   added/dropped columns at training time so feature drift is visible.
   Address before any deliberate Stage 1a retrain.
 
+- [ ] Chunked prediction refactor — current `score_collision_models()` holds
+  the full 21.7M-row dataframe, a copy, and float-converted feature matrices
+  simultaneously. Restructure scoring to predict year-by-year and concatenate
+  lightweight per-year results. Reduces peak scoring memory by ~3-4x.
+
+- [ ] Imputation consistency between training and scoring —
+  `train_collision_glm()` and `train_collision_xgb()` use median imputation,
+  while `score_collision_models()` uses `fillna(0)`. For features where 0 is
+  far from the median, such as `pop_density_per_km2` and `imd_decile`, scoring
+  sees different values than training, with unknown effect on missing-feature
+  links. Apply the same imputation strategy at scoring as at training, or skip
+  imputation at scoring and accept NaN propagation through to a flagged
+  "uncalibrated" prediction.
+
 ---
 
 ## 🟢 Infrastructure / Output
