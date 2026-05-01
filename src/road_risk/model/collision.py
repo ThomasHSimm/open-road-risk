@@ -253,6 +253,9 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         "speed_limit_mph_effective",
         "lanes",
         "is_unpaved",
+        "imd_decile",
+        "imd_crime_decile",
+        "imd_living_indoor_decile",
     ]
 
     feature_cols = list(core_cols)
@@ -368,6 +371,9 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
         "speed_limit_mph_effective",
         "lanes",
         "is_unpaved",
+        "imd_decile",
+        "imd_crime_decile",
+        "imd_living_indoor_decile",
     ]:
         if col in df.columns:
             feature_cols.append(col)
