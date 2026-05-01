@@ -68,6 +68,17 @@ Tracked here so nothing gets lost. Cross off as done.
   standard errors and inference, not point estimates. Do in the same
   session as the offset experiment since the data inspection overlaps.
 
+- [ ] Tighten Stage 1a feature selection against `network_features.parquet`
+  drift. `build_aadt_features()` in `aadt.py` currently appends every
+  non-`link_id` column from the parquet, so retraining silently absorbs
+  whatever has been added since the last train (RUC strings, IMD deciles,
+  future additions). Inference is safe — `aadt_model.pkl` carries its own
+  saved feature list — but a retrain would change feature membership
+  without an explicit decision. Replace append-all with an explicit
+  allowlist (mirroring `network_candidates` in `collision.py:246`) and log
+  added/dropped columns at training time so feature drift is visible.
+  Address before any deliberate Stage 1a retrain.
+
 ---
 
 ## 🟢 Infrastructure / Output
@@ -699,6 +710,18 @@ has no signal for.
 
 ### IMD (Index of Multiple Deprivation) LSOA join
 
+- [x] IMD 2025 LSOA join added to `network_features.parquet` (1 May 2026) —
+  overall IMD decile, crime decile, and living-environment indoors decile
+  included. Indoors sub-domain used instead of the full Living Environment
+  domain to avoid leakage from the Outdoors road traffic accidents indicator.
+  See `data/provenance/imd_provenance.json`.
+- [ ] Persist `lsoa21cd_assigned` to `network_features.parquet` for future
+  IMD/RUC coverage diagnostics. Current IMD coverage gap is explained:
+  61,313 links without English IMD ≈ the earlier 62k estimate, almost
+  certainly Welsh LSOAs picked up at the western edge of the study bounding
+  box (Cheshire/Shropshire border and Wirral peninsula reaching toward Wales).
+  Not urgent; this would make the diagnostic one-line in future.
+
 **Context:** Deprivation correlates with crash risk via mechanisms not
 captured by population density alone — older vehicle fleets, enforcement
 gaps, pedestrian exposure, on-street parking density. LSOA-grain open data
@@ -781,7 +804,7 @@ A rough execution sequence that respects dependencies:
 1. ~~AADF filter~~ ✅ done.
 2. 5-seed stability — infrastructure for evaluating everything else.
 3. ~~EB shrinkage~~ ✅ done (25 April 2026).
-4. IMD + NaPTAN — cheap adds, independent of model structure.
+4. ~~IMD~~ ✅ + NaPTAN — cheap adds, independent of model structure.
 5. ~~ONS RUC~~ ✅ done.
 6. ~~OSM tiered imputation~~ ✅ done.
 7. Curvature + grade — independent; do when in the mood for geometry work.

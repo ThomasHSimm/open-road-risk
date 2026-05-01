@@ -115,8 +115,12 @@ OPENROADS_PATH = PROCESSED / "shapefiles/openroads.parquet"
 LSOA_CENT_PATH = _ROOT / "data/raw/stats19/lsoa_centroids.csv"
 LSOA_POP_PATH = _ROOT / "data/raw/stats19/lsoa_population.csv"
 RUC_PATH = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
+IMD_PATH = (
+    _ROOT / "data/raw/mhclg/File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv"
+)
 OUTPUT_PATH = _ROOT / "data/features/network_features.parquet"
 RUC_PROV_PATH = _ROOT / "data/provenance/ruc_provenance.json"
+IMD_PROV_PATH = _ROOT / "data/provenance/imd_provenance.json"
 SPEED_LIMIT_PROV_PATH = _ROOT / "data/provenance/speed_limit_effective_provenance.json"
 
 # Betweenness centrality sample size — higher = more accurate, slower
@@ -129,6 +133,21 @@ POP_JOIN_CAP_M = 2000
 # Road classifications that count as "major"
 MAJOR_CLASSES = {"Motorway", "A Road"}
 RUC_REQUIRED_COLUMNS = ["LSOA21CD", "RUC21CD", "RUC21NM"]
+
+# IoD 2025 column names — exact strings from MHCLG File 7.
+# See: https://www.gov.uk/government/statistics/english-indices-of-deprivation-2025
+IMD_LSOA_COL = "LSOA code (2021)"
+IMD_OVERALL_DECILE_COL = (
+    "Index of Multiple Deprivation (IMD) Decile (where 1 is most deprived 10% of LSOAs)"
+)
+IMD_CRIME_DECILE_COL = "Crime Decile (where 1 is most deprived 10% of LSOAs)"
+IMD_INDOOR_DECILE_COL = "Indoors Sub-domain Decile (where 1 is most deprived 10% of LSOAs)"
+IMD_REQUIRED_COLUMNS = [
+    IMD_LSOA_COL,
+    IMD_OVERALL_DECILE_COL,
+    IMD_CRIME_DECILE_COL,
+    IMD_INDOOR_DECILE_COL,
+]
 MINOR_ROAD_CLASSES = {
     "Unclassified",
     "Not Classified",
@@ -224,7 +243,7 @@ SPEED_LIMIT_LOOKUP_RULES = [
 def get_script_git_sha() -> str:
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+            ["git", "rev-parse", "--short=8", "HEAD"],
             cwd=_ROOT,
             check=True,
             capture_output=True,
@@ -233,6 +252,11 @@ def get_script_git_sha() -> str:
         return result.stdout.strip()
     except Exception:
         return "unknown"
+
+
+def repo_display_path(path: Path) -> str:
+    """Return a repo-relative display path without local machine details."""
+    return f"{_ROOT.name}/{path.resolve().relative_to(_ROOT)}"
 
 
 def load_ruc_lookup(ruc_path: Path = RUC_PATH) -> pd.DataFrame:
@@ -278,6 +302,82 @@ def load_ruc_lookup(ruc_path: Path = RUC_PATH) -> pd.DataFrame:
     return ruc
 
 
+def load_imd_lookup(imd_path: Path = IMD_PATH) -> pd.DataFrame:
+    """
+    Load the IoD 2025 deprivation lookup keyed by LSOA21CD.
+
+    Returns a frame with columns:
+        LSOA21CD, imd_decile, imd_crime_decile, imd_living_indoor_decile
+
+    Why these three:
+      - IMD overall decile: headline deprivation signal.
+      - Crime decile: enforcement / antisocial behaviour proxy; mechanism-
+        relevant to road risk.
+      - Indoors Sub-domain decile: housing-quality signal. Used INSTEAD of
+        the full Living Environment domain because the Outdoors sub-domain
+        contains road traffic accidents as an indicator (leakage).
+
+    Deciles are integer 1–10 (1 = most deprived). The model uses deciles
+    rather than scores because IoD scores are rank-transformed exponentials
+    and not on a meaningful absolute scale.
+
+    Fails fast if the source file is missing or required columns are absent.
+    """
+    if not imd_path.exists():
+        raise FileNotFoundError(
+            f"IMD CSV not found at {imd_path}. "
+            f"Download File 7 from "
+            f"https://www.gov.uk/government/statistics/english-indices-of-deprivation-2025"
+        )
+
+    header = pd.read_csv(imd_path, nrows=0, encoding="utf-8-sig")
+    missing = [col for col in IMD_REQUIRED_COLUMNS if col not in header.columns]
+    if missing:
+        raise ValueError(
+            f"IMD CSV at {imd_path} is missing required columns: {missing}. "
+            f"Found columns: {header.columns.tolist()}."
+        )
+
+    imd = pd.read_csv(
+        imd_path,
+        usecols=IMD_REQUIRED_COLUMNS,
+        encoding="utf-8-sig",
+    ).rename(
+        columns={
+            IMD_LSOA_COL: "LSOA21CD",
+            IMD_OVERALL_DECILE_COL: "imd_decile",
+            IMD_CRIME_DECILE_COL: "imd_crime_decile",
+            IMD_INDOOR_DECILE_COL: "imd_living_indoor_decile",
+        }
+    )
+    imd["LSOA21CD"] = imd["LSOA21CD"].astype("string").str.strip()
+
+    # Coerce deciles to nullable Int8 — saves memory and makes intent explicit.
+    # Any non-numeric value becomes <NA>; this is correct (the source uses
+    # blanks for excluded LSOAs).
+    for col in ["imd_decile", "imd_crime_decile", "imd_living_indoor_decile"]:
+        imd[col] = pd.to_numeric(imd[col], errors="coerce").astype("Int8")
+
+    dupes = int(imd["LSOA21CD"].duplicated().sum())
+    if dupes:
+        raise ValueError(
+            f"IMD CSV at {imd_path} contains {dupes:,} duplicate LSOA21CD rows; "
+            "expected one row per LSOA."
+        )
+
+    n_imd = int(imd["imd_decile"].notna().sum())
+    n_crime = int(imd["imd_crime_decile"].notna().sum())
+    n_indoor = int(imd["imd_living_indoor_decile"].notna().sum())
+    logger.info(
+        "  Loaded %s IMD rows (decile coverage: imd=%s, crime=%s, indoor=%s)",
+        f"{len(imd):,}",
+        f"{n_imd:,}",
+        f"{n_crime:,}",
+        f"{n_indoor:,}",
+    )
+    return imd
+
+
 def derive_ruc_urban_rural(ruc_class: pd.Series) -> pd.Series:
     """
     Collapse detailed RUC codes into an Urban/Rural top-level split.
@@ -316,7 +416,7 @@ def write_ruc_provenance(features: pd.DataFrame) -> None:
     coverage_pct = (100.0 * n_links_with_ruc / n_links_total) if n_links_total else 0.0
 
     provenance = {
-        "script_path": str(Path(__file__).resolve()),
+        "script_path": repo_display_path(Path(__file__)),
         "git_sha": get_script_git_sha(),
         "timestamp_utc": datetime.now(UTC).isoformat(),
         "ruc_source": "ONS 2021 RUC at LSOA grain, E+W, geoportal.statistics.gov.uk",
@@ -331,6 +431,51 @@ def write_ruc_provenance(features: pd.DataFrame) -> None:
     with open(RUC_PROV_PATH, "w", encoding="utf-8") as f:
         json.dump(provenance, f, indent=2)
     logger.info(f"Wrote RUC provenance to {RUC_PROV_PATH}")
+
+
+def write_imd_provenance(features: pd.DataFrame) -> None:
+    """Write IMD coverage stats and decile distributions to JSON."""
+
+    def _decile_counts(series: pd.Series) -> dict[str, int]:
+        counts = series.value_counts(dropna=True).sort_index()
+        result = {str(k): int(v) for k, v in counts.items()}
+        missing = int(series.isna().sum())
+        if missing:
+            result["NaN"] = missing
+        return result
+
+    n_links_total = int(len(features))
+    n_links_with_imd = int(features["imd_decile"].notna().sum())
+    coverage_pct = (100.0 * n_links_with_imd / n_links_total) if n_links_total else 0.0
+
+    provenance = {
+        "script_path": repo_display_path(Path(__file__)),
+        "git_sha": get_script_git_sha(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
+        "imd_source": (
+            "MHCLG English Indices of Deprivation 2025, File 7 (LSOA21 grain), "
+            "https://www.gov.uk/government/statistics/english-indices-of-deprivation-2025"
+        ),
+        "imd_vintage": "IoD 2025 (published 30 Oct 2025, v2 corrected 17 Nov 2025)",
+        "indoor_subdomain_rationale": (
+            "Indoors Sub-domain used instead of full Living Environment domain "
+            "because the Outdoors sub-domain contains road traffic accidents "
+            "as an indicator (leakage risk for a road-risk model)."
+        ),
+        "n_links_total": n_links_total,
+        "n_links_with_imd": n_links_with_imd,
+        "coverage_pct": coverage_pct,
+        "imd_decile_distribution": _decile_counts(features["imd_decile"]),
+        "imd_crime_decile_distribution": _decile_counts(features["imd_crime_decile"]),
+        "imd_living_indoor_decile_distribution": _decile_counts(
+            features["imd_living_indoor_decile"]
+        ),
+    }
+
+    IMD_PROV_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(IMD_PROV_PATH, "w", encoding="utf-8") as f:
+        json.dump(provenance, f, indent=2)
+    logger.info(f"Wrote IMD provenance to {IMD_PROV_PATH}")
 
 
 def _speed_limit_source_counts(series: pd.Series) -> dict[str, int]:
@@ -464,7 +609,7 @@ def write_speed_limit_effective_provenance(features: pd.DataFrame) -> None:
     source_counts = _speed_limit_source_counts(features["speed_limit_source"])
 
     provenance = {
-        "script_path": str(Path(__file__).resolve()),
+        "script_path": repo_display_path(Path(__file__)),
         "git_sha": get_script_git_sha(),
         "timestamp_utc": datetime.now(UTC).isoformat(),
         "lookup_rules": SPEED_LIMIT_LOOKUP_RULES,
@@ -1216,7 +1361,13 @@ def build_network_features(
          speed_limit_mph_imputed, speed_limit_source,
          lanes, lit, is_unpaved]  ← if include_osm=True
     """
-    required_cols = {"ruc_class", "ruc_urban_rural"}
+    required_cols = {
+        "ruc_class",
+        "ruc_urban_rural",
+        "imd_decile",
+        "imd_crime_decile",
+        "imd_living_indoor_decile",
+    }
     if output_path.exists() and not force_recompute:
         cached = pd.read_parquet(output_path)
         osm_cols = {"speed_limit_mph", "lanes", "lit", "is_unpaved"}
@@ -1228,7 +1379,7 @@ def build_network_features(
         missing_required = required_cols.difference(cached.columns)
         if missing_required:
             logger.info(
-                "Cache exists but is missing required RUC columns %s — recomputing.",
+                "Cache exists but is missing required network columns %s — recomputing.",
                 sorted(missing_required),
             )
         elif include_osm and not osm_cols.intersection(cached.columns):
@@ -1246,6 +1397,7 @@ def build_network_features(
             output_path.parent.mkdir(parents=True, exist_ok=True)
             cached.to_parquet(output_path, index=False)
             write_ruc_provenance(cached)
+            write_imd_provenance(cached)
             write_speed_limit_effective_provenance(cached)
             return cached
         else:
@@ -1261,6 +1413,10 @@ def build_network_features(
     ruc_lookup = load_ruc_lookup()
     ruc_by_lsoa = ruc_lookup.set_index("LSOA21CD")["RUC21CD"]
 
+    logger.info(f"Loading IMD lookup from {IMD_PATH}")
+    imd_lookup = load_imd_lookup()
+    imd_by_lsoa = imd_lookup.set_index("LSOA21CD")
+
     # Build graph
     G = build_graph(openroads)
 
@@ -1274,6 +1430,11 @@ def build_network_features(
     )
     ruc_class = lsoa_assignment.map(ruc_by_lsoa).astype("string")
     ruc_urban_rural = derive_ruc_urban_rural(ruc_class)
+    imd_decile = lsoa_assignment.map(imd_by_lsoa["imd_decile"]).astype("Int8")
+    imd_crime_decile = lsoa_assignment.map(imd_by_lsoa["imd_crime_decile"]).astype("Int8")
+    imd_living_indoor_decile = lsoa_assignment.map(imd_by_lsoa["imd_living_indoor_decile"]).astype(
+        "Int8"
+    )
 
     # Combine base features
     features = pd.DataFrame(
@@ -1285,6 +1446,9 @@ def build_network_features(
             "pop_density_per_km2": pop_density.values,
             "ruc_class": ruc_class.values,
             "ruc_urban_rural": ruc_urban_rural.values,
+            "imd_decile": imd_decile.values,
+            "imd_crime_decile": imd_crime_decile.values,
+            "imd_living_indoor_decile": imd_living_indoor_decile.values,
         }
     )
 
@@ -1333,6 +1497,7 @@ def build_network_features(
     features.to_parquet(output_path, index=False)
     logger.info(f"Saved network features to {output_path} ({len(features):,} rows)")
     write_ruc_provenance(features)
+    write_imd_provenance(features)
     write_speed_limit_effective_provenance(features)
 
     return features
