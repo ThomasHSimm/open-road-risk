@@ -40,6 +40,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_bool_dtype, is_numeric_dtype
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -68,6 +69,26 @@ BNG_FALLBACK_PROJ = (
     "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 "
     "+x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"
 )
+
+
+def _model_numeric_columns(df: pd.DataFrame, candidates: list[str]) -> tuple[list[str], list[str]]:
+    """
+    Split candidate model columns into numeric/bool columns and skipped columns.
+
+    Link-level feature tables also carry categorical diagnostics such as
+    ``ruc_class`` and provenance labels such as ``speed_limit_source``. The
+    AADT estimator currently has no categorical encoding step, so those columns
+    must not enter sklearn's numeric design matrix.
+    """
+    keep = []
+    skip = []
+    for col in candidates:
+        dtype = df[col].dtype
+        if is_numeric_dtype(dtype) or is_bool_dtype(dtype):
+            keep.append(col)
+        else:
+            skip.append(col)
+    return keep, skip
 
 
 def filter_counted_aadf_for_training(
@@ -324,7 +345,13 @@ def build_aadt_features(aadf: pd.DataFrame) -> tuple:
         from scipy.spatial import cKDTree
 
         net = pd.read_parquet(NET_FEATURES_PATH)
-        net_cols = [c for c in net.columns if c != "link_id"]
+        net_candidates = [c for c in net.columns if c != "link_id"]
+        net_cols, skipped_net_cols = _model_numeric_columns(net, net_candidates)
+        if skipped_net_cols:
+            logger.info(
+                "  Skipping non-numeric network features for AADT estimator: %s",
+                ", ".join(skipped_net_cols),
+            )
 
         or_gdf = gpd.read_parquet(OPENROADS_PATH)
         link_lon, link_lat = _openroads_reference_lonlat(or_gdf)
@@ -567,7 +594,13 @@ def apply_aadt_estimator(
 
     if NET_FEATURES_PATH.exists():
         net = pd.read_parquet(NET_FEATURES_PATH)
-        net_cols = [c for c in net.columns if c != "link_id"]
+        net_candidates = [c for c in net.columns if c != "link_id"]
+        net_cols, skipped_net_cols = _model_numeric_columns(net, net_candidates)
+        if skipped_net_cols:
+            logger.info(
+                "  Skipping non-numeric network features for AADT inference: %s",
+                ", ".join(skipped_net_cols),
+            )
         or_df = or_df.merge(net[["link_id"] + net_cols], on="link_id", how="left")
         n_joined = or_df["degree_mean"].notna().sum()
         logger.info(f"  Network features joined for {n_joined:,} / {len(or_df):,} links")
