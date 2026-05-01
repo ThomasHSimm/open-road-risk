@@ -510,6 +510,16 @@ where coverage is moderate. Expectation: the feature becomes *not broken* on
 minor roads, with the real signal living in the explicit-tag subset where
 `_imputed=0`.
 
+**Parked decision - `lit`:** do not add OSM `lit` to Stage 2 for now.
+Current `network_features.parquet` coverage is 90.7% null overall and 88.3%
+null even on Urban links (`lit=True` 8.1%, `lit=False` 1.2% overall). This is
+not just sparse coverage: the explicit tags appear selection-biased toward
+roads where contributors bothered to tag lighting state, especially the
+obviously-rural/unlit minority. A `lit_known` flag would mostly teach the
+model OSM tagging behaviour, duplicating RUC/pop-density/road-class signal.
+Revisit only if OSM coverage improves materially, or if there is a specific
+diagnostic question about explicitly tagged-and-unlit links as their own class.
+
 **Decisions already made:**
 - Keyed off OS Open Roads `road_classification`, not OSM `highway`.
   Consistent with rest of pipeline.

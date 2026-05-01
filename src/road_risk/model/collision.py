@@ -243,6 +243,18 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         "year_norm",
     ]
 
+    # Optional contextual/network features. Policy: any feature meeting
+    # MIN_COVERAGE_FOR_INCLUSION is included via median-imputation +
+    # missingness indicator. This keeps the GLM training population
+    # constant across feature additions; without imputation, adding a
+    # partial-coverage feature would silently drop links from the fit
+    # and confound feature-effect with sample-effect comparisons.
+    #
+    # Per-feature columns added to df:
+    #   {col}_imputed  — median-filled value, used as the model regressor
+    #   {col}_missing  — 1 if original was NaN, 0 otherwise; lets the GLM
+    #                    learn whether missingness itself correlates with
+    #                    risk separately from the imputed value
     network_candidates = [
         "hgv_proportion",
         "degree_mean",
@@ -256,23 +268,34 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         "imd_decile",
         "imd_crime_decile",
         "imd_living_indoor_decile",
+        "mean_grade",
     ]
+    MIN_COVERAGE_FOR_INCLUSION = 0.05  # below this, feature is skipped
 
     feature_cols = list(core_cols)
     for col in network_candidates:
         if col not in df.columns:
+            logger.info(f"  {col}: not in dataset — skipping")
             continue
         coverage = df[col].notna().mean()
-        if coverage > 0.5:
-            feature_cols.append(col)
-        elif coverage > 0.05:
-            median_val = df[col].median()
-            df[f"{col}_imputed"] = df[col].fillna(median_val)
-            feature_cols.append(f"{col}_imputed")
+        if coverage < MIN_COVERAGE_FOR_INCLUSION:
             logger.info(
-                f"  {col}: {coverage:.1%} coverage — imputing median "
-                f"({median_val:.2f}) to retain rows"
+                f"  {col}: {coverage:.1%} coverage below "
+                f"{MIN_COVERAGE_FOR_INCLUSION:.0%} threshold — skipping"
             )
+            continue
+
+        median_val = df[col].median()
+        imputed_col = f"{col}_imputed"
+        missing_col = f"{col}_missing"
+        df[imputed_col] = df[col].fillna(median_val)
+        df[missing_col] = df[col].isna().astype("int8")
+        feature_cols.append(imputed_col)
+        feature_cols.append(missing_col)
+        logger.info(
+            f"  {col}: {coverage:.1%} coverage — imputed median={median_val:.4g}, "
+            f"added {imputed_col} + {missing_col}"
+        )
     _assert_no_post_event_features(feature_cols, context="GLM")
 
     model_df = df[feature_cols + ["collision_count", "log_offset"]].dropna()
@@ -374,6 +397,7 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
         "imd_decile",
         "imd_crime_decile",
         "imd_living_indoor_decile",
+        "mean_grade",
     ]:
         if col in df.columns:
             feature_cols.append(col)
