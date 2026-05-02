@@ -10,10 +10,11 @@ ratio). Link-level modelling of weekday/weekend or month-of-year variation is
 not supported by the data — variation across sites within those axes is too
 tight to model meaningfully.
 
-HGV percentage is the one axis with an unresolved verdict. Boxplot evidence
-suggests possible within-road-class variation, but the per-site within-month
-std test (the same diagnostic that settled weekday/weekend) has not been run.
-Pending.
+HGV percentage clears the link-specific variation gate. The per-site
+within-month std test gives a median across-month std of 7.19 percentage
+points, with every month between 6.50 and 8.17 points. That is much wider
+than weekday/weekend variation and supports taking HGV% to the collision-model
+ablation alongside `core_overnight_ratio`.
 
 ## Findings
 
@@ -103,7 +104,7 @@ but **the same shape applies to every road type**.
 if temporal collision modelling is ever pursued, but in an annual-grain
 collision model a uniform monthly multiplier doesn't change link rankings.
 
-### 4. HGV: unresolved, with a denominator artefact in the seasonal pattern
+### 4. HGV percentage has link-specific variation and should be ablated
 
 HGV percentage by road type and month (`mean_large_pct` from
 `temporal_profiles.parquet`):
@@ -125,13 +126,38 @@ surges in summer and dilutes the ratio. This means HGVs are *less*
 seasonal than passenger traffic, not more. Useful to know for
 interpretation; doesn't on its own suggest link-specific signal.
 
-**Within-road-class spread visible in boxplots is wider than weekday/
-weekend showed.** IQRs of HGV% within each road type span ~10 percentage
-points; outliers reach 40–70%. Some of this is genuine site differences
-(truck-heavy industrial corridors), some is noise from low-flow sites
-where the ratio becomes unstable. Whether the genuine variation is large
-enough to model — and adds anything beyond road class — is the question
-the per-site within-month std test would answer. Not run yet.
+**Per-site within-month spread is wide enough to model.** The step 1b
+diagnostic groups raw WebTRIS rows to site × month, then computes the standard
+deviation of site-level mean HGV% within each month. This is the same logic
+used to park weekday/weekend variation. HGV% is not tight:
+
+| Month | Sites | Mean HGV% | Std, pp | q10 | q90 | Max |
+|---|---:|---:|---:|---:|---:|---:|
+| Jan | 5,700 | 18.91 | 8.17 | 7.93 | 28.57 | 57.60 |
+| Feb | 5,752 | 18.60 | 7.93 | 8.03 | 28.03 | 58.30 |
+| Mar | 5,758 | 18.52 | 7.88 | 8.09 | 27.85 | 58.80 |
+| Apr | 5,688 | 17.16 | 7.28 | 7.55 | 25.80 | 58.10 |
+| May | 5,666 | 16.87 | 7.21 | 7.46 | 25.39 | 69.60 |
+| Jun | 5,660 | 16.77 | 7.05 | 7.53 | 25.10 | 63.50 |
+| Jul | 5,622 | 16.64 | 6.95 | 7.60 | 24.61 | 67.60 |
+| Aug | 5,623 | 15.69 | 6.50 | 7.27 | 23.15 | 69.60 |
+| Sep | 5,670 | 16.55 | 6.81 | 7.43 | 24.55 | 58.60 |
+| Oct | 5,688 | 17.03 | 7.16 | 7.51 | 25.30 | 69.10 |
+| Nov | 5,670 | 17.59 | 7.44 | 7.63 | 26.40 | 62.70 |
+| Dec | 5,662 | 15.58 | 6.77 | 6.60 | 23.50 | 62.35 |
+
+Median monthly std is 7.19 percentage points; range is 6.50–8.17. This clears
+the temporal plan's 5+ percentage-point threshold for taking HGV% to ablation.
+
+Site-mean HGV% also has a real high-HGV tail. Across 6,003 study-area sites,
+the 10th/50th/90th percentiles are 7.68%, 18.02%, and 25.72%; 3.0% of sites
+average at least 30% HGV and 0.37% average at least 40%.
+
+| Road type | Sites | Mean HGV% | Std, pp | q10 | q90 | Max |
+|---|---:|---:|---:|---:|---:|---:|
+| A-road | 802 | 19.97 | 5.97 | 10.48 | 26.07 | 34.82 |
+| Motorway | 3,631 | 18.73 | 6.64 | 9.27 | 26.57 | 57.04 |
+| Other | 1,570 | 12.64 | 6.88 | 5.49 | 21.82 | 58.28 |
 
 **HGV% vs HGV volume.** HGV% is the more direct feature for a model: a
 30%-HGV link is meaningfully different from a 5%-HGV link regardless of
@@ -142,10 +168,11 @@ rather than absolute count. HGV volume is the cleaner descriptor for
 class for modelling. If HGV is taken to ablation, % is the feature; volume
 is for diagnostics only.
 
-**Status:** pending per-site within-month std check on
-`adt24largevehiclepercentage`. If std is tight (say <2 pp), park for the
-same reason as weekday/weekend. If wider (5+ pp), candidate for ablation
-alongside `core_overnight_ratio`.
+**Status:** candidate for ablation alongside `core_overnight_ratio`. Use HGV
+percentage, not HGV volume, as the modelling descriptor. Supporting CSVs are
+`reports/supporting/temporal_hgv_monthly_std.csv`,
+`reports/supporting/temporal_hgv_site_month_profile.csv`, and
+`reports/supporting/temporal_hgv_road_type_summary.csv`.
 
 ## Caveats
 
@@ -193,12 +220,11 @@ fixed if `temporal.py` output is used elsewhere.
   reflect actual time periods.
 - **Step 1 (link-level weekday/weekend model):** parked. Finding 2 above is
   the evidence.
-- **Step 1b (HGV per-site std check):** new, replaces the original
-  weekday/weekend step. Cheap diagnostic to settle finding 4. Outcome
-  determines whether HGV joins the ablation.
+- **Step 1b (HGV per-site std check):** complete. Finding 4 clears the
+  5+ percentage-point threshold, so HGV% joins the ablation candidate set.
 - **Step 2 (leakage check for `core_overnight_ratio`):** still required.
-- **Step 3 (collision-model ablation):** runs with `core_overnight_ratio`
-  plus a road-class proxy baseline. HGV% added if step 1b clears.
+- **Step 3 (collision-model ablation):** runs with `core_overnight_ratio`,
+  HGV%, and a road-class proxy baseline.
 - **Step 4 (month/seasonal at link grain):** parked. Finding 3 is the
   evidence.
 
@@ -206,8 +232,9 @@ The remaining ablation question is narrow: do these descriptors carry
 information beyond what road class and existing network features already
 give the collision model? Prior is moderate for `core_overnight_ratio`
 (real variation but features that drive its prediction overlap with
-features already in the collision model) and uncertain for HGV% (depends
-on step 1b outcome).
+features already in the collision model) and now moderate for HGV% (real
+within-month site variation, but still to be tested against existing road
+class and network features).
 
 ## Updates
 

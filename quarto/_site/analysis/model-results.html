@@ -105,6 +105,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
 <style>html{ scroll-behavior: smooth; }</style>
 
 
@@ -346,7 +355,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>XGBoost Poisson</strong> — captures non-linear interactions, higher predictive power</li>
 </ul>
 <p>Both models are trained on link × year data then pooled to a single stable risk score per link. The pooled output (<code>risk_scores.parquet</code>) has one row per link with no year dimension.</p>
-<div id="4863845b" class="cell" data-execution_count="1">
+<div id="c687dc45" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -408,7 +417,7 @@ Model performance:
 <h2 data-number="2" class="anchored" data-anchor-id="model-performance"><span class="header-section-number">2</span> Model performance</h2>
 <section id="glm-summary" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="glm-summary"><span class="header-section-number">2.1</span> GLM summary</h3>
-<div id="3caf69e3" class="cell" data-execution_count="2">
+<div id="201a01ef" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> metrics[<span class="st">"glm"</span>]</span>
@@ -466,7 +475,7 @@ Features (32):
 </section>
 <section id="glm-coefficients" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="glm-coefficients"><span class="header-section-number">2.2</span> GLM coefficients</h3>
-<div id="9e9f637d" class="cell" data-execution_count="3">
+<div id="81d75d75" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>glm_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_glm.pkl"</span></span>
@@ -558,7 +567,7 @@ pop_density_per_km2_missing        4.8970  133.894     0.0</code></pre>
 </section>
 <section id="xgboost-feature-importance" class="level3" data-number="2.3">
 <h3 data-number="2.3" class="anchored" data-anchor-id="xgboost-feature-importance"><span class="header-section-number">2.3</span> XGBoost feature importance</h3>
-<div id="8b91af2c" class="cell" data-execution_count="4">
+<div id="8d23cce6" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>xgb_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_xgb.json"</span></span>
@@ -596,7 +605,7 @@ pop_density_per_km2_missing        4.8970  133.894     0.0</code></pre>
 </section>
 <section id="glm-vs-xgboost-agreement" class="level3" data-number="2.4">
 <h3 data-number="2.4" class="anchored" data-anchor-id="glm-vs-xgboost-agreement"><span class="header-section-number">2.4</span> GLM vs XGBoost agreement</h3>
-<div id="fc8f44bd" class="cell" data-execution_count="5">
+<div id="81b67b38" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">5</span>))</span>
@@ -640,7 +649,7 @@ pop_density_per_km2_missing        4.8970  133.894     0.0</code></pre>
 </section>
 <section id="risk-score-distribution" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="risk-score-distribution"><span class="header-section-number">3</span> Risk score distribution</h2>
-<div id="a4bc3fb2" class="cell" data-execution_count="6">
+<div id="7f339b4d" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
@@ -674,7 +683,7 @@ pop_density_per_km2_missing        4.8970  133.894     0.0</code></pre>
 </div>
 <section id="risk-percentile-by-road-class" class="level3" data-number="3.1">
 <h3 data-number="3.1" class="anchored" data-anchor-id="risk-percentile-by-road-class"><span class="header-section-number">3.1</span> Risk percentile by road class</h3>
-<div id="ba2bc7f4" class="cell" data-execution_count="7">
+<div id="a5d0a8ed" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>cls_med <span class="op">=</span> (</span>
@@ -731,7 +740,7 @@ Unknown                27.2    22.0   442836</code></pre>
 <section id="residual-analysis" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="residual-analysis"><span class="header-section-number">4</span> Residual analysis</h2>
 <p>Residuals (observed − predicted × n_years) identify where the model systematically under- or over-predicts. Large positive residuals flag links that had more collisions than the model expected given their traffic and road characteristics.</p>
-<div id="4d895dbd" class="cell" data-execution_count="8">
+<div id="bb070ab5" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
@@ -768,7 +777,7 @@ Unknown                27.2    22.0   442836</code></pre>
 </div>
 <section id="residuals-by-road-class" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="residuals-by-road-class"><span class="header-section-number">4.1</span> Residuals by road class</h3>
-<div id="49fc0c5f" class="cell" data-execution_count="9">
+<div id="e5715fcf" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>res_by_class <span class="op">=</span> (</span>
@@ -817,7 +826,7 @@ Unknown               -0.236  -0.145  0.395   442836</code></pre>
 <h2 data-number="5" class="anchored" data-anchor-id="geographic-risk-maps"><span class="header-section-number">5</span> Geographic risk maps</h2>
 <section id="full-network-risk-percentile" class="level3" data-number="5.1">
 <h3 data-number="5.1" class="anchored" data-anchor-id="full-network-risk-percentile"><span class="header-section-number">5.1</span> Full-network risk percentile</h3>
-<div id="e3bb9a62" class="cell" data-execution_count="10">
+<div id="100c5195" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -831,7 +840,7 @@ Unknown               -0.236  -0.145  0.395   442836</code></pre>
 <span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    or_risk.plot(</span>
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlBu_r"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
 <span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
 <span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    )</span>
@@ -841,7 +850,7 @@ Unknown               -0.236  -0.145  0.395   442836</code></pre>
 <span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_risk[or_risk[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
 <span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
 <span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlBu_r"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
 <span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
 <span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    )</span>
@@ -863,7 +872,7 @@ Unknown               -0.236  -0.145  0.395   442836</code></pre>
 </section>
 <section id="top-1-risk-links" class="level3" data-number="5.2">
 <h3 data-number="5.2" class="anchored" data-anchor-id="top-1-risk-links"><span class="header-section-number">5.2</span> Top 1% risk links</h3>
-<div id="f4557a75" class="cell" data-execution_count="11">
+<div id="3fe9709a" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -918,7 +927,7 @@ Not Classified              29</code></pre>
 <section id="excess-risk-map-residual-2" class="level3" data-number="5.3">
 <h3 data-number="5.3" class="anchored" data-anchor-id="excess-risk-map-residual-2"><span class="header-section-number">5.3</span> Excess-risk map (residual &gt; 2)</h3>
 <p>Links where observed collisions substantially exceeded the model’s prediction given traffic volume and road type — potential candidates for engineering review.</p>
-<div id="e26c5d7f" class="cell" data-execution_count="12">
+<div id="6138240b" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -950,7 +959,7 @@ Not Classified              29</code></pre>
 </section>
 <section id="summary" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="summary"><span class="header-section-number">6</span> Summary</h2>
-<div id="f5f0cc47" class="cell" data-execution_count="13">
+<div id="9ce9afff" class="cell" data-execution_count="13">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 2 collision model summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
@@ -1786,7 +1795,7 @@ Not Classified            122</code></pre>
 <span id="cb21-347"><a href="#cb21-347" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-348"><a href="#cb21-348" aria-hidden="true" tabindex="-1"></a>    or_risk.plot(</span>
 <span id="cb21-349"><a href="#cb21-349" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
-<span id="cb21-350"><a href="#cb21-350" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlBu_r"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb21-350"><a href="#cb21-350" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb21-351"><a href="#cb21-351" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
 <span id="cb21-352"><a href="#cb21-352" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
 <span id="cb21-353"><a href="#cb21-353" aria-hidden="true" tabindex="-1"></a>    )</span>
@@ -1796,7 +1805,7 @@ Not Classified            122</code></pre>
 <span id="cb21-357"><a href="#cb21-357" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_risk[or_risk[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
 <span id="cb21-358"><a href="#cb21-358" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
 <span id="cb21-359"><a href="#cb21-359" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
-<span id="cb21-360"><a href="#cb21-360" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlBu_r"</span>, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb21-360"><a href="#cb21-360" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb21-361"><a href="#cb21-361" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
 <span id="cb21-362"><a href="#cb21-362" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
 <span id="cb21-363"><a href="#cb21-363" aria-hidden="true" tabindex="-1"></a>    )</span>
