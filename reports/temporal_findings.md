@@ -174,6 +174,29 @@ percentage, not HGV volume, as the modelling descriptor. Supporting CSVs are
 `reports/supporting/temporal_hgv_site_month_profile.csv`, and
 `reports/supporting/temporal_hgv_road_type_summary.csv`.
 
+### 5. Temporal descriptor leakage geometry is real but bounded
+
+Step 2 checked whether WebTRIS sites used by the temporal pipelines snap to
+Open Roads links that are in the Stage 2 collision-model held-out fold. The
+diagnostic reproduces the seed-42 `GroupShuffleSplit` over `link_id`, then
+snaps WebTRIS sites to their nearest Open Roads link within 2 km.
+
+| Site population | Sites | Snapped links | Sites on held-out links | Held-out links with sites | Share |
+|---|---:|---:|---:|---:|---:|
+| `timezone_profile.py` training | 5,946 | 3,625 | 1,246 | 736 | 21.0% |
+| Raw temporal/HGV profiles | 6,003 | 3,640 | 1,255 | 737 | 20.9% |
+| Union | 6,003 | 3,640 | 1,255 | 737 | 20.9% |
+
+The overlap is close to the expected 20% from a random link split, but it is
+still leakage geometry: for those held-out collision links, temporal
+descriptors would be predictions from a temporal model trained on the
+corresponding WebTRIS site. The temporal ablation should either align folds,
+exclude the 737 WebTRIS-snapped held-out links from the score comparison, or
+report the result as mildly optimistic for that subset.
+
+Supporting CSVs are `reports/supporting/temporal_leakage_summary.csv` and
+`reports/supporting/temporal_leakage_site_link_map.csv`.
+
 ## Caveats
 
 ### WebTRIS coverage skew
@@ -222,7 +245,9 @@ fixed if `temporal.py` output is used elsewhere.
   the evidence.
 - **Step 1b (HGV per-site std check):** complete. Finding 4 clears the
   5+ percentage-point threshold, so HGV% joins the ablation candidate set.
-- **Step 2 (leakage check for `core_overnight_ratio`):** still required.
+- **Step 2 (leakage check for `core_overnight_ratio`):** complete. Finding 5
+  confirms fold overlap, so Step 3 must align/exclude affected links or
+  document the optimism.
 - **Step 3 (collision-model ablation):** runs with `core_overnight_ratio`,
   HGV%, and a road-class proxy baseline.
 - **Step 4 (month/seasonal at link grain):** parked. Finding 3 is the

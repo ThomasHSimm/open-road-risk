@@ -142,12 +142,31 @@ Supporting artefacts:
 
 ### Step 2 — Confirm leakage geometry
 
-Check whether any links in the collision model's evaluation folds
-correspond to WebTRIS sites used to train either temporal model. If so,
-descriptors for those links are in-sample predictions and will inflate
-collision-model CV results.
+**Complete.** Checked whether links in the collision model's evaluation fold
+correspond to WebTRIS sites used by the temporal pipelines.
 
-Either align folds by site or document the optimism explicitly.
+Result using the Stage 2 seed-42 `GroupShuffleSplit` over Open Roads
+`link_id`:
+
+- `timezone_profile.py` training sites: 5,946 snapped sites on 3,625 Open
+  Roads links.
+- Sites on Stage 2 held-out links: 1,246 sites on 736 held-out links
+  (21.0% of snapped sites).
+- Raw temporal/HGV profile sites: 6,003 snapped sites on 3,640 links.
+- Raw temporal/HGV sites on Stage 2 held-out links: 1,255 sites on 737
+  held-out links (20.9% of snapped sites).
+
+This confirms the leakage geometry. The overlap is roughly the expected 20%
+from a random link split, but it is still real: for those held-out collision
+links, temporal descriptors are predictions from a temporal model trained on
+the corresponding WebTRIS site. Step 3 must either align/exclude those links
+or document the optimism explicitly.
+
+Supporting artefacts:
+
+- `src/road_risk/diagnostics/temporal_leakage.py`
+- `reports/supporting/temporal_leakage_summary.csv`
+- `reports/supporting/temporal_leakage_site_link_map.csv`
 
 ### Step 3 — Run the collision-model ablation
 
@@ -159,6 +178,13 @@ Three configurations, same folds, same seed:
   whatever the existing feature set can encode of the same idea).
 
 Compare headline CV metric with confidence intervals from resampling.
+Report the Step 2 overlap explicitly, and either:
+
+- align temporal-model folds with the collision-model held-out links; or
+- exclude the 737 WebTRIS-snapped held-out links from the temporal-ablation
+  score comparison; or
+- keep the standard fold and label the temporal-ablation result as mildly
+  optimistic for those links.
 
 Decision rule: pre-registered, TBD — to be set before results are seen.
 The threshold needs to sit above the noise floor of the post-grade collision
@@ -207,7 +233,8 @@ Defer the choice until step 3 results are in.
   any downstream code consuming `prepeak_frac` etc. needs updating. Larger
   scope than a renaming.
 - **Leakage between WebTRIS sites and collision-model test folds is
-  unverified.** Step 2 is a real gate.
+  confirmed.** The overlap is bounded (~21% of snapped WebTRIS sites, 737
+  held-out links) but must be handled or labelled in Step 3.
 - **Cheap-proxy baseline is loosely specified.** Whatever proxy is chosen
   determines whether the comparison is meaningful. If the proxy is too
   weak, descriptors will appear to add value they do not.
@@ -229,7 +256,8 @@ narrative), but the cascade through dependent code is the unknown.
 Step 1: one focused session. New target, existing architecture, no new
 data pulls.
 
-Step 2: short check, possibly extending if leakage is real.
+Step 2: complete. Leakage geometry is real and bounded; Step 3 carries the
+handling choice.
 
 Step 3: one focused session given a working evaluation harness.
 
