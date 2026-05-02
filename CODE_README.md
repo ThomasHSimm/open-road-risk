@@ -13,10 +13,17 @@ Status of each module in the pipeline.
 | `clean_join/snap.py` | ✅ Done | Weighted multi-criteria snap + quick snap, densified geometry KD-tree, ~99.8% match rate |
 | `clean_join/join.py` | ✅ Done | road_link × year table, AADF join, WebTRIS join, snap quality filter (score ≥ 0.6), STATS19 contextual aggregates kept as diagnostics only (excluded from Stage 2 features) |
 | `features/network.py` | ✅ Done | Betweenness, degree, dist_to_major, pop_density, betweenness_relative, OSM speed/lanes/surface/lit |
+| `features/road_curvature.py` | ✅ Done | Curvature/sinuosity feature derivation from OS Open Roads geometry; motorway gating documented |
+| `features/road_terrain.py` | ✅ Done | Grade features from OS Terrain 50; `mean_grade` now used in Stage 2 |
 | `features/legacy.py` | ✅ Done (legacy) | Deprecated — collision.py builds its own feature table. Self-deprecates on import. |
 | `model/aadt.py` | ✅ Done | Stage 1a AADT estimator (counted-only CV R² ~0.83), GroupKFold by count_point_id, applied to 2.1M links |
 | `model/timezone_profile.py` | ✅ Done | Stage 1b time-zone fractions (peak/pre-peak/off-peak), GroupKFold by site_id |
-| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost (R² 0.858); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
+| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost (XGB R² 0.859); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
+| `model/eb_*.py` | ✅ Diagnostic | Empirical Bayes dispersion/shrinkage outputs, separate from production `risk_scores.parquet` |
+| `model/family_split.py` | ✅ Diagnostic | Facility-family XGBoost experiment and stitched ranking diagnostics |
+| `model/rank_stability.py` | ✅ Done | Multi-seed XGBoost ranking stability harness |
+| `diagnostics/` | ✅ Done | Focused validation/report builders for EB, family split, and OSM coverage |
+| `utils/logger.py` | ✅ Done | Shared file/console logging helper |
 | `app/` | 🔄 In progress | Streamlit risk map — functional, performance tuning ongoing |
 | `db.py` | ⬜ Not started | PostGIS loader |
 
@@ -123,11 +130,11 @@ performance metrics, and validation detail — kept there to avoid documentation
 - Counted-only AADF target CV R²: ~0.83 | Applied to 2,167,557 links × 10 years
 
 **Stage 2 — Collision Model**
-- Poisson GLM pseudo-R²: 0.3013 (in-sample on downsampled training set, `n_full` recovered to 18.3M)
-- XGBoost pseudo-R²: 0.8575 (out-of-sample, GroupShuffleSplit by link_id)
+- Poisson GLM pseudo-R²: 0.3472 (in-sample on downsampled training set; `n_full` 21.7M after optional-feature imputation refactor)
+- XGBoost pseudo-R²: 0.8587 (out-of-sample, GroupShuffleSplit by link_id)
 - **Not directly comparable** — different row subsets, different null models. See methodology site.
 - XGBoost drives `risk_percentile`; GLM drives `residual_glm` residual diagnostics. 
-- *Note: April 25 diagnostic runs generated `risk_scores_eb.parquet` (Empirical Bayes) and `risk_scores_family.parquet` (Facility-Family split). Production app continues to use `risk_scores.parquet` (April 24).*
+- *Note: diagnostic runs generated `risk_scores_eb.parquet` (Empirical Bayes) and `risk_scores_family.parquet` (Facility-Family split). Production app uses the current `risk_scores.parquet`.*
 - Metrics are read from `data/models/collision_metrics.json` — that file is canonical.
 
 ---

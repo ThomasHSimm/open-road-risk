@@ -309,10 +309,10 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#background-re-evaluating-the-collision-exposure-relationship" id="toc-background-re-evaluating-the-collision-exposure-relationship" class="nav-link active" data-scroll-target="#background-re-evaluating-the-collision-exposure-relationship"><span class="header-section-number">0.1</span> Background: Re-evaluating the Collision-Exposure Relationship</a></li>
-  <li><a href="#part-1-infrastructure-impact-single-vs.-dual-carriageways" id="toc-part-1-infrastructure-impact-single-vs.-dual-carriageways" class="nav-link" data-scroll-target="#part-1-infrastructure-impact-single-vs.-dual-carriageways"><span class="header-section-number">0.2</span> Part 1: Infrastructure Impact (Single vs.&nbsp;Dual Carriageways)</a></li>
-  <li><a href="#part-2-kinetic-energy-the-60mph-rural-phenomenon" id="toc-part-2-kinetic-energy-the-60mph-rural-phenomenon" class="nav-link" data-scroll-target="#part-2-kinetic-energy-the-60mph-rural-phenomenon"><span class="header-section-number">0.3</span> Part 2: Kinetic Energy (The 60mph Rural Phenomenon)</a></li>
-  <li><a href="#conclusion-validating-the-xgboost-architecture" id="toc-conclusion-validating-the-xgboost-architecture" class="nav-link" data-scroll-target="#conclusion-validating-the-xgboost-architecture"><span class="header-section-number">0.4</span> Conclusion: Validating the XGBoost Architecture</a></li>
+  <li><a href="#background-re-evaluating-the-collision-exposure-relationship" id="toc-background-re-evaluating-the-collision-exposure-relationship" class="nav-link active" data-scroll-target="#background-re-evaluating-the-collision-exposure-relationship">Background: Re-evaluating the Collision-Exposure Relationship</a></li>
+  <li><a href="#part-1-infrastructure-impact-single-vs.-dual-carriageways" id="toc-part-1-infrastructure-impact-single-vs.-dual-carriageways" class="nav-link" data-scroll-target="#part-1-infrastructure-impact-single-vs.-dual-carriageways">Part 1: Infrastructure Impact (Single vs.&nbsp;Dual Carriageways)</a></li>
+  <li><a href="#part-2-kinetic-energy-the-60mph-rural-phenomenon" id="toc-part-2-kinetic-energy-the-60mph-rural-phenomenon" class="nav-link" data-scroll-target="#part-2-kinetic-energy-the-60mph-rural-phenomenon">Part 2: Kinetic Energy (The 60mph Rural Phenomenon)</a></li>
+  <li><a href="#conclusion-validating-the-xgboost-architecture" id="toc-conclusion-validating-the-xgboost-architecture" class="nav-link" data-scroll-target="#conclusion-validating-the-xgboost-architecture">Conclusion: Validating the XGBoost Architecture</a></li>
   </ul>
 </nav>
     </div>
@@ -338,8 +338,8 @@ window.Quarto = {
 </header>
 
 
-<section id="background-re-evaluating-the-collision-exposure-relationship" class="level3" data-number="0.1">
-<h3 data-number="0.1" class="anchored" data-anchor-id="background-re-evaluating-the-collision-exposure-relationship"><span class="header-section-number">0.1</span> Background: Re-evaluating the Collision-Exposure Relationship</h3>
+<section id="background-re-evaluating-the-collision-exposure-relationship" class="level3">
+<h3 class="anchored" data-anchor-id="background-re-evaluating-the-collision-exposure-relationship">Background: Re-evaluating the Collision-Exposure Relationship</h3>
 <p>A foundational assumption in traditional traffic safety analysis is that risk scales linearly with exposure. Under this assumption, doubling the traffic volume (Annual Average Daily Traffic, or AADT) on a road segment should inherently double the expected number of collisions.</p>
 <p>However, when training our count-based network screening model, applying a strict linear exposure offset (<code>base_margin = log_offset</code>) resulted in systematic over-prediction on high-volume roads. To investigate this, we fitted a Poisson Generalized Linear Model (GLM) to the full network—crucially including zero-collision links—to extract the true exposure coefficient (<span class="math inline">\(\beta\)</span>) for different road characteristics.</p>
 <p>The Poisson GLM fits the following relationship:</p>
@@ -347,9 +347,9 @@ window.Quarto = {
 <p>Where: * <span class="math inline">\(E[Y]\)</span> is the expected number of annual collisions. * <span class="math inline">\(\alpha\)</span> is the baseline risk intercept (how dangerous the road is when nearly empty). * <span class="math inline">\(\beta\)</span> is the exposure scaling factor. * <span class="math inline">\(\text{Exposure}\)</span> is the annual vehicle-kilometers travelled on the link.</p>
 <hr>
 </section>
-<section id="part-1-infrastructure-impact-single-vs.-dual-carriageways" class="level3" data-number="0.2">
-<h3 data-number="0.2" class="anchored" data-anchor-id="part-1-infrastructure-impact-single-vs.-dual-carriageways"><span class="header-section-number">0.2</span> Part 1: Infrastructure Impact (Single vs.&nbsp;Dual Carriageways)</h3>
-<div id="c3789dd9" class="cell" data-execution_count="2">
+<section id="part-1-infrastructure-impact-single-vs.-dual-carriageways" class="level3">
+<h3 class="anchored" data-anchor-id="part-1-infrastructure-impact-single-vs.-dual-carriageways">Part 1: Infrastructure Impact (Single vs.&nbsp;Dual Carriageways)</h3>
+<div id="20300708" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Unclassified: 1060014 links
@@ -383,44 +383,44 @@ Motorway: 4084 links</code></pre>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0</th>
 <td>Unclassified</td>
-<td>0.528085</td>
-<td>0.759343</td>
+<td>0.677943</td>
+<td>0.814647</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
 <td>Classified Unnumbered</td>
-<td>0.450847</td>
-<td>0.569605</td>
+<td>0.531478</td>
+<td>0.596444</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">2</th>
 <td>Unknown</td>
-<td>-1.555200</td>
-<td>0.553078</td>
+<td>-1.336228</td>
+<td>0.613607</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">3</th>
 <td>Not Classified</td>
-<td>-1.567816</td>
-<td>0.587902</td>
+<td>-1.413974</td>
+<td>0.633419</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">4</th>
 <td>A Road</td>
-<td>0.511410</td>
-<td>0.466845</td>
+<td>0.505879</td>
+<td>0.456619</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">5</th>
 <td>B Road</td>
-<td>0.277854</td>
-<td>0.531110</td>
+<td>0.289329</td>
+<td>0.544913</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">6</th>
 <td>Motorway</td>
-<td>-0.116122</td>
-<td>0.764207</td>
+<td>-0.330084</td>
+<td>0.781436</td>
 </tr>
 </tbody>
 </table>
@@ -428,7 +428,7 @@ Motorway: 4084 links</code></pre>
 </div>
 </div>
 </div>
-<div id="1adf122d" class="cell" data-execution_count="3">
+<div id="de6a66cc" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -444,9 +444,9 @@ Motorway: 4084 links</code></pre>
 </ul>
 <hr>
 </section>
-<section id="part-2-kinetic-energy-the-60mph-rural-phenomenon" class="level3" data-number="0.3">
-<h3 data-number="0.3" class="anchored" data-anchor-id="part-2-kinetic-energy-the-60mph-rural-phenomenon"><span class="header-section-number">0.3</span> Part 2: Kinetic Energy (The 60mph Rural Phenomenon)</h3>
-<div id="83b9d905" class="cell" data-execution_count="4">
+<section id="part-2-kinetic-energy-the-60mph-rural-phenomenon" class="level3">
+<h3 class="anchored" data-anchor-id="part-2-kinetic-energy-the-60mph-rural-phenomenon">Part 2: Kinetic Energy (The 60mph Rural Phenomenon)</h3>
+<div id="79caf964" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -462,8 +462,8 @@ Motorway: 4084 links</code></pre>
 </ul>
 <hr>
 </section>
-<section id="conclusion-validating-the-xgboost-architecture" class="level3" data-number="0.4">
-<h3 data-number="0.4" class="anchored" data-anchor-id="conclusion-validating-the-xgboost-architecture"><span class="header-section-number">0.4</span> Conclusion: Validating the XGBoost Architecture</h3>
+<section id="conclusion-validating-the-xgboost-architecture" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion-validating-the-xgboost-architecture">Conclusion: Validating the XGBoost Architecture</h3>
 <p>These diagnostics reveal a known specification gap in our current v2 architecture. By using log(exposure) as a fixed Poisson offset, the model is effectively forced to assume β=1.</p>
 <p>Because the empirical data shows β is actually between 0.4 and 0.8 depending on the road profile, the XGBoost model has to compensate for this misspecification by using other features to artificially absorb the exposure-curvature signal. This likely contributes to the residual variance observed on high-volume networks, and specifically the tendency to under-predict on Motorways.</p>
 <p>Recognizing this sub-linear scaling provides a clear diagnostic baseline. It informs our v3 roadmap, where we can empirically test alternative exposure specifications—such as passing log(exposure) as a learned feature, or utilizing per-family fitted GLM offsets—to better capture these realities without forcing the trees to approximate smooth curves.</p>
@@ -931,7 +931,7 @@ Motorway: 4084 links</code></pre>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: false</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: false</span></span>
@@ -947,7 +947,7 @@ Motorway: 4084 links</code></pre>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>OR_PATH      <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads_yorkshire.parquet"</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>OR_PATH      <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span></span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>RISK_PATH    <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/risk_scores.parquet"</span></span>
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> {}</span>

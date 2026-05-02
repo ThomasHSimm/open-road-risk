@@ -451,7 +451,7 @@ Condensed view of which columns reach the model and how they're used.
 | Road structure | `road_class_ord`, `form_of_way_ord`, 7 binary flags | GLM + XGB | Ordinals + flags for interaction capture |
 | Link length | `log_link_length_km` | GLM + XGB | Captures non-exposure length effects |
 | Temporal | `is_covid`, `year_norm` | GLM + XGB | Training-only; pooled away in scoring |
-| Network | `degree_mean`, `betweenness`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph_effective`, `lanes`, `is_unpaved` | GLM + XGB | OSM-enriched where present; current models use `speed_limit_mph_effective`, with raw `speed_limit_mph` retained only as provenance |
+| Network/context | `degree_mean`, `betweenness`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph_effective`, `lanes`, `is_unpaved`, IMD deciles, `mean_grade` | GLM + XGB | OSM/LSOA/terrain-enriched where present; GLM optional features use median imputation with missingness flags where needed |
 | AADT raw | `estimated_aadt` | XGB only | Also in offset; XGB can use both |
 
 ---
@@ -467,33 +467,33 @@ Reported pseudo-R² reflects out-of-link performance, not in-sample fit.
 
 ### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}
 
-The current GLM pseudo-R² (0.301) and XGBoost pseudo-R² (0.858) are computed on
+The current GLM pseudo-R² (0.347) and XGBoost pseudo-R² (0.859) are computed on
 different row subsets with different null models. **They are not directly
 comparable.**
 
 | | GLM | XGBoost |
 |---|---|---|
 | Evaluation set | In-sample (downsampled training table) | Out-of-sample (held-out 20% of links) |
-| Rows | ~3.97M (all positives + 1:10 zero sample) | ~4.34M (true link-year distribution) |
+| Rows | ~4.30M (all positives + 1:10 zero sample) | ~4.34M (true link-year distribution) |
 | Zero rate in eval set | ~91% (downsampled) | ~98% (real distribution) |
 | Null model | Intercept-only Poisson on downsampled set | `y_test.mean()` on the real test set |
 
-The current Stage 2 metrics reflect the state after four correctness-focused
-changes landed: the counted-only Stage 1a AADF filter, the Stage 2 post-event
-provenance guard, OSM network feature enrichment, and tiered speed-limit
-imputation using UK legal defaults with `ruc_urban_rural` context. These were
-shipped to improve methodological correctness rather than to optimise
+The current Stage 2 metrics reflect the state after the counted-only Stage 1a
+AADF filter, the Stage 2 post-event provenance guard, OSM network feature
+enrichment, tiered speed-limit imputation, IMD deprivation features, terrain
+grade, and the GLM optional-feature imputation refactor. These were shipped to
+improve methodological correctness and feature coverage rather than to optimise
 pseudo-R², and attribution of changes across them was not formally ablated.
-Future feature and modelling work will be evaluated using a five-seed rank
-stability harness (see TODO), against the current metrics as baseline.
+Future feature and modelling work should be evaluated against a saved baseline
+using the rank-stability harness where possible.
 
 Because the GLM null model sees an artificially balanced zero rate, it is
 easier to beat — the true 98% zero rate would produce a higher null deviance
 and a lower pseudo-R² for the same model. Because XGBoost is evaluated on
-the real held-out distribution against that harder null, its 0.858 is the
+the real held-out distribution against that harder null, its 0.859 is the
 more conservative and honest metric.
 
-The practical implication: the 0.301 vs 0.858 gap overstates the genuine
+The practical implication: the 0.347 vs 0.859 gap overstates the genuine
 predictive lift of XGBoost over the GLM. A fair comparison would require
 both models evaluated on the same held-out set against the same null model.
 This has not been done; recomputing both on a common evaluation set is a

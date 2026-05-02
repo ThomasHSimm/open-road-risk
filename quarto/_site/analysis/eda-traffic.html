@@ -333,7 +333,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>How the model was built and validated</li>
 <li>The resulting full-network AADT estimates and their geographic pattern</li>
 </ul>
-<div id="decdda8d" class="cell" data-execution_count="1">
+<div id="422e78c6" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -358,7 +358,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>aadt <span class="op">=</span> pd.read_parquet(aadt_path) <span class="cf">if</span> aadt_path.exists() <span class="cf">else</span> pd.DataFrame()</span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD:</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads_yorkshire.parquet"</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> gpd.read_parquet(or_path) <span class="cf">if</span> or_path.exists() <span class="cf">else</span> <span class="va">None</span></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> <span class="va">None</span></span>
@@ -383,7 +383,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <h2 data-number="2" class="anchored" data-anchor-id="measured-aadf-training-data"><span class="header-section-number">2</span> Measured AADF — training data</h2>
 <section id="spatial-coverage-of-count-points" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="spatial-coverage-of-count-points"><span class="header-section-number">2.1</span> Spatial coverage of count points</h3>
-<div id="e0558bf4" class="cell" data-execution_count="2">
+<div id="6fde602f" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -424,7 +424,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="aadf-distribution-by-road-type" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="aadf-distribution-by-road-type"><span class="header-section-number">2.2</span> AADF distribution by road type</h3>
-<div id="518c1b81" class="cell" data-execution_count="3">
+<div id="8c4d1fcc" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
@@ -461,7 +461,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="annual-trends-including-covid" class="level3" data-number="2.3">
 <h3 data-number="2.3" class="anchored" data-anchor-id="annual-trends-including-covid"><span class="header-section-number">2.3</span> Annual trends including COVID</h3>
-<div id="8e4326b9" class="cell" data-execution_count="4">
+<div id="a6eb34cf" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>year_stats <span class="op">=</span> (</span>
@@ -505,7 +505,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="hgv-proportion-by-road-type" class="level3" data-number="2.4">
 <h3 data-number="2.4" class="anchored" data-anchor-id="hgv-proportion-by-road-type"><span class="header-section-number">2.4</span> HGV proportion by road type</h3>
-<div id="23301521" class="cell" data-execution_count="5">
+<div id="d042907f" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hgv_data <span class="op">=</span> measured.dropna(subset<span class="op">=</span>[<span class="st">"hgv_proportion"</span>, <span class="st">"road_type"</span>])</span>
@@ -580,7 +580,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="cross-validation-results" class="level3" data-number="3.2">
 <h3 data-number="3.2" class="anchored" data-anchor-id="cross-validation-results"><span class="header-section-number">3.2</span> Cross-validation results</h3>
-<div id="3d5a6b64" class="cell" data-execution_count="6">
+<div id="476f9151" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>metrics_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_metrics.json"</span></span>
@@ -609,7 +609,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <li><strong>Local holdout</strong> — 20% of count-point IDs withheld at random. Tests gap-filling.</li>
 <li><strong>Spatial block</strong> — all points north of the 75th-percentile latitude withheld. Tests generalisation to a region with no measured support.</li>
 </ul>
-<div id="59bbbda4" class="cell" data-execution_count="7">
+<div id="1e37f9b1" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> val_summary.empty:</span>
@@ -634,8 +634,8 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>  local     : R²=0.832 | MAE=0.565 | RMSE=0.748 (n=7,639)
-  spatial   : R²=0.788 | MAE=0.660 | RMSE=0.848 (n=9,773)</code></pre>
+<pre><code>  local     : R²=0.831 | MAE=0.565 | RMSE=0.750 (n=7,639)
+  spatial   : R²=0.792 | MAE=0.650 | RMSE=0.839 (n=9,773)</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -645,7 +645,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </div>
 </div>
 </div>
-<div id="0dd9fa41" class="cell" data-execution_count="8">
+<div id="3de7be2e" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>val_local_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/aadt_validation_local.parquet"</span></span>
@@ -658,8 +658,8 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <pre><code>Local holdout — metrics by road type:
 
 road_type       r2      mae     rmse      n
-    Major 0.588876 0.463756 0.602460 3861.0
-    Minor 0.568095 0.668495 0.871223 3778.0</code></pre>
+    Major 0.600410 0.454266 0.593950 3861.0
+    Minor 0.558783 0.677618 0.880564 3778.0</code></pre>
 </div>
 </div>
 <hr>
@@ -669,7 +669,7 @@ road_type       r2      mae     rmse      n
 <h2 data-number="4" class="anchored" data-anchor-id="full-network-aadt-estimates"><span class="header-section-number">4</span> Full-network AADT estimates</h2>
 <section id="distribution-by-road-classification" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="distribution-by-road-classification"><span class="header-section-number">4.1</span> Distribution by road classification</h3>
-<div id="c133c851" class="cell" data-execution_count="9">
+<div id="8dd84eae" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -714,7 +714,7 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="year-on-year-trends" class="level3" data-number="4.2">
 <h3 data-number="4.2" class="anchored" data-anchor-id="year-on-year-trends"><span class="header-section-number">4.2</span> Year-on-year trends</h3>
-<div id="1bae86e5" class="cell" data-execution_count="10">
+<div id="b5ad54e8" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty:</span>
@@ -746,7 +746,7 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="geographic-distribution-all-links-2023" class="level3" data-number="4.3">
 <h3 data-number="4.3" class="anchored" data-anchor-id="geographic-distribution-all-links-2023"><span class="header-section-number">4.3</span> Geographic distribution — all links (2023)</h3>
-<div id="55d34ba7" class="cell" data-execution_count="11">
+<div id="711a35fd" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
@@ -803,7 +803,7 @@ road_type       r2      mae     rmse      n
 <section id="sanity-check-estimated-vs-measured-aadf-2023" class="level3" data-number="4.4">
 <h3 data-number="4.4" class="anchored" data-anchor-id="sanity-check-estimated-vs-measured-aadf-2023"><span class="header-section-number">4.4</span> Sanity check — estimated vs measured AADF (2023)</h3>
 <p>Links that have a directly measured AADF count point within 2 km should have estimates close to the measured value. This checks in-sample calibration.</p>
-<div id="f3616259" class="cell" data-execution_count="12">
+<div id="37cd55f4" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
@@ -874,7 +874,7 @@ road_type       r2      mae     rmse      n
 </div>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>In-sample (2023, matched links): R²=-0.254 | MAE=1.137 log-units | n=10,562</code></pre>
+<pre><code>In-sample (2023, matched links): R²=-0.222 | MAE=1.101 log-units | n=10,562</code></pre>
 </div>
 </div>
 <hr>
@@ -882,7 +882,7 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="summary" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="summary"><span class="header-section-number">5</span> Summary</h2>
-<div id="eff9a17a" class="cell" data-execution_count="13">
+<div id="527fdc72" class="cell" data-execution_count="13">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 1a output summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
@@ -905,17 +905,17 @@ Years covered        : [np.int64(2015), np.int64(2016), np.int64(2017), np.int64
 
 Estimated AADT distribution (2023):
 count    2167557.0
-mean        2031.0
-std         4003.0
-min           62.0
-25%          408.0
-50%          658.0
-75%         1548.0
-max       104755.0
+mean        2064.0
+std         4129.0
+min           60.0
+25%          440.0
+50%          669.0
+75%         1585.0
+max       130611.0
 
 External validation R²:
-  local     : 0.832
-  spatial   : 0.788</code></pre>
+  local     : 0.831
+  spatial   : 0.792</code></pre>
 </div>
 </div>
 <p>Key observations:</p>
@@ -1435,7 +1435,7 @@ External validation R²:
 <span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>aadt <span class="op">=</span> pd.read_parquet(aadt_path) <span class="cf">if</span> aadt_path.exists() <span class="cf">else</span> pd.DataFrame()</span>
 <span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD:</span>
-<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads_yorkshire.parquet"</span></span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span></span>
 <span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> gpd.read_parquet(or_path) <span class="cf">if</span> or_path.exists() <span class="cf">else</span> <span class="va">None</span></span>
 <span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
 <span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> <span class="va">None</span></span>

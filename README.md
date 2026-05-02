@@ -37,11 +37,12 @@ not part of the current Stage 2 collision feature set.
 **Stage 2 — Collision risk model** Poisson GLM + XGBoost predicting collision counts per link per year.
 Uses `log(AADT × length_km × 365 / 1e6)` as exposure offset so the model learns
 *which roads are dangerous given their traffic* — not just which are busy.
-XGBoost (pseudo-R² 0.8575, out-of-sample) drives the final risk percentile ranking (`risk_scores.parquet`).
-The GLM (pseudo-R² 0.3013, in-sample on downsampled training set) provides
+XGBoost (pseudo-R² 0.8587, out-of-sample) drives the final risk percentile ranking (`risk_scores.parquet`).
+The GLM (pseudo-R² 0.3472, in-sample on downsampled training set) provides
 interpretable coefficients and diagnostic residuals. Features include a tiered
-speed limit imputation (`speed_limit_mph_effective`) and an LSOA spatial/rural 
-fallback to ensure network-wide coverage. 
+speed limit imputation (`speed_limit_mph_effective`), IMD deprivation deciles,
+and `mean_grade`, with GLM optional-feature imputation keeping the training
+population stable across feature additions.
 
 *Experimental variants for Empirical Bayes (EB) shrinkage (`risk_scores_eb.parquet`) and a Facility-Family split (`risk_scores_family.parquet`) are also generated for diagnostic comparison.*
 
@@ -119,23 +120,31 @@ open-road-risk/
 │   │   ├── main.py          # --stage traffic|profile|collision|all
 │   │   ├── aadt.py          # Stage 1a: AADT estimator
 │   │   ├── timezone_profile.py  # Stage 1b: time-zone fractions
-│   │   └── collision.py     # Stage 2: Poisson GLM + XGBoost
+│   │   ├── collision.py     # Stage 2: Poisson GLM + XGBoost
+│   │   ├── eb_*.py          # Empirical Bayes shrinkage diagnostics/output
+│   │   ├── family_split.py  # Facility-family model diagnostics
+│   │   └── rank_stability.py # Multi-seed ranking stability harness
 │   ├── app/                 # Streamlit risk map app
+│   ├── diagnostics/         # Validation/report builders
+│   ├── utils/               # Shared logging/helpers
 │   ├── config.py            # YAML loader, paths
-│   ├── diagnostics/         # Focused QA scripts
 │   └── eda_collision_model.py
+├── docs/                    # Internal notes, design rationale, research notes
+├── reports/                 # Validation reports and supporting CSVs
 ├── quarto/                  # Documentation site (Quarto)
+├── tests/                   # Fast unit/smoke tests
 ├── data/
 │   ├── raw/                 # Source files — never modified, not in git
 │   ├── processed/           # Cleaned parquets
 │   ├── features/            # Model-ready feature tables
+│   ├── provenance/          # Committable provenance JSONs
 │   └── models/              # Saved model artefacts + risk scores
 └── config/settings.yaml     # Police force codes, year ranges, paths
 ```
 
 ---
 
-## Key Results (April 2026)
+## Key Results (May 2026)
 
 | Metric | Value |
 |---|---|
@@ -144,8 +153,8 @@ open-road-risk/
 | Mean snap score | 0.860 |
 | Road links scored (full network) | 2,167,557 |
 | AADT estimator CV R² | ~0.83 (counted-only AADF rows) |
-| Poisson GLM pseudo-R² | 0.3013 (in-sample, downsampled training set) |
-| XGBoost pseudo-R² | 0.8575 |
+| Poisson GLM pseudo-R² | 0.3472 (in-sample, downsampled training set; not directly comparable to XGBoost) |
+| XGBoost pseudo-R² | 0.8587 |
 
 ---
 
