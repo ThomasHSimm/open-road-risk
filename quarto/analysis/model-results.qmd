@@ -427,7 +427,7 @@ print(
 
 Key observations:
 
-- XGBoost (pseudo-R² 0.858) substantially outperforms the GLM (pseudo-R² 0.251)
+- XGBoost (pseudo-R² 0.859) substantially outperforms the GLM (pseudo-R² 0.347)
   on the link-year training table. Part of this gap reflects XGBoost's ability to
   capture non-linear interactions between road class, form of way, and network
   betweenness that the GLM cannot. Part also reflects that XGBoost receives
@@ -437,9 +437,11 @@ Key observations:
   null models (GLM: in-sample on a downsampled training set; XGBoost:
   out-of-sample on the full zero-heavy test set) — the headline gap should not
   be read as pure modelling lift. These metrics are from the current run after
-  the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, and
-  OSM feature enrichment; earlier GLM pseudo-R² figures are prior-run snapshots,
-  not directly comparable ablations. See [feature engineering](../methodology/feature-engineering.qmd#pseudo-r-comparability)
+  the counted-only Stage 1a filter, the Stage 2 post-event provenance guard,
+  OSM feature enrichment, IMD features, terrain grade, and the GLM
+  optional-feature imputation refactor; earlier GLM pseudo-R² figures are
+  prior-run snapshots, not directly comparable ablations. See
+  [feature engineering](../methodology/feature-engineering.qmd#pseudo-r-comparability)
   for the full caveat.
 - The GLM provides interpretable incidence rate ratios per feature; XGBoost
   predictions complement these with higher predictive power for the risk map.

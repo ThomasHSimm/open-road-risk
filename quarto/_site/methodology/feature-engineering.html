@@ -838,10 +838,10 @@ Warning
 <td>Training-only; pooled away in scoring</td>
 </tr>
 <tr class="odd">
-<td>Network</td>
-<td><code>degree_mean</code>, <code>betweenness</code>, <code>dist_to_major_km</code>, <code>pop_density_per_km2</code>, <code>speed_limit_mph_effective</code>, <code>lanes</code>, <code>is_unpaved</code></td>
+<td>Network/context</td>
+<td><code>degree_mean</code>, <code>betweenness</code>, <code>dist_to_major_km</code>, <code>pop_density_per_km2</code>, <code>speed_limit_mph_effective</code>, <code>lanes</code>, <code>is_unpaved</code>, IMD deciles, <code>mean_grade</code></td>
 <td>GLM + XGB</td>
-<td>OSM-enriched where present; current models use <code>speed_limit_mph_effective</code>, with raw <code>speed_limit_mph</code> retained only as provenance</td>
+<td>OSM/LSOA/terrain-enriched where present; GLM optional features use median imputation with missingness flags where needed</td>
 </tr>
 <tr class="even">
 <td>AADT raw</td>
@@ -861,7 +861,7 @@ Warning
 </section>
 <section id="pseudo-r-comparability" class="level3" data-number="9.2">
 <h3 data-number="9.2" class="anchored" data-anchor-id="pseudo-r-comparability"><span class="header-section-number">9.2</span> Pseudo-R² comparability between GLM and XGBoost</h3>
-<p>The current GLM pseudo-R² (0.301) and XGBoost pseudo-R² (0.858) are computed on different row subsets with different null models. <strong>They are not directly comparable.</strong></p>
+<p>The current GLM pseudo-R² (0.347) and XGBoost pseudo-R² (0.859) are computed on different row subsets with different null models. <strong>They are not directly comparable.</strong></p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -883,7 +883,7 @@ Warning
 </tr>
 <tr class="even">
 <td>Rows</td>
-<td>~3.97M (all positives + 1:10 zero sample)</td>
+<td>~4.30M (all positives + 1:10 zero sample)</td>
 <td>~4.34M (true link-year distribution)</td>
 </tr>
 <tr class="odd">
@@ -898,9 +898,9 @@ Warning
 </tr>
 </tbody>
 </table>
-<p>The current Stage 2 metrics reflect the state after four correctness-focused changes landed: the counted-only Stage 1a AADF filter, the Stage 2 post-event provenance guard, OSM network feature enrichment, and tiered speed-limit imputation using UK legal defaults with <code>ruc_urban_rural</code> context. These were shipped to improve methodological correctness rather than to optimise pseudo-R², and attribution of changes across them was not formally ablated. Future feature and modelling work will be evaluated using a five-seed rank stability harness (see TODO), against the current metrics as baseline.</p>
-<p>Because the GLM null model sees an artificially balanced zero rate, it is easier to beat — the true 98% zero rate would produce a higher null deviance and a lower pseudo-R² for the same model. Because XGBoost is evaluated on the real held-out distribution against that harder null, its 0.858 is the more conservative and honest metric.</p>
-<p>The practical implication: the 0.301 vs 0.858 gap overstates the genuine predictive lift of XGBoost over the GLM. A fair comparison would require both models evaluated on the same held-out set against the same null model. This has not been done; recomputing both on a common evaluation set is a known pending improvement.</p>
+<p>The current Stage 2 metrics reflect the state after the counted-only Stage 1a AADF filter, the Stage 2 post-event provenance guard, OSM network feature enrichment, tiered speed-limit imputation, IMD deprivation features, terrain grade, and the GLM optional-feature imputation refactor. These were shipped to improve methodological correctness and feature coverage rather than to optimise pseudo-R², and attribution of changes across them was not formally ablated. Future feature and modelling work should be evaluated against a saved baseline using the rank-stability harness where possible.</p>
+<p>Because the GLM null model sees an artificially balanced zero rate, it is easier to beat — the true 98% zero rate would produce a higher null deviance and a lower pseudo-R² for the same model. Because XGBoost is evaluated on the real held-out distribution against that harder null, its 0.859 is the more conservative and honest metric.</p>
+<p>The practical implication: the 0.347 vs 0.859 gap overstates the genuine predictive lift of XGBoost over the GLM. A fair comparison would require both models evaluated on the same held-out set against the same null model. This has not been done; recomputing both on a common evaluation set is a known pending improvement.</p>
 </section>
 <section id="glm-intercept-bias" class="level3" data-number="9.3">
 <h3 data-number="9.3" class="anchored" data-anchor-id="glm-intercept-bias"><span class="header-section-number">9.3</span> GLM intercept bias</h3>
@@ -1861,7 +1861,7 @@ Warning
 <span id="cb2-451"><a href="#cb2-451" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Road structure <span class="pp">|</span> <span class="in">`road_class_ord`</span>, <span class="in">`form_of_way_ord`</span>, 7 binary flags <span class="pp">|</span> GLM + XGB <span class="pp">|</span> Ordinals + flags for interaction capture <span class="pp">|</span></span>
 <span id="cb2-452"><a href="#cb2-452" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Link length <span class="pp">|</span> <span class="in">`log_link_length_km`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> Captures non-exposure length effects <span class="pp">|</span></span>
 <span id="cb2-453"><a href="#cb2-453" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Temporal <span class="pp">|</span> <span class="in">`is_covid`</span>, <span class="in">`year_norm`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> Training-only; pooled away in scoring <span class="pp">|</span></span>
-<span id="cb2-454"><a href="#cb2-454" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Network <span class="pp">|</span> <span class="in">`degree_mean`</span>, <span class="in">`betweenness`</span>, <span class="in">`dist_to_major_km`</span>, <span class="in">`pop_density_per_km2`</span>, <span class="in">`speed_limit_mph_effective`</span>, <span class="in">`lanes`</span>, <span class="in">`is_unpaved`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> OSM-enriched where present; current models use <span class="in">`speed_limit_mph_effective`</span>, with raw <span class="in">`speed_limit_mph`</span> retained only as provenance <span class="pp">|</span></span>
+<span id="cb2-454"><a href="#cb2-454" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Network/context <span class="pp">|</span> <span class="in">`degree_mean`</span>, <span class="in">`betweenness`</span>, <span class="in">`dist_to_major_km`</span>, <span class="in">`pop_density_per_km2`</span>, <span class="in">`speed_limit_mph_effective`</span>, <span class="in">`lanes`</span>, <span class="in">`is_unpaved`</span>, IMD deciles, <span class="in">`mean_grade`</span> <span class="pp">|</span> GLM + XGB <span class="pp">|</span> OSM/LSOA/terrain-enriched where present; GLM optional features use median imputation with missingness flags where needed <span class="pp">|</span></span>
 <span id="cb2-455"><a href="#cb2-455" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> AADT raw <span class="pp">|</span> <span class="in">`estimated_aadt`</span> <span class="pp">|</span> XGB only <span class="pp">|</span> Also in offset; XGB can use both <span class="pp">|</span></span>
 <span id="cb2-456"><a href="#cb2-456" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-457"><a href="#cb2-457" aria-hidden="true" tabindex="-1"></a>---</span>
@@ -1877,33 +1877,33 @@ Warning
 <span id="cb2-467"><a href="#cb2-467" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-468"><a href="#cb2-468" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}</span></span>
 <span id="cb2-469"><a href="#cb2-469" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-470"><a href="#cb2-470" aria-hidden="true" tabindex="-1"></a>The current GLM pseudo-R² (0.301) and XGBoost pseudo-R² (0.858) are computed on</span>
+<span id="cb2-470"><a href="#cb2-470" aria-hidden="true" tabindex="-1"></a>The current GLM pseudo-R² (0.347) and XGBoost pseudo-R² (0.859) are computed on</span>
 <span id="cb2-471"><a href="#cb2-471" aria-hidden="true" tabindex="-1"></a>different row subsets with different null models. **They are not directly</span>
 <span id="cb2-472"><a href="#cb2-472" aria-hidden="true" tabindex="-1"></a>comparable.**</span>
 <span id="cb2-473"><a href="#cb2-473" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-474"><a href="#cb2-474" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="pp">|</span> GLM <span class="pp">|</span> XGBoost <span class="pp">|</span></span>
 <span id="cb2-475"><a href="#cb2-475" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
 <span id="cb2-476"><a href="#cb2-476" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Evaluation set <span class="pp">|</span> In-sample (downsampled training table) <span class="pp">|</span> Out-of-sample (held-out 20% of links) <span class="pp">|</span></span>
-<span id="cb2-477"><a href="#cb2-477" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Rows <span class="pp">|</span> ~3.97M (all positives + 1:10 zero sample) <span class="pp">|</span> ~4.34M (true link-year distribution) <span class="pp">|</span></span>
+<span id="cb2-477"><a href="#cb2-477" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Rows <span class="pp">|</span> ~4.30M (all positives + 1:10 zero sample) <span class="pp">|</span> ~4.34M (true link-year distribution) <span class="pp">|</span></span>
 <span id="cb2-478"><a href="#cb2-478" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Zero rate in eval set <span class="pp">|</span> ~91% (downsampled) <span class="pp">|</span> ~98% (real distribution) <span class="pp">|</span></span>
 <span id="cb2-479"><a href="#cb2-479" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Null model <span class="pp">|</span> Intercept-only Poisson on downsampled set <span class="pp">|</span> <span class="in">`y_test.mean()`</span> on the real test set <span class="pp">|</span></span>
 <span id="cb2-480"><a href="#cb2-480" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-481"><a href="#cb2-481" aria-hidden="true" tabindex="-1"></a>The current Stage 2 metrics reflect the state after four correctness-focused</span>
-<span id="cb2-482"><a href="#cb2-482" aria-hidden="true" tabindex="-1"></a>changes landed: the counted-only Stage 1a AADF filter, the Stage 2 post-event</span>
-<span id="cb2-483"><a href="#cb2-483" aria-hidden="true" tabindex="-1"></a>provenance guard, OSM network feature enrichment, and tiered speed-limit</span>
-<span id="cb2-484"><a href="#cb2-484" aria-hidden="true" tabindex="-1"></a>imputation using UK legal defaults with <span class="in">`ruc_urban_rural`</span> context. These were</span>
-<span id="cb2-485"><a href="#cb2-485" aria-hidden="true" tabindex="-1"></a>shipped to improve methodological correctness rather than to optimise</span>
+<span id="cb2-481"><a href="#cb2-481" aria-hidden="true" tabindex="-1"></a>The current Stage 2 metrics reflect the state after the counted-only Stage 1a</span>
+<span id="cb2-482"><a href="#cb2-482" aria-hidden="true" tabindex="-1"></a>AADF filter, the Stage 2 post-event provenance guard, OSM network feature</span>
+<span id="cb2-483"><a href="#cb2-483" aria-hidden="true" tabindex="-1"></a>enrichment, tiered speed-limit imputation, IMD deprivation features, terrain</span>
+<span id="cb2-484"><a href="#cb2-484" aria-hidden="true" tabindex="-1"></a>grade, and the GLM optional-feature imputation refactor. These were shipped to</span>
+<span id="cb2-485"><a href="#cb2-485" aria-hidden="true" tabindex="-1"></a>improve methodological correctness and feature coverage rather than to optimise</span>
 <span id="cb2-486"><a href="#cb2-486" aria-hidden="true" tabindex="-1"></a>pseudo-R², and attribution of changes across them was not formally ablated.</span>
-<span id="cb2-487"><a href="#cb2-487" aria-hidden="true" tabindex="-1"></a>Future feature and modelling work will be evaluated using a five-seed rank</span>
-<span id="cb2-488"><a href="#cb2-488" aria-hidden="true" tabindex="-1"></a>stability harness (see TODO), against the current metrics as baseline.</span>
+<span id="cb2-487"><a href="#cb2-487" aria-hidden="true" tabindex="-1"></a>Future feature and modelling work should be evaluated against a saved baseline</span>
+<span id="cb2-488"><a href="#cb2-488" aria-hidden="true" tabindex="-1"></a>using the rank-stability harness where possible.</span>
 <span id="cb2-489"><a href="#cb2-489" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-490"><a href="#cb2-490" aria-hidden="true" tabindex="-1"></a>Because the GLM null model sees an artificially balanced zero rate, it is</span>
 <span id="cb2-491"><a href="#cb2-491" aria-hidden="true" tabindex="-1"></a>easier to beat — the true 98% zero rate would produce a higher null deviance</span>
 <span id="cb2-492"><a href="#cb2-492" aria-hidden="true" tabindex="-1"></a>and a lower pseudo-R² for the same model. Because XGBoost is evaluated on</span>
-<span id="cb2-493"><a href="#cb2-493" aria-hidden="true" tabindex="-1"></a>the real held-out distribution against that harder null, its 0.858 is the</span>
+<span id="cb2-493"><a href="#cb2-493" aria-hidden="true" tabindex="-1"></a>the real held-out distribution against that harder null, its 0.859 is the</span>
 <span id="cb2-494"><a href="#cb2-494" aria-hidden="true" tabindex="-1"></a>more conservative and honest metric.</span>
 <span id="cb2-495"><a href="#cb2-495" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-496"><a href="#cb2-496" aria-hidden="true" tabindex="-1"></a>The practical implication: the 0.301 vs 0.858 gap overstates the genuine</span>
+<span id="cb2-496"><a href="#cb2-496" aria-hidden="true" tabindex="-1"></a>The practical implication: the 0.347 vs 0.859 gap overstates the genuine</span>
 <span id="cb2-497"><a href="#cb2-497" aria-hidden="true" tabindex="-1"></a>predictive lift of XGBoost over the GLM. A fair comparison would require</span>
 <span id="cb2-498"><a href="#cb2-498" aria-hidden="true" tabindex="-1"></a>both models evaluated on the same held-out set against the same null model.</span>
 <span id="cb2-499"><a href="#cb2-499" aria-hidden="true" tabindex="-1"></a>This has not been done; recomputing both on a common evaluation set is a</span>

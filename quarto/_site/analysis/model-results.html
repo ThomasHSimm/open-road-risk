@@ -333,7 +333,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>XGBoost Poisson</strong> — captures non-linear interactions, higher predictive power</li>
 </ul>
 <p>Both models are trained on link × year data then pooled to a single stable risk score per link. The pooled output (<code>risk_scores.parquet</code>) has one row per link with no year dimension.</p>
-<div id="97ab3288" class="cell" data-execution_count="1">
+<div id="4863845b" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -358,7 +358,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    metrics <span class="op">=</span> json.load(f)</span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD:</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads_yorkshire.parquet"</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> gpd.read_parquet(or_path) <span class="cf">if</span> or_path.exists() <span class="cf">else</span> <span class="va">None</span></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> <span class="va">None</span></span>
@@ -384,8 +384,8 @@ Total collisions : 450,992
 Total fatals     : 7,402
 
 Model performance:
-  GLM pseudo-R²  : 0.301
-  XGB pseudo-R²  : 0.858
+  GLM pseudo-R²  : 0.347
+  XGB pseudo-R²  : 0.859
   GLM converged  : True</code></pre>
 </div>
 </div>
@@ -395,7 +395,7 @@ Model performance:
 <h2 data-number="2" class="anchored" data-anchor-id="model-performance"><span class="header-section-number">2</span> Model performance</h2>
 <section id="glm-summary" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="glm-summary"><span class="header-section-number">2.1</span> GLM summary</h3>
-<div id="9eae99f9" class="cell" data-execution_count="2">
+<div id="3caf69e3" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> metrics[<span class="st">"glm"</span>]</span>
@@ -409,13 +409,13 @@ Model performance:
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>feat<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Training rows (downsampled for GLM) : 3,967,414
-Full dataset rows                   : 18,302,830
-Positive link-years                 : 360,674 (1.97%)
-Pseudo-R² (1 - D/D₀)               : 0.301
-AIC                                 : 2,126,878
+<pre><code>Training rows (downsampled for GLM) : 4,303,805
+Full dataset rows                   : 21,675,570
+Positive link-years                 : 391,255 (1.81%)
+Pseudo-R² (1 - D/D₀)               : 0.347
+AIC                                 : 2,237,488
 
-Features (20):
+Features (32):
   road_class_ord
   form_of_way_ord
   is_motorway
@@ -428,20 +428,32 @@ Features (20):
   log_link_length
   is_covid
   year_norm
-  degree_mean
-  betweenness
-  betweenness_relative
-  dist_to_major_km
-  pop_density_per_km2
-  speed_limit_mph_effective
+  degree_mean_imputed
+  betweenness_imputed
+  betweenness_relative_imputed
+  dist_to_major_km_imputed
+  pop_density_per_km2_imputed
+  speed_limit_mph_effective_imputed
   lanes_imputed
-  is_unpaved_imputed</code></pre>
+  is_unpaved_imputed
+  imd_decile_imputed
+  imd_crime_decile_imputed
+  imd_living_indoor_decile_imputed
+  mean_grade_imputed
+  pop_density_per_km2_missing
+  speed_limit_mph_effective_missing
+  lanes_missing
+  is_unpaved_missing
+  imd_decile_missing
+  imd_crime_decile_missing
+  imd_living_indoor_decile_missing
+  mean_grade_missing</code></pre>
 </div>
 </div>
 </section>
 <section id="glm-coefficients" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="glm-coefficients"><span class="header-section-number">2.2</span> GLM coefficients</h3>
-<div id="a5b6acb1" class="cell" data-execution_count="3">
+<div id="9e9f637d" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>glm_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_glm.pkl"</span></span>
@@ -488,40 +500,52 @@ Features (20):
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-4-output-1.png" width="758" height="852" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-4-output-1.png" width="758" height="1370" class="figure-img"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Significant coefficients (p&lt;0.05) with incidence rate ratios:
-                             coef    IRR  pvalue
-betweenness               -5.7196  0.003     0.0
-is_motorway               -0.9823  0.374     0.0
-is_slip_road              -0.6518  0.521     0.0
-log_link_length           -0.6258  0.535     0.0
-year_norm                 -0.5392  0.583     0.0
-is_a_road                 -0.4772  0.621     0.0
-is_unpaved_imputed        -0.3925  0.675     0.0
-is_dual                   -0.3642  0.695     0.0
-is_roundabout             -0.1798  0.835     0.0
-dist_to_major_km          -0.1237  0.884     0.0
-lanes_imputed             -0.0825  0.921     0.0
-road_class_ord            -0.0576  0.944     0.0
-is_covid                  -0.0451  0.956     0.0
-speed_limit_mph_effective -0.0043  0.996     0.0
-pop_density_per_km2        0.0000  1.000     0.0
-form_of_way_ord            0.0916  1.096     0.0
-is_trunk                   0.0918  1.096     0.0
-betweenness_relative       0.1247  1.133     0.0
-is_primary                 0.1329  1.142     0.0
-degree_mean                0.6603  1.935     0.0</code></pre>
+                                     coef      IRR  pvalue
+betweenness_imputed               -4.6583    0.009     0.0
+imd_crime_decile_missing          -1.6258    0.197     0.0
+imd_living_indoor_decile_missing  -1.6258    0.197     0.0
+imd_decile_missing                -1.6258    0.197     0.0
+is_motorway                       -1.0986    0.333     0.0
+is_dual                           -0.7712    0.462     0.0
+is_slip_road                      -0.7239    0.485     0.0
+log_link_length                   -0.5718    0.565     0.0
+year_norm                         -0.5291    0.589     0.0
+is_a_road                         -0.5082    0.602     0.0
+is_unpaved_imputed                -0.4612    0.631     0.0
+speed_limit_mph_effective_missing -0.3323    0.717     0.0
+is_roundabout                     -0.1723    0.842     0.0
+is_unpaved_missing                -0.1574    0.854     0.0
+is_trunk                          -0.1258    0.882     0.0
+lanes_imputed                     -0.1105    0.895     0.0
+dist_to_major_km_imputed          -0.0829    0.920     0.0
+is_covid                          -0.0571    0.945     0.0
+road_class_ord                    -0.0378    0.963     0.0
+imd_living_indoor_decile_imputed  -0.0364    0.964     0.0
+imd_decile_imputed                -0.0343    0.966     0.0
+mean_grade_imputed                -0.0202    0.980     0.0
+imd_crime_decile_imputed          -0.0163    0.984     0.0
+speed_limit_mph_effective_imputed -0.0011    0.999     0.0
+pop_density_per_km2_imputed        0.0000    1.000     0.0
+mean_grade_missing                 0.0501    1.051     0.0
+lanes_missing                      0.0955    1.100     0.0
+betweenness_relative_imputed       0.1130    1.120     0.0
+is_primary                         0.1452    1.156     0.0
+form_of_way_ord                    0.1982    1.219     0.0
+degree_mean_imputed                0.5597    1.750     0.0
+pop_density_per_km2_missing        4.8970  133.894     0.0</code></pre>
 </div>
 </div>
 </section>
 <section id="xgboost-feature-importance" class="level3" data-number="2.3">
 <h3 data-number="2.3" class="anchored" data-anchor-id="xgboost-feature-importance"><span class="header-section-number">2.3</span> XGBoost feature importance</h3>
-<div id="92ebbc86" class="cell" data-execution_count="4">
+<div id="8b91af2c" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>xgb_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_xgb.json"</span></span>
@@ -551,7 +575,7 @@ degree_mean                0.6603  1.935     0.0</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-5-output-1.png" width="758" height="939" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-5-output-1.png" width="758" height="1112" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -559,7 +583,7 @@ degree_mean                0.6603  1.935     0.0</code></pre>
 </section>
 <section id="glm-vs-xgboost-agreement" class="level3" data-number="2.4">
 <h3 data-number="2.4" class="anchored" data-anchor-id="glm-vs-xgboost-agreement"><span class="header-section-number">2.4</span> GLM vs XGBoost agreement</h3>
-<div id="08659865" class="cell" data-execution_count="5">
+<div id="fc8f44bd" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">5</span>))</span>
@@ -603,7 +627,7 @@ degree_mean                0.6603  1.935     0.0</code></pre>
 </section>
 <section id="risk-score-distribution" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="risk-score-distribution"><span class="header-section-number">3</span> Risk score distribution</h2>
-<div id="67a07a4d" class="cell" data-execution_count="6">
+<div id="a4bc3fb2" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
@@ -637,7 +661,7 @@ degree_mean                0.6603  1.935     0.0</code></pre>
 </div>
 <section id="risk-percentile-by-road-class" class="level3" data-number="3.1">
 <h3 data-number="3.1" class="anchored" data-anchor-id="risk-percentile-by-road-class"><span class="header-section-number">3.1</span> Risk percentile by road class</h3>
-<div id="862ec375" class="cell" data-execution_count="7">
+<div id="ba2bc7f4" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>cls_med <span class="op">=</span> (</span>
@@ -679,13 +703,13 @@ degree_mean                0.6603  1.935     0.0</code></pre>
 <pre><code>Risk percentile by road class:
                        mean  median    count
 road_classification                         
-Motorway               88.2    93.4     4084
-A Road                 86.6    88.1   155538
-B Road                 85.8    86.7    89286
-Classified Unnumbered  80.7    82.7   190921
-Not Classified         31.9    28.7   224878
-Unclassified           49.6    49.7  1060014
-Unknown                26.5    21.3   442836</code></pre>
+Motorway               88.5    93.8     4084
+A Road                 86.2    88.0   155538
+B Road                 85.4    86.7    89286
+Classified Unnumbered  80.4    82.6   190921
+Not Classified         32.6    29.5   224878
+Unclassified           49.3    49.4  1060014
+Unknown                27.2    22.0   442836</code></pre>
 </div>
 </div>
 <hr>
@@ -694,7 +718,7 @@ Unknown                26.5    21.3   442836</code></pre>
 <section id="residual-analysis" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="residual-analysis"><span class="header-section-number">4</span> Residual analysis</h2>
 <p>Residuals (observed − predicted × n_years) identify where the model systematically under- or over-predicts. Large positive residuals flag links that had more collisions than the model expected given their traffic and road characteristics.</p>
-<div id="23aa6e5c" class="cell" data-execution_count="8">
+<div id="4d895dbd" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
@@ -731,7 +755,7 @@ Unknown                26.5    21.3   442836</code></pre>
 </div>
 <section id="residuals-by-road-class" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="residuals-by-road-class"><span class="header-section-number">4.1</span> Residuals by road class</h3>
-<div id="9c8aa2d7" class="cell" data-execution_count="9">
+<div id="49fc0c5f" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>res_by_class <span class="op">=</span> (</span>
@@ -757,18 +781,18 @@ Unknown                26.5    21.3   442836</code></pre>
 <pre><code>Residuals by road class:
                         mean  median    std    count
 road_classification                                 
-Motorway              -3.053  -1.829  8.529     4084
-A Road                -2.395  -2.120  2.579   155538
-B Road                -2.358  -1.802  2.465    89286
-Classified Unnumbered -0.392  -0.332  0.981   190921
-Not Classified        -0.246  -0.153  0.360   224878
-Unclassified          -0.365  -0.235  0.611  1060014
-Unknown               -0.239  -0.142  0.406   442836</code></pre>
+Motorway              -3.505  -1.974  8.418     4084
+A Road                -2.562  -2.197  2.745   155538
+B Road                -2.654  -1.997  2.756    89286
+Classified Unnumbered -0.421  -0.344  0.989   190921
+Not Classified        -0.251  -0.160  0.364   224878
+Unclassified          -0.397  -0.245  0.653  1060014
+Unknown               -0.236  -0.145  0.395   442836</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-10-output-2.png" width="845" height="374" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-10-output-2.png" width="853" height="374" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -780,7 +804,7 @@ Unknown               -0.239  -0.142  0.406   442836</code></pre>
 <h2 data-number="5" class="anchored" data-anchor-id="geographic-risk-maps"><span class="header-section-number">5</span> Geographic risk maps</h2>
 <section id="full-network-risk-percentile" class="level3" data-number="5.1">
 <h3 data-number="5.1" class="anchored" data-anchor-id="full-network-risk-percentile"><span class="header-section-number">5.1</span> Full-network risk percentile</h3>
-<div id="0cf451f7" class="cell" data-execution_count="10">
+<div id="e3bb9a62" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -826,7 +850,7 @@ Unknown               -0.239  -0.142  0.406   442836</code></pre>
 </section>
 <section id="top-1-risk-links" class="level3" data-number="5.2">
 <h3 data-number="5.2" class="anchored" data-anchor-id="top-1-risk-links"><span class="header-section-number">5.2</span> Top 1% risk links</h3>
-<div id="3c085d17" class="cell" data-execution_count="11">
+<div id="f4557a75" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -868,20 +892,20 @@ Unknown               -0.239  -0.142  0.406   442836</code></pre>
 <pre><code>
 Top 1% risk links by road class (21,676 total):
 road_classification
-A Road                   12999
-B Road                    2618
-Classified Unnumbered     2592
-Unclassified              2148
-Motorway                  1031
-Unknown                    260
-Not Classified              28</code></pre>
+A Road                   12998
+B Road                    2655
+Classified Unnumbered     2513
+Unclassified              2213
+Motorway                  1025
+Unknown                    243
+Not Classified              29</code></pre>
 </div>
 </div>
 </section>
 <section id="excess-risk-map-residual-2" class="level3" data-number="5.3">
 <h3 data-number="5.3" class="anchored" data-anchor-id="excess-risk-map-residual-2"><span class="header-section-number">5.3</span> Excess-risk map (residual &gt; 2)</h3>
 <p>Links where observed collisions substantially exceeded the model’s prediction given traffic volume and road type — potential candidates for engineering review.</p>
-<div id="dfdb9992" class="cell" data-execution_count="12">
+<div id="e26c5d7f" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
@@ -903,7 +927,7 @@ Not Classified              28</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-13-output-1.png" width="832" height="855" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-13-output-1.png" width="831" height="855" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -913,7 +937,7 @@ Not Classified              28</code></pre>
 </section>
 <section id="summary" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="summary"><span class="header-section-number">6</span> Summary</h2>
-<div id="97b054ad" class="cell" data-execution_count="13">
+<div id="f5f0cc47" class="cell" data-execution_count="13">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 2 collision model summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
@@ -937,26 +961,26 @@ Not Classified              28</code></pre>
 Links scored          : 2,167,557
 Links with collisions : 233,604 (10.8%)
 
-Poisson GLM pseudo-R² : 0.301
-XGBoost pseudo-R²     : 0.858
+Poisson GLM pseudo-R² : 0.347
+XGBoost pseudo-R²     : 0.859
 
 Top 1% risk links     : 21,676
-Excess-risk links (residual &gt; 2): 12,941
+Excess-risk links (residual &gt; 2): 11,376
 
 Excess-risk by road class:
 road_classification
-A Road                   3857
-Unclassified             3755
-Classified Unnumbered    3543
-B Road                    835
-Unknown                   496
-Motorway                  330
-Not Classified            125</code></pre>
+A Road                   3333
+Classified Unnumbered    3317
+Unclassified             3179
+B Road                    654
+Unknown                   472
+Motorway                  299
+Not Classified            122</code></pre>
 </div>
 </div>
 <p>Key observations:</p>
 <ul>
-<li>XGBoost (pseudo-R² 0.858) substantially outperforms the GLM (pseudo-R² 0.251) on the link-year training table. Part of this gap reflects XGBoost’s ability to capture non-linear interactions between road class, form of way, and network betweenness that the GLM cannot. Part also reflects that XGBoost receives <code>estimated_aadt</code> as a raw feature in addition to the log-offset, giving it flexibility the GLM’s forced-coefficient offset does not have. The two pseudo-R² values are also computed on different row subsets and with different null models (GLM: in-sample on a downsampled training set; XGBoost: out-of-sample on the full zero-heavy test set) — the headline gap should not be read as pure modelling lift. These metrics are from the current run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, and OSM feature enrichment; earlier GLM pseudo-R² figures are prior-run snapshots, not directly comparable ablations. See <a href="../methodology/feature-engineering.html#pseudo-r-comparability">feature engineering</a> for the full caveat.</li>
+<li>XGBoost (pseudo-R² 0.859) substantially outperforms the GLM (pseudo-R² 0.347) on the link-year training table. Part of this gap reflects XGBoost’s ability to capture non-linear interactions between road class, form of way, and network betweenness that the GLM cannot. Part also reflects that XGBoost receives <code>estimated_aadt</code> as a raw feature in addition to the log-offset, giving it flexibility the GLM’s forced-coefficient offset does not have. The two pseudo-R² values are also computed on different row subsets and with different null models (GLM: in-sample on a downsampled training set; XGBoost: out-of-sample on the full zero-heavy test set) — the headline gap should not be read as pure modelling lift. These metrics are from the current run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, IMD features, terrain grade, and the GLM optional-feature imputation refactor; earlier GLM pseudo-R² figures are prior-run snapshots, not directly comparable ablations. See <a href="../methodology/feature-engineering.html#pseudo-r-comparability">feature engineering</a> for the full caveat.</li>
 <li>The GLM provides interpretable incidence rate ratios per feature; XGBoost predictions complement these with higher predictive power for the risk map.</li>
 <li>Residuals show where traffic volume and road geometry alone under-predict observed collisions — likely reflecting local factors not in the feature set (junction design, sight lines, speed compliance).</li>
 <li>The top 1% risk links are concentrated on high-traffic A-roads and motorways, consistent with higher exposure and absolute collision counts.</li>
@@ -1471,7 +1495,7 @@ Not Classified            125</code></pre>
 <span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>    metrics <span class="op">=</span> json.load(f)</span>
 <span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD:</span>
-<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads_yorkshire.parquet"</span></span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span></span>
 <span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> gpd.read_parquet(or_path) <span class="cf">if</span> or_path.exists() <span class="cf">else</span> <span class="va">None</span></span>
 <span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
 <span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> <span class="va">None</span></span>
@@ -1849,7 +1873,7 @@ Not Classified            125</code></pre>
 <span id="cb21-453"><a href="#cb21-453" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-454"><a href="#cb21-454" aria-hidden="true" tabindex="-1"></a>Key observations:</span>
 <span id="cb21-455"><a href="#cb21-455" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-456"><a href="#cb21-456" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>XGBoost (pseudo-R² 0.858) substantially outperforms the GLM (pseudo-R² 0.251)</span>
+<span id="cb21-456"><a href="#cb21-456" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>XGBoost (pseudo-R² 0.859) substantially outperforms the GLM (pseudo-R² 0.347)</span>
 <span id="cb21-457"><a href="#cb21-457" aria-hidden="true" tabindex="-1"></a>  on the link-year training table. Part of this gap reflects XGBoost's ability to</span>
 <span id="cb21-458"><a href="#cb21-458" aria-hidden="true" tabindex="-1"></a>  capture non-linear interactions between road class, form of way, and network</span>
 <span id="cb21-459"><a href="#cb21-459" aria-hidden="true" tabindex="-1"></a>  betweenness that the GLM cannot. Part also reflects that XGBoost receives</span>
@@ -1859,20 +1883,22 @@ Not Classified            125</code></pre>
 <span id="cb21-463"><a href="#cb21-463" aria-hidden="true" tabindex="-1"></a>  null models (GLM: in-sample on a downsampled training set; XGBoost:</span>
 <span id="cb21-464"><a href="#cb21-464" aria-hidden="true" tabindex="-1"></a>  out-of-sample on the full zero-heavy test set) — the headline gap should not</span>
 <span id="cb21-465"><a href="#cb21-465" aria-hidden="true" tabindex="-1"></a>  be read as pure modelling lift. These metrics are from the current run after</span>
-<span id="cb21-466"><a href="#cb21-466" aria-hidden="true" tabindex="-1"></a>  the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, and</span>
-<span id="cb21-467"><a href="#cb21-467" aria-hidden="true" tabindex="-1"></a>  OSM feature enrichment; earlier GLM pseudo-R² figures are prior-run snapshots,</span>
-<span id="cb21-468"><a href="#cb21-468" aria-hidden="true" tabindex="-1"></a>  not directly comparable ablations. See <span class="co">[</span><span class="ot">feature engineering</span><span class="co">](../methodology/feature-engineering.qmd#pseudo-r-comparability)</span></span>
-<span id="cb21-469"><a href="#cb21-469" aria-hidden="true" tabindex="-1"></a>  for the full caveat.</span>
-<span id="cb21-470"><a href="#cb21-470" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The GLM provides interpretable incidence rate ratios per feature; XGBoost</span>
-<span id="cb21-471"><a href="#cb21-471" aria-hidden="true" tabindex="-1"></a>  predictions complement these with higher predictive power for the risk map.</span>
-<span id="cb21-472"><a href="#cb21-472" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Residuals show where traffic volume and road geometry alone under-predict</span>
-<span id="cb21-473"><a href="#cb21-473" aria-hidden="true" tabindex="-1"></a>  observed collisions — likely reflecting local factors not in the feature set</span>
-<span id="cb21-474"><a href="#cb21-474" aria-hidden="true" tabindex="-1"></a>  (junction design, sight lines, speed compliance).</span>
-<span id="cb21-475"><a href="#cb21-475" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The top 1% risk links are concentrated on high-traffic A-roads and</span>
-<span id="cb21-476"><a href="#cb21-476" aria-hidden="true" tabindex="-1"></a>  motorways, consistent with higher exposure and absolute collision counts.</span>
-<span id="cb21-477"><a href="#cb21-477" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Excess-risk links (residual &gt; 2) are candidates for targeted intervention</span>
-<span id="cb21-478"><a href="#cb21-478" aria-hidden="true" tabindex="-1"></a>  where infrastructure or behaviour factors drive risk beyond what the model</span>
-<span id="cb21-479"><a href="#cb21-479" aria-hidden="true" tabindex="-1"></a>  can attribute to road class and traffic alone.</span>
+<span id="cb21-466"><a href="#cb21-466" aria-hidden="true" tabindex="-1"></a>  the counted-only Stage 1a filter, the Stage 2 post-event provenance guard,</span>
+<span id="cb21-467"><a href="#cb21-467" aria-hidden="true" tabindex="-1"></a>  OSM feature enrichment, IMD features, terrain grade, and the GLM</span>
+<span id="cb21-468"><a href="#cb21-468" aria-hidden="true" tabindex="-1"></a>  optional-feature imputation refactor; earlier GLM pseudo-R² figures are</span>
+<span id="cb21-469"><a href="#cb21-469" aria-hidden="true" tabindex="-1"></a>  prior-run snapshots, not directly comparable ablations. See</span>
+<span id="cb21-470"><a href="#cb21-470" aria-hidden="true" tabindex="-1"></a>  <span class="co">[</span><span class="ot">feature engineering</span><span class="co">](../methodology/feature-engineering.qmd#pseudo-r-comparability)</span></span>
+<span id="cb21-471"><a href="#cb21-471" aria-hidden="true" tabindex="-1"></a>  for the full caveat.</span>
+<span id="cb21-472"><a href="#cb21-472" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The GLM provides interpretable incidence rate ratios per feature; XGBoost</span>
+<span id="cb21-473"><a href="#cb21-473" aria-hidden="true" tabindex="-1"></a>  predictions complement these with higher predictive power for the risk map.</span>
+<span id="cb21-474"><a href="#cb21-474" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Residuals show where traffic volume and road geometry alone under-predict</span>
+<span id="cb21-475"><a href="#cb21-475" aria-hidden="true" tabindex="-1"></a>  observed collisions — likely reflecting local factors not in the feature set</span>
+<span id="cb21-476"><a href="#cb21-476" aria-hidden="true" tabindex="-1"></a>  (junction design, sight lines, speed compliance).</span>
+<span id="cb21-477"><a href="#cb21-477" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The top 1% risk links are concentrated on high-traffic A-roads and</span>
+<span id="cb21-478"><a href="#cb21-478" aria-hidden="true" tabindex="-1"></a>  motorways, consistent with higher exposure and absolute collision counts.</span>
+<span id="cb21-479"><a href="#cb21-479" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Excess-risk links (residual &gt; 2) are candidates for targeted intervention</span>
+<span id="cb21-480"><a href="#cb21-480" aria-hidden="true" tabindex="-1"></a>  where infrastructure or behaviour factors drive risk beyond what the model</span>
+<span id="cb21-481"><a href="#cb21-481" aria-hidden="true" tabindex="-1"></a>  can attribute to road class and traffic alone.</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

@@ -277,12 +277,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#stage-2-collision-risk-model-srcroad_riskmodelcollision.py" id="toc-stage-2-collision-risk-model-srcroad_riskmodelcollision.py" class="nav-link active" data-scroll-target="#stage-2-collision-risk-model-srcroad_riskmodelcollision.py"><span class="header-section-number">1</span> 1. Stage 2 — Collision Risk Model (<code>src/road_risk/model/collision.py</code>)</a>
+  <li><a href="#stage-2-collision-risk-model-srcroad_riskmodelcollision.py" id="toc-stage-2-collision-risk-model-srcroad_riskmodelcollision.py" class="nav-link active" data-scroll-target="#stage-2-collision-risk-model-srcroad_riskmodelcollision.py"><span class="header-section-number">1</span> Stage 2 — Collision Risk Model (<code>src/road_risk/model/collision.py</code>)</a>
   <ul class="collapse">
-  <li><a href="#training-data" id="toc-training-data" class="nav-link" data-scroll-target="#training-data"><span class="header-section-number">1.1</span> 1.1 Training data</a></li>
-  <li><a href="#glm-poisson-with-log-offset" id="toc-glm-poisson-with-log-offset" class="nav-link" data-scroll-target="#glm-poisson-with-log-offset"><span class="header-section-number">1.2</span> 1.2 GLM — Poisson with log-offset</a></li>
-  <li><a href="#xgboost-poisson-with-base_margin-offset" id="toc-xgboost-poisson-with-base_margin-offset" class="nav-link" data-scroll-target="#xgboost-poisson-with-base_margin-offset"><span class="header-section-number">1.3</span> 1.3 XGBoost — Poisson with base_margin offset</a></li>
-  <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output"><span class="header-section-number">1.4</span> 1.4 Output</a></li>
+  <li><a href="#training-data" id="toc-training-data" class="nav-link" data-scroll-target="#training-data"><span class="header-section-number">1.1</span> Training data</a></li>
+  <li><a href="#glm-poisson-with-log-offset" id="toc-glm-poisson-with-log-offset" class="nav-link" data-scroll-target="#glm-poisson-with-log-offset"><span class="header-section-number">1.2</span> GLM — Poisson with log-offset</a></li>
+  <li><a href="#xgboost-poisson-with-base_margin-offset" id="toc-xgboost-poisson-with-base_margin-offset" class="nav-link" data-scroll-target="#xgboost-poisson-with-base_margin-offset"><span class="header-section-number">1.3</span> XGBoost — Poisson with base_margin offset</a></li>
+  <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output"><span class="header-section-number">1.4</span> Output</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -314,9 +314,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <strong>Canonical metrics source:</strong> <code>data/models/collision_metrics.json</code></p>
 <hr>
 <section id="stage-2-collision-risk-model-srcroad_riskmodelcollision.py" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="stage-2-collision-risk-model-srcroad_riskmodelcollision.py"><span class="header-section-number">1</span> 1. Stage 2 — Collision Risk Model (<code>src/road_risk/model/collision.py</code>)</h2>
+<h2 data-number="1" class="anchored" data-anchor-id="stage-2-collision-risk-model-srcroad_riskmodelcollision.py"><span class="header-section-number">1</span> Stage 2 — Collision Risk Model (<code>src/road_risk/model/collision.py</code>)</h2>
 <section id="training-data" class="level3" data-number="1.1">
-<h3 data-number="1.1" class="anchored" data-anchor-id="training-data"><span class="header-section-number">1.1</span> 1.1 Training data</h3>
+<h3 data-number="1.1" class="anchored" data-anchor-id="training-data"><span class="header-section-number">1.1</span> Training data</h3>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -366,7 +366,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Downsampling:</strong> The GLM first keeps complete-case rows for its feature set, then downsamples zero-collision rows to 10× positives (≈ 91% zeros vs 98% in the full table) to keep the statsmodels design matrix tractable. XGBoost trains on the full ~21.7M-row table with zeros filled to 0.</p>
 </section>
 <section id="glm-poisson-with-log-offset" class="level3" data-number="1.2">
-<h3 data-number="1.2" class="anchored" data-anchor-id="glm-poisson-with-log-offset"><span class="header-section-number">1.2</span> 1.2 GLM — Poisson with log-offset</h3>
+<h3 data-number="1.2" class="anchored" data-anchor-id="glm-poisson-with-log-offset"><span class="header-section-number">1.2</span> GLM — Poisson with log-offset</h3>
 <p><strong>Family / link:</strong> Poisson, log link (statsmodels <code>sm.families.Poisson()</code>).<br>
 <strong>Regularisation:</strong> None. Standard MLE.<br>
 <strong>Offset:</strong> <code>log(AADT × link_length_km × 365 / 1e6)</code> — forces the exposure coefficient to 1.</p>
@@ -516,7 +516,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 <section id="xgboost-poisson-with-base_margin-offset" class="level3" data-number="1.3">
-<h3 data-number="1.3" class="anchored" data-anchor-id="xgboost-poisson-with-base_margin-offset"><span class="header-section-number">1.3</span> 1.3 XGBoost — Poisson with base_margin offset</h3>
+<h3 data-number="1.3" class="anchored" data-anchor-id="xgboost-poisson-with-base_margin-offset"><span class="header-section-number">1.3</span> XGBoost — Poisson with base_margin offset</h3>
 <p><strong>Hyperparameters (hardcoded in <code>train_collision_xgb</code>, lines 322–328):</strong></p>
 <table class="caption-top table">
 <thead>
@@ -695,7 +695,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>Comparability caveat:</strong> GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, and tiered speed-limit imputation; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.</p>
 </section>
 <section id="output" class="level3" data-number="1.4">
-<h3 data-number="1.4" class="anchored" data-anchor-id="output"><span class="header-section-number">1.4</span> 1.4 Output</h3>
+<h3 data-number="1.4" class="anchored" data-anchor-id="output"><span class="header-section-number">1.4</span> Output</h3>
 <p><code>data/models/risk_scores.parquet</code> — one row per link. Key columns: <code>predicted_xgb</code> (mean collisions/year), <code>predicted_glm</code>, <code>residual_glm</code>, <code>risk_percentile</code> (XGBoost rank × 100 / n_links), <code>collision_count</code>, <code>estimated_aadt</code>, <code>hgv_proportion</code>, <code>speed_limit_mph_effective</code>, raw <code>speed_limit_mph</code>, and <code>betweenness_relative</code>. Post-event diagnostic columns such as <code>pct_dark</code>, <code>pct_urban</code>, <code>pct_junction</code>, <code>pct_near_crossing</code>, and <code>mean_speed_limit</code> are excluded from the output contract.</p>
 <p>The effective-speed retrain retained 2,167,557 scored links and 21,676 top-1% links. Compared with the pre-effective-speed <code>risk_scores.parquet</code>, Spearman rank correlation across all links was 0.9962 and top-1% Jaccard overlap was 0.9512.</p>
 <hr>
@@ -1174,9 +1174,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Stage 2 — Collision Risk Model (`src/road_risk/model/collision.py`)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## Stage 2 — Collision Risk Model (`src/road_risk/model/collision.py`)</span></span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 Training data</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">### Training data</span></span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Item <span class="pp">|</span> Value <span class="pp">|</span> Source <span class="pp">|</span></span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
@@ -1192,7 +1192,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>the full table) to keep the statsmodels design matrix tractable. XGBoost trains</span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>on the full ~21.7M-row table with zeros filled to 0.</span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.2 GLM — Poisson with log-offset</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### GLM — Poisson with log-offset</span></span>
 <span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>**Family / link:** Poisson, log link (statsmodels <span class="in">`sm.families.Poisson()`</span>).  </span>
 <span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>**Regularisation:** None. Standard MLE.  </span>
@@ -1239,7 +1239,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> AIC <span class="pp">|</span> 2,126,878 <span class="pp">|</span></span>
 <span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Converged <span class="pp">|</span> Yes <span class="pp">|</span></span>
 <span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.3 XGBoost — Poisson with base_margin offset</span></span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a><span class="fu">### XGBoost — Poisson with base_margin offset</span></span>
 <span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>**Hyperparameters (hardcoded in `train_collision_xgb`, lines 322–328):**</span>
 <span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a></span>
@@ -1294,7 +1294,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-134"><a href="#cb1-134" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a>**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, and tiered speed-limit imputation; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.</span>
 <span id="cb1-136"><a href="#cb1-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.4 Output</span></span>
+<span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a><span class="fu">### Output</span></span>
 <span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-139"><a href="#cb1-139" aria-hidden="true" tabindex="-1"></a><span class="in">`data/models/risk_scores.parquet`</span> — one row per link. Key columns:</span>
 <span id="cb1-140"><a href="#cb1-140" aria-hidden="true" tabindex="-1"></a><span class="in">`predicted_xgb`</span> (mean collisions/year), <span class="in">`predicted_glm`</span>, <span class="in">`residual_glm`</span>,</span>

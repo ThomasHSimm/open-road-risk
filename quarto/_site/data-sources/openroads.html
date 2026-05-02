@@ -486,25 +486,12 @@ Note
 <h2 data-number="7" class="anchored" data-anchor-id="spatial-filtering"><span class="header-section-number">7</span> Spatial filtering</h2>
 <p>GB-wide OS Open Roads contains roughly four million links. The ingest pipeline applies a <strong>bounding-box filter at read time</strong>, using <code>geopandas.read_file(..., bbox=...)</code> with the study area extent (plus a 20 km buffer) in BNG. This avoids loading the full GB dataset into memory and keeps the parquet output to a manageable size for downstream processing.</p>
 <p>The 20 km buffer is deliberate: a collision near the study area boundary should still be able to snap to a road link just outside the boundary, otherwise the snap quality degrades at the edges. The buffer is only applied to the network — collisions and AADF data are clipped to the study area itself.</p>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warning
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The output filename is currently <code>openroads_yorkshire.parquet</code>, retained from when the study area was Yorkshire only. The actual filter uses <code>cfg["study_area"]["bbox_bng"]</code>, which now covers Northern and Central England. The filename is a known cosmetic inaccuracy; see the engineering backlog.</p>
-</div>
-</div>
 </section>
 <section id="output" class="level2" data-number="8">
 <h2 data-number="8" class="anchored" data-anchor-id="output"><span class="header-section-number">8</span> Output</h2>
 <p>The ingest produces a single GeoParquet file:</p>
 <ul>
-<li><strong>Path:</strong> <code>data/processed/shapefiles/openroads_yorkshire.parquet</code></li>
+<li><strong>Path:</strong> <code>data/processed/shapefiles/openroads.parquet</code></li>
 <li><strong>Schema:</strong> the renamed columns listed above, plus <code>link_length_km</code>, <code>road_name_clean</code>, <code>street_name_clean</code>, and <code>geometry</code> in WGS84.</li>
 <li><strong>Size:</strong> ~2.17M rows for the current study area.</li>
 </ul>
@@ -531,7 +518,7 @@ Warning
 <ol type="1">
 <li>Download <code>oproad_gb.gpkg</code> from <a href="https://osdatahub.os.uk/downloads/open/OpenRoads" class="uri">https://osdatahub.os.uk/downloads/open/OpenRoads</a> and place in <code>data/raw/shapefiles/</code>.</li>
 <li>Run <code>python src/road_risk/ingest/ingest_openroads.py</code>.</li>
-<li>Output appears at <code>data/processed/shapefiles/openroads_yorkshire.parquet</code>.</li>
+<li>Output appears at <code>data/processed/shapefiles/openroads.parquet</code>.</li>
 </ol>
 <p>The bbox filter is read from <code>config/settings.yaml</code> under <code>study_area.bbox_bng</code>. Adjusting the study area requires editing that config and re-running the ingest.</p>
 
@@ -1139,78 +1126,70 @@ Warning
 <span id="cb1-145"><a href="#cb1-145" aria-hidden="true" tabindex="-1"></a>is only applied to the network — collisions and AADF data are clipped</span>
 <span id="cb1-146"><a href="#cb1-146" aria-hidden="true" tabindex="-1"></a>to the study area itself.</span>
 <span id="cb1-147"><a href="#cb1-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a>::: {.callout-warning}</span>
-<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a>The output filename is currently <span class="in">`openroads_yorkshire.parquet`</span>, retained</span>
-<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a>from when the study area was Yorkshire only. The actual filter uses</span>
-<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a><span class="in">`cfg["study_area"]["bbox_bng"]`</span>, which now covers Northern and Central</span>
-<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a>England. The filename is a known cosmetic inaccuracy; see the engineering</span>
-<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a>backlog.</span>
-<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a><span class="fu">## Output</span></span>
-<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a>The ingest produces a single GeoParquet file:</span>
-<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Path:** <span class="in">`data/processed/shapefiles/openroads_yorkshire.parquet`</span></span>
-<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Schema:** the renamed columns listed above, plus <span class="in">`link_length_km`</span>,</span>
-<span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a>  <span class="in">`road_name_clean`</span>, <span class="in">`street_name_clean`</span>, and <span class="in">`geometry`</span> in WGS84.</span>
-<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Size:** ~2.17M rows for the current study area.</span>
-<span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a>This file is consumed by:</span>
-<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`clean_join/snap.py`</span> — collision-to-link snapping via the four-dimension</span>
-<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a>  weighted scoring described in</span>
-<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a>  <span class="co">[</span><span class="ot">Joining the Datasets</span><span class="co">](../methodology/data-joining.qmd#snapping)</span>.</span>
-<span id="cb1-170"><a href="#cb1-170" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`clean_join/join.py`</span> — AADF-to-link spatial join with a 2 km cap.</span>
-<span id="cb1-171"><a href="#cb1-171" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`features/network.py`</span> — graph centrality, OSM attribute attachment,</span>
-<span id="cb1-172"><a href="#cb1-172" aria-hidden="true" tabindex="-1"></a>  population density.</span>
-<span id="cb1-173"><a href="#cb1-173" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`features/road_curvature.py`</span> — curvature features from link geometry.</span>
-<span id="cb1-174"><a href="#cb1-174" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`features/road_terrain.py`</span> — slope features sampled from OS Terrain 50.</span>
-<span id="cb1-175"><a href="#cb1-175" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`model/aadt.py`</span> — Stage 1a applies the trained traffic estimator to</span>
-<span id="cb1-176"><a href="#cb1-176" aria-hidden="true" tabindex="-1"></a>  every link in this file.</span>
-<span id="cb1-177"><a href="#cb1-177" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-178"><a href="#cb1-178" aria-hidden="true" tabindex="-1"></a><span class="fu">## Known limitations</span></span>
-<span id="cb1-179"><a href="#cb1-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-180"><a href="#cb1-180" aria-hidden="true" tabindex="-1"></a>**Dual carriageways are two links.** OS Open Roads represents each</span>
-<span id="cb1-181"><a href="#cb1-181" aria-hidden="true" tabindex="-1"></a>carriageway of a dual carriageway as a separate link. This is geometrically</span>
-<span id="cb1-182"><a href="#cb1-182" aria-hidden="true" tabindex="-1"></a>faithful but creates ambiguity for collision snapping — a collision</span>
-<span id="cb1-183"><a href="#cb1-183" aria-hidden="true" tabindex="-1"></a>reported on one carriageway can occasionally snap to the other when</span>
-<span id="cb1-184"><a href="#cb1-184" aria-hidden="true" tabindex="-1"></a>GPS drift is on the order of carriageway separation. The weighted snap</span>
-<span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a>does not resolve this; both links share the same <span class="in">`road_name_clean`</span> and</span>
-<span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a><span class="in">`road_classification`</span>, so the composite score is near-tied. See</span>
-<span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Joining the Datasets</span><span class="co">](../methodology/data-joining.qmd#known-issues-and-tradeoffs)</span></span>
-<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a>for detail.</span>
-<span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a>**Link granularity varies.** Motorway links are typically 1–3 km; urban</span>
-<span id="cb1-191"><a href="#cb1-191" aria-hidden="true" tabindex="-1"></a>minor roads are often under 50 m. This is exposed downstream — features</span>
-<span id="cb1-192"><a href="#cb1-192" aria-hidden="true" tabindex="-1"></a>like collision counts must be normalised by <span class="in">`link_length_km`</span> before</span>
-<span id="cb1-193"><a href="#cb1-193" aria-hidden="true" tabindex="-1"></a>comparison.</span>
-<span id="cb1-194"><a href="#cb1-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-195"><a href="#cb1-195" aria-hidden="true" tabindex="-1"></a>**No surface, speed limit, or lane data.** OS Open Roads covers</span>
-<span id="cb1-196"><a href="#cb1-196" aria-hidden="true" tabindex="-1"></a>geometry and classification only. Surface type, speed limits, lighting,</span>
-<span id="cb1-197"><a href="#cb1-197" aria-hidden="true" tabindex="-1"></a>and lane count come from OpenStreetMap, joined onto OS Open Roads links</span>
-<span id="cb1-198"><a href="#cb1-198" aria-hidden="true" tabindex="-1"></a>during feature engineering.</span>
-<span id="cb1-199"><a href="#cb1-199" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-200"><a href="#cb1-200" aria-hidden="true" tabindex="-1"></a>**Naming inconsistency in road numbers.** The source <span class="in">`road_classification_number`</span></span>
-<span id="cb1-201"><a href="#cb1-201" aria-hidden="true" tabindex="-1"></a>field sometimes arrives as a float (e.g. <span class="in">`62.0`</span>) which is normalised to</span>
-<span id="cb1-202"><a href="#cb1-202" aria-hidden="true" tabindex="-1"></a>the integer string form during cleaning. Edge cases where the number</span>
-<span id="cb1-203"><a href="#cb1-203" aria-hidden="true" tabindex="-1"></a>column is fully null mean some named-but-unclassified roads have</span>
-<span id="cb1-204"><a href="#cb1-204" aria-hidden="true" tabindex="-1"></a><span class="in">`road_name_clean = ""`</span> and rely on the spatial and class scoring</span>
-<span id="cb1-205"><a href="#cb1-205" aria-hidden="true" tabindex="-1"></a>dimensions during snapping.</span>
-<span id="cb1-206"><a href="#cb1-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-207"><a href="#cb1-207" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reproducibility</span></span>
+<span id="cb1-148"><a href="#cb1-148" aria-hidden="true" tabindex="-1"></a><span class="fu">## Output</span></span>
+<span id="cb1-149"><a href="#cb1-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-150"><a href="#cb1-150" aria-hidden="true" tabindex="-1"></a>The ingest produces a single GeoParquet file:</span>
+<span id="cb1-151"><a href="#cb1-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-152"><a href="#cb1-152" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Path:** <span class="in">`data/processed/shapefiles/openroads.parquet`</span></span>
+<span id="cb1-153"><a href="#cb1-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Schema:** the renamed columns listed above, plus <span class="in">`link_length_km`</span>,</span>
+<span id="cb1-154"><a href="#cb1-154" aria-hidden="true" tabindex="-1"></a>  <span class="in">`road_name_clean`</span>, <span class="in">`street_name_clean`</span>, and <span class="in">`geometry`</span> in WGS84.</span>
+<span id="cb1-155"><a href="#cb1-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Size:** ~2.17M rows for the current study area.</span>
+<span id="cb1-156"><a href="#cb1-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-157"><a href="#cb1-157" aria-hidden="true" tabindex="-1"></a>This file is consumed by:</span>
+<span id="cb1-158"><a href="#cb1-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-159"><a href="#cb1-159" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`clean_join/snap.py`</span> — collision-to-link snapping via the four-dimension</span>
+<span id="cb1-160"><a href="#cb1-160" aria-hidden="true" tabindex="-1"></a>  weighted scoring described in</span>
+<span id="cb1-161"><a href="#cb1-161" aria-hidden="true" tabindex="-1"></a>  <span class="co">[</span><span class="ot">Joining the Datasets</span><span class="co">](../methodology/data-joining.qmd#snapping)</span>.</span>
+<span id="cb1-162"><a href="#cb1-162" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`clean_join/join.py`</span> — AADF-to-link spatial join with a 2 km cap.</span>
+<span id="cb1-163"><a href="#cb1-163" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`features/network.py`</span> — graph centrality, OSM attribute attachment,</span>
+<span id="cb1-164"><a href="#cb1-164" aria-hidden="true" tabindex="-1"></a>  population density.</span>
+<span id="cb1-165"><a href="#cb1-165" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`features/road_curvature.py`</span> — curvature features from link geometry.</span>
+<span id="cb1-166"><a href="#cb1-166" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`features/road_terrain.py`</span> — slope features sampled from OS Terrain 50.</span>
+<span id="cb1-167"><a href="#cb1-167" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`model/aadt.py`</span> — Stage 1a applies the trained traffic estimator to</span>
+<span id="cb1-168"><a href="#cb1-168" aria-hidden="true" tabindex="-1"></a>  every link in this file.</span>
+<span id="cb1-169"><a href="#cb1-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-170"><a href="#cb1-170" aria-hidden="true" tabindex="-1"></a><span class="fu">## Known limitations</span></span>
+<span id="cb1-171"><a href="#cb1-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-172"><a href="#cb1-172" aria-hidden="true" tabindex="-1"></a>**Dual carriageways are two links.** OS Open Roads represents each</span>
+<span id="cb1-173"><a href="#cb1-173" aria-hidden="true" tabindex="-1"></a>carriageway of a dual carriageway as a separate link. This is geometrically</span>
+<span id="cb1-174"><a href="#cb1-174" aria-hidden="true" tabindex="-1"></a>faithful but creates ambiguity for collision snapping — a collision</span>
+<span id="cb1-175"><a href="#cb1-175" aria-hidden="true" tabindex="-1"></a>reported on one carriageway can occasionally snap to the other when</span>
+<span id="cb1-176"><a href="#cb1-176" aria-hidden="true" tabindex="-1"></a>GPS drift is on the order of carriageway separation. The weighted snap</span>
+<span id="cb1-177"><a href="#cb1-177" aria-hidden="true" tabindex="-1"></a>does not resolve this; both links share the same <span class="in">`road_name_clean`</span> and</span>
+<span id="cb1-178"><a href="#cb1-178" aria-hidden="true" tabindex="-1"></a><span class="in">`road_classification`</span>, so the composite score is near-tied. See</span>
+<span id="cb1-179"><a href="#cb1-179" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Joining the Datasets</span><span class="co">](../methodology/data-joining.qmd#known-issues-and-tradeoffs)</span></span>
+<span id="cb1-180"><a href="#cb1-180" aria-hidden="true" tabindex="-1"></a>for detail.</span>
+<span id="cb1-181"><a href="#cb1-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-182"><a href="#cb1-182" aria-hidden="true" tabindex="-1"></a>**Link granularity varies.** Motorway links are typically 1–3 km; urban</span>
+<span id="cb1-183"><a href="#cb1-183" aria-hidden="true" tabindex="-1"></a>minor roads are often under 50 m. This is exposed downstream — features</span>
+<span id="cb1-184"><a href="#cb1-184" aria-hidden="true" tabindex="-1"></a>like collision counts must be normalised by <span class="in">`link_length_km`</span> before</span>
+<span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a>comparison.</span>
+<span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a>**No surface, speed limit, or lane data.** OS Open Roads covers</span>
+<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a>geometry and classification only. Surface type, speed limits, lighting,</span>
+<span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a>and lane count come from OpenStreetMap, joined onto OS Open Roads links</span>
+<span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a>during feature engineering.</span>
+<span id="cb1-191"><a href="#cb1-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-192"><a href="#cb1-192" aria-hidden="true" tabindex="-1"></a>**Naming inconsistency in road numbers.** The source <span class="in">`road_classification_number`</span></span>
+<span id="cb1-193"><a href="#cb1-193" aria-hidden="true" tabindex="-1"></a>field sometimes arrives as a float (e.g. <span class="in">`62.0`</span>) which is normalised to</span>
+<span id="cb1-194"><a href="#cb1-194" aria-hidden="true" tabindex="-1"></a>the integer string form during cleaning. Edge cases where the number</span>
+<span id="cb1-195"><a href="#cb1-195" aria-hidden="true" tabindex="-1"></a>column is fully null mean some named-but-unclassified roads have</span>
+<span id="cb1-196"><a href="#cb1-196" aria-hidden="true" tabindex="-1"></a><span class="in">`road_name_clean = ""`</span> and rely on the spatial and class scoring</span>
+<span id="cb1-197"><a href="#cb1-197" aria-hidden="true" tabindex="-1"></a>dimensions during snapping.</span>
+<span id="cb1-198"><a href="#cb1-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-199"><a href="#cb1-199" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reproducibility</span></span>
+<span id="cb1-200"><a href="#cb1-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-201"><a href="#cb1-201" aria-hidden="true" tabindex="-1"></a>To regenerate the OS Open Roads layer:</span>
+<span id="cb1-202"><a href="#cb1-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-203"><a href="#cb1-203" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Download <span class="in">`oproad_gb.gpkg`</span> from</span>
+<span id="cb1-204"><a href="#cb1-204" aria-hidden="true" tabindex="-1"></a>   <span class="ot">&lt;https://osdatahub.os.uk/downloads/open/OpenRoads&gt;</span> and place in</span>
+<span id="cb1-205"><a href="#cb1-205" aria-hidden="true" tabindex="-1"></a>   <span class="in">`data/raw/shapefiles/`</span>.</span>
+<span id="cb1-206"><a href="#cb1-206" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Run <span class="in">`python src/road_risk/ingest/ingest_openroads.py`</span>.</span>
+<span id="cb1-207"><a href="#cb1-207" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Output appears at <span class="in">`data/processed/shapefiles/openroads.parquet`</span>.</span>
 <span id="cb1-208"><a href="#cb1-208" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-209"><a href="#cb1-209" aria-hidden="true" tabindex="-1"></a>To regenerate the OS Open Roads layer:</span>
-<span id="cb1-210"><a href="#cb1-210" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-211"><a href="#cb1-211" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Download <span class="in">`oproad_gb.gpkg`</span> from</span>
-<span id="cb1-212"><a href="#cb1-212" aria-hidden="true" tabindex="-1"></a>   <span class="ot">&lt;https://osdatahub.os.uk/downloads/open/OpenRoads&gt;</span> and place in</span>
-<span id="cb1-213"><a href="#cb1-213" aria-hidden="true" tabindex="-1"></a>   <span class="in">`data/raw/shapefiles/`</span>.</span>
-<span id="cb1-214"><a href="#cb1-214" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Run <span class="in">`python src/road_risk/ingest/ingest_openroads.py`</span>.</span>
-<span id="cb1-215"><a href="#cb1-215" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Output appears at <span class="in">`data/processed/shapefiles/openroads_yorkshire.parquet`</span>.</span>
-<span id="cb1-216"><a href="#cb1-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-217"><a href="#cb1-217" aria-hidden="true" tabindex="-1"></a>The bbox filter is read from <span class="in">`config/settings.yaml`</span> under</span>
-<span id="cb1-218"><a href="#cb1-218" aria-hidden="true" tabindex="-1"></a><span class="in">`study_area.bbox_bng`</span>. Adjusting the study area requires editing that</span>
-<span id="cb1-219"><a href="#cb1-219" aria-hidden="true" tabindex="-1"></a>config and re-running the ingest.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb1-209"><a href="#cb1-209" aria-hidden="true" tabindex="-1"></a>The bbox filter is read from <span class="in">`config/settings.yaml`</span> under</span>
+<span id="cb1-210"><a href="#cb1-210" aria-hidden="true" tabindex="-1"></a><span class="in">`study_area.bbox_bng`</span>. Adjusting the study area requires editing that</span>
+<span id="cb1-211"><a href="#cb1-211" aria-hidden="true" tabindex="-1"></a>config and re-running the ingest.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">
