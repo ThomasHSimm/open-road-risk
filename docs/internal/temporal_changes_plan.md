@@ -90,14 +90,14 @@ finding 2 for evidence. Same logic parks seasonal/month at link grain
 
 ### Step 1b — HGV per-site within-month std check
 
-New step, replaces the original step 1.
+**Complete.** This step replaces the original step 1.
 
-Boxplot evidence in the temporal exploration qmd shows substantial
+Boxplot evidence in the temporal exploration qmd showed substantial
 within-road-class spread in HGV percentage (IQRs ~10pp, outliers
-40–70%). This is meaningfully wider than weekday/weekend showed and
-warrants a proper test before HGV% is parked or pursued.
+40–70%). The follow-up diagnostic confirmed that the spread is not just a
+plotting artefact.
 
-Run the same per-site within-month std diagnostic on
+The diagnostic ran the same per-site within-month std check on
 `adt24largevehiclepercentage` that settled weekday/weekend:
 
 ```python
@@ -109,12 +109,20 @@ profile = (
 print(profile.groupby("monthname", observed=True)["mean_hgv_pct"].std())
 ```
 
-Decision rule:
+Result:
+
+- 6,003 study-area WebTRIS sites; 68,159 site-month rows.
+- Median monthly within-month-across-sites std: 7.19 percentage points.
+- Monthly std range: 6.50–8.17 percentage points.
+- Site-mean HGV% 10th/50th/90th percentiles: 7.68%, 18.02%, 25.72%.
+- 3.0% of sites average at least 30% HGV; 0.37% average at least 40%.
+
+Decision rule and outcome:
 - **Tight (<2 percentage points within-month-across-sites):** park.
   Variation is dominated by road class, which is already in the
   collision model.
 - **Wide (5+ percentage points):** candidate for ablation alongside
-  `core_overnight_ratio`.
+  `core_overnight_ratio`. **This is the observed outcome.**
 - **In between:** judgement call — examine the distribution shape and
   whether it has a heavy tail of genuinely freight-heavy sites that
   carry signal road class can't capture.
@@ -124,6 +132,13 @@ HGV volume. % captures "freight-heavy character of this link" which is
 what would matter for collision risk; volume is more redundant with road
 class (motorways carry more freight in absolute terms by definition) and
 useful mainly as a diagnostic for understanding the data.
+
+Supporting artefacts:
+
+- `src/road_risk/diagnostics/temporal_hgv_variation.py`
+- `reports/supporting/temporal_hgv_monthly_std.csv`
+- `reports/supporting/temporal_hgv_site_month_profile.csv`
+- `reports/supporting/temporal_hgv_road_type_summary.csv`
 
 ### Step 2 — Confirm leakage geometry
 
@@ -138,25 +153,27 @@ Either align folds by site or document the optimism explicitly.
 
 Three configurations, same folds, same seed:
 
-- Current collision model.
-- Current + `core_overnight_ratio` (+ HGV % if step 1b clears).
-- Current + cheap proxy (e.g. road class × urban density interaction, or
+- Post-grade collision model, scored with the chunked path.
+- Post-grade + `core_overnight_ratio` + HGV%.
+- Post-grade + cheap proxy (e.g. road class × urban density interaction, or
   whatever the existing feature set can encode of the same idea).
 
 Compare headline CV metric with confidence intervals from resampling.
 
 Decision rule: pre-registered, TBD — to be set before results are seen.
-The threshold needs to sit above the noise floor of the current collision
-model's CV, so step 3 includes measuring that floor by re-running with
-different seeds.
+The threshold needs to sit above the noise floor of the post-grade collision
+model's CV. Re-measure that noise floor on the post-fix training population
+before setting the decision threshold, because the IMD/grade imputation
+refactor changed the GLM estimation sample and the chunked scoring path
+changed the operational scoring implementation.
 
 Three possible verdicts:
 
 - Descriptors clearly beat both baselines → adopt in production.
 - Descriptors match the cheap proxy → do not adopt; the information was
   already available from existing features.
-- Descriptors do not beat current model → do not adopt; park the temporal
-  models honestly.
+- Descriptors do not beat the post-grade baseline → do not adopt; park the
+  temporal models honestly.
 
 ### Step 4 — Month / seasonality
 
@@ -194,6 +211,10 @@ Defer the choice until step 3 results are in.
 - **Cheap-proxy baseline is loosely specified.** Whatever proxy is chosen
   determines whether the comparison is meaningful. If the proxy is too
   weak, descriptors will appear to add value they do not.
+- **IMD/grade features may absorb urban-character signal.** Those features
+  may capture part of the same spatial/urban structure that previously gave
+  `core_overnight_ratio` apparent lift. Check feature overlap before running
+  the ablation.
 - **Pre-registered decision rule is not yet set.** Must be set before
   step 3 results are inspected.
 - **R² values currently quoted in `timezone-profile.qmd` are stale and

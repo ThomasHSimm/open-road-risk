@@ -327,7 +327,7 @@ if HAS_GPD and openroads is not None:
 
     or_risk.plot(
         column="risk_percentile", ax=axes[0],
-        cmap="RdYlBu_r", vmin=0, vmax=100,
+        cmap="RdYlGn_r", vmin=75, vmax=100,
         linewidth=0.3, legend=True,
         legend_kwds={"label": "Risk percentile", "shrink": 0.6},
     )
@@ -337,7 +337,7 @@ if HAS_GPD and openroads is not None:
     major = or_risk[or_risk["road_classification"].isin(["Motorway", "A Road"])].copy()
     major.plot(
         column="risk_percentile", ax=axes[1],
-        cmap="RdYlBu_r", vmin=0, vmax=100,
+        cmap="RdYlGn_r", vmin=75, vmax=100,
         linewidth=0.8, legend=True,
         legend_kwds={"label": "Risk percentile", "shrink": 0.6},
     )
