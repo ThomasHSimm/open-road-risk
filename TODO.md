@@ -79,19 +79,43 @@ Tracked here so nothing gets lost. Cross off as done.
   added/dropped columns at training time so feature drift is visible.
   Address before any deliberate Stage 1a retrain.
 
-- [ ] Chunked prediction refactor — current `score_collision_models()` holds
-  the full 21.7M-row dataframe, a copy, and float-converted feature matrices
-  simultaneously. Restructure scoring to predict year-by-year and concatenate
-  lightweight per-year results. Reduces peak scoring memory by ~3-4x.
+- [x] Stage 2 `mean_grade` added to GLM and XGBoost (2 May 2026) —
+  `mean_grade` is now included in the optional Stage 2 feature set. GLM uses
+  median-imputed values under the optional-feature policy; XGBoost uses the raw
+  column with existing `fillna(0)` handling, where 0 means flat road.
 
-- [ ] Imputation consistency between training and scoring —
-  `train_collision_glm()` and `train_collision_xgb()` use median imputation,
-  while `score_collision_models()` uses `fillna(0)`. For features where 0 is
-  far from the median, such as `pop_density_per_km2` and `imd_decile`, scoring
-  sees different values than training, with unknown effect on missing-feature
-  links. Apply the same imputation strategy at scoring as at training, or skip
-  imputation at scoring and accept NaN propagation through to a flagged
-  "uncalibrated" prediction.
+- [x] GLM optional-feature imputation policy refactor (2 May 2026) —
+  partial-coverage optional features now enter the GLM as median-imputed
+  `{feature}_imputed` regressors, with `{feature}_missing` flags below 99%
+  coverage. This removes the old coverage cliff where high-coverage incomplete
+  features were added raw and then silently changed the estimation sample via
+  `dropna()`.
+
+- [x] Chunked prediction refactor in `score_collision_models()` (2 May 2026) —
+  scoring no longer builds full 21.7M-row GLM/XGBoost feature matrices at once.
+  GLM and XGBoost predictions are computed in bounded chunks, which resolved
+  the scoring-stage OOM.
+
+- [x] Do not write GLM imputation columns back to the global modelling frame
+  (2 May 2026) — training stores the imputation spec on the fitted GLM result,
+  and scoring rebuilds only the required derived columns inside each chunk.
+  This avoids retaining several GB of full-frame `{feature}_imputed` and
+  `{feature}_missing` columns.
+
+- [ ] Investigate negative `mean_grade` coefficient — check whether the sign
+  holds across road classes/facility families and whether it is a real
+  exposure/geometry effect, an artefact of DEM/link-direction handling, or
+  confounding with motorway/trunk-road design.
+
+- [ ] Collapse identical IMD missingness flags into one `imd_missing` feature —
+  `imd_decile`, `imd_crime_decile`, and `imd_living_indoor_decile` share the
+  same LSOA join coverage, so separate missing flags are redundant and add
+  memory/collinearity without extra information.
+
+- [ ] Document the `score_collision_models()` contract — after the OOM fix it
+  still mutates the passed dataframe by adding `predicted_glm` and
+  `predicted_xgb` before pooling. Either document that explicitly or refactor
+  to a cleaner non-mutating/prediction-array contract.
 
 ---
 

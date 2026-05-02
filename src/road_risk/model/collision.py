@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 # Ratio of 10 gives ~4M rows (391k positives × ~10 zeros) — sufficient
 # for stable GLM coefficient estimation on rare-event Poisson data.
 GLM_ZERO_SAMPLE_RATIO = 10
+SCORE_CHUNK_ROWS = 1_000_000
 
 MODELS = _ROOT / cfg["paths"]["models"]
 OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads.parquet"
@@ -243,18 +244,25 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         "year_norm",
     ]
 
-    # Optional contextual/network features. Policy: any feature meeting
-    # MIN_COVERAGE_FOR_INCLUSION is included via median-imputation +
-    # missingness indicator. This keeps the GLM training population
-    # constant across feature additions; without imputation, adding a
-    # partial-coverage feature would silently drop links from the fit
-    # and confound feature-effect with sample-effect comparisons.
+    # Optional contextual/network features. Policy:
+    #   - any feature meeting MIN_COVERAGE_FOR_INCLUSION is included via
+    #     median-imputation
+    #   - features below SKIP_MISSING_FLAG_COVERAGE additionally get a
+    #     missingness indicator column (lets the GLM separate "missing"
+    #     from "imputed median value")
+    #   - features above SKIP_MISSING_FLAG_COVERAGE get imputation only
+    #     (the missing flag would be a near-zero-variance column with
+    #     no estimation power, just memory cost)
     #
-    # Per-feature columns added to df:
-    #   {col}_imputed  — median-filled value, used as the model regressor
-    #   {col}_missing  — 1 if original was NaN, 0 otherwise; lets the GLM
-    #                    learn whether missingness itself correlates with
-    #                    risk separately from the imputed value
+    # This keeps the GLM training population CONSTANT across feature
+    # additions. The previous policy (raw column above 50% coverage,
+    # then dropna) silently changed the estimation sample whenever a
+    # partial-coverage feature was added, confounding feature-effect
+    # with sample-effect.
+    #
+    # Materialisation policy: imputed/missing columns are computed on
+    # the DOWNSAMPLED frame, not on the full 21.7M-row df, to keep
+    # peak memory in budget.
     network_candidates = [
         "hgv_proportion",
         "degree_mean",
@@ -270,9 +278,13 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         "imd_living_indoor_decile",
         "mean_grade",
     ]
-    MIN_COVERAGE_FOR_INCLUSION = 0.05  # below this, feature is skipped
+    MIN_COVERAGE_FOR_INCLUSION = 0.05
+    SKIP_MISSING_FLAG_COVERAGE = 0.99
 
-    feature_cols = list(core_cols)
+    # Phase 1 — coverage scan only. Decide which candidates to include
+    # and what their median values will be. NO column materialisation
+    # on `df` here.
+    feature_specs = []  # list of (raw_col, median_val, imputed_name, missing_name_or_None)
     for col in network_candidates:
         if col not in df.columns:
             logger.info(f"  {col}: not in dataset — skipping")
@@ -286,34 +298,60 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
             continue
 
         median_val = df[col].median()
-        imputed_col = f"{col}_imputed"
-        missing_col = f"{col}_missing"
-        df[imputed_col] = df[col].fillna(median_val)
-        df[missing_col] = df[col].isna().astype("int8")
-        feature_cols.append(imputed_col)
-        feature_cols.append(missing_col)
+        imputed_name = f"{col}_imputed"
+        missing_name = f"{col}_missing" if coverage < SKIP_MISSING_FLAG_COVERAGE else None
+        feature_specs.append((col, median_val, imputed_name, missing_name))
+        flag_note = "" if missing_name is None else f" + {missing_name}"
         logger.info(
-            f"  {col}: {coverage:.1%} coverage — imputed median={median_val:.4g}, "
-            f"added {imputed_col} + {missing_col}"
+            f"  {col}: {coverage:.1%} coverage — imputing median={median_val:.4g}, "
+            f"adding {imputed_name}{flag_note}"
         )
+
+    # Build the feature_cols list in deterministic order: core first, then
+    # imputed columns, then missing flags (grouped so the coefficient
+    # table reads sensibly).
+    feature_cols = list(core_cols)
+    feature_cols.extend(spec[2] for spec in feature_specs)
+    feature_cols.extend(spec[3] for spec in feature_specs if spec[3] is not None)
     _assert_no_post_event_features(feature_cols, context="GLM")
 
-    model_df = df[feature_cols + ["collision_count", "log_offset"]].dropna()
-    logger.info(
-        f"  GLM training rows: {len(model_df):,} "
-        f"(dropped {len(df) - len(model_df):,} with missing features)"
-    )
+    # Phase 2 — downsample on raw data. Use only collision_count and
+    # log_offset to decide row inclusion; no imputed columns yet.
+    raw_optional_cols = [spec[0] for spec in feature_specs]
+    minimal_cols = list(core_cols) + raw_optional_cols + ["collision_count", "log_offset"]
+    minimal_cols = [c for c in minimal_cols if c in df.columns]
 
-    # Downsample zero-collision rows for GLM to avoid OOM on large networks.
-    pos_mask = model_df["collision_count"] > 0
-    n_pos = pos_mask.sum()
-    n_zeros_keep = min((~pos_mask).sum(), n_pos * GLM_ZERO_SAMPLE_RATIO)
-    zeros_sample = model_df[~pos_mask].sample(n=n_zeros_keep, random_state=RANDOM_STATE)
-    glm_df = pd.concat([model_df[pos_mask], zeros_sample]).sort_index()
+    # Drop only on core_cols + log_offset; optional cols may be NaN and
+    # will be handled by imputation below. This is the methodological
+    # change from the old policy.
+    core_required = list(core_cols) + ["log_offset"]
+    core_required = [c for c in core_required if c in df.columns]
+    full_idx = df.dropna(subset=core_required).index
+    n_dropped_core = len(df) - len(full_idx)
+    if n_dropped_core > 0:
+        logger.info(f"  Dropped {n_dropped_core:,} rows missing core features")
+
+    pos_mask = df.loc[full_idx, "collision_count"] > 0
+    pos_idx = pos_mask[pos_mask].index
+    zero_idx = pos_mask[~pos_mask].index
+    n_pos = len(pos_idx)
+    n_zeros_keep = min(len(zero_idx), n_pos * GLM_ZERO_SAMPLE_RATIO)
+    zeros_sample_idx = zero_idx.to_series().sample(n=n_zeros_keep, random_state=RANDOM_STATE).index
+    selected_idx = pos_idx.union(zeros_sample_idx).sort_values()
     logger.info(
         f"  GLM downsampled: {n_pos:,} positives + {n_zeros_keep:,} zeros "
-        f"= {len(glm_df):,} rows (ratio 1:{GLM_ZERO_SAMPLE_RATIO})"
+        f"= {len(selected_idx):,} rows (ratio 1:{GLM_ZERO_SAMPLE_RATIO})"
     )
+
+    # Phase 3 — materialise the GLM frame ONLY for selected rows.
+    glm_df = df.loc[selected_idx, minimal_cols].copy()
+    for raw_col, median_val, imputed_name, missing_name in feature_specs:
+        glm_df[imputed_name] = glm_df[raw_col].fillna(median_val)
+        if missing_name is not None:
+            glm_df[missing_name] = glm_df[raw_col].isna().astype("int8")
+        # Drop the raw column once we've derived imputed/missing — saves memory
+        # and prevents accidentally fitting on the wrong column.
+        glm_df.drop(columns=[raw_col], inplace=True)
 
     X = sm.add_constant(glm_df[feature_cols].astype(float))
     y = glm_df["collision_count"].astype(int)
@@ -327,7 +365,7 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
     summary = {
         "n_obs": len(glm_df),
         "n_pos": int(n_pos),
-        "n_full": len(model_df),
+        "n_full": len(full_idx),
         "deviance": float(result.deviance),
         "null_deviance": float(result.null_deviance),
         "pseudo_r2": float(1 - result.deviance / result.null_deviance),
@@ -352,6 +390,16 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
     ).round(4)
     sig = coef_df[coef_df["pvalue"] < 0.05].sort_values("coef", ascending=False)
     logger.info(f"  Significant coefficients (p<0.05):\n{sig.to_string()}")
+
+    result._road_risk_imputed_features = {
+        imputed_name: (raw_col, median_val)
+        for raw_col, median_val, imputed_name, _missing_name in feature_specs
+    }
+    result._road_risk_missing_features = {
+        missing_name: raw_col
+        for raw_col, _median_val, _imputed_name, missing_name in feature_specs
+        if missing_name is not None
+    }
 
     return result, feature_cols, summary
 
@@ -506,24 +554,65 @@ def score_collision_models(
 
     One row per link_id — no year dimension in the output.
     """
-    import statsmodels.api as sm
-
     logger.info("Applying models and pooling across years ...")
 
-    # Score per link × year
-    X_glm = sm.add_constant(
-        df[glm_features].fillna(0).astype(float),
-        has_constant="add",
-    )
-    if "const" not in X_glm.columns:
-        X_glm.insert(0, "const", 1.0)
+    # Score per link × year. GLM imputed/missing columns are rebuilt here
+    # instead of being materialised on the full modelling frame after training.
+    # That keeps peak scoring memory lower and avoids retaining ~GBs of derived
+    # columns that are only needed for prediction.
+    imputed_features = getattr(glm_result, "_road_risk_imputed_features", {})
+    missing_features = getattr(glm_result, "_road_risk_missing_features", {})
+    # Avoid a full-frame defensive copy here: at national scale this can double
+    # scoring memory. The caller's df is intentionally annotated with temporary
+    # prediction columns before pooling.
+    predicted_glm = np.empty(len(df), dtype="float32")
+    predicted_xgb = np.empty(len(df), dtype="float32")
 
-    df = df.copy()
-    df["predicted_glm"] = glm_result.predict(X_glm, offset=df["log_offset"].fillna(0))
-    df["predicted_xgb"] = xgb_model.predict(
-        df[xgb_features].fillna(0).astype("float32"),
-        base_margin=df["log_offset"].fillna(0).astype("float32").values,
-    )
+    def _build_glm_design(chunk: pd.DataFrame) -> pd.DataFrame:
+        glm_feature_data = {}
+        for feature in glm_features:
+            if feature in chunk.columns:
+                glm_feature_data[feature] = chunk[feature]
+            elif feature in imputed_features:
+                raw_col, median_val = imputed_features[feature]
+                glm_feature_data[feature] = chunk[raw_col].fillna(median_val)
+            elif feature in missing_features:
+                raw_col = missing_features[feature]
+                glm_feature_data[feature] = chunk[raw_col].isna().astype("int8")
+            elif feature.endswith("_imputed") and feature[: -len("_imputed")] in chunk.columns:
+                raw_col = feature[: -len("_imputed")]
+                glm_feature_data[feature] = chunk[raw_col].fillna(chunk[raw_col].median())
+            elif feature.endswith("_missing") and feature[: -len("_missing")] in chunk.columns:
+                raw_col = feature[: -len("_missing")]
+                glm_feature_data[feature] = chunk[raw_col].isna().astype("int8")
+            else:
+                raise KeyError(f"GLM feature {feature!r} cannot be built for scoring")
+
+        X_glm = pd.DataFrame(glm_feature_data, index=chunk.index).fillna(0).astype("float32")
+        if "const" not in X_glm.columns:
+            X_glm.insert(0, "const", np.float32(1.0))
+        return X_glm
+
+    for start in range(0, len(df), SCORE_CHUNK_ROWS):
+        end = min(start + SCORE_CHUNK_ROWS, len(df))
+        chunk = df.iloc[start:end]
+        X_glm = _build_glm_design(chunk)
+        glm_pred = glm_result.predict(
+            X_glm,
+            offset=chunk["log_offset"].fillna(0).astype("float32"),
+        )
+        predicted_glm[start:end] = np.asarray(glm_pred, dtype="float32")
+        del X_glm
+
+        X_xgb = chunk[xgb_features].fillna(0).astype("float32")
+        predicted_xgb[start:end] = xgb_model.predict(
+            X_xgb,
+            base_margin=chunk["log_offset"].fillna(0).astype("float32").values,
+        ).astype("float32", copy=False)
+        del X_xgb
+
+    df["predicted_glm"] = predicted_glm
+    df["predicted_xgb"] = predicted_xgb
 
     # Pool to one row per link
     pool_agg = {
