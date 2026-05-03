@@ -8,8 +8,8 @@ format:
     page-layout: full
 ---
 
-**Date:** April 2026  
-**Status:** Refreshed against the current Stage 2 artefacts on 24 April 2026.  
+**Date:** May 2026  
+**Status:** Refreshed against the current post-fix Stage 2 artefacts, including the completed temporal-ablation run.  
 **Canonical metrics source:** `data/models/collision_metrics.json`
 
 ---
@@ -73,10 +73,10 @@ features.
 
 | Metric | Value |
 |---|---|
-| Pseudo-R² | 0.3013 (in-sample on downsampled training set) |
-| Deviance | 1,376,539 |
-| Null deviance | 1,970,118 |
-| AIC | 2,126,878 |
+| Pseudo-R² | 0.3472 (in-sample on downsampled training set) |
+| Deviance | 1,423,147 |
+| Null deviance | 2,180,048 |
+| AIC | 2,237,488 |
 | Converged | Yes |
 
 ### XGBoost — Poisson with base_margin offset
@@ -129,10 +129,10 @@ currently in the trained feature list.
 
 | Metric | Value |
 |---|---|
-| Pseudo-R² | 0.8575 (out-of-sample, held-out test set) |
-| Test deviance | 104,503 |
+| Pseudo-R² | 0.3235 mean across 5 post-fix seeds with temporal features included (range 0.3214-0.3265) |
+| Test deviance | 497,289 mean across 5 post-fix seeds |
 
-**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, and tiered speed-limit imputation; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.
+**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap should not be read as a clean model horse race — the two metrics are not computed on a common evaluation set or against a common null model. Earlier docs cited XGBoost pseudo-R² around `0.86`, but that number came from a pre-fix evaluation surface that was later superseded after a Stage 2 leakage diagnosis. For current project positioning, use the post-fix `~0.32` baseline instead.
 
 ### Output
 

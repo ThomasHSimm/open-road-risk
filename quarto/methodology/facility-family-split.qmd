@@ -460,12 +460,12 @@ Use the existing global baseline from `reports/rank_stability.md`:
 
 | Metric | Current global result |
 |---|---:|
-| pseudo-R2 mean across 5 seeds | 0.859041 |
-| pseudo-R2 std across 5 seeds | 0.001411 |
-| top-1% Jaccard mean | 0.918494 |
-| top-1% Jaccard min | 0.907843 |
-| Spearman mean | 0.998106 |
-| Spearman min | 0.997841 |
+| pseudo-R2 mean across 5 seeds | 0.323498 |
+| pseudo-R2 std across 5 seeds | 0.002678 |
+| top-1% Jaccard mean | 0.903575 |
+| top-1% Jaccard min | 0.896574 |
+| Spearman mean | 0.999140 |
+| Spearman min | 0.999069 |
 
 Adoption criterion: recommend the per-family approach if either:
 
@@ -520,8 +520,9 @@ v1 residuals show form-of-way patterning.
 
 ### 7.6 GLM unchanged, XGBoost-only split
 
-Per-family GLM is not implemented in v1. The current global GLM, with pseudo-R2
-around 0.251 after speed-limit imputation, remains a diagnostic baseline.
+Per-family GLM is not implemented in v1. The current global GLM remains a
+diagnostic baseline; its later post-grade/post-fix run sits around pseudo-R²
+0.347 on the downsampled in-sample GLM surface.
 Per-family GLM is a v2 extension if interpretability by family becomes
 important.
 
@@ -548,8 +549,8 @@ These are hypotheses to compare against v1 results, not pass/fail thresholds.
 
 | Outcome | Pre-run expectation |
 |---|---|
-| Headline pseudo-R2 | approximately unchanged around 0.86, or slightly improved |
-| Stitched top-1% 5-seed Jaccard | approximately unchanged or marginally improved relative to current 0.918 |
+| Headline pseudo-R2 | approximately unchanged around 0.32, or slightly improved |
+| Stitched top-1% 5-seed Jaccard | approximately unchanged or marginally improved relative to current 0.904 |
 | Motorway mean residual | significantly closer to zero than the current global mean residual around -3.3 |
 | Other-Urban / Other-Rural metrics | roughly comparable to global, because the global model already has many relevant signals |
 | Family-boundary discontinuity | some discontinuity is likely; small is acceptable, large is a warning against stitched ranking adoption |

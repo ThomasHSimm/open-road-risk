@@ -1,5 +1,20 @@
 ## ✅ Done
 
+- [x] Temporal features evaluation completed (3 May 2026) — Step 0 band relabelling,
+      weekday/weekend and seasonal variation checks, HGV variation check, leakage
+      geometry check, feature-overlap prep, post-fix rank-stability rerun, and
+      5-seed temporal ablation all complete. Pre-registered verdict: both
+      `core_overnight_ratio` and WebTRIS HGV% are real but below threshold for
+      production adoption. `reports/temporal_findings.md`,
+      `docs/internal/temporal_changes_plan.md`, and
+      `reports/supporting/temporal_ablation_summary.md` are the canonical write-ups.
+- [x] `hgv_proportion` source-table/grain bug found and fixed (3 May 2026) —
+      AADF traffic features were reaching Stage 2 only through
+      `road_link_annual`, making HGV coverage collision-history-dependent.
+      Stage 2 now joins persisted all-link traffic features separately.
+      Important consequence: the honest post-fix XGBoost baseline is about
+      pseudo-R² 0.323 across five seeds, replacing the older leaky `~0.86`
+      headline used in earlier docs.
 - [x] STATS19 ingestion (102,361 Yorkshire collisions 2015–2024, forces 12/13/14/16)
 - [x] AADF ingestion (5,260 rows, 2019/2021/2023)
 - [x] WebTRIS ingestion (6,516 site × year rows)
@@ -137,4 +152,3 @@
       hyperparameter reduction / partial pooling with trunk-A; per-family EB k; network
       topology features. See `reports/family_validation.md`,
       `quarto/methodology/facility-family-split.qmd §11`.
-

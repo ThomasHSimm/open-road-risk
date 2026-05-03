@@ -267,10 +267,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../future-work.html"> 
 <span class="menu-text">Future Work</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../api-reference/index.html"> 
-<span class="menu-text">API Reference</span></a>
-  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -832,27 +828,27 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>pseudo-R2 mean across 5 seeds</td>
-<td style="text-align: right;">0.859041</td>
+<td style="text-align: right;">0.323498</td>
 </tr>
 <tr class="even">
 <td>pseudo-R2 std across 5 seeds</td>
-<td style="text-align: right;">0.001411</td>
+<td style="text-align: right;">0.002678</td>
 </tr>
 <tr class="odd">
 <td>top-1% Jaccard mean</td>
-<td style="text-align: right;">0.918494</td>
+<td style="text-align: right;">0.903575</td>
 </tr>
 <tr class="even">
 <td>top-1% Jaccard min</td>
-<td style="text-align: right;">0.907843</td>
+<td style="text-align: right;">0.896574</td>
 </tr>
 <tr class="odd">
 <td>Spearman mean</td>
-<td style="text-align: right;">0.998106</td>
+<td style="text-align: right;">0.999140</td>
 </tr>
 <tr class="even">
 <td>Spearman min</td>
-<td style="text-align: right;">0.997841</td>
+<td style="text-align: right;">0.999069</td>
 </tr>
 </tbody>
 </table>
@@ -889,7 +885,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </section>
 <section id="glm-unchanged-xgboost-only-split" class="level3">
 <h3 class="anchored" data-anchor-id="glm-unchanged-xgboost-only-split">7.6 GLM unchanged, XGBoost-only split</h3>
-<p>Per-family GLM is not implemented in v1. The current global GLM, with pseudo-R2 around 0.251 after speed-limit imputation, remains a diagnostic baseline. Per-family GLM is a v2 extension if interpretability by family becomes important.</p>
+<p>Per-family GLM is not implemented in v1. The current global GLM remains a diagnostic baseline; its later post-grade/post-fix run sits around pseudo-R² 0.347 on the downsampled in-sample GLM surface. Per-family GLM is a v2 extension if interpretability by family becomes important.</p>
 <hr>
 </section>
 </section>
@@ -924,11 +920,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Headline pseudo-R2</td>
-<td>approximately unchanged around 0.86, or slightly improved</td>
+<td>approximately unchanged around 0.32, or slightly improved</td>
 </tr>
 <tr class="even">
 <td>Stitched top-1% 5-seed Jaccard</td>
-<td>approximately unchanged or marginally improved relative to current 0.918</td>
+<td>approximately unchanged or marginally improved relative to current 0.904</td>
 </tr>
 <tr class="odd">
 <td>Motorway mean residual</td>
@@ -1901,12 +1897,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb7-460"><a href="#cb7-460" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-461"><a href="#cb7-461" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Metric <span class="pp">|</span> Current global result <span class="pp">|</span></span>
 <span id="cb7-462"><a href="#cb7-462" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---:|</span></span>
-<span id="cb7-463"><a href="#cb7-463" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> pseudo-R2 mean across 5 seeds <span class="pp">|</span> 0.859041 <span class="pp">|</span></span>
-<span id="cb7-464"><a href="#cb7-464" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> pseudo-R2 std across 5 seeds <span class="pp">|</span> 0.001411 <span class="pp">|</span></span>
-<span id="cb7-465"><a href="#cb7-465" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> top-1% Jaccard mean <span class="pp">|</span> 0.918494 <span class="pp">|</span></span>
-<span id="cb7-466"><a href="#cb7-466" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> top-1% Jaccard min <span class="pp">|</span> 0.907843 <span class="pp">|</span></span>
-<span id="cb7-467"><a href="#cb7-467" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Spearman mean <span class="pp">|</span> 0.998106 <span class="pp">|</span></span>
-<span id="cb7-468"><a href="#cb7-468" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Spearman min <span class="pp">|</span> 0.997841 <span class="pp">|</span></span>
+<span id="cb7-463"><a href="#cb7-463" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> pseudo-R2 mean across 5 seeds <span class="pp">|</span> 0.323498 <span class="pp">|</span></span>
+<span id="cb7-464"><a href="#cb7-464" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> pseudo-R2 std across 5 seeds <span class="pp">|</span> 0.002678 <span class="pp">|</span></span>
+<span id="cb7-465"><a href="#cb7-465" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> top-1% Jaccard mean <span class="pp">|</span> 0.903575 <span class="pp">|</span></span>
+<span id="cb7-466"><a href="#cb7-466" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> top-1% Jaccard min <span class="pp">|</span> 0.896574 <span class="pp">|</span></span>
+<span id="cb7-467"><a href="#cb7-467" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Spearman mean <span class="pp">|</span> 0.999140 <span class="pp">|</span></span>
+<span id="cb7-468"><a href="#cb7-468" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Spearman min <span class="pp">|</span> 0.999069 <span class="pp">|</span></span>
 <span id="cb7-469"><a href="#cb7-469" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-470"><a href="#cb7-470" aria-hidden="true" tabindex="-1"></a>Adoption criterion: recommend the per-family approach if either:</span>
 <span id="cb7-471"><a href="#cb7-471" aria-hidden="true" tabindex="-1"></a></span>
@@ -1961,121 +1957,122 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb7-520"><a href="#cb7-520" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-521"><a href="#cb7-521" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7.6 GLM unchanged, XGBoost-only split</span></span>
 <span id="cb7-522"><a href="#cb7-522" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-523"><a href="#cb7-523" aria-hidden="true" tabindex="-1"></a>Per-family GLM is not implemented in v1. The current global GLM, with pseudo-R2</span>
-<span id="cb7-524"><a href="#cb7-524" aria-hidden="true" tabindex="-1"></a>around 0.251 after speed-limit imputation, remains a diagnostic baseline.</span>
-<span id="cb7-525"><a href="#cb7-525" aria-hidden="true" tabindex="-1"></a>Per-family GLM is a v2 extension if interpretability by family becomes</span>
-<span id="cb7-526"><a href="#cb7-526" aria-hidden="true" tabindex="-1"></a>important.</span>
-<span id="cb7-527"><a href="#cb7-527" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-528"><a href="#cb7-528" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb7-529"><a href="#cb7-529" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-530"><a href="#cb7-530" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. Out of scope for v1</span></span>
-<span id="cb7-531"><a href="#cb7-531" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-532"><a href="#cb7-532" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hyperparameter tuning per family.</span>
-<span id="cb7-533"><a href="#cb7-533" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family feature pruning.</span>
-<span id="cb7-534"><a href="#cb7-534" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family EB k.</span>
-<span id="cb7-535"><a href="#cb7-535" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hierarchical or partial-pooling models.</span>
-<span id="cb7-536"><a href="#cb7-536" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Roundabout or intersection family.</span>
-<span id="cb7-537"><a href="#cb7-537" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family GLM.</span>
-<span id="cb7-538"><a href="#cb7-538" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>NHNM integration.</span>
-<span id="cb7-539"><a href="#cb7-539" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-540"><a href="#cb7-540" aria-hidden="true" tabindex="-1"></a>NHNM integration depends on this work landing first and should remain a</span>
-<span id="cb7-541"><a href="#cb7-541" aria-hidden="true" tabindex="-1"></a>separate later design.</span>
-<span id="cb7-542"><a href="#cb7-542" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-543"><a href="#cb7-543" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb7-544"><a href="#cb7-544" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-545"><a href="#cb7-545" aria-hidden="true" tabindex="-1"></a><span class="fu">## 9. Expected outcomes</span></span>
-<span id="cb7-546"><a href="#cb7-546" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-547"><a href="#cb7-547" aria-hidden="true" tabindex="-1"></a>These are hypotheses to compare against v1 results, not pass/fail thresholds.</span>
-<span id="cb7-548"><a href="#cb7-548" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-549"><a href="#cb7-549" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Outcome <span class="pp">|</span> Pre-run expectation <span class="pp">|</span></span>
-<span id="cb7-550"><a href="#cb7-550" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb7-551"><a href="#cb7-551" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Headline pseudo-R2 <span class="pp">|</span> approximately unchanged around 0.86, or slightly improved <span class="pp">|</span></span>
-<span id="cb7-552"><a href="#cb7-552" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Stitched top-1% 5-seed Jaccard <span class="pp">|</span> approximately unchanged or marginally improved relative to current 0.918 <span class="pp">|</span></span>
-<span id="cb7-553"><a href="#cb7-553" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Motorway mean residual <span class="pp">|</span> significantly closer to zero than the current global mean residual around -3.3 <span class="pp">|</span></span>
-<span id="cb7-554"><a href="#cb7-554" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Other-Urban / Other-Rural metrics <span class="pp">|</span> roughly comparable to global, because the global model already has many relevant signals <span class="pp">|</span></span>
-<span id="cb7-555"><a href="#cb7-555" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Family-boundary discontinuity <span class="pp">|</span> some discontinuity is likely; small is acceptable, large is a warning against stitched ranking adoption <span class="pp">|</span></span>
-<span id="cb7-556"><a href="#cb7-556" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-557"><a href="#cb7-557" aria-hidden="true" tabindex="-1"></a>The most valuable positive result would be not just a higher headline pseudo-R2,</span>
-<span id="cb7-558"><a href="#cb7-558" aria-hidden="true" tabindex="-1"></a>but clearer family-specific calibration and residual behaviour.</span>
-<span id="cb7-559"><a href="#cb7-559" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-560"><a href="#cb7-560" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb7-561"><a href="#cb7-561" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-562"><a href="#cb7-562" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Implementation status</span></span>
-<span id="cb7-563"><a href="#cb7-563" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-564"><a href="#cb7-564" aria-hidden="true" tabindex="-1"></a>**Sessions 1 &amp; 2 (Complete - April 25, 2026):**</span>
-<span id="cb7-565"><a href="#cb7-565" aria-hidden="true" tabindex="-1"></a>The network was successfully split into Motorway (4,084 links), Trunk A, Other-Urban, and Other-Rural based on ONS RUC and road function. </span>
-<span id="cb7-566"><a href="#cb7-566" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Result:** Stitched all-links pseudo-R² improved to **0.895** vs the global **0.888**.</span>
-<span id="cb7-567"><a href="#cb7-567" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Artefact:** <span class="in">`risk_scores_family.parquet`</span> was generated successfully alongside the production scores.</span>
-<span id="cb7-568"><a href="#cb7-568" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Diagnostics:** Full validation available in <span class="in">`reports/family_validation.md`</span>.</span>
-<span id="cb7-569"><a href="#cb7-569" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-570"><a href="#cb7-570" aria-hidden="true" tabindex="-1"></a>**Session 3 and 4: Deferred.** Adoption decision reached from single-seed evidence (see §11).</span>
-<span id="cb7-571"><a href="#cb7-571" aria-hidden="true" tabindex="-1"></a>Session 3 (5-seed harness) would confirm the motorway reversal at multi-seed grain, but is</span>
-<span id="cb7-572"><a href="#cb7-572" aria-hidden="true" tabindex="-1"></a>deferred pending v2 redesign rather than running on the v1 specification.</span>
-<span id="cb7-573"><a href="#cb7-573" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-574"><a href="#cb7-574" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb7-575"><a href="#cb7-575" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-576"><a href="#cb7-576" aria-hidden="true" tabindex="-1"></a><span class="fu">## 11. Session 1–2 conclusions</span></span>
-<span id="cb7-577"><a href="#cb7-577" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-578"><a href="#cb7-578" aria-hidden="true" tabindex="-1"></a>Sessions 1 and 2 produced single-seed evidence on the per-family approach. Session 3</span>
-<span id="cb7-579"><a href="#cb7-579" aria-hidden="true" tabindex="-1"></a>(5-seed harness) was deferred pending v2 design.</span>
-<span id="cb7-580"><a href="#cb7-580" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-581"><a href="#cb7-581" aria-hidden="true" tabindex="-1"></a><span class="fu">### Findings</span></span>
-<span id="cb7-582"><a href="#cb7-582" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-583"><a href="#cb7-583" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stitched ranking is calibration-clean.** Largest adjacent different-family</span>
-<span id="cb7-584"><a href="#cb7-584" aria-hidden="true" tabindex="-1"></a>  predicted-value gap is 0.0047 across all family pairs at top-1%, top-1000, and</span>
-<span id="cb7-585"><a href="#cb7-585" aria-hidden="true" tabindex="-1"></a>  top-10000 thresholds. The stitching itself is operationally sound.</span>
-<span id="cb7-586"><a href="#cb7-586" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-587"><a href="#cb7-587" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorway calibration improvement is robust.** Per-family motorway mean residual</span>
-<span id="cb7-588"><a href="#cb7-588" aria-hidden="true" tabindex="-1"></a>  is +0.13, vs the global model's known −3.3 under-prediction. This is the design</span>
-<span id="cb7-589"><a href="#cb7-589" aria-hidden="true" tabindex="-1"></a>  doc's primary v1 hypothesis and is supported.</span>
-<span id="cb7-590"><a href="#cb7-590" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-591"><a href="#cb7-591" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Held-out pseudo-R² is essentially unchanged on three of four families.**</span>
-<span id="cb7-592"><a href="#cb7-592" aria-hidden="true" tabindex="-1"></a>  Apples-to-apples held-out link-year deltas: trunk_a +0.006, other_urban +0.001,</span>
-<span id="cb7-593"><a href="#cb7-593" aria-hidden="true" tabindex="-1"></a>  other_rural +0.002. All within seed-noise of zero. The all-data gains in</span>
-<span id="cb7-594"><a href="#cb7-594" aria-hidden="true" tabindex="-1"></a>  <span class="in">`reports/family_validation.md §6.2.1`</span> were partly training-set fit, not held-out</span>
-<span id="cb7-595"><a href="#cb7-595" aria-hidden="true" tabindex="-1"></a>  generalisation.</span>
-<span id="cb7-596"><a href="#cb7-596" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-597"><a href="#cb7-597" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorway pseudo-R² reverses on held-out.** All-data delta +0.052 vs held-out</span>
-<span id="cb7-598"><a href="#cb7-598" aria-hidden="true" tabindex="-1"></a>  delta −0.027. The per-family motorway model overfits its small training set</span>
-<span id="cb7-599"><a href="#cb7-599" aria-hidden="true" tabindex="-1"></a>  (~4k links). This is consistent with the §3.1 flag that n_estimators=500 may be</span>
-<span id="cb7-600"><a href="#cb7-600" aria-hidden="true" tabindex="-1"></a>  too much capacity at motorway scale.</span>
-<span id="cb7-601"><a href="#cb7-601" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-602"><a href="#cb7-602" aria-hidden="true" tabindex="-1"></a><span class="fu">### Adoption</span></span>
-<span id="cb7-603"><a href="#cb7-603" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-604"><a href="#cb7-604" aria-hidden="true" tabindex="-1"></a>Do not adopt v1 stitched ranking as a replacement for global <span class="in">`risk_percentile`</span>. The</span>
-<span id="cb7-605"><a href="#cb7-605" aria-hidden="true" tabindex="-1"></a>held-out evidence does not support a meaningful generalisation gain, and the motorway</span>
-<span id="cb7-606"><a href="#cb7-606" aria-hidden="true" tabindex="-1"></a>pseudo-R² reversal is a genuine concern.</span>
-<span id="cb7-607"><a href="#cb7-607" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-608"><a href="#cb7-608" aria-hidden="true" tabindex="-1"></a>The motorway calibration improvement is methodologically interesting and motivates v2</span>
-<span id="cb7-609"><a href="#cb7-609" aria-hidden="true" tabindex="-1"></a>work. The per-family approach is documented as evaluated, with v1 outputs available</span>
-<span id="cb7-610"><a href="#cb7-610" aria-hidden="true" tabindex="-1"></a>diagnostically in <span class="in">`data/models/risk_scores_family.parquet`</span>.</span>
-<span id="cb7-611"><a href="#cb7-611" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-612"><a href="#cb7-612" aria-hidden="true" tabindex="-1"></a><span class="fu">### v2 design questions (deferred)</span></span>
-<span id="cb7-613"><a href="#cb7-613" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-614"><a href="#cb7-614" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorway hyperparameters.** n_estimators=500 is plausibly too large for a 4k-link</span>
-<span id="cb7-615"><a href="#cb7-615" aria-hidden="true" tabindex="-1"></a>  family. v2 candidates: reduced n_estimators (e.g. 100–200), early stopping with</span>
-<span id="cb7-616"><a href="#cb7-616" aria-hidden="true" tabindex="-1"></a>  held-out validation, or partial pooling.</span>
-<span id="cb7-617"><a href="#cb7-617" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-618"><a href="#cb7-618" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Network expansion.** Going from N+C England (~4k motorway links) to all-GB (~6k)</span>
-<span id="cb7-619"><a href="#cb7-619" aria-hidden="true" tabindex="-1"></a>  may reduce overfitting risk. Necessary but probably not sufficient: the held-out</span>
-<span id="cb7-620"><a href="#cb7-620" aria-hidden="true" tabindex="-1"></a>  near-zero deltas on the other three families suggest the gain mechanism is not</span>
-<span id="cb7-621"><a href="#cb7-621" aria-hidden="true" tabindex="-1"></a>  simply "more data per family."</span>
-<span id="cb7-622"><a href="#cb7-622" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-623"><a href="#cb7-623" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Partial pooling.** Motorway and trunk-A could be pooled into a single "high-spec"</span>
-<span id="cb7-624"><a href="#cb7-624" aria-hidden="true" tabindex="-1"></a>  family with shared structure. This would preserve the calibration improvement on</span>
-<span id="cb7-625"><a href="#cb7-625" aria-hidden="true" tabindex="-1"></a>  motorway while increasing training data and reducing overfitting risk.</span>
-<span id="cb7-626"><a href="#cb7-626" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-627"><a href="#cb7-627" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Per-family EB k.** The v1-to-v2 progression flagged in §7.4 still applies.</span>
-<span id="cb7-628"><a href="#cb7-628" aria-hidden="true" tabindex="-1"></a>  Coherent with per-family modelling but requires the mean-model change to land first.</span>
-<span id="cb7-629"><a href="#cb7-629" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-630"><a href="#cb7-630" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Network topology features.** None of the v1 work addressed the underlying feature</span>
-<span id="cb7-631"><a href="#cb7-631" aria-hidden="true" tabindex="-1"></a>  gap (curvature, gradient, junction type/density beyond what is in <span class="in">`form_of_way`</span>).</span>
-<span id="cb7-632"><a href="#cb7-632" aria-hidden="true" tabindex="-1"></a>  Per-family modelling without new features may be hitting an information ceiling on</span>
-<span id="cb7-633"><a href="#cb7-633" aria-hidden="true" tabindex="-1"></a>  what existing features can predict.</span>
-<span id="cb7-634"><a href="#cb7-634" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-635"><a href="#cb7-635" aria-hidden="true" tabindex="-1"></a>Session 3 (§6.4) remains specified. It would confirm or refute the single-seed</span>
-<span id="cb7-636"><a href="#cb7-636" aria-hidden="true" tabindex="-1"></a>reversal at multi-seed grain. Deferred pending v2 redesign rather than running on</span>
-<span id="cb7-637"><a href="#cb7-637" aria-hidden="true" tabindex="-1"></a>the v1 specification.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb7-523"><a href="#cb7-523" aria-hidden="true" tabindex="-1"></a>Per-family GLM is not implemented in v1. The current global GLM remains a</span>
+<span id="cb7-524"><a href="#cb7-524" aria-hidden="true" tabindex="-1"></a>diagnostic baseline; its later post-grade/post-fix run sits around pseudo-R²</span>
+<span id="cb7-525"><a href="#cb7-525" aria-hidden="true" tabindex="-1"></a>0.347 on the downsampled in-sample GLM surface.</span>
+<span id="cb7-526"><a href="#cb7-526" aria-hidden="true" tabindex="-1"></a>Per-family GLM is a v2 extension if interpretability by family becomes</span>
+<span id="cb7-527"><a href="#cb7-527" aria-hidden="true" tabindex="-1"></a>important.</span>
+<span id="cb7-528"><a href="#cb7-528" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-529"><a href="#cb7-529" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-530"><a href="#cb7-530" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-531"><a href="#cb7-531" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. Out of scope for v1</span></span>
+<span id="cb7-532"><a href="#cb7-532" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-533"><a href="#cb7-533" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hyperparameter tuning per family.</span>
+<span id="cb7-534"><a href="#cb7-534" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family feature pruning.</span>
+<span id="cb7-535"><a href="#cb7-535" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family EB k.</span>
+<span id="cb7-536"><a href="#cb7-536" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hierarchical or partial-pooling models.</span>
+<span id="cb7-537"><a href="#cb7-537" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Roundabout or intersection family.</span>
+<span id="cb7-538"><a href="#cb7-538" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Per-family GLM.</span>
+<span id="cb7-539"><a href="#cb7-539" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>NHNM integration.</span>
+<span id="cb7-540"><a href="#cb7-540" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-541"><a href="#cb7-541" aria-hidden="true" tabindex="-1"></a>NHNM integration depends on this work landing first and should remain a</span>
+<span id="cb7-542"><a href="#cb7-542" aria-hidden="true" tabindex="-1"></a>separate later design.</span>
+<span id="cb7-543"><a href="#cb7-543" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-544"><a href="#cb7-544" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-545"><a href="#cb7-545" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-546"><a href="#cb7-546" aria-hidden="true" tabindex="-1"></a><span class="fu">## 9. Expected outcomes</span></span>
+<span id="cb7-547"><a href="#cb7-547" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-548"><a href="#cb7-548" aria-hidden="true" tabindex="-1"></a>These are hypotheses to compare against v1 results, not pass/fail thresholds.</span>
+<span id="cb7-549"><a href="#cb7-549" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-550"><a href="#cb7-550" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Outcome <span class="pp">|</span> Pre-run expectation <span class="pp">|</span></span>
+<span id="cb7-551"><a href="#cb7-551" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb7-552"><a href="#cb7-552" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Headline pseudo-R2 <span class="pp">|</span> approximately unchanged around 0.32, or slightly improved <span class="pp">|</span></span>
+<span id="cb7-553"><a href="#cb7-553" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Stitched top-1% 5-seed Jaccard <span class="pp">|</span> approximately unchanged or marginally improved relative to current 0.904 <span class="pp">|</span></span>
+<span id="cb7-554"><a href="#cb7-554" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Motorway mean residual <span class="pp">|</span> significantly closer to zero than the current global mean residual around -3.3 <span class="pp">|</span></span>
+<span id="cb7-555"><a href="#cb7-555" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Other-Urban / Other-Rural metrics <span class="pp">|</span> roughly comparable to global, because the global model already has many relevant signals <span class="pp">|</span></span>
+<span id="cb7-556"><a href="#cb7-556" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Family-boundary discontinuity <span class="pp">|</span> some discontinuity is likely; small is acceptable, large is a warning against stitched ranking adoption <span class="pp">|</span></span>
+<span id="cb7-557"><a href="#cb7-557" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-558"><a href="#cb7-558" aria-hidden="true" tabindex="-1"></a>The most valuable positive result would be not just a higher headline pseudo-R2,</span>
+<span id="cb7-559"><a href="#cb7-559" aria-hidden="true" tabindex="-1"></a>but clearer family-specific calibration and residual behaviour.</span>
+<span id="cb7-560"><a href="#cb7-560" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-561"><a href="#cb7-561" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-562"><a href="#cb7-562" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-563"><a href="#cb7-563" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Implementation status</span></span>
+<span id="cb7-564"><a href="#cb7-564" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-565"><a href="#cb7-565" aria-hidden="true" tabindex="-1"></a>**Sessions 1 &amp; 2 (Complete - April 25, 2026):**</span>
+<span id="cb7-566"><a href="#cb7-566" aria-hidden="true" tabindex="-1"></a>The network was successfully split into Motorway (4,084 links), Trunk A, Other-Urban, and Other-Rural based on ONS RUC and road function. </span>
+<span id="cb7-567"><a href="#cb7-567" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Result:** Stitched all-links pseudo-R² improved to **0.895** vs the global **0.888**.</span>
+<span id="cb7-568"><a href="#cb7-568" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Artefact:** <span class="in">`risk_scores_family.parquet`</span> was generated successfully alongside the production scores.</span>
+<span id="cb7-569"><a href="#cb7-569" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>**Diagnostics:** Full validation available in <span class="in">`reports/family_validation.md`</span>.</span>
+<span id="cb7-570"><a href="#cb7-570" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-571"><a href="#cb7-571" aria-hidden="true" tabindex="-1"></a>**Session 3 and 4: Deferred.** Adoption decision reached from single-seed evidence (see §11).</span>
+<span id="cb7-572"><a href="#cb7-572" aria-hidden="true" tabindex="-1"></a>Session 3 (5-seed harness) would confirm the motorway reversal at multi-seed grain, but is</span>
+<span id="cb7-573"><a href="#cb7-573" aria-hidden="true" tabindex="-1"></a>deferred pending v2 redesign rather than running on the v1 specification.</span>
+<span id="cb7-574"><a href="#cb7-574" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-575"><a href="#cb7-575" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-576"><a href="#cb7-576" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-577"><a href="#cb7-577" aria-hidden="true" tabindex="-1"></a><span class="fu">## 11. Session 1–2 conclusions</span></span>
+<span id="cb7-578"><a href="#cb7-578" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-579"><a href="#cb7-579" aria-hidden="true" tabindex="-1"></a>Sessions 1 and 2 produced single-seed evidence on the per-family approach. Session 3</span>
+<span id="cb7-580"><a href="#cb7-580" aria-hidden="true" tabindex="-1"></a>(5-seed harness) was deferred pending v2 design.</span>
+<span id="cb7-581"><a href="#cb7-581" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-582"><a href="#cb7-582" aria-hidden="true" tabindex="-1"></a><span class="fu">### Findings</span></span>
+<span id="cb7-583"><a href="#cb7-583" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-584"><a href="#cb7-584" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stitched ranking is calibration-clean.** Largest adjacent different-family</span>
+<span id="cb7-585"><a href="#cb7-585" aria-hidden="true" tabindex="-1"></a>  predicted-value gap is 0.0047 across all family pairs at top-1%, top-1000, and</span>
+<span id="cb7-586"><a href="#cb7-586" aria-hidden="true" tabindex="-1"></a>  top-10000 thresholds. The stitching itself is operationally sound.</span>
+<span id="cb7-587"><a href="#cb7-587" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-588"><a href="#cb7-588" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorway calibration improvement is robust.** Per-family motorway mean residual</span>
+<span id="cb7-589"><a href="#cb7-589" aria-hidden="true" tabindex="-1"></a>  is +0.13, vs the global model's known −3.3 under-prediction. This is the design</span>
+<span id="cb7-590"><a href="#cb7-590" aria-hidden="true" tabindex="-1"></a>  doc's primary v1 hypothesis and is supported.</span>
+<span id="cb7-591"><a href="#cb7-591" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-592"><a href="#cb7-592" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Held-out pseudo-R² is essentially unchanged on three of four families.**</span>
+<span id="cb7-593"><a href="#cb7-593" aria-hidden="true" tabindex="-1"></a>  Apples-to-apples held-out link-year deltas: trunk_a +0.006, other_urban +0.001,</span>
+<span id="cb7-594"><a href="#cb7-594" aria-hidden="true" tabindex="-1"></a>  other_rural +0.002. All within seed-noise of zero. The all-data gains in</span>
+<span id="cb7-595"><a href="#cb7-595" aria-hidden="true" tabindex="-1"></a>  <span class="in">`reports/family_validation.md §6.2.1`</span> were partly training-set fit, not held-out</span>
+<span id="cb7-596"><a href="#cb7-596" aria-hidden="true" tabindex="-1"></a>  generalisation.</span>
+<span id="cb7-597"><a href="#cb7-597" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-598"><a href="#cb7-598" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorway pseudo-R² reverses on held-out.** All-data delta +0.052 vs held-out</span>
+<span id="cb7-599"><a href="#cb7-599" aria-hidden="true" tabindex="-1"></a>  delta −0.027. The per-family motorway model overfits its small training set</span>
+<span id="cb7-600"><a href="#cb7-600" aria-hidden="true" tabindex="-1"></a>  (~4k links). This is consistent with the §3.1 flag that n_estimators=500 may be</span>
+<span id="cb7-601"><a href="#cb7-601" aria-hidden="true" tabindex="-1"></a>  too much capacity at motorway scale.</span>
+<span id="cb7-602"><a href="#cb7-602" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-603"><a href="#cb7-603" aria-hidden="true" tabindex="-1"></a><span class="fu">### Adoption</span></span>
+<span id="cb7-604"><a href="#cb7-604" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-605"><a href="#cb7-605" aria-hidden="true" tabindex="-1"></a>Do not adopt v1 stitched ranking as a replacement for global <span class="in">`risk_percentile`</span>. The</span>
+<span id="cb7-606"><a href="#cb7-606" aria-hidden="true" tabindex="-1"></a>held-out evidence does not support a meaningful generalisation gain, and the motorway</span>
+<span id="cb7-607"><a href="#cb7-607" aria-hidden="true" tabindex="-1"></a>pseudo-R² reversal is a genuine concern.</span>
+<span id="cb7-608"><a href="#cb7-608" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-609"><a href="#cb7-609" aria-hidden="true" tabindex="-1"></a>The motorway calibration improvement is methodologically interesting and motivates v2</span>
+<span id="cb7-610"><a href="#cb7-610" aria-hidden="true" tabindex="-1"></a>work. The per-family approach is documented as evaluated, with v1 outputs available</span>
+<span id="cb7-611"><a href="#cb7-611" aria-hidden="true" tabindex="-1"></a>diagnostically in <span class="in">`data/models/risk_scores_family.parquet`</span>.</span>
+<span id="cb7-612"><a href="#cb7-612" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-613"><a href="#cb7-613" aria-hidden="true" tabindex="-1"></a><span class="fu">### v2 design questions (deferred)</span></span>
+<span id="cb7-614"><a href="#cb7-614" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-615"><a href="#cb7-615" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Motorway hyperparameters.** n_estimators=500 is plausibly too large for a 4k-link</span>
+<span id="cb7-616"><a href="#cb7-616" aria-hidden="true" tabindex="-1"></a>  family. v2 candidates: reduced n_estimators (e.g. 100–200), early stopping with</span>
+<span id="cb7-617"><a href="#cb7-617" aria-hidden="true" tabindex="-1"></a>  held-out validation, or partial pooling.</span>
+<span id="cb7-618"><a href="#cb7-618" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-619"><a href="#cb7-619" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Network expansion.** Going from N+C England (~4k motorway links) to all-GB (~6k)</span>
+<span id="cb7-620"><a href="#cb7-620" aria-hidden="true" tabindex="-1"></a>  may reduce overfitting risk. Necessary but probably not sufficient: the held-out</span>
+<span id="cb7-621"><a href="#cb7-621" aria-hidden="true" tabindex="-1"></a>  near-zero deltas on the other three families suggest the gain mechanism is not</span>
+<span id="cb7-622"><a href="#cb7-622" aria-hidden="true" tabindex="-1"></a>  simply "more data per family."</span>
+<span id="cb7-623"><a href="#cb7-623" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-624"><a href="#cb7-624" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Partial pooling.** Motorway and trunk-A could be pooled into a single "high-spec"</span>
+<span id="cb7-625"><a href="#cb7-625" aria-hidden="true" tabindex="-1"></a>  family with shared structure. This would preserve the calibration improvement on</span>
+<span id="cb7-626"><a href="#cb7-626" aria-hidden="true" tabindex="-1"></a>  motorway while increasing training data and reducing overfitting risk.</span>
+<span id="cb7-627"><a href="#cb7-627" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-628"><a href="#cb7-628" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Per-family EB k.** The v1-to-v2 progression flagged in §7.4 still applies.</span>
+<span id="cb7-629"><a href="#cb7-629" aria-hidden="true" tabindex="-1"></a>  Coherent with per-family modelling but requires the mean-model change to land first.</span>
+<span id="cb7-630"><a href="#cb7-630" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-631"><a href="#cb7-631" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Network topology features.** None of the v1 work addressed the underlying feature</span>
+<span id="cb7-632"><a href="#cb7-632" aria-hidden="true" tabindex="-1"></a>  gap (curvature, gradient, junction type/density beyond what is in <span class="in">`form_of_way`</span>).</span>
+<span id="cb7-633"><a href="#cb7-633" aria-hidden="true" tabindex="-1"></a>  Per-family modelling without new features may be hitting an information ceiling on</span>
+<span id="cb7-634"><a href="#cb7-634" aria-hidden="true" tabindex="-1"></a>  what existing features can predict.</span>
+<span id="cb7-635"><a href="#cb7-635" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-636"><a href="#cb7-636" aria-hidden="true" tabindex="-1"></a>Session 3 (§6.4) remains specified. It would confirm or refute the single-seed</span>
+<span id="cb7-637"><a href="#cb7-637" aria-hidden="true" tabindex="-1"></a>reversal at multi-seed grain. Deferred pending v2 redesign rather than running on</span>
+<span id="cb7-638"><a href="#cb7-638" aria-hidden="true" tabindex="-1"></a>the v1 specification.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

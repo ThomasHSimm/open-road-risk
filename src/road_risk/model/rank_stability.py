@@ -104,6 +104,16 @@ def _load_existing_glm_and_features(df: pd.DataFrame) -> tuple[Any, list[str], d
                     median_val,
                 )
                 continue
+        if feature.endswith("_missing"):
+            source = feature.removesuffix("_missing")
+            if source in df.columns:
+                df[feature] = df[source].isna().astype("int8")
+                logger.info(
+                    "  Recreated GLM missingness feature %s from %s",
+                    feature,
+                    source,
+                )
+                continue
         raise KeyError(f"Required GLM feature missing from stability dataset: {feature}")
 
     return glm_result, glm_features, glm_summary

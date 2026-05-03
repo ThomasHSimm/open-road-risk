@@ -53,6 +53,7 @@ SCORE_CHUNK_ROWS = 1_000_000
 MODELS = _ROOT / cfg["paths"]["models"]
 OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads.parquet"
 RLA_PATH = _ROOT / cfg["paths"]["features"] / "road_link_annual.parquet"
+TRAFFIC_FEATURES_PATH = _ROOT / cfg["paths"]["features"] / "road_traffic_features.parquet"
 NET_PATH = _ROOT / cfg["paths"]["features"] / "network_features.parquet"
 AADT_PATH = MODELS / "aadt_estimates.parquet"
 
@@ -139,7 +140,6 @@ def build_collision_dataset(
         "serious_count",
         "slight_count",
         "casualty_count",
-        "hgv_proportion",
     ]
     excluded_post_event = sorted(FORBIDDEN_POST_EVENT_COLS & set(rla.columns))
     if excluded_post_event:
@@ -158,6 +158,37 @@ def build_collision_dataset(
         f"  Collisions joined: {n_with:,} link-years with ≥1 collision "
         f"({n_with / len(base):.2%} of all link-years)"
     )
+
+    # Join pre-collision traffic features from the all-link × year table.
+    # These must not be sourced from road_link_annual, which is collision-
+    # aggregate-first and therefore has no rows for zero-collision link-years.
+    if TRAFFIC_FEATURES_PATH.exists():
+        traffic_cols = ["link_id", "year", "hgv_proportion"]
+        traffic = pd.read_parquet(TRAFFIC_FEATURES_PATH, columns=traffic_cols)
+        if "hgv_proportion" in traffic.columns:
+            if traffic.duplicated(["link_id", "year"]).any():
+                raise RuntimeError("road_traffic_features.parquet has duplicate link_id/year rows")
+            before_rows = len(base)
+            base = base.merge(traffic, on=["link_id", "year"], how="left")
+            if len(base) != before_rows:
+                raise RuntimeError(
+                    "Traffic feature join changed Stage 2 row count; "
+                    "road_traffic_features must be unique by link_id/year"
+                )
+            n_hgv = base["hgv_proportion"].notna().sum()
+            logger.info(
+                f"  Traffic features joined: hgv_proportion present on "
+                f"{n_hgv:,} / {len(base):,} rows ({n_hgv / len(base):.1%})"
+            )
+        else:
+            logger.warning(
+                "  road_traffic_features.parquet has no hgv_proportion column — skipping"
+            )
+    else:
+        logger.warning(
+            "  road_traffic_features.parquet not found — hgv_proportion unavailable. "
+            "Run road_risk.clean_join.join to persist all-link traffic features."
+        )
 
     # Join AADT — every link should have an estimate after Stage 1a
     base = base.merge(aadt_estimates, on=["link_id", "year"], how="left")

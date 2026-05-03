@@ -18,7 +18,7 @@ Status of each module in the pipeline.
 | `features/legacy.py` | ✅ Done (legacy) | Deprecated — collision.py builds its own feature table. Self-deprecates on import. |
 | `model/aadt.py` | ✅ Done | Stage 1a AADT estimator (counted-only CV R² ~0.83), GroupKFold by count_point_id, applied to 2.1M links |
 | `model/timezone_profile.py` | ✅ Done | Stage 1b time-zone fractions (peak/pre-peak/off-peak), GroupKFold by site_id |
-| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost (XGB R² 0.859); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
+| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost (current XGB pseudo-R² 0.323 mean across 5 post-fix seeds, with temporal features included); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
 | `model/eb_*.py` | ✅ Diagnostic | Empirical Bayes dispersion/shrinkage outputs, separate from production `risk_scores.parquet` |
 | `model/family_split.py` | ✅ Diagnostic | Facility-family XGBoost experiment and stitched ranking diagnostics |
 | `model/rank_stability.py` | ✅ Done | Multi-seed XGBoost ranking stability harness |
@@ -130,8 +130,8 @@ performance metrics, and validation detail — kept there to avoid documentation
 - Counted-only AADF target CV R²: ~0.83 | Applied to 2,167,557 links × 10 years
 
 **Stage 2 — Collision Model**
-- Poisson GLM pseudo-R²: 0.3472 (in-sample on downsampled training set; `n_full` 21.7M after optional-feature imputation refactor)
-- XGBoost pseudo-R²: 0.8587 (out-of-sample, GroupShuffleSplit by link_id)
+- Poisson GLM pseudo-R²: 0.3472 (verified post-fix from `data/models/collision_metrics.json` and `data/provenance/rank_stability_provenance.json`; in-sample on downsampled training set; `n_full` 21.7M)
+- XGBoost pseudo-R²: 0.323 (out-of-sample, GroupShuffleSplit by `link_id`, mean across 5 seeds, with temporal features included)
 - **Not directly comparable** — different row subsets, different null models. See methodology site.
 - XGBoost drives `risk_percentile`; GLM drives `residual_glm` residual diagnostics. 
 - *Note: diagnostic runs generated `risk_scores_eb.parquet` (Empirical Bayes) and `risk_scores_family.parquet` (Facility-Family split). Production app uses the current `risk_scores.parquet`.*

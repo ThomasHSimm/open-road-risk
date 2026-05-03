@@ -36,6 +36,7 @@ import matplotlib.colors as mcolors
 
 from road_risk.config import _ROOT as ROOT
 RANDOM_STATE = 42
+XGB_POSTFIX_PR2 = 0.323498
 
 try:
     import geopandas as gpd
@@ -65,7 +66,7 @@ print(f"Total collisions : {risk['collision_count'].sum():,}")
 print(f"Total fatals     : {risk['fatal_count'].sum():,}")
 print(f"\nModel performance:")
 print(f"  GLM pseudo-R²  : {metrics['glm']['pseudo_r2']:.3f}")
-print(f"  XGB pseudo-R²  : {metrics['xgb']['pseudo_r2']:.3f}")
+print(f"  XGB pseudo-R²  : {XGB_POSTFIX_PR2:.3f} (post-fix 5-seed mean)")
 print(f"  GLM converged  : {metrics['glm']['converged']}")
 ```
 
@@ -414,7 +415,7 @@ print(f"Links scored          : {len(risk):,}")
 print(f"Links with collisions : {(risk['collision_count'] > 0).sum():,} "
       f"({(risk['collision_count'] > 0).mean():.1%})")
 print(f"\nPoisson GLM pseudo-R² : {metrics['glm']['pseudo_r2']:.3f}")
-print(f"XGBoost pseudo-R²     : {metrics['xgb']['pseudo_r2']:.3f}")
+print(f"XGBoost pseudo-R²     : {XGB_POSTFIX_PR2:.3f} (post-fix 5-seed mean)")
 print(f"\nTop 1% risk links     : {(risk['risk_percentile'] >= 99).sum():,}")
 print(f"Excess-risk links (residual > 2): {(risk['residual_glm'] > 2).sum():,}")
 print(f"\nExcess-risk by road class:")
@@ -427,20 +428,19 @@ print(
 
 Key observations:
 
-- XGBoost (pseudo-R² 0.859) substantially outperforms the GLM (pseudo-R² 0.347)
-  on the link-year training table. Part of this gap reflects XGBoost's ability to
-  capture non-linear interactions between road class, form of way, and network
-  betweenness that the GLM cannot. Part also reflects that XGBoost receives
-  `estimated_aadt` as a raw feature in addition to the log-offset, giving it
-  flexibility the GLM's forced-coefficient offset does not have. The two
-  pseudo-R² values are also computed on different row subsets and with different
-  null models (GLM: in-sample on a downsampled training set; XGBoost:
-  out-of-sample on the full zero-heavy test set) — the headline gap should not
-  be read as pure modelling lift. These metrics are from the current run after
-  the counted-only Stage 1a filter, the Stage 2 post-event provenance guard,
-  OSM feature enrichment, IMD features, terrain grade, and the GLM
-  optional-feature imputation refactor; earlier GLM pseudo-R² figures are
-  prior-run snapshots, not directly comparable ablations. See
+- XGBoost's current honest post-fix baseline is about pseudo-R² `0.32`
+  across five seeds (`0.323` mean, with temporal features included), while the
+  GLM sits at pseudo-R² `0.347` on its own in-sample downsampled surface.
+  Earlier repo docs cited an XGBoost pseudo-R² around `0.86`, but that figure
+  came from a pre-fix evaluation surface that was later superseded after a
+  feature-table leakage diagnosis. The two current pseudo-R² values are also
+  still computed on different row subsets and with different null models
+  (GLM: in-sample on a downsampled training set; XGBoost: out-of-sample on the
+  full zero-heavy test set), so the gap should not be read as pure modelling
+  lift. These metrics are from the current run after the counted-only Stage 1a
+  filter, the Stage 2 post-event provenance guard, OSM feature enrichment, IMD
+  features, terrain grade, and the GLM optional-feature imputation refactor.
+  See
   [feature engineering](../methodology/feature-engineering.qmd#pseudo-r-comparability)
   for the full caveat.
 - The GLM provides interpretable incidence rate ratios per feature; XGBoost

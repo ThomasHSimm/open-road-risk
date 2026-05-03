@@ -467,7 +467,7 @@ Reported pseudo-R² reflects out-of-link performance, not in-sample fit.
 
 ### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}
 
-The current GLM pseudo-R² (0.347) and XGBoost pseudo-R² (0.859) are computed on
+The current GLM pseudo-R² (0.347) and post-fix XGBoost pseudo-R² (~0.323) are computed on
 different row subsets with different null models. **They are not directly
 comparable.**
 
@@ -490,11 +490,14 @@ using the rank-stability harness where possible.
 Because the GLM null model sees an artificially balanced zero rate, it is
 easier to beat — the true 98% zero rate would produce a higher null deviance
 and a lower pseudo-R² for the same model. Because XGBoost is evaluated on
-the real held-out distribution against that harder null, its 0.859 is the
-more conservative and honest metric.
+the real held-out distribution against that harder null, the post-fix `~0.323`
+figure is the current honest baseline. Earlier repo docs cited `~0.86`, but
+that came from a pre-fix evaluation surface that was later superseded after a
+feature-table leakage diagnosis.
 
-The practical implication: the 0.347 vs 0.859 gap overstates the genuine
-predictive lift of XGBoost over the GLM. A fair comparison would require
+The practical implication: the 0.347 vs ~0.323 gap should not be read as a
+simple model horse race either, because the evaluation surfaces still differ.
+A fair comparison would require
 both models evaluated on the same held-out set against the same null model.
 This has not been done; recomputing both on a common evaluation set is a
 known pending improvement.

@@ -98,7 +98,7 @@ Raw `speed_limit_mph` is not in the XGBoost feature list.
 
 | Metric | Value |
 |---|---:|
-| Pseudo-R2 | 0.8575 |
+| Pseudo-R2 | 0.3235 mean across 5 post-fix seeds with temporal features included |
 | Test deviance | 104,503 |
 
 ### Output And Rank Stability

@@ -22,7 +22,12 @@ Two feature batches were added to Stage 2: IoD 2025 deprivation (overall IMD, Cr
 Headline measurements:
 
 - GLM pseudo-R² rose from 0.301 (pre-IMD) → 0.325 (post-IMD, sample-confounded) → 0.347 (post-grade, sample-stable).
-- XGBoost pseudo-R² remained at 0.859 across all changes (saturation confirmed).
+- At the time of this experiment, XGBoost pseudo-R² appeared to remain at
+  about 0.859 across all changes. That figure was later superseded: the
+  current honest post-fix Stage 2 baseline is about 0.323 across five seeds,
+  after the HGV/source-table leakage bug was fixed. The directional lesson
+  here is still "ranking barely moved," but the absolute XGBoost headline in
+  this note should no longer be used externally.
 - Top-1% Jaccard between pre-grade and final ranking: 0.918 — within the seed-noise envelope of the global XGBoost model (5-seed baseline 0.918).
 - Spearman rank correlation: 0.998.
 
@@ -123,13 +128,18 @@ From persisted artefacts (`data/models/collision_metrics.json` family):
 
 | Run | GLM pseudo-R² | XGB pseudo-R² | GLM training rows |
 |---|---:|---:|---:|
-| Pre-IMD baseline | 0.301 | 0.858 | (not measured here) |
-| Post-IMD (sample-confounded) | 0.325 | 0.859 | 17,691,570 (after dropna) |
-| Post-grade + refactor (final) | 0.347 | 0.859 | 21,675,570 (full) |
+| Pre-IMD baseline | 0.301 | 0.858 (historical, superseded) | (not measured here) |
+| Post-IMD (sample-confounded) | 0.325 | 0.859 (historical, superseded) | 17,691,570 (after dropna) |
+| Post-grade + refactor (final) | 0.347 | 0.859 (historical, superseded) | 21,675,570 (full) |
 
 GLM gain decomposition: of the 0.046 total improvement from 0.301, approximately 0.022 came from sample stabilisation and 0.024 from the actual feature additions. The previous 0.325 was inflating the apparent IMD lift.
 
-XGBoost is saturated at the headline metric. Adding three IMD features moved it 0.001; adding grade moved it 0.000. The trees are already capturing the signal in IMD and grade through correlated features.
+In the historical pre-fix evaluation surface, XGBoost appeared saturated at
+the headline metric. Adding three IMD features moved it 0.001; adding grade
+moved it 0.000. The trees were already capturing the signal in IMD and grade
+through correlated features. The later post-fix baseline is much lower
+(`~0.323`), so this section should be read as an ablation-history note, not a
+current-performance summary.
 
 ### 5.2 Coefficients of interest
 
