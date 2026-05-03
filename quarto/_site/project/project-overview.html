@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Methodology – Open Road Risk</title>
+<title>Project overview – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -83,10 +83,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
-<meta property="og:title" content="Methodology – Open Road Risk">
+<meta property="og:title" content="Project overview – Open Road Risk">
 <meta property="og:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Methodology – Open Road Risk">
+<meta name="twitter:title" content="Project overview – Open Road Risk">
 <meta name="twitter:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 <meta name="twitter:card" content="summary">
 </head>
@@ -273,11 +273,15 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul class="collapse">
-  <li><a href="#what-this-section-covers" id="toc-what-this-section-covers" class="nav-link active" data-scroll-target="#what-this-section-covers">What this section covers</a></li>
-  <li><a href="#pages-in-this-section" id="toc-pages-in-this-section" class="nav-link" data-scroll-target="#pages-in-this-section">Pages in this section</a></li>
-  <li><a href="#methodology-vs-models" id="toc-methodology-vs-models" class="nav-link" data-scroll-target="#methodology-vs-models">Methodology vs Models</a></li>
-  <li><a href="#what-is-not-in-methodology" id="toc-what-is-not-in-methodology" class="nav-link" data-scroll-target="#what-is-not-in-methodology">What is <em>not</em> in Methodology</a></li>
+  <ul>
+  <li><a href="#repository-structure" id="toc-repository-structure" class="nav-link active" data-scroll-target="#repository-structure">Repository structure</a></li>
+  <li><a href="#documentation-status" id="toc-documentation-status" class="nav-link" data-scroll-target="#documentation-status">Documentation status</a></li>
+  <li><a href="#what-the-pipeline-does" id="toc-what-the-pipeline-does" class="nav-link" data-scroll-target="#what-the-pipeline-does">What the pipeline does</a></li>
+  <li><a href="#data-sources" id="toc-data-sources" class="nav-link" data-scroll-target="#data-sources">Data sources</a></li>
+  <li><a href="#main-outputs" id="toc-main-outputs" class="nav-link" data-scroll-target="#main-outputs">Main outputs</a></li>
+  <li><a href="#current-scope" id="toc-current-scope" class="nav-link" data-scroll-target="#current-scope">Current scope</a></li>
+  <li><a href="#known-limitations" id="toc-known-limitations" class="nav-link" data-scroll-target="#known-limitations">Known limitations</a></li>
+  <li><a href="#site-guide" id="toc-site-guide" class="nav-link" data-scroll-target="#site-guide">Site guide</a></li>
   </ul>
 </nav>
     </div>
@@ -286,7 +290,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Methodology</h1>
+<h1 class="title">Project overview</h1>
 </div>
 
 
@@ -303,39 +307,164 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<section id="what-this-section-covers" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-section-covers">What this section covers</h2>
-<p>The Methodology section documents the <strong>decisions and processes</strong> that turn raw data sources into model-ready features. It is distinct from the <a href="../methodology/modelling.html">Models</a> section, which covers the predictive models themselves and their performance.</p>
-<p>A useful way to think of the split:</p>
-<ul>
-<li><strong>Methodology</strong>: how the data is shaped — joining sources together, building features, handling overdispersion in count data.</li>
-<li><strong>Models</strong>: what predictions are made from that data — traffic estimation, time-zone profiles, collision risk.</li>
-</ul>
-<p>The two sections sit on either side of a clear handoff. Methodology produces <code>road_link_annual.parquet</code> with one row per link per year and a fixed schema. Models consume that table and produce predictions.</p>
+<section id="repository-structure" class="level2">
+<h2 class="anchored" data-anchor-id="repository-structure">Repository structure</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>quarto/</code></td>
+<td>Quarto website source.</td>
+</tr>
+<tr class="even">
+<td><code>notebooks/</code></td>
+<td>(Local only; ignored by git) Exploratory analysis and historical development work. Some content is superseded by QMD pages.</td>
+</tr>
+<tr class="odd">
+<td><code>src/</code></td>
+<td>Python package and modelling pipeline code.</td>
+</tr>
+<tr class="even">
+<td><code>data/</code></td>
+<td>Data provenance and folder structure (actual data is excluded from git).</td>
+</tr>
+<tr class="odd">
+<td><code>docs/</code></td>
+<td>Internal technical notes and data quality documentation.</td>
+</tr>
+<tr class="even">
+<td><code>reports/</code></td>
+<td>Detailed analysis reports and validation summaries.</td>
+</tr>
+<tr class="odd">
+<td><code>config/</code></td>
+<td>Project configuration and settings.</td>
+</tr>
+<tr class="even">
+<td><code>tests/</code></td>
+<td>Automated tests for pipeline components.</td>
+</tr>
+<tr class="odd">
+<td><code>todo/</code></td>
+<td>Planning notes and active task tracking.</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="pages-in-this-section" class="level2">
-<h2 class="anchored" data-anchor-id="pages-in-this-section">Pages in this section</h2>
-<p><a href="../methodology/data-joining.html"><strong>Joining the Datasets</strong></a> — how STATS19 collisions, AADF count points, WebTRIS sensors, and OS Open Roads links are spatially joined into a single road-link-by-year table. Includes the four-dimension weighted snap, distance caps, and quality tracking.</p>
-<p><a href="../methodology/feature-engineering.html"><strong>Feature Engineering</strong></a> — link-level features built on top of the joined table: network centrality, road geometry, OSM attributes, population density. Documents the imputation rules for sparse OSM fields and the <code>speed_limit_mph_effective</code> tiered fallback.</p>
-<p><a href="../methodology/empirical-bayes-shrinkage.html"><strong>Empirical Bayes Shrinkage</strong></a> — the post-modelling adjustment that handles overconfidence on links with zero observed collisions. Explains the choice of shrinkage parameter <em>k</em> and the operational impact on rankings.</p>
+<section id="documentation-status" class="level2">
+<h2 class="anchored" data-anchor-id="documentation-status">Documentation status</h2>
+<p>The <code>.qmd</code> pages located in the <code>quarto/</code> directory serve as the canonical public documentation for this project.</p>
+<p>Note that while a <code>notebooks/</code> directory may exist in the local workspace for exploratory and historical analysis, it is excluded from source control. Internal documentation and historical notes found in <code>docs/</code> or <code>reports/</code> provide additional context but should be treated as supporting material. Generated outputs and rendered artifacts are excluded from the main source tree to maintain a clean repository.</p>
 </section>
-<section id="methodology-vs-models" class="level2">
-<h2 class="anchored" data-anchor-id="methodology-vs-models">Methodology vs Models</h2>
-<p>A few decisions sit on the boundary between sections:</p>
-<ul>
-<li><strong>Year handling</strong> is a methodology question (how to encode time) but interacts directly with model choice. The pipeline uses year as a categorical feature; the COVID years (2020–2021) are absorbed by year-specific fixed effects. An <code>is_covid</code> flag is the natural alternative if year is not already in the model.</li>
-<li><strong>Group-aware cross-validation</strong> is a model-choice decision but depends on methodology — the grouping key (<code>count_point_id</code>, <code>site_id</code>, <code>link_id</code>) is determined by what the joining pipeline produces.</li>
-<li><strong>Forbidden post-event columns</strong> — several derived columns are excluded from modelling because they are computed from collision records themselves. This is enforced in the modelling code but the list is documented as a methodology decision.</li>
-</ul>
-<p>These cross-cutting items are documented on the page where they have most impact. Cross-references run in both directions.</p>
+<section id="what-the-pipeline-does" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-pipeline-does">What the pipeline does</h2>
+<p>The project is organised in three main modelling stages:</p>
+<p><strong>Stage 1a — Traffic exposure estimation</strong> Traffic counts from AADF are used to train a model that estimates AADT for road links without direct counts.</p>
+<p><strong>Stage 1b — Time-zone profiles</strong> WebTRIS sensor data provides supporting information on within-day traffic structure and vehicle mix on major roads.</p>
+<p><strong>Stage 2 — Collision risk modelling</strong> Collision outcomes from STATS19 are modelled against exposure, road class, network structure, and contextual features to estimate relative road risk. The result is a network-wide risk layer that can be used to identify unusually risky links, compare corridors, and support downstream applications.</p>
 </section>
-<section id="what-is-not-in-methodology" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-not-in-methodology">What is <em>not</em> in Methodology</h2>
+<section id="data-sources" class="level2">
+<h2 class="anchored" data-anchor-id="data-sources">Data sources</h2>
+<p>This project currently draws on the following core sources:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>Provider</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>STATS19</td>
+<td>Department for Transport</td>
+<td>reported road collisions and casualty context</td>
+</tr>
+<tr class="even">
+<td>AADF</td>
+<td>Department for Transport</td>
+<td>observed traffic counts at count points</td>
+</tr>
+<tr class="odd">
+<td>WebTRIS</td>
+<td>National Highways</td>
+<td>measured traffic and vehicle-mix context on major roads</td>
+</tr>
+<tr class="even">
+<td>OS Open Roads</td>
+<td>Ordnance Survey</td>
+<td>road link geometry and classifications</td>
+</tr>
+<tr class="odd">
+<td>OpenStreetMap</td>
+<td>OSM contributors</td>
+<td>supplementary road attributes</td>
+</tr>
+<tr class="even">
+<td>MRDB</td>
+<td>DfT / OS</td>
+<td>major-road reference network</td>
+</tr>
+<tr class="odd">
+<td>LSOA population data</td>
+<td>ONS</td>
+<td>population-density and contextual features</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="main-outputs" class="level2">
+<h2 class="anchored" data-anchor-id="main-outputs">Main outputs</h2>
+<p>The pipeline is designed to produce:</p>
 <ul>
-<li>Individual model details (architectures, hyperparameters, metrics) are in <a href="../methodology/modelling.html">Models</a>.</li>
-<li>Exploratory analysis of source data is in <a href="../analysis/eda-collisions.html">Exploratory Data Analysis</a> — what the raw data looks like before processing.</li>
-<li>Source dataset descriptions are in <a href="../data-sources/stats19.html">Data Sources</a> — provider, format, fields, project location.</li>
+<li>estimated traffic exposure for uncounted roads</li>
+<li>link-level risk scores across the network</li>
+<li>residual or excess-risk views showing where observed risk is higher than expected</li>
+<li>corridor- and area-level summaries for applied use cases</li>
 </ul>
+</section>
+<section id="current-scope" class="level2">
+<h2 class="anchored" data-anchor-id="current-scope">Current scope</h2>
+<p>The project began as a Yorkshire pilot and is being used to test whether an open-data workflow can support full-network safety performance modelling. It is intended as: - a methodological prototype - a decision-support and analysis tool - a basis for more focused applications such as corridor screening and local safety prioritisation</p>
+<p>It is not: - a real-time traffic management system - a causal intervention model - a definitive national risk product without wider validation</p>
+</section>
+<section id="known-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="known-limitations">Known limitations</h2>
+<p>Important limitations include:</p>
+<ul>
+<li>STATS19 reflects reported collisions, not all collisions</li>
+<li>direct traffic counts are sparse outside major roads</li>
+<li>WebTRIS only covers the National Highways network</li>
+<li>some road attributes (e.g.&nbsp;speed limits, lanes, lighting) are incomplete</li>
+<li>risk estimates are only as good as the joins and assumptions behind them</li>
+</ul>
+<p>These are discussed in more detail throughout the site.</p>
+</section>
+<section id="site-guide" class="level2">
+<h2 class="anchored" data-anchor-id="site-guide">Site guide</h2>
+<p>The site is organised around the logic of the pipeline:</p>
+<ul>
+<li><strong>Data Sources</strong> — what each dataset contains and what it can and cannot tell us</li>
+<li><strong>Methodology</strong> — how sources are joined and transformed into modelling inputs</li>
+<li><strong>Analysis</strong> — model behaviour, outputs, and exploratory evaluation</li>
+<li><strong>Future Work</strong> — research questions and extensions the pipeline can support</li>
+<li><strong>API Reference</strong> — code structure and module-level documentation</li>
+</ul>
+<p>A good place to start is with the source pages for STATS19, AADF, and WebTRIS, then move to the methodology pages on joining and feature engineering. For possible extensions, Future Work collects research questions that are not in the active backlog but are natural next uses of the same road-link, exposure, and collision-risk infrastructure.</p>
 
 
 </section>

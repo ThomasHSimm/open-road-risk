@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Methodology – Open Road Risk</title>
+<title>Current model status – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -83,10 +83,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
-<meta property="og:title" content="Methodology – Open Road Risk">
+<meta property="og:title" content="Current model status – Open Road Risk">
 <meta property="og:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Methodology – Open Road Risk">
+<meta name="twitter:title" content="Current model status – Open Road Risk">
 <meta name="twitter:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 <meta name="twitter:card" content="summary">
 </head>
@@ -269,29 +269,20 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul class="collapse">
-  <li><a href="#what-this-section-covers" id="toc-what-this-section-covers" class="nav-link active" data-scroll-target="#what-this-section-covers">What this section covers</a></li>
-  <li><a href="#pages-in-this-section" id="toc-pages-in-this-section" class="nav-link" data-scroll-target="#pages-in-this-section">Pages in this section</a></li>
-  <li><a href="#methodology-vs-models" id="toc-methodology-vs-models" class="nav-link" data-scroll-target="#methodology-vs-models">Methodology vs Models</a></li>
-  <li><a href="#what-is-not-in-methodology" id="toc-what-is-not-in-methodology" class="nav-link" data-scroll-target="#what-is-not-in-methodology">What is <em>not</em> in Methodology</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
-<main class="content column-page-left" id="quarto-document-content">
+<main class="content column-page" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Methodology</h1>
+<h1 class="title">Current model status</h1>
 </div>
 
 
 
-<div class="quarto-title-meta column-page-left">
+<div class="quarto-title-meta column-page">
 
     
   
@@ -303,42 +294,57 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<section id="what-this-section-covers" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-section-covers">What this section covers</h2>
-<p>The Methodology section documents the <strong>decisions and processes</strong> that turn raw data sources into model-ready features. It is distinct from the <a href="../methodology/modelling.html">Models</a> section, which covers the predictive models themselves and their performance.</p>
-<p>A useful way to think of the split:</p>
+<p>This section provides a live view of the modelling pipeline’s performance and status, sourced directly from the latest validation artefacts and provenance records.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Current status</th>
+<th>Latest evidence</th>
+<th>Caveat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Stage 1a: AADT model</td>
+<td>Implemented</td>
+<td>Local R²: 0.831, Spatial R²: 0.792, N=17412</td>
+<td>Estimates traffic where direct counts are unavailable</td>
+</tr>
+<tr class="even">
+<td>Stage 2: GLM collision-risk model</td>
+<td>Implemented</td>
+<td>Pseudo-R²: 0.347</td>
+<td>Interpretable exposure-adjusted baseline</td>
+</tr>
+<tr class="odd">
+<td>Stage 2: XGBoost collision-risk model</td>
+<td>Implemented across 5 seeds</td>
+<td>Mean Pseudo-R²: 0.323, Seeds: [42, 43, 44, 45, 46]</td>
+<td>Flexible comparison/diagnostic model; weaker interpretability than GLM</td>
+</tr>
+<tr class="even">
+<td>Final scored output</td>
+<td>Implemented</td>
+<td>2,167,557 scored links</td>
+<td>Current scoring grain is one row per road link, not link-year</td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li><strong>Methodology</strong>: how the data is shaped — joining sources together, building features, handling overdispersion in count data.</li>
-<li><strong>Models</strong>: what predictions are made from that data — traffic estimation, time-zone profiles, collision risk.</li>
+<li><strong>Latest model run</strong>: 2026-05-03T13:25:09.900667+00:00</li>
+<li><strong>Git SHA</strong>: <code>301a766b</code></li>
+<li><strong>Sources read</strong>: rank_stability_provenance.json, aadt_validation_summary.parquet</li>
 </ul>
-<p>The two sections sit on either side of a clear handoff. Methodology produces <code>road_link_annual.parquet</code> with one row per link per year and a fixed schema. Models consume that table and produce predictions.</p>
-</section>
-<section id="pages-in-this-section" class="level2">
-<h2 class="anchored" data-anchor-id="pages-in-this-section">Pages in this section</h2>
-<p><a href="../methodology/data-joining.html"><strong>Joining the Datasets</strong></a> — how STATS19 collisions, AADF count points, WebTRIS sensors, and OS Open Roads links are spatially joined into a single road-link-by-year table. Includes the four-dimension weighted snap, distance caps, and quality tracking.</p>
-<p><a href="../methodology/feature-engineering.html"><strong>Feature Engineering</strong></a> — link-level features built on top of the joined table: network centrality, road geometry, OSM attributes, population density. Documents the imputation rules for sparse OSM fields and the <code>speed_limit_mph_effective</code> tiered fallback.</p>
-<p><a href="../methodology/empirical-bayes-shrinkage.html"><strong>Empirical Bayes Shrinkage</strong></a> — the post-modelling adjustment that handles overconfidence on links with zero observed collisions. Explains the choice of shrinkage parameter <em>k</em> and the operational impact on rankings.</p>
-</section>
-<section id="methodology-vs-models" class="level2">
-<h2 class="anchored" data-anchor-id="methodology-vs-models">Methodology vs Models</h2>
-<p>A few decisions sit on the boundary between sections:</p>
-<ul>
-<li><strong>Year handling</strong> is a methodology question (how to encode time) but interacts directly with model choice. The pipeline uses year as a categorical feature; the COVID years (2020–2021) are absorbed by year-specific fixed effects. An <code>is_covid</code> flag is the natural alternative if year is not already in the model.</li>
-<li><strong>Group-aware cross-validation</strong> is a model-choice decision but depends on methodology — the grouping key (<code>count_point_id</code>, <code>site_id</code>, <code>link_id</code>) is determined by what the joining pipeline produces.</li>
-<li><strong>Forbidden post-event columns</strong> — several derived columns are excluded from modelling because they are computed from collision records themselves. This is enforced in the modelling code but the list is documented as a methodology decision.</li>
-</ul>
-<p>These cross-cutting items are documented on the page where they have most impact. Cross-references run in both directions.</p>
-</section>
-<section id="what-is-not-in-methodology" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-not-in-methodology">What is <em>not</em> in Methodology</h2>
-<ul>
-<li>Individual model details (architectures, hyperparameters, metrics) are in <a href="../methodology/modelling.html">Models</a>.</li>
-<li>Exploratory analysis of source data is in <a href="../analysis/eda-collisions.html">Exploratory Data Analysis</a> — what the raw data looks like before processing.</li>
-<li>Source dataset descriptions are in <a href="../data-sources/stats19.html">Data Sources</a> — provider, format, fields, project location.</li>
-</ul>
+<p>“These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”</p>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -157,10 +157,29 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Data Sources</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../data-sources/stats19.html">
  <span class="dropdown-text">STATS19 Collisions</span></a>
@@ -331,7 +350,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">Temporal Traffic Exploration: Seasonality and Day-of-Week Patterns</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+<h1 class="title">Temporal Traffic Exploration: Seasonality and Day-of-Week Patterns</h1>
 </div>
 
 
@@ -354,8 +373,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p>The goal is to determine which temporal patterns are link-specific (requiring granular modelling) and which are stable enough to be treated as global constants.</p>
 <p>We investigate: 1. <strong>Monthly Seasonality</strong>: High-season vs.&nbsp;low-season flow amplitudes. 2. <strong>Weekday/Weekend Ratios</strong>: Commuter-heavy vs.&nbsp;leisure-heavy road signatures. 3. <strong>Time-of-Day Intensity</strong>: The ratio of daytime to nighttime flow. 4. <strong>HGV Mixing</strong>: How vehicle composition shifts across these same axes.</p>
 <div id="e9601bff" class="cell" data-execution_count="1">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -373,7 +390,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>TEMPORAL_PROFILES <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/temporal_profiles.parquet"</span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>sns.set_theme(style<span class="op">=</span><span class="st">"whitegrid"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
 <hr>
 </section>
@@ -382,8 +398,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p>We begin by testing the variance of the weekday/weekend ratio at the individual sensor level. If the ratio is stable across different sites within the same month, it suggests the pattern is universal rather than link-specific.</p>
 <p>We start with the strongest test: whether different sensors in the same month give similar weekday/weekend ratios. If they do, the descriptor has no link-specific variation to model.</p>
 <div id="25927360" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a larger sample of raw parquets to test variance</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> os.listdir(WEBTRIS_RAW) <span class="cf">if</span> <span class="st">"2023"</span> <span class="kw">in</span> f <span class="kw">and</span> f.endswith(<span class="st">".parquet"</span>)]</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>df_list <span class="op">=</span> []</span>
@@ -403,7 +417,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>overall_std <span class="op">=</span> raw_2023.groupby(<span class="st">"monthname"</span>)[<span class="st">"ww_ratio"</span>].std().mean()</span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Average within-month standard deviation across sites: </span><span class="sc">{</span>overall_std<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Per-site Weekday/Weekend Ratio stats by month:
              mean     std  count
@@ -434,8 +447,6 @@ Average within-month standard deviation across sites: 0.033</code></pre>
 <h2 data-number="2" class="anchored" data-anchor-id="monthly-seasonality-analysis"><span class="header-section-number">2</span> Monthly Seasonality Analysis</h2>
 <p>We now switch to the <code>temporal_profiles.parquet</code>, which aggregates data at the road corridor grain and calculates seasonal indices.</p>
 <div id="84e6b9a7" class="cell" data-execution_count="3">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> pd.read_parquet(TEMPORAL_PROFILES)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> profiles[profiles[<span class="st">"n_site_months"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -448,7 +459,6 @@ Average within-month standard deviation across sites: 0.033</code></pre>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>profiles[<span class="st">"monthname"</span>] <span class="op">=</span> pd.Categorical(profiles[<span class="st">"monthname"</span>], categories<span class="op">=</span>MONTH_ORDER, ordered<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>profiles.sample(<span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 
@@ -545,8 +555,6 @@ Average within-month standard deviation across sites: 0.033</code></pre>
 <h3 data-number="2.1" class="anchored" data-anchor-id="seasonal-index-distribution"><span class="header-section-number">2.1</span> Seasonal Index Distribution</h3>
 <p>The seasonal index is the monthly flow divided by the annual average. We want to see if different road types have different seasonal “signatures.”</p>
 <div id="2ff86af9" class="cell" data-execution_count="4">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sns.lineplot(</span>
@@ -566,7 +574,6 @@ Average within-month standard deviation across sites: 0.033</code></pre>
 <span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Seasonal Index by Month and Road Type:"</span>)</span>
 <span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(profiles.groupby([<span class="st">"monthname"</span>, <span class="st">"road_type"</span>], observed<span class="op">=</span><span class="va">True</span>)[<span class="st">"seasonal_index"</span>].mean().unstack().<span class="bu">round</span>(<span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -607,8 +614,6 @@ Dec         0.950     0.935  0.931</code></pre>
 <p>We investigate the stability of the weekday/weekend ratio across the network.</p>
 <p>The Variance Analysis section used raw 2023 chunks at site grain. This section uses the corridor-level aggregations from temporal_profiles.parquet, confirming the same result holds at corridor grain.</p>
 <div id="08efce48" class="cell" data-execution_count="5">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">6</span>))</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Distribution across all sites/months</span></span>
@@ -629,7 +634,6 @@ Dec         0.950     0.935  0.931</code></pre>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Mean check by road type</span></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Weekday/Weekend Ratio by Road Type:"</span>)</span>
 <span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(profiles.groupby(<span class="st">"road_type"</span>)[<span class="st">"weekday_weekend_ratio"</span>].mean().<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -656,8 +660,6 @@ Name: weekday_weekend_ratio, dtype: float64</code></pre>
 <h2 data-number="4" class="anchored" data-anchor-id="time-of-day-intensity-day-vs.-night"><span class="header-section-number">4</span> Time-of-Day Intensity (Day vs.&nbsp;Night)</h2>
 <p>Using the <code>webtris_clean.parquet</code> dataset, we examine the <code>core_overnight_ratio</code>. This measures the daytime flow per hour relative to the nighttime flow per hour.</p>
 <div id="a14f6e9e" class="cell" data-execution_count="6">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>webtris_clean <span class="op">=</span> pd.read_parquet(WEBTRIS_CLEAN)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>site_tod <span class="op">=</span> webtris_clean.groupby(<span class="st">"site_id"</span>)[<span class="st">"core_overnight_ratio"</span>].mean().dropna()</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -669,7 +671,6 @@ Name: weekday_weekend_ratio, dtype: float64</code></pre>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"5th Percentile: </span><span class="sc">{</span>site_tod<span class="sc">.</span>quantile(<span class="fl">0.05</span>)<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
 <span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"95th Percentile: </span><span class="sc">{</span>site_tod<span class="sc">.</span>quantile(<span class="fl">0.95</span>)<span class="sc">:.2f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -692,8 +693,6 @@ Name: weekday_weekend_ratio, dtype: float64</code></pre>
 <h2 data-number="5" class="anchored" data-anchor-id="heavy-goods-vehicle-hgv-composition"><span class="header-section-number">5</span> Heavy Goods Vehicle (HGV) Composition</h2>
 <p>Finally, we look at how the large vehicle percentage fluctuates across the network.</p>
 <div id="919208fb" class="cell" data-execution_count="7">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>sns.boxplot(data<span class="op">=</span>profiles, x<span class="op">=</span><span class="st">"monthname"</span>, y<span class="op">=</span><span class="st">"mean_large_pct"</span>, hue<span class="op">=</span><span class="st">"road_type"</span>, ax<span class="op">=</span>ax)</span>
@@ -704,7 +703,6 @@ Name: weekday_weekend_ratio, dtype: float64</code></pre>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Large Vehicle Percentage by Month and Road Type:"</span>)</span>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(profiles.groupby([<span class="st">"monthname"</span>, <span class="st">"road_type"</span>], observed<span class="op">=</span><span class="va">True</span>)[<span class="st">"mean_large_pct"</span>].mean().unstack().<span class="bu">round</span>(<span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -740,8 +738,6 @@ Dec         13.89     13.86  11.55</code></pre>
 <h2 data-number="6" class="anchored" data-anchor-id="data-depth-check"><span class="header-section-number">6</span> Data Depth Check</h2>
 <p>We verify the amount of data backing these observations to ensure statistical confidence.</p>
 <div id="093a9f89" class="cell" data-execution_count="8">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Site counts per corridor</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>site_counts <span class="op">=</span> profiles.groupby(<span class="st">"road_prefix"</span>)[<span class="st">"n_site_months"</span>].<span class="bu">sum</span>() <span class="op">/</span> <span class="dv">12</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total Unique Corridors: </span><span class="sc">{</span><span class="bu">len</span>(site_counts)<span class="sc">}</span><span class="ss">"</span>)</span>
@@ -751,7 +747,6 @@ Dec         13.89     13.86  11.55</code></pre>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Distribution of Sites per Corridor (Log Scale)"</span>)</span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Approximate Sites"</span>)</span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Total Unique Corridors: 879</code></pre>
 </div>
@@ -804,8 +799,6 @@ Dec         13.89     13.86  11.55</code></pre>
 </tbody>
 </table>
 
-
-<!-- -->
 
 </section>
 
@@ -880,57 +873,6 @@ Dec         13.89     13.86  11.55</code></pre>
         container: window.document.getElementById('quarto-embedded-source-code-modal')
       });
       clipboardModal.on('success', onCopySuccess);
-    }
-    const viewSource = window.document.getElementById('quarto-view-source') ||
-                       window.document.getElementById('quarto-code-tools-source');
-    if (viewSource) {
-      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
-      viewSource.addEventListener("click", function(e) {
-        if (sourceUrl) {
-          // rstudio viewer pane
-          if (/\bcapabilities=\b/.test(window.location)) {
-            window.open(sourceUrl);
-          } else {
-            window.location.href = sourceUrl;
-          }
-        } else {
-          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
-          modal.show();
-        }
-        return false;
-      });
-    }
-    function toggleCodeHandler(show) {
-      return function(e) {
-        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
-        for (let i=0; i<detailsSrc.length; i++) {
-          const details = detailsSrc[i].parentElement;
-          if (show) {
-            details.open = true;
-          } else {
-            details.removeAttribute("open");
-          }
-        }
-        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
-        const fromCls = show ? "hidden" : "unhidden";
-        const toCls = show ? "unhidden" : "hidden";
-        for (let i=0; i<cellCodeDivs.length; i++) {
-          const codeDiv = cellCodeDivs[i];
-          if (codeDiv.classList.contains(fromCls)) {
-            codeDiv.classList.remove(fromCls);
-            codeDiv.classList.add(toCls);
-          } 
-        }
-        return false;
-      }
-    }
-    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
-    if (hideAllCode) {
-      hideAllCode.addEventListener("click", toggleCodeHandler(false));
-    }
-    const showAllCode = window.document.getElementById("quarto-show-all-code");
-    if (showAllCode) {
-      showAllCode.addEventListener("click", toggleCodeHandler(true));
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
@@ -1260,247 +1202,7 @@ Dec         13.89     13.86  11.55</code></pre>
       }
     }
   });
-  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Temporal Traffic Exploration: Seasonality and Day-of-Week Patterns"</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: true</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="an">jupyter:</span><span class="co"> python3</span></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Overview {.unnumbered}</span></span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>This notebook explores the temporal dimensions of traffic flow using WebTRIS sensor data. We analyze how traffic volumes and compositions change across different months and between weekdays and weekends. </span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>The goal is to determine which temporal patterns are link-specific (requiring granular modelling) and which are stable enough to be treated as global constants.</span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>We investigate:</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Monthly Seasonality**: High-season vs. low-season flow amplitudes.</span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Weekday/Weekend Ratios**: Commuter-heavy vs. leisure-heavy road signatures.</span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Time-of-Day Intensity**: The ratio of daytime to nighttime flow.</span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**HGV Mixing**: How vehicle composition shifts across these same axes.</span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
-<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
-<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
-<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT <span class="im">as</span> ROOT</span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.model.constants <span class="im">import</span> MONTH_ORDER</span>
-<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure paths</span></span>
-<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>WEBTRIS_RAW <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/raw/webtris"</span></span>
-<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>WEBTRIS_CLEAN <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/webtris/webtris_clean.parquet"</span></span>
-<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>TEMPORAL_PROFILES <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/temporal_profiles.parquet"</span></span>
-<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>sns.set_theme(style<span class="op">=</span><span class="st">"whitegrid"</span>)</span>
-<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a><span class="fu">## Variance Analysis (Weekday/Weekend)</span></span>
-<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>We begin by testing the variance of the weekday/weekend ratio at the individual sensor level. If the ratio is stable across different sites within the same month, it suggests the pattern is universal rather than link-specific.</span>
-<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>We start with the strongest test: whether different sensors in the same month give similar weekday/weekend ratios. If they do, the descriptor has no link-specific variation to model.</span>
-<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a larger sample of raw parquets to test variance</span></span>
-<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> os.listdir(WEBTRIS_RAW) <span class="cf">if</span> <span class="st">"2023"</span> <span class="kw">in</span> f <span class="kw">and</span> f.endswith(<span class="st">".parquet"</span>)]</span>
-<span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a>df_list <span class="op">=</span> []</span>
-<span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> files: </span>
-<span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.read_parquet(WEBTRIS_RAW <span class="op">/</span> <span class="bu">file</span>, columns<span class="op">=</span>[<span class="st">"site_id"</span>, <span class="st">"monthname"</span>, <span class="st">"adt24hour"</span>, <span class="st">"awt24hour"</span>])</span>
-<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a>    df_list.append(df)</span>
-<span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-68"><a href="#cb15-68" aria-hidden="true" tabindex="-1"></a>raw_2023 <span class="op">=</span> pd.concat(df_list, ignore_index<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb15-69"><a href="#cb15-69" aria-hidden="true" tabindex="-1"></a>raw_2023[<span class="st">"adt24hour"</span>] <span class="op">=</span> pd.to_numeric(raw_2023[<span class="st">"adt24hour"</span>], errors<span class="op">=</span><span class="st">"coerce"</span>)</span>
-<span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a>raw_2023[<span class="st">"awt24hour"</span>] <span class="op">=</span> pd.to_numeric(raw_2023[<span class="st">"awt24hour"</span>], errors<span class="op">=</span><span class="st">"coerce"</span>)</span>
-<span id="cb15-71"><a href="#cb15-71" aria-hidden="true" tabindex="-1"></a>raw_2023[<span class="st">"ww_ratio"</span>] <span class="op">=</span> raw_2023[<span class="st">"awt24hour"</span>] <span class="op">/</span> raw_2023[<span class="st">"adt24hour"</span>].replace(<span class="dv">0</span>, np.nan)</span>
-<span id="cb15-72"><a href="#cb15-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-73"><a href="#cb15-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate within-month standard deviation across sites</span></span>
-<span id="cb15-74"><a href="#cb15-74" aria-hidden="true" tabindex="-1"></a>month_stats <span class="op">=</span> raw_2023.groupby(<span class="st">"monthname"</span>)[<span class="st">"ww_ratio"</span>].agg([<span class="st">"mean"</span>, <span class="st">"std"</span>, <span class="st">"count"</span>])</span>
-<span id="cb15-75"><a href="#cb15-75" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Per-site Weekday/Weekend Ratio stats by month:"</span>)</span>
-<span id="cb15-76"><a href="#cb15-76" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(month_stats.<span class="bu">round</span>(<span class="dv">4</span>))</span>
-<span id="cb15-77"><a href="#cb15-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-78"><a href="#cb15-78" aria-hidden="true" tabindex="-1"></a>overall_std <span class="op">=</span> raw_2023.groupby(<span class="st">"monthname"</span>)[<span class="st">"ww_ratio"</span>].std().mean()</span>
-<span id="cb15-79"><a href="#cb15-79" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Average within-month standard deviation across sites: </span><span class="sc">{</span>overall_std<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb15-80"><a href="#cb15-80" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-81"><a href="#cb15-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-82"><a href="#cb15-82" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interpretation</span></span>
-<span id="cb15-83"><a href="#cb15-83" aria-hidden="true" tabindex="-1"></a>The data shows that the standard deviation across sites within any given month is consistently ~0.03. This low variance suggests that individual roads do not deviate significantly from the network-wide weekday/weekend behavior.</span>
-<span id="cb15-84"><a href="#cb15-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-85"><a href="#cb15-85" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-86"><a href="#cb15-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-87"><a href="#cb15-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## Monthly Seasonality Analysis</span></span>
-<span id="cb15-88"><a href="#cb15-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-89"><a href="#cb15-89" aria-hidden="true" tabindex="-1"></a>We now switch to the <span class="in">`temporal_profiles.parquet`</span>, which aggregates data at the road corridor grain and calculates seasonal indices.</span>
-<span id="cb15-90"><a href="#cb15-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-93"><a href="#cb15-93" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-94"><a href="#cb15-94" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> pd.read_parquet(TEMPORAL_PROFILES)</span>
-<span id="cb15-95"><a href="#cb15-95" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> profiles[profiles[<span class="st">"n_site_months"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
-<span id="cb15-96"><a href="#cb15-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-97"><a href="#cb15-97" aria-hidden="true" tabindex="-1"></a><span class="co"># Broad classification</span></span>
-<span id="cb15-98"><a href="#cb15-98" aria-hidden="true" tabindex="-1"></a>profiles[<span class="st">'road_type'</span>] <span class="op">=</span> profiles[<span class="st">'road_prefix'</span>].<span class="bu">apply</span>(</span>
-<span id="cb15-99"><a href="#cb15-99" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> x: <span class="st">'Motorway'</span> <span class="cf">if</span> <span class="bu">str</span>(x).startswith(<span class="st">'M'</span>) <span class="cf">else</span> (<span class="st">'A-Road'</span> <span class="cf">if</span> <span class="bu">str</span>(x).startswith(<span class="st">'A'</span>) <span class="cf">else</span> <span class="st">'Other'</span>)</span>
-<span id="cb15-100"><a href="#cb15-100" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb15-101"><a href="#cb15-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-102"><a href="#cb15-102" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure chronological sorting</span></span>
-<span id="cb15-103"><a href="#cb15-103" aria-hidden="true" tabindex="-1"></a>profiles[<span class="st">"monthname"</span>] <span class="op">=</span> pd.Categorical(profiles[<span class="st">"monthname"</span>], categories<span class="op">=</span>MONTH_ORDER, ordered<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb15-104"><a href="#cb15-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-105"><a href="#cb15-105" aria-hidden="true" tabindex="-1"></a>profiles.sample(<span class="dv">5</span>)</span>
-<span id="cb15-106"><a href="#cb15-106" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-107"><a href="#cb15-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-108"><a href="#cb15-108" aria-hidden="true" tabindex="-1"></a><span class="fu">### Seasonal Index Distribution</span></span>
-<span id="cb15-109"><a href="#cb15-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-110"><a href="#cb15-110" aria-hidden="true" tabindex="-1"></a>The seasonal index is the monthly flow divided by the annual average. We want to see if different road types have different seasonal "signatures."</span>
-<span id="cb15-111"><a href="#cb15-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-114"><a href="#cb15-114" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-115"><a href="#cb15-115" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb15-116"><a href="#cb15-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-117"><a href="#cb15-117" aria-hidden="true" tabindex="-1"></a>sns.lineplot(</span>
-<span id="cb15-118"><a href="#cb15-118" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>profiles, </span>
-<span id="cb15-119"><a href="#cb15-119" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span><span class="st">"monthname"</span>, </span>
-<span id="cb15-120"><a href="#cb15-120" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span><span class="st">"seasonal_index"</span>, </span>
-<span id="cb15-121"><a href="#cb15-121" aria-hidden="true" tabindex="-1"></a>    hue<span class="op">=</span><span class="st">"road_type"</span>, </span>
-<span id="cb15-122"><a href="#cb15-122" aria-hidden="true" tabindex="-1"></a>    marker<span class="op">=</span><span class="st">"o"</span>, </span>
-<span id="cb15-123"><a href="#cb15-123" aria-hidden="true" tabindex="-1"></a>    errorbar<span class="op">=</span>(<span class="st">"sd"</span>, <span class="dv">1</span>),</span>
-<span id="cb15-124"><a href="#cb15-124" aria-hidden="true" tabindex="-1"></a>    ax<span class="op">=</span>ax</span>
-<span id="cb15-125"><a href="#cb15-125" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb15-126"><a href="#cb15-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-127"><a href="#cb15-127" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="fl">1.0</span>, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb15-128"><a href="#cb15-128" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Seasonal Traffic Index by Road Type (Mean ± 1 SD)"</span>)</span>
-<span id="cb15-129"><a href="#cb15-129" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Seasonal Index (1.0 = Annual Average)"</span>)</span>
-<span id="cb15-130"><a href="#cb15-130" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb15-131"><a href="#cb15-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-132"><a href="#cb15-132" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Seasonal Index by Month and Road Type:"</span>)</span>
-<span id="cb15-133"><a href="#cb15-133" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(profiles.groupby([<span class="st">"monthname"</span>, <span class="st">"road_type"</span>], observed<span class="op">=</span><span class="va">True</span>)[<span class="st">"seasonal_index"</span>].mean().unstack().<span class="bu">round</span>(<span class="dv">3</span>))</span>
-<span id="cb15-134"><a href="#cb15-134" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-135"><a href="#cb15-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-136"><a href="#cb15-136" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interpretation</span></span>
-<span id="cb15-137"><a href="#cb15-137" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Amplitude**: The vertical distance between the summer peak and winter trough shows a significant ~30% seasonal swing.</span>
-<span id="cb15-138"><a href="#cb15-138" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Convergence**: The lines for Motorways and A-Roads overlap closely, with seasonal indices sitting within ±0.02 of each other in every month. This means seasonality is a **global phenomenon** rather than a link-specific one.</span>
-<span id="cb15-139"><a href="#cb15-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-140"><a href="#cb15-140" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-141"><a href="#cb15-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-142"><a href="#cb15-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## Weekday vs. Weekend Profiles</span></span>
-<span id="cb15-143"><a href="#cb15-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-144"><a href="#cb15-144" aria-hidden="true" tabindex="-1"></a>We investigate the stability of the weekday/weekend ratio across the network.</span>
-<span id="cb15-145"><a href="#cb15-145" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-146"><a href="#cb15-146" aria-hidden="true" tabindex="-1"></a>The Variance Analysis section used raw 2023 chunks at site grain. This section uses the corridor-level aggregations from temporal_profiles.parquet, confirming the same result holds at corridor grain.</span>
-<span id="cb15-147"><a href="#cb15-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-150"><a href="#cb15-150" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-151"><a href="#cb15-151" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">6</span>))</span>
-<span id="cb15-152"><a href="#cb15-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-153"><a href="#cb15-153" aria-hidden="true" tabindex="-1"></a><span class="co"># Distribution across all sites/months</span></span>
-<span id="cb15-154"><a href="#cb15-154" aria-hidden="true" tabindex="-1"></a>sns.histplot(profiles[<span class="st">"weekday_weekend_ratio"</span>].dropna(), bins<span class="op">=</span><span class="dv">40</span>, kde<span class="op">=</span><span class="va">True</span>, color<span class="op">=</span><span class="st">"seagreen"</span>, ax<span class="op">=</span>ax1)</span>
-<span id="cb15-155"><a href="#cb15-155" aria-hidden="true" tabindex="-1"></a>ax1.axvline(profiles[<span class="st">"weekday_weekend_ratio"</span>].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
-<span id="cb15-156"><a href="#cb15-156" aria-hidden="true" tabindex="-1"></a>ax1.set_title(<span class="st">"Distribution of Weekday/Weekend Ratios"</span>)</span>
-<span id="cb15-157"><a href="#cb15-157" aria-hidden="true" tabindex="-1"></a>ax1.set_xlabel(<span class="st">"Ratio (AWT / ADT)"</span>)</span>
-<span id="cb15-158"><a href="#cb15-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-159"><a href="#cb15-159" aria-hidden="true" tabindex="-1"></a><span class="co"># Stability by month</span></span>
-<span id="cb15-160"><a href="#cb15-160" aria-hidden="true" tabindex="-1"></a>sns.boxplot(data<span class="op">=</span>profiles, x<span class="op">=</span><span class="st">"monthname"</span>, y<span class="op">=</span><span class="st">"weekday_weekend_ratio"</span>, color<span class="op">=</span><span class="st">"lightblue"</span>, ax<span class="op">=</span>ax2)</span>
-<span id="cb15-161"><a href="#cb15-161" aria-hidden="true" tabindex="-1"></a>ax2.axhline(<span class="fl">1.0</span>, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb15-162"><a href="#cb15-162" aria-hidden="true" tabindex="-1"></a>ax2.set_title(<span class="st">"Ratio Stability Across Months"</span>)</span>
-<span id="cb15-163"><a href="#cb15-163" aria-hidden="true" tabindex="-1"></a>ax2.set_ylabel(<span class="st">"Weekday/Weekend Ratio"</span>)</span>
-<span id="cb15-164"><a href="#cb15-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-165"><a href="#cb15-165" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb15-166"><a href="#cb15-166" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb15-167"><a href="#cb15-167" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-168"><a href="#cb15-168" aria-hidden="true" tabindex="-1"></a><span class="co"># Mean check by road type</span></span>
-<span id="cb15-169"><a href="#cb15-169" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Weekday/Weekend Ratio by Road Type:"</span>)</span>
-<span id="cb15-170"><a href="#cb15-170" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(profiles.groupby(<span class="st">"road_type"</span>)[<span class="st">"weekday_weekend_ratio"</span>].mean().<span class="bu">round</span>(<span class="dv">4</span>))</span>
-<span id="cb15-171"><a href="#cb15-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-172"><a href="#cb15-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-173"><a href="#cb15-173" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interpretation</span></span>
-<span id="cb15-174"><a href="#cb15-174" aria-hidden="true" tabindex="-1"></a>Mean ratio is 1.08; standard deviation across sites within any month is ~0.03; mean is essentially identical across road types (motorway 1.073, A-road 1.076, other 1.085). The descriptor has no link-specific variation to model.</span>
-<span id="cb15-175"><a href="#cb15-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-176"><a href="#cb15-176" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-177"><a href="#cb15-177" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-178"><a href="#cb15-178" aria-hidden="true" tabindex="-1"></a><span class="fu">## Time-of-Day Intensity (Day vs. Night)</span></span>
-<span id="cb15-179"><a href="#cb15-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-180"><a href="#cb15-180" aria-hidden="true" tabindex="-1"></a>Using the <span class="in">`webtris_clean.parquet`</span> dataset, we examine the <span class="in">`core_overnight_ratio`</span>. This measures the daytime flow per hour relative to the nighttime flow per hour.</span>
-<span id="cb15-181"><a href="#cb15-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-184"><a href="#cb15-184" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-185"><a href="#cb15-185" aria-hidden="true" tabindex="-1"></a>webtris_clean <span class="op">=</span> pd.read_parquet(WEBTRIS_CLEAN)</span>
-<span id="cb15-186"><a href="#cb15-186" aria-hidden="true" tabindex="-1"></a>site_tod <span class="op">=</span> webtris_clean.groupby(<span class="st">"site_id"</span>)[<span class="st">"core_overnight_ratio"</span>].mean().dropna()</span>
-<span id="cb15-187"><a href="#cb15-187" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-188"><a href="#cb15-188" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>))</span>
-<span id="cb15-189"><a href="#cb15-189" aria-hidden="true" tabindex="-1"></a>sns.histplot(site_tod, bins<span class="op">=</span><span class="dv">50</span>, kde<span class="op">=</span><span class="va">True</span>, color<span class="op">=</span><span class="st">"purple"</span>, ax<span class="op">=</span>ax)</span>
-<span id="cb15-190"><a href="#cb15-190" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Daytime-to-Nighttime Intensity Ratio"</span>)</span>
-<span id="cb15-191"><a href="#cb15-191" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Ratio (Mean Day Flow / Mean Night Flow)"</span>)</span>
-<span id="cb15-192"><a href="#cb15-192" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb15-193"><a href="#cb15-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-194"><a href="#cb15-194" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"5th Percentile: </span><span class="sc">{</span>site_tod<span class="sc">.</span>quantile(<span class="fl">0.05</span>)<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
-<span id="cb15-195"><a href="#cb15-195" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"95th Percentile: </span><span class="sc">{</span>site_tod<span class="sc">.</span>quantile(<span class="fl">0.95</span>)<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
-<span id="cb15-196"><a href="#cb15-196" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-197"><a href="#cb15-197" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-198"><a href="#cb15-198" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interpretation</span></span>
-<span id="cb15-199"><a href="#cb15-199" aria-hidden="true" tabindex="-1"></a>Unlike the weekday/weekend ratio, this distribution is **wide**, spanning from 4.2 to 15.2. This indicates that time-of-day behavior is **highly link-specific**. Some roads carry substantial overnight flows (e.g., freight corridors), while others are almost exclusively used during the day.</span>
-<span id="cb15-200"><a href="#cb15-200" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-201"><a href="#cb15-201" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-202"><a href="#cb15-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-203"><a href="#cb15-203" aria-hidden="true" tabindex="-1"></a><span class="fu">## Heavy Goods Vehicle (HGV) Composition</span></span>
-<span id="cb15-204"><a href="#cb15-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-205"><a href="#cb15-205" aria-hidden="true" tabindex="-1"></a>Finally, we look at how the large vehicle percentage fluctuates across the network.</span>
-<span id="cb15-206"><a href="#cb15-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-209"><a href="#cb15-209" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-210"><a href="#cb15-210" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb15-211"><a href="#cb15-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-212"><a href="#cb15-212" aria-hidden="true" tabindex="-1"></a>sns.boxplot(data<span class="op">=</span>profiles, x<span class="op">=</span><span class="st">"monthname"</span>, y<span class="op">=</span><span class="st">"mean_large_pct"</span>, hue<span class="op">=</span><span class="st">"road_type"</span>, ax<span class="op">=</span>ax)</span>
-<span id="cb15-213"><a href="#cb15-213" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Large Vehicle Percentage by Month and Road Type"</span>)</span>
-<span id="cb15-214"><a href="#cb15-214" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"HGV %"</span>)</span>
-<span id="cb15-215"><a href="#cb15-215" aria-hidden="true" tabindex="-1"></a>plt.legend(bbox_to_anchor<span class="op">=</span>(<span class="fl">1.05</span>, <span class="dv">1</span>), loc<span class="op">=</span><span class="st">'upper left'</span>)</span>
-<span id="cb15-216"><a href="#cb15-216" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb15-217"><a href="#cb15-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-218"><a href="#cb15-218" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Large Vehicle Percentage by Month and Road Type:"</span>)</span>
-<span id="cb15-219"><a href="#cb15-219" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(profiles.groupby([<span class="st">"monthname"</span>, <span class="st">"road_type"</span>], observed<span class="op">=</span><span class="va">True</span>)[<span class="st">"mean_large_pct"</span>].mean().unstack().<span class="bu">round</span>(<span class="dv">2</span>))</span>
-<span id="cb15-220"><a href="#cb15-220" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-221"><a href="#cb15-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-222"><a href="#cb15-222" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interpretation</span></span>
-<span id="cb15-223"><a href="#cb15-223" aria-hidden="true" tabindex="-1"></a>HGV percentage shows a ~3pp summer dip across all road types. This is largely a denominator artefact — total traffic rises ~30% in summer while HGV volumes stay roughly flat — not a freight-side seasonal pattern. The within-road-class spread visible in the boxplot is genuine variation in road character, but a cleaner descriptor would be HGV volume (vehicles/day) rather than HGV percentage. Per-site within-month std check still warranted before drawing a verdict; if HGV is eventually taken to ablation, volume is the better feature. Worth a per-site within-month std analysis matching the Variance Analysis section before drawing a final verdict.</span>
-<span id="cb15-224"><a href="#cb15-224" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-225"><a href="#cb15-225" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-226"><a href="#cb15-226" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-227"><a href="#cb15-227" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Depth Check</span></span>
-<span id="cb15-228"><a href="#cb15-228" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-229"><a href="#cb15-229" aria-hidden="true" tabindex="-1"></a>We verify the amount of data backing these observations to ensure statistical confidence.</span>
-<span id="cb15-230"><a href="#cb15-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-233"><a href="#cb15-233" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb15-234"><a href="#cb15-234" aria-hidden="true" tabindex="-1"></a><span class="co"># Site counts per corridor</span></span>
-<span id="cb15-235"><a href="#cb15-235" aria-hidden="true" tabindex="-1"></a>site_counts <span class="op">=</span> profiles.groupby(<span class="st">"road_prefix"</span>)[<span class="st">"n_site_months"</span>].<span class="bu">sum</span>() <span class="op">/</span> <span class="dv">12</span></span>
-<span id="cb15-236"><a href="#cb15-236" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total Unique Corridors: </span><span class="sc">{</span><span class="bu">len</span>(site_counts)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb15-237"><a href="#cb15-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-238"><a href="#cb15-238" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
-<span id="cb15-239"><a href="#cb15-239" aria-hidden="true" tabindex="-1"></a>sns.histplot(site_counts, bins<span class="op">=</span><span class="dv">30</span>, log_scale<span class="op">=</span>(<span class="va">True</span>, <span class="va">False</span>), ax<span class="op">=</span>ax)</span>
-<span id="cb15-240"><a href="#cb15-240" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Distribution of Sites per Corridor (Log Scale)"</span>)</span>
-<span id="cb15-241"><a href="#cb15-241" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Approximate Sites"</span>)</span>
-<span id="cb15-242"><a href="#cb15-242" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb15-243"><a href="#cb15-243" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-244"><a href="#cb15-244" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-245"><a href="#cb15-245" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary of Potential Modelling Implications</span></span>
-<span id="cb15-246"><a href="#cb15-246" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-247"><a href="#cb15-247" aria-hidden="true" tabindex="-1"></a>Based on the variance observed in the plots above:</span>
-<span id="cb15-248"><a href="#cb15-248" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-249"><a href="#cb15-249" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Dimension <span class="pp">|</span> Observed Variance <span class="pp">|</span> Modelling Strategy <span class="pp">|</span></span>
-<span id="cb15-250"><a href="#cb15-250" aria-hidden="true" tabindex="-1"></a><span class="pp">| :---</span> <span class="pp">| :---</span> <span class="pp">| :---</span> <span class="pp">|</span></span>
-<span id="cb15-251"><a href="#cb15-251" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Monthly Seasonality** | High amplitude, low inter-link variance. | Handle via **global** monthly multipliers. <span class="pp">|</span></span>
-<span id="cb15-252"><a href="#cb15-252" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Weekday vs. Weekend** | Low variance across network (~1.08). | Treat as a **global** constant. <span class="pp">|</span></span>
-<span id="cb15-253"><a href="#cb15-253" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Time-of-Day** | High inter-link variance (4.2 - 15.2). | Treat as **link-specific** (Priority for ablation). <span class="pp">|</span></span>
-<span id="cb15-254"><a href="#cb15-254" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **HGV Mix** <span class="pp">|</span> Global seasonal swing (~3pp) and substantial within-class spread. <span class="pp">|</span> Status: not formally tested at site grain. May carry signal beyond road class. <span class="pp">|</span></span>
-</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
-</div></div></div></div></div>
+  </script>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">

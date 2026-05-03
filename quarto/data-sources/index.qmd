@@ -1,0 +1,44 @@
+---
+title: "Data sources"
+---
+
+This project combines collision, traffic, road-network, and contextual datasets to estimate road risk relative to exposure. Each source has a distinct role: some define the road network, some provide observed outcomes, and others provide traffic or contextual predictors used by the modelling pipeline.
+
+## How the sources fit together
+
+| Source | Main role | Used for | Key limitation |
+|---|---|---|---|
+| STATS19 | Collision outcome data | Observed injury collisions used as the response variable in the collision model | Police-reported injury collisions only; excludes damage-only incidents |
+| OS Open Roads | Road network geometry | Base road-link network for snapping, feature generation, and scoring | Simplified representation of real-world road layout |
+| AADF | Observed traffic counts | Training data for estimating annual average daily traffic where direct counts are unavailable | Sparse coverage, especially away from major roads |
+| WebTRIS | Traffic timing and vehicle mix | Time-of-day profiles, traffic composition, and support for exposure features | Biased toward National Highways / major-road sensors |
+| OpenStreetMap | Supplementary road attributes | Additional tags such as bridge/tunnel or road context where useful | Uneven coverage and tagging consistency |
+| MRDB | Major-road reference data | Major-road structure and classification support | Mainly useful for major-road context |
+| LSOA / population data | Area context | Population-density and local-area contextual features | Area-level proxy, not direct road use |
+
+## Source roles in the model
+
+### Outcome source
+- **STATS19** provides the observed collision outcome.
+
+### Network source
+- **OS Open Roads** defines the scored road-link network.
+
+### Exposure sources
+- **AADF** provides direct traffic-count training examples.
+- **WebTRIS** provides time-profile and vehicle-mix information.
+
+### Context sources
+- **OSM**, **MRDB**, and area-level **population data** provide supporting road and local-context features.
+
+## Detailed pages
+
+- [STATS19](stats19.qmd)
+- [OS Open Roads](openroads.qmd)
+- [AADF Traffic Counts](aadf.qmd)
+- [WebTRIS Sensors](webtris.qmd)
+- [Network Model GDB](network-model-gdb.qmd)
+
+---
+
+Next: [How the sources are joined](../methodology/data-joining.qmd)

@@ -40,79 +40,16 @@ Official traffic counts are concentrated on major roads and sampled count points
 
 This pipeline addresses that by estimating traffic where it is not measured and then modelling collision risk in relation to that estimated exposure.
 
-## What the pipeline does
-
-The project is organised in three main modelling stages:
-
-### Stage 1a — Traffic exposure estimation
-Traffic counts from AADF are used to train a model that estimates AADT for road links without direct counts.
-
-### Stage 1b — Time-zone profiles
-WebTRIS sensor data provides supporting information on within-day traffic structure and vehicle mix on major roads.
-
-### Stage 2 — Collision risk modelling
-Collision outcomes from STATS19 are modelled against exposure, road class, network structure, and contextual features to estimate relative road risk.
-
-The result is a network-wide risk layer that can be used to identify unusually risky links, compare corridors, and support downstream applications.
-
-## Data sources
-
-This project currently draws on the following core sources:
-
-| Dataset | Provider | Role |
-|---|---|---|
-| STATS19 | Department for Transport | reported road collisions and casualty context |
-| AADF | Department for Transport | observed traffic counts at count points |
-| WebTRIS | National Highways | measured traffic and vehicle-mix context on major roads |
-| OS Open Roads | Ordnance Survey | road link geometry and classifications |
-| OpenStreetMap | OSM contributors | supplementary road attributes |
-| MRDB | DfT / OS | major-road reference network |
-| LSOA population data | ONS | population-density and contextual features |
-
-## Main outputs
-
-The pipeline is designed to produce:
-
-- estimated traffic exposure for uncounted roads
-- link-level risk scores across the network
-- residual or excess-risk views showing where observed risk is higher than expected
-- corridor- and area-level summaries for applied use cases
-
-## Current scope
-
-The project began as a Yorkshire pilot and is being used to test whether an open-data workflow can support full-network safety performance modelling.
-
-It is intended as:
-- a methodological prototype
-- a decision-support and analysis tool
-- a basis for more focused applications such as corridor screening and local safety prioritisation
-
-It is **not**:
-- a real-time traffic management system
-- a causal intervention model
-- a definitive national risk product without wider validation
-
-## Known limitations
-
-Important limitations include:
-
-- STATS19 reflects **reported** collisions, not all collisions
-- direct traffic counts are sparse outside major roads
-- WebTRIS only covers the National Highways network
-- some road attributes (e.g. speed limits, lanes, lighting) are incomplete
-- risk estimates are only as good as the joins and assumptions behind them
-
-These are discussed in more detail throughout the site.
-
 ## Site guide
 
 The site is organised around the logic of the pipeline:
 
-- **Data Sources** — what each dataset contains and what it can and cannot tell us
-- **Methodology** — how sources are joined and transformed into modelling inputs
-- **Analysis** — model behaviour, outputs, and exploratory evaluation
-- **Future Work** — research questions and extensions the pipeline can support
-- **API Reference** — code structure and module-level documentation
+- **[Project Overview](project/project-overview.qmd)** — overview of repository layout, modelling stages, and current status
+- **[Data Sources](data-sources/index.qmd)** — what each dataset contains and what it can and cannot tell us
+- **[Methodology](methodology/methodology-index.qmd)** — how sources are joined and transformed into modelling inputs
+- **[Analysis](analysis/eda-collisions.qmd)** — model behaviour, outputs, and exploratory evaluation
+- **[Future Work](future-work.qmd)** — research questions and extensions the pipeline can support
+
 
 A good place to start is with the source pages for [STATS19](data-sources/stats19.qmd), [AADF](data-sources/aadf.qmd), and [WebTRIS](data-sources/webtris.qmd), then move to the methodology pages on joining and feature engineering.
 

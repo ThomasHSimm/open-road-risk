@@ -183,10 +183,29 @@ window.Quarto = {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Data Sources</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../data-sources/stats19.html">
  <span class="dropdown-text">STATS19 Collisions</span></a>
@@ -343,7 +362,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">Stage 1b: Time-Zone Traffic Profiles</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+<h1 class="title">Stage 1b: Time-Zone Traffic Profiles</h1>
 </div>
 
 
@@ -405,8 +424,6 @@ window.Quarto = {
 <section id="data-and-model-setup" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="data-and-model-setup"><span class="header-section-number">3</span> Data and model setup</h2>
 <div id="932ecf41" class="cell" data-execution_count="1">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
@@ -427,7 +444,6 @@ window.Quarto = {
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"</span><span class="sc">{</span>webtris[<span class="st">'year'</span>]<span class="sc">.</span>nunique()<span class="sc">}</span><span class="ss"> years = </span><span class="sc">{</span><span class="bu">len</span>(webtris)<span class="sc">:,}</span><span class="ss"> rows"</span>)</span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Profile estimates      : </span><span class="sc">{</span><span class="bu">len</span>(profiles)<span class="sc">:,}</span><span class="ss"> rows"</span> <span class="cf">if</span> <span class="kw">not</span> profiles.empty</span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span> <span class="st">"Profile estimates      : not found — run --stage profile"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>WebTRIS training sites : 5,948 sites × 3 years = 15,011 rows
 Profile estimates      : 21,675,570 rows</code></pre>
@@ -438,8 +454,6 @@ Profile estimates      : 21,675,570 rows</code></pre>
 <h2 data-number="4" class="anchored" data-anchor-id="training-data-webtris-time-zone-fractions"><span class="header-section-number">4</span> Training data: WebTRIS time-zone fractions</h2>
 <p>The profile model is trained on WebTRIS sensors — National Highways sites on motorways and major A-roads. For each site×year, the four time-band fractions are computed from the measured flow windows and used as prediction targets.</p>
 <div id="0b0f3974" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>wt <span class="op">=</span> webtris[webtris[<span class="st">"all_flow"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"core_daytime_frac"</span>]       <span class="op">=</span> (wt[<span class="st">"flow_ph_core_daytime"</span>]       <span class="op">*</span> <span class="dv">12</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"shoulder_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_shoulder"</span>]     <span class="op">*</span>  <span class="dv">4</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
@@ -449,7 +463,6 @@ Profile estimates      : 21,675,570 rows</code></pre>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>fracs <span class="op">=</span> [<span class="st">"core_daytime_frac"</span>, <span class="st">"shoulder_frac"</span>, <span class="st">"late_evening_frac"</span>, <span class="st">"overnight_frac"</span>]</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Time-zone fraction distributions (measured WebTRIS sites):</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[fracs].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Time-zone fraction distributions (measured WebTRIS sites):
 
@@ -467,8 +480,6 @@ max                0.933          0.318              0.182           0.251</code
 </div>
 </div>
 <div id="35ddec96" class="cell" data-execution_count="3">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>titles <span class="op">=</span> [<span class="st">"Peak (12h, 07–19)"</span>, <span class="st">"Pre-peak (4h, 19–23)"</span>,</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Pre-offpeak (2h, 23–01)"</span>, <span class="st">"Offpeak (6h, 01–07)"</span>]</span>
@@ -482,7 +493,6 @@ max                0.933          0.318              0.182           0.251</code
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="st">"Measured time-zone fractions — WebTRIS training sites"</span>, y<span class="op">=</span><span class="fl">1.01</span>)</span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -492,8 +502,6 @@ max                0.933          0.318              0.182           0.251</code
 </div>
 </div>
 <div id="8b01295f" class="cell" data-execution_count="4">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Peak–offpeak ratio (measured sites):"</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[<span class="st">"core_overnight_ratio"</span>].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">2</span>).to_string())</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -505,7 +513,6 @@ max                0.933          0.318              0.182           0.251</code
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.axvline(wt[<span class="st">"core_overnight_ratio"</span>].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Peak–offpeak ratio (measured sites):
 count    15003.00
@@ -590,8 +597,6 @@ Note
 <section id="estimated-profiles-across-the-full-network" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="estimated-profiles-across-the-full-network"><span class="header-section-number">6</span> Estimated profiles across the full network</h2>
 <div id="41c560a3" class="cell" data-execution_count="5">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    latest <span class="op">=</span> profiles[profiles[<span class="st">"year"</span>] <span class="op">==</span> profiles[<span class="st">"year"</span>].<span class="bu">max</span>()].copy()</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Year </span><span class="sc">{</span>latest[<span class="st">'year'</span>]<span class="sc">.</span>iloc[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> — </span><span class="sc">{</span><span class="bu">len</span>(latest)<span class="sc">:,}</span><span class="ss"> link estimates</span><span class="ch">\n</span><span class="ss">"</span>)</span>
@@ -599,7 +604,6 @@ Note
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest[frac_cols <span class="op">+</span> [<span class="st">"core_overnight_ratio"</span>]].describe(</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    ).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Year 2024 — 2,167,557 link estimates
 
@@ -617,8 +621,6 @@ max                0.890          0.164              0.041           0.112      
 </div>
 </div>
 <div id="6cff1c1a" class="cell" data-execution_count="6">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    titles <span class="op">=</span> [<span class="st">"Peak (12h)"</span>, <span class="st">"Pre-peak (4h)"</span>, <span class="st">"Pre-offpeak (2h)"</span>, <span class="st">"Offpeak (6h)"</span>]</span>
@@ -635,7 +637,6 @@ max                0.890          0.164              0.041           0.112      
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Estimated fractions — full network vs measured WebTRIS"</span>, y<span class="op">=</span><span class="fl">1.01</span>)</span>
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -649,8 +650,6 @@ max                0.890          0.164              0.041           0.112      
 <h2 data-number="7" class="anchored" data-anchor-id="profile-variation-by-road-class"><span class="header-section-number">7</span> Profile variation by road class</h2>
 <p>Roads with different functions show distinct daily profiles. Motorways have high peak fractions (commuter + freight); rural unclassified roads have flatter profiles. The model captures this through road classification and network betweenness.</p>
 <div id="1c280594" class="cell" data-execution_count="7">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty <span class="kw">and</span> road_class_col:</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    with_class <span class="op">=</span> profiles[profiles[<span class="st">"year"</span>] <span class="op">==</span> profiles[<span class="st">"year"</span>].<span class="bu">max</span>()].merge(</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        road[[<span class="st">"link_id"</span>, road_class_col]].drop_duplicates(<span class="st">"link_id"</span>),</span>
@@ -678,7 +677,6 @@ max                0.890          0.164              0.041           0.112      
 <span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
 <span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Median time-zone fractions by road class:
 
@@ -705,8 +703,6 @@ Motorway                           0.784           0.055                 7.137</
 <h2 data-number="8" class="anchored" data-anchor-id="reconstructed-per-hour-flows"><span class="header-section-number">8</span> Reconstructed per-hour flows</h2>
 <p>Using Stage 1a AADT estimates and Stage 1b fractions, per-hour flow rates can be computed for any link in the network.</p>
 <div id="6ed9bb40" class="cell" data-execution_count="8">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    flow_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> [</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"flow_ph_core_daytime"</span>, <span class="st">"flow_ph_shoulder"</span>, <span class="st">"flow_ph_late_evening"</span>, <span class="st">"flow_ph_overnight"</span></span>
@@ -718,7 +714,6 @@ Motorway                           0.784           0.055                 7.137</
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(sample_yr[flow_cols].describe(</span>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>            percentiles<span class="op">=</span>[<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>, <span class="fl">0.99</span>]</span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        ).<span class="bu">round</span>(<span class="dv">1</span>).to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Per-hour flow estimates — full network (vehicles/hour):
 
@@ -775,8 +770,6 @@ Stage 2   python -m road_risk.model --stage collision
 <li>Year-on-year variation in profiles (e.g.&nbsp;COVID impact on commuting patterns) is captured through the <code>year_norm</code> and <code>is_covid</code> features but may not fully reflect rapid behavioural shifts.</li>
 </ul>
 
-
-<!-- -->
 
 </section>
 
@@ -851,57 +844,6 @@ Stage 2   python -m road_risk.model --stage collision
         container: window.document.getElementById('quarto-embedded-source-code-modal')
       });
       clipboardModal.on('success', onCopySuccess);
-    }
-    const viewSource = window.document.getElementById('quarto-view-source') ||
-                       window.document.getElementById('quarto-code-tools-source');
-    if (viewSource) {
-      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
-      viewSource.addEventListener("click", function(e) {
-        if (sourceUrl) {
-          // rstudio viewer pane
-          if (/\bcapabilities=\b/.test(window.location)) {
-            window.open(sourceUrl);
-          } else {
-            window.location.href = sourceUrl;
-          }
-        } else {
-          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
-          modal.show();
-        }
-        return false;
-      });
-    }
-    function toggleCodeHandler(show) {
-      return function(e) {
-        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
-        for (let i=0; i<detailsSrc.length; i++) {
-          const details = detailsSrc[i].parentElement;
-          if (show) {
-            details.open = true;
-          } else {
-            details.removeAttribute("open");
-          }
-        }
-        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
-        const fromCls = show ? "hidden" : "unhidden";
-        const toCls = show ? "unhidden" : "hidden";
-        for (let i=0; i<cellCodeDivs.length; i++) {
-          const codeDiv = cellCodeDivs[i];
-          if (codeDiv.classList.contains(fromCls)) {
-            codeDiv.classList.remove(fromCls);
-            codeDiv.classList.add(toCls);
-          } 
-        }
-        return false;
-      }
-    }
-    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
-    if (hideAllCode) {
-      hideAllCode.addEventListener("click", toggleCodeHandler(false));
-    }
-    const showAllCode = window.document.getElementById("quarto-show-all-code");
-    if (showAllCode) {
-      showAllCode.addEventListener("click", toggleCodeHandler(true));
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
@@ -1231,276 +1173,7 @@ Stage 2   python -m road_risk.model --stage collision
       }
     }
   });
-  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Stage 1b: Time-Zone Traffic Profiles"</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: true</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="an">jupyter:</span><span class="co"> python3</span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Why time-zone profiles matter</span></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>Stage 1a estimates total daily traffic (AADT) for every road link. This is</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>sufficient for computing collision *rates* — collisions per million</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>vehicle-kilometres — but it treats all hours of the day as equivalent. In</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>practice, risk varies significantly by time of day: peak-hour traffic is denser,</span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>faster, and involves more interactions than overnight flow.</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>Stage 1b estimates the *shape* of the daily traffic profile for every road link:</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>what fraction of daily traffic flows in each time band? Combined with the Stage</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>1a AADT estimate, this gives per-hour flow rates for any road in the network.</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## Time bands</span></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>WebTRIS annual reports provide cumulative flow totals for four hour windows.</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>Differencing these gives four non-overlapping time bands:</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Code label <span class="pp">|</span> True period <span class="pp">|</span> Hours <span class="pp">|</span></span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|-------------|------:|</span></span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`core_daytime_frac`</span> <span class="pp">|</span> 07:00–18:59 <span class="pp">|</span> 12 <span class="pp">|</span></span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`shoulder_frac`</span> <span class="pp">|</span> 06–07 + 19–22 (mixed shoulder) <span class="pp">|</span> 4 <span class="pp">|</span></span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`late_evening_frac`</span> <span class="pp">|</span> 22:00–24:00 <span class="pp">|</span> 2 <span class="pp">|</span></span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`overnight_frac`</span> <span class="pp">|</span> 00:00–06:00 <span class="pp">|</span> 6 <span class="pp">|</span></span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>The model predicts the fraction of daily traffic in each band. Absolute</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>per-hour flow is then reconstructed as:</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>$$\text{flow<span class="sc">\_</span>ph<span class="sc">\_</span>peak} = \text{AADT} \times \frac{\text{peak<span class="sc">\_</span>frac}}{12}$$</span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data and model setup</span></span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT <span class="im">as</span> ROOT</span>
-<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>webtris <span class="op">=</span> pd.read_parquet(ROOT <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"processed"</span> <span class="op">/</span> <span class="st">"webtris"</span> <span class="op">/</span> <span class="st">"webtris_clean.parquet"</span>)</span>
-<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>profiles_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"models"</span> <span class="op">/</span> <span class="st">"timezone_profiles.parquet"</span></span>
-<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> pd.read_parquet(profiles_path) <span class="cf">if</span> profiles_path.exists() <span class="cf">else</span> pd.DataFrame()</span>
-<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>road <span class="op">=</span> pd.read_parquet(ROOT <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"features"</span> <span class="op">/</span> <span class="st">"road_link_annual.parquet"</span>)</span>
-<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>road_class_col <span class="op">=</span> <span class="bu">next</span>(</span>
-<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a>    (c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"road_classification"</span>, <span class="st">"road_type"</span>] <span class="cf">if</span> c <span class="kw">in</span> road.columns), <span class="va">None</span></span>
-<span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"WebTRIS training sites : </span><span class="sc">{</span>webtris[<span class="st">'site_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss"> sites × "</span></span>
-<span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"</span><span class="sc">{</span>webtris[<span class="st">'year'</span>]<span class="sc">.</span>nunique()<span class="sc">}</span><span class="ss"> years = </span><span class="sc">{</span><span class="bu">len</span>(webtris)<span class="sc">:,}</span><span class="ss"> rows"</span>)</span>
-<span id="cb16-68"><a href="#cb16-68" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Profile estimates      : </span><span class="sc">{</span><span class="bu">len</span>(profiles)<span class="sc">:,}</span><span class="ss"> rows"</span> <span class="cf">if</span> <span class="kw">not</span> profiles.empty</span>
-<span id="cb16-69"><a href="#cb16-69" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span> <span class="st">"Profile estimates      : not found — run --stage profile"</span>)</span>
-<span id="cb16-70"><a href="#cb16-70" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-71"><a href="#cb16-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-72"><a href="#cb16-72" aria-hidden="true" tabindex="-1"></a><span class="fu">## Training data: WebTRIS time-zone fractions</span></span>
-<span id="cb16-73"><a href="#cb16-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-74"><a href="#cb16-74" aria-hidden="true" tabindex="-1"></a>The profile model is trained on WebTRIS sensors — National Highways sites on</span>
-<span id="cb16-75"><a href="#cb16-75" aria-hidden="true" tabindex="-1"></a>motorways and major A-roads. For each site×year, the four time-band fractions</span>
-<span id="cb16-76"><a href="#cb16-76" aria-hidden="true" tabindex="-1"></a>are computed from the measured flow windows and used as prediction targets.</span>
-<span id="cb16-77"><a href="#cb16-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-80"><a href="#cb16-80" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-81"><a href="#cb16-81" aria-hidden="true" tabindex="-1"></a>wt <span class="op">=</span> webtris[webtris[<span class="st">"all_flow"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
-<span id="cb16-82"><a href="#cb16-82" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"core_daytime_frac"</span>]       <span class="op">=</span> (wt[<span class="st">"flow_ph_core_daytime"</span>]       <span class="op">*</span> <span class="dv">12</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb16-83"><a href="#cb16-83" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"shoulder_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_shoulder"</span>]     <span class="op">*</span>  <span class="dv">4</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb16-84"><a href="#cb16-84" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"late_evening_frac"</span>] <span class="op">=</span> (wt[<span class="st">"flow_ph_late_evening"</span>]  <span class="op">*</span>  <span class="dv">2</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb16-85"><a href="#cb16-85" aria-hidden="true" tabindex="-1"></a>wt[<span class="st">"overnight_frac"</span>]    <span class="op">=</span> (wt[<span class="st">"flow_ph_overnight"</span>]     <span class="op">*</span>  <span class="dv">6</span>) <span class="op">/</span> wt[<span class="st">"all_flow"</span>]</span>
-<span id="cb16-86"><a href="#cb16-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-87"><a href="#cb16-87" aria-hidden="true" tabindex="-1"></a>fracs <span class="op">=</span> [<span class="st">"core_daytime_frac"</span>, <span class="st">"shoulder_frac"</span>, <span class="st">"late_evening_frac"</span>, <span class="st">"overnight_frac"</span>]</span>
-<span id="cb16-88"><a href="#cb16-88" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Time-zone fraction distributions (measured WebTRIS sites):</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb16-89"><a href="#cb16-89" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[fracs].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span>
-<span id="cb16-90"><a href="#cb16-90" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-91"><a href="#cb16-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-94"><a href="#cb16-94" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-95"><a href="#cb16-95" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
-<span id="cb16-96"><a href="#cb16-96" aria-hidden="true" tabindex="-1"></a>titles <span class="op">=</span> [<span class="st">"Peak (12h, 07–19)"</span>, <span class="st">"Pre-peak (4h, 19–23)"</span>,</span>
-<span id="cb16-97"><a href="#cb16-97" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Pre-offpeak (2h, 23–01)"</span>, <span class="st">"Offpeak (6h, 01–07)"</span>]</span>
-<span id="cb16-98"><a href="#cb16-98" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, col, title <span class="kw">in</span> <span class="bu">zip</span>(axes.flat, fracs, titles):</span>
-<span id="cb16-99"><a href="#cb16-99" aria-hidden="true" tabindex="-1"></a>    ax.hist(wt[col].dropna(), bins<span class="op">=</span><span class="dv">40</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
-<span id="cb16-100"><a href="#cb16-100" aria-hidden="true" tabindex="-1"></a>    ax.set_title(title)</span>
-<span id="cb16-101"><a href="#cb16-101" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Fraction of daily traffic"</span>)</span>
-<span id="cb16-102"><a href="#cb16-102" aria-hidden="true" tabindex="-1"></a>    ax.axvline(wt[col].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb16-103"><a href="#cb16-103" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f"median=</span><span class="sc">{</span>wt[col]<span class="sc">.</span>median()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb16-104"><a href="#cb16-104" aria-hidden="true" tabindex="-1"></a>    ax.legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb16-105"><a href="#cb16-105" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="st">"Measured time-zone fractions — WebTRIS training sites"</span>, y<span class="op">=</span><span class="fl">1.01</span>)</span>
-<span id="cb16-106"><a href="#cb16-106" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb16-107"><a href="#cb16-107" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb16-108"><a href="#cb16-108" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-109"><a href="#cb16-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-112"><a href="#cb16-112" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-113"><a href="#cb16-113" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Peak–offpeak ratio (measured sites):"</span>)</span>
-<span id="cb16-114"><a href="#cb16-114" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(wt[<span class="st">"core_overnight_ratio"</span>].describe(percentiles<span class="op">=</span>[<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">0.9</span>]).<span class="bu">round</span>(<span class="dv">2</span>).to_string())</span>
-<span id="cb16-115"><a href="#cb16-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-116"><a href="#cb16-116" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb16-117"><a href="#cb16-117" aria-hidden="true" tabindex="-1"></a>plt.hist(wt[<span class="st">"core_overnight_ratio"</span>].clip(<span class="dv">0</span>, <span class="dv">30</span>), bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
-<span id="cb16-118"><a href="#cb16-118" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Peak flow/hr ÷ offpeak flow/hr"</span>)</span>
-<span id="cb16-119"><a href="#cb16-119" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb16-120"><a href="#cb16-120" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Peak–offpeak ratio distribution (WebTRIS sites)"</span>)</span>
-<span id="cb16-121"><a href="#cb16-121" aria-hidden="true" tabindex="-1"></a>plt.axvline(wt[<span class="st">"core_overnight_ratio"</span>].median(), color<span class="op">=</span><span class="st">"red"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb16-122"><a href="#cb16-122" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb16-123"><a href="#cb16-123" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb16-124"><a href="#cb16-124" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-125"><a href="#cb16-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-126"><a href="#cb16-126" aria-hidden="true" tabindex="-1"></a><span class="fu">## Model performance</span></span>
-<span id="cb16-127"><a href="#cb16-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-128"><a href="#cb16-128" aria-hidden="true" tabindex="-1"></a>Five models are trained (one per target) using <span class="in">`HistGradientBoostingRegressor`</span></span>
-<span id="cb16-129"><a href="#cb16-129" aria-hidden="true" tabindex="-1"></a>with <span class="in">`GroupKFold`</span> cross-validation grouped by <span class="in">`site_id`</span>, preventing the same</span>
-<span id="cb16-130"><a href="#cb16-130" aria-hidden="true" tabindex="-1"></a>sensor from appearing in both train and validation folds.</span>
-<span id="cb16-131"><a href="#cb16-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-132"><a href="#cb16-132" aria-hidden="true" tabindex="-1"></a>Features: location (lat/lon), log(AADT), network betweenness, distance to</span>
-<span id="cb16-133"><a href="#cb16-133" aria-hidden="true" tabindex="-1"></a>major road, population density, year, COVID flag.</span>
-<span id="cb16-134"><a href="#cb16-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-135"><a href="#cb16-135" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb16-136"><a href="#cb16-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Target <span class="pp">|</span> CV R² <span class="pp">|</span> Interpretation <span class="pp">|</span></span>
-<span id="cb16-137"><a href="#cb16-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|------:|---|</span></span>
-<span id="cb16-138"><a href="#cb16-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`core_daytime_frac`</span> <span class="pp">|</span> ~0.65 <span class="pp">|</span> Strong — peak shape driven by road function and location <span class="pp">|</span></span>
-<span id="cb16-139"><a href="#cb16-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`shoulder_frac`</span> <span class="pp">|</span> ~0.63 <span class="pp">|</span> Strong — evening pattern correlates with urban density <span class="pp">|</span></span>
-<span id="cb16-140"><a href="#cb16-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`overnight_frac`</span> <span class="pp">|</span> ~0.53 <span class="pp">|</span> Moderate — night freight patterns are more variable <span class="pp">|</span></span>
-<span id="cb16-141"><a href="#cb16-141" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`late_evening_frac`</span> <span class="pp">|</span> ~0.46 <span class="pp">|</span> Weakest — short transition band with mixed signal <span class="pp">|</span></span>
-<span id="cb16-142"><a href="#cb16-142" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`hgv_core_daytime_frac`</span> <span class="pp">|</span> ~0.63 <span class="pp">|</span> Strong — HGV peak timing is structurally driven <span class="pp">|</span></span>
-<span id="cb16-143"><a href="#cb16-143" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb16-144"><a href="#cb16-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-145"><a href="#cb16-145" aria-hidden="true" tabindex="-1"></a>The MAE for all fraction targets is &lt; 0.03, meaning the model predicts daily</span>
-<span id="cb16-146"><a href="#cb16-146" aria-hidden="true" tabindex="-1"></a>traffic fractions to within about ±3 percentage points on average.</span>
-<span id="cb16-147"><a href="#cb16-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-148"><a href="#cb16-148" aria-hidden="true" tabindex="-1"></a><span class="fu">## Estimated profiles across the full network</span></span>
-<span id="cb16-149"><a href="#cb16-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-152"><a href="#cb16-152" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-153"><a href="#cb16-153" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
-<span id="cb16-154"><a href="#cb16-154" aria-hidden="true" tabindex="-1"></a>    latest <span class="op">=</span> profiles[profiles[<span class="st">"year"</span>] <span class="op">==</span> profiles[<span class="st">"year"</span>].<span class="bu">max</span>()].copy()</span>
-<span id="cb16-155"><a href="#cb16-155" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Year </span><span class="sc">{</span>latest[<span class="st">'year'</span>]<span class="sc">.</span>iloc[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> — </span><span class="sc">{</span><span class="bu">len</span>(latest)<span class="sc">:,}</span><span class="ss"> link estimates</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb16-156"><a href="#cb16-156" aria-hidden="true" tabindex="-1"></a>    frac_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> fracs <span class="cf">if</span> c <span class="kw">in</span> latest.columns]</span>
-<span id="cb16-157"><a href="#cb16-157" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(latest[frac_cols <span class="op">+</span> [<span class="st">"core_overnight_ratio"</span>]].describe(</span>
-<span id="cb16-158"><a href="#cb16-158" aria-hidden="true" tabindex="-1"></a>        percentiles<span class="op">=</span>[<span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>]</span>
-<span id="cb16-159"><a href="#cb16-159" aria-hidden="true" tabindex="-1"></a>    ).<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span>
-<span id="cb16-160"><a href="#cb16-160" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-161"><a href="#cb16-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-164"><a href="#cb16-164" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-165"><a href="#cb16-165" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
-<span id="cb16-166"><a href="#cb16-166" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">7</span>))</span>
-<span id="cb16-167"><a href="#cb16-167" aria-hidden="true" tabindex="-1"></a>    titles <span class="op">=</span> [<span class="st">"Peak (12h)"</span>, <span class="st">"Pre-peak (4h)"</span>, <span class="st">"Pre-offpeak (2h)"</span>, <span class="st">"Offpeak (6h)"</span>]</span>
-<span id="cb16-168"><a href="#cb16-168" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ax, col, title <span class="kw">in</span> <span class="bu">zip</span>(axes.flat, fracs, titles):</span>
-<span id="cb16-169"><a href="#cb16-169" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> col <span class="kw">in</span> latest.columns:</span>
-<span id="cb16-170"><a href="#cb16-170" aria-hidden="true" tabindex="-1"></a>            ax.hist(latest[col].dropna(), bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>, alpha<span class="op">=</span><span class="fl">0.7</span>,</span>
-<span id="cb16-171"><a href="#cb16-171" aria-hidden="true" tabindex="-1"></a>                    label<span class="op">=</span><span class="st">"All links (estimated)"</span>)</span>
-<span id="cb16-172"><a href="#cb16-172" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> col <span class="kw">in</span> wt.columns:</span>
-<span id="cb16-173"><a href="#cb16-173" aria-hidden="true" tabindex="-1"></a>                ax.hist(wt[col].dropna(), bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
-<span id="cb16-174"><a href="#cb16-174" aria-hidden="true" tabindex="-1"></a>                        label<span class="op">=</span><span class="st">"WebTRIS measured"</span>)</span>
-<span id="cb16-175"><a href="#cb16-175" aria-hidden="true" tabindex="-1"></a>            ax.set_title(title)</span>
-<span id="cb16-176"><a href="#cb16-176" aria-hidden="true" tabindex="-1"></a>            ax.set_xlabel(<span class="st">"Fraction of daily traffic"</span>)</span>
-<span id="cb16-177"><a href="#cb16-177" aria-hidden="true" tabindex="-1"></a>            ax.legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb16-178"><a href="#cb16-178" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Estimated fractions — full network vs measured WebTRIS"</span>, y<span class="op">=</span><span class="fl">1.01</span>)</span>
-<span id="cb16-179"><a href="#cb16-179" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb16-180"><a href="#cb16-180" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb16-181"><a href="#cb16-181" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-182"><a href="#cb16-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-183"><a href="#cb16-183" aria-hidden="true" tabindex="-1"></a><span class="fu">## Profile variation by road class</span></span>
-<span id="cb16-184"><a href="#cb16-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-185"><a href="#cb16-185" aria-hidden="true" tabindex="-1"></a>Roads with different functions show distinct daily profiles. Motorways have</span>
-<span id="cb16-186"><a href="#cb16-186" aria-hidden="true" tabindex="-1"></a>high peak fractions (commuter + freight); rural unclassified roads have flatter</span>
-<span id="cb16-187"><a href="#cb16-187" aria-hidden="true" tabindex="-1"></a>profiles. The model captures this through road classification and network</span>
-<span id="cb16-188"><a href="#cb16-188" aria-hidden="true" tabindex="-1"></a>betweenness.</span>
-<span id="cb16-189"><a href="#cb16-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-192"><a href="#cb16-192" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-193"><a href="#cb16-193" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty <span class="kw">and</span> road_class_col:</span>
-<span id="cb16-194"><a href="#cb16-194" aria-hidden="true" tabindex="-1"></a>    with_class <span class="op">=</span> profiles[profiles[<span class="st">"year"</span>] <span class="op">==</span> profiles[<span class="st">"year"</span>].<span class="bu">max</span>()].merge(</span>
-<span id="cb16-195"><a href="#cb16-195" aria-hidden="true" tabindex="-1"></a>        road[[<span class="st">"link_id"</span>, road_class_col]].drop_duplicates(<span class="st">"link_id"</span>),</span>
-<span id="cb16-196"><a href="#cb16-196" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span></span>
-<span id="cb16-197"><a href="#cb16-197" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb16-198"><a href="#cb16-198" aria-hidden="true" tabindex="-1"></a>    grp <span class="op">=</span> (</span>
-<span id="cb16-199"><a href="#cb16-199" aria-hidden="true" tabindex="-1"></a>        with_class.groupby(road_class_col)[[<span class="st">"core_daytime_frac"</span>, <span class="st">"overnight_frac"</span>, <span class="st">"core_overnight_ratio"</span>]]</span>
-<span id="cb16-200"><a href="#cb16-200" aria-hidden="true" tabindex="-1"></a>        .median()</span>
-<span id="cb16-201"><a href="#cb16-201" aria-hidden="true" tabindex="-1"></a>        .sort_values(<span class="st">"core_daytime_frac"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb16-202"><a href="#cb16-202" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb16-203"><a href="#cb16-203" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Median time-zone fractions by road class:</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb16-204"><a href="#cb16-204" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(grp.<span class="bu">round</span>(<span class="dv">3</span>).to_string())</span>
-<span id="cb16-205"><a href="#cb16-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-206"><a href="#cb16-206" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">4</span>))</span>
-<span id="cb16-207"><a href="#cb16-207" aria-hidden="true" tabindex="-1"></a>    grp[[<span class="st">"core_daytime_frac"</span>, <span class="st">"overnight_frac"</span>]].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>])</span>
-<span id="cb16-208"><a href="#cb16-208" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Peak vs offpeak fraction by road class"</span>)</span>
-<span id="cb16-209"><a href="#cb16-209" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Fraction of daily traffic"</span>)</span>
-<span id="cb16-210"><a href="#cb16-210" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">35</span>)</span>
-<span id="cb16-211"><a href="#cb16-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-212"><a href="#cb16-212" aria-hidden="true" tabindex="-1"></a>    grp[<span class="st">"core_overnight_ratio"</span>].plot(kind<span class="op">=</span><span class="st">"bar"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>])</span>
-<span id="cb16-213"><a href="#cb16-213" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Peak–offpeak ratio by road class"</span>)</span>
-<span id="cb16-214"><a href="#cb16-214" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Ratio (peak flow/hr ÷ offpeak flow/hr)"</span>)</span>
-<span id="cb16-215"><a href="#cb16-215" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].axhline(<span class="dv">1</span>, color<span class="op">=</span><span class="st">"grey"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>)</span>
-<span id="cb16-216"><a href="#cb16-216" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">35</span>)</span>
-<span id="cb16-217"><a href="#cb16-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-218"><a href="#cb16-218" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb16-219"><a href="#cb16-219" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb16-220"><a href="#cb16-220" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-221"><a href="#cb16-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-222"><a href="#cb16-222" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reconstructed per-hour flows</span></span>
-<span id="cb16-223"><a href="#cb16-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-224"><a href="#cb16-224" aria-hidden="true" tabindex="-1"></a>Using Stage 1a AADT estimates and Stage 1b fractions, per-hour flow rates can</span>
-<span id="cb16-225"><a href="#cb16-225" aria-hidden="true" tabindex="-1"></a>be computed for any link in the network.</span>
-<span id="cb16-226"><a href="#cb16-226" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-229"><a href="#cb16-229" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
-<span id="cb16-230"><a href="#cb16-230" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> profiles.empty:</span>
-<span id="cb16-231"><a href="#cb16-231" aria-hidden="true" tabindex="-1"></a>    flow_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> [</span>
-<span id="cb16-232"><a href="#cb16-232" aria-hidden="true" tabindex="-1"></a>        <span class="st">"flow_ph_core_daytime"</span>, <span class="st">"flow_ph_shoulder"</span>, <span class="st">"flow_ph_late_evening"</span>, <span class="st">"flow_ph_overnight"</span></span>
-<span id="cb16-233"><a href="#cb16-233" aria-hidden="true" tabindex="-1"></a>    ] <span class="cf">if</span> c <span class="kw">in</span> profiles.columns]</span>
-<span id="cb16-234"><a href="#cb16-234" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-235"><a href="#cb16-235" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> flow_cols:</span>
-<span id="cb16-236"><a href="#cb16-236" aria-hidden="true" tabindex="-1"></a>        sample_yr <span class="op">=</span> profiles[profiles[<span class="st">"year"</span>] <span class="op">==</span> profiles[<span class="st">"year"</span>].<span class="bu">max</span>()]</span>
-<span id="cb16-237"><a href="#cb16-237" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"Per-hour flow estimates — full network (vehicles/hour):</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb16-238"><a href="#cb16-238" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(sample_yr[flow_cols].describe(</span>
-<span id="cb16-239"><a href="#cb16-239" aria-hidden="true" tabindex="-1"></a>            percentiles<span class="op">=</span>[<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>, <span class="fl">0.99</span>]</span>
-<span id="cb16-240"><a href="#cb16-240" aria-hidden="true" tabindex="-1"></a>        ).<span class="bu">round</span>(<span class="dv">1</span>).to_string())</span>
-<span id="cb16-241"><a href="#cb16-241" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-242"><a href="#cb16-242" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-243"><a href="#cb16-243" aria-hidden="true" tabindex="-1"></a><span class="fu">## How this could feed into the collision model</span></span>
-<span id="cb16-244"><a href="#cb16-244" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-245"><a href="#cb16-245" aria-hidden="true" tabindex="-1"></a>The current production collision model uses total AADT as its exposure</span>
-<span id="cb16-246"><a href="#cb16-246" aria-hidden="true" tabindex="-1"></a>denominator. The per-hour flow rates from Stage 1b are produced for diagnostics</span>
-<span id="cb16-247"><a href="#cb16-247" aria-hidden="true" tabindex="-1"></a>and future temporal exposure weighting. A future Stage 2 model could use them</span>
-<span id="cb16-248"><a href="#cb16-248" aria-hidden="true" tabindex="-1"></a>to distinguish:</span>
-<span id="cb16-249"><a href="#cb16-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-250"><a href="#cb16-250" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Roads where most collisions occur during peak hours (high peak exposure)</span>
-<span id="cb16-251"><a href="#cb16-251" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Roads with disproportionate night-time collisions (relative to low offpeak flow)</span>
-<span id="cb16-252"><a href="#cb16-252" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-253"><a href="#cb16-253" aria-hidden="true" tabindex="-1"></a>The <span class="in">`core_overnight_ratio`</span> is also a candidate model feature, capturing whether a</span>
-<span id="cb16-254"><a href="#cb16-254" aria-hidden="true" tabindex="-1"></a>road functions primarily as a commuter route or serves mixed/freight traffic.</span>
-<span id="cb16-255"><a href="#cb16-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-256"><a href="#cb16-256" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb16-257"><a href="#cb16-257" aria-hidden="true" tabindex="-1"></a>**Pipeline order**</span>
-<span id="cb16-258"><a href="#cb16-258" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-259"><a href="#cb16-259" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-260"><a href="#cb16-260" aria-hidden="true" tabindex="-1"></a><span class="in">Stage 1a  python -m road_risk.model --stage traffic</span></span>
-<span id="cb16-261"><a href="#cb16-261" aria-hidden="true" tabindex="-1"></a><span class="in">            → data/models/aadt_estimates.parquet</span></span>
-<span id="cb16-262"><a href="#cb16-262" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-263"><a href="#cb16-263" aria-hidden="true" tabindex="-1"></a><span class="in">Stage 1b  python -m road_risk.model --stage profile</span></span>
-<span id="cb16-264"><a href="#cb16-264" aria-hidden="true" tabindex="-1"></a><span class="in">            → data/models/timezone_profiles.parquet</span></span>
-<span id="cb16-265"><a href="#cb16-265" aria-hidden="true" tabindex="-1"></a><span class="in">            (requires Stage 1a)</span></span>
-<span id="cb16-266"><a href="#cb16-266" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-267"><a href="#cb16-267" aria-hidden="true" tabindex="-1"></a><span class="in">Stage 2   python -m road_risk.model --stage collision</span></span>
-<span id="cb16-268"><a href="#cb16-268" aria-hidden="true" tabindex="-1"></a><span class="in">            → data/models/risk_scores.parquet</span></span>
-<span id="cb16-269"><a href="#cb16-269" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb16-270"><a href="#cb16-270" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb16-271"><a href="#cb16-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-272"><a href="#cb16-272" aria-hidden="true" tabindex="-1"></a><span class="fu">## Known limitations</span></span>
-<span id="cb16-273"><a href="#cb16-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-274"><a href="#cb16-274" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>WebTRIS training data is concentrated on motorways and major A-roads.</span>
-<span id="cb16-275"><a href="#cb16-275" aria-hidden="true" tabindex="-1"></a>  Profiles for unclassified roads are extrapolated from location and network</span>
-<span id="cb16-276"><a href="#cb16-276" aria-hidden="true" tabindex="-1"></a>  position rather than directly observed — the model assumes that road function</span>
-<span id="cb16-277"><a href="#cb16-277" aria-hidden="true" tabindex="-1"></a>  and urban context are the dominant drivers of profile shape.</span>
-<span id="cb16-278"><a href="#cb16-278" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The pre-offpeak band (23:00–01:00) has the weakest CV R² (~0.46) due to its</span>
-<span id="cb16-279"><a href="#cb16-279" aria-hidden="true" tabindex="-1"></a>  short duration and mixed signal. Predictions for this band should be</span>
-<span id="cb16-280"><a href="#cb16-280" aria-hidden="true" tabindex="-1"></a>  interpreted cautiously.</span>
-<span id="cb16-281"><a href="#cb16-281" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Year-on-year variation in profiles (e.g. COVID impact on commuting patterns)</span>
-<span id="cb16-282"><a href="#cb16-282" aria-hidden="true" tabindex="-1"></a>  is captured through the <span class="in">`year_norm`</span> and <span class="in">`is_covid`</span> features but may not fully</span>
-<span id="cb16-283"><a href="#cb16-283" aria-hidden="true" tabindex="-1"></a>  reflect rapid behavioural shifts.</span>
-</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
-</div></div></div></div></div>
+  </script>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">

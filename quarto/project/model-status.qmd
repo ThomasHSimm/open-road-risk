@@ -1,0 +1,146 @@
+---
+title: "Current model status"
+---
+
+This section provides a live view of the modelling pipeline's performance and status, sourced directly from the latest validation artefacts and provenance records.
+
+```{python}
+#| echo: false
+#| output: asis
+
+import json
+import pandas as pd
+from pathlib import Path
+
+# Robustly find project data root
+def find_data_root():
+    candidates = [
+        Path(".."),           # Expected if run from quarto/project/
+        Path("../.."),        # Expected if run from within subfolders
+        Path("."),            # Expected if run from repo root
+        Path("quarto").parent # Expected if run from repo root with quarto folder
+    ]
+    for c in candidates:
+        if (c / "data").exists():
+            return c
+    return None
+
+root = find_data_root()
+
+# Data containers
+metrics = {
+    "aadt_r2_local": "not available",
+    "aadt_r2_spatial": "not available",
+    "aadt_holdout": "not available",
+    "glm_r2": "not available",
+    "xgb_r2": "not available",
+    "link_count": "not available",
+    "timestamp": "not available",
+    "git_sha": "not available",
+    "seeds": "not available"
+}
+
+sources_found = []
+sources_missing = []
+
+if root:
+    prov_path = root / "data/provenance/rank_stability_provenance.json"
+    aadt_path = root / "data/models/aadt_validation_summary.parquet"
+    coll_path = root / "data/models/collision_metrics.json"
+
+    # 1. Load provenance (Stage 2 primary)
+    if prov_path.exists():
+        try:
+            with open(prov_path, 'r') as f:
+                prov = json.load(f)
+            metrics["glm_r2"] = prov.get("glm_pseudo_r2", "not available")
+            metrics["xgb_r2"] = prov.get("summary_statistics", {}).get("pseudo_r2_mean", "not available")
+            metrics["link_count"] = prov.get("expected_row_count", "not available")
+            metrics["timestamp"] = prov.get("timestamp_utc", "not available")
+            metrics["git_sha"] = prov.get("git_sha", "not available")
+            metrics["seeds"] = prov.get("seeds_used", "not available")
+            sources_found.append("rank_stability_provenance.json")
+        except Exception:
+            sources_missing.append("rank_stability_provenance.json")
+    else:
+        sources_missing.append("rank_stability_provenance.json")
+
+    # 2. Load fallback metrics (Stage 2 supporting)
+    # Use if either GLM or XGBoost metric is still missing
+    if (metrics["glm_r2"] == "not available" or metrics["xgb_r2"] == "not available") and coll_path.exists():
+        try:
+            with open(coll_path, 'r') as f:
+                coll = json.load(f)
+            if metrics["glm_r2"] == "not available":
+                metrics["glm_r2"] = coll.get("glm", {}).get("pseudo_r2", "not available")
+            if metrics["xgb_r2"] == "not available":
+                metrics["xgb_r2"] = coll.get("xgb", {}).get("pseudo_r2", "not available")
+            sources_found.append("collision_metrics.json")
+        except Exception:
+            sources_missing.append("collision_metrics.json")
+    elif not coll_path.exists() and (metrics["glm_r2"] == "not available" or metrics["xgb_r2"] == "not available"):
+        sources_missing.append("collision_metrics.json")
+
+    # 3. Load AADT metrics (Stage 1a)
+    if aadt_path.exists():
+        try:
+            aadt_df = pd.read_parquet(aadt_path)
+            # Robust extraction of R2 values
+            if 'scheme' in aadt_df.columns and 'r2' in aadt_df.columns:
+                local_mask = aadt_df['scheme'].str.lower() == 'local'
+                spatial_mask = aadt_df['scheme'].str.lower() == 'spatial'
+                if local_mask.any():
+                    metrics["aadt_r2_local"] = aadt_df.loc[local_mask, 'r2'].values[0]
+                if spatial_mask.any():
+                    metrics["aadt_r2_spatial"] = aadt_df.loc[spatial_mask, 'r2'].values[0]
+            
+            if 'n_holdout' in aadt_df.columns:
+                metrics["aadt_holdout"] = aadt_df['n_holdout'].sum()
+            
+            sources_found.append("aadt_validation_summary.parquet")
+        except Exception:
+            sources_missing.append("aadt_validation_summary.parquet")
+    else:
+        sources_missing.append("aadt_validation_summary.parquet")
+else:
+    sources_missing.append("data directory root not found")
+
+# Format values
+def fmt(val, dec=3):
+    if isinstance(val, (float, int)):
+        return f"{val:.{dec}f}" if isinstance(val, float) else f"{val:,}"
+    return val
+
+# Render Section
+print("| Component | Current status | Latest evidence | Caveat |")
+print("|---|---|---|---|")
+
+# Stage 1a
+status_1a = "Implemented" if metrics["aadt_r2_local"] != "not available" else "artefact not available"
+evidence_1a = f"Local R²: {fmt(metrics['aadt_r2_local'])}, Spatial R²: {fmt(metrics['aadt_r2_spatial'])}, N={fmt(metrics['aadt_holdout'])}" if status_1a == "Implemented" else "source missing"
+print(f"| Stage 1a: AADT model | {status_1a} | {evidence_1a} | Estimates traffic where direct counts are unavailable |")
+
+# Stage 2 GLM
+status_2glm = "Implemented" if metrics["glm_r2"] != "not available" else "artefact not available"
+evidence_2glm = f"Pseudo-R²: {fmt(metrics['glm_r2'])}" if status_2glm == "Implemented" else "source missing"
+print(f"| Stage 2: GLM collision-risk model | {status_2glm} | {evidence_2glm} | Interpretable exposure-adjusted baseline |")
+
+# Stage 2 XGB
+status_2xgb = f"Implemented across {len(metrics['seeds'])} seeds" if isinstance(metrics['seeds'], list) else "artefact not available"
+evidence_2xgb = f"Mean Pseudo-R²: {fmt(metrics['xgb_r2'])}, Seeds: {metrics['seeds']}" if "Implemented" in status_2xgb else "source missing"
+print(f"| Stage 2: XGBoost collision-risk model | {status_2xgb} | {evidence_2xgb} | Flexible comparison/diagnostic model; weaker interpretability than GLM |")
+
+# Final Output
+status_out = "Implemented" if metrics["link_count"] != "not available" else "artefact not available"
+evidence_out = f"{fmt(metrics['link_count'])} scored links" if status_out == "Implemented" else "source missing"
+print(f"| Final scored output | {status_out} | {evidence_out} | Current scoring grain is one row per road link, not link-year |")
+
+print("\n")
+print(f"- **Latest model run**: {metrics['timestamp']}")
+print(f"- **Git SHA**: `{metrics['git_sha']}`")
+print(f"- **Sources read**: {', '.join(sources_found) if sources_found else 'none'}")
+if sources_missing:
+    print(f"- **Sources missing**: {', '.join(sources_missing)}")
+```
+
+“These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”

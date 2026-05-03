@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Methodology – Open Road Risk</title>
+<title>Data sources – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -83,10 +83,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
-<meta property="og:title" content="Methodology – Open Road Risk">
+<meta property="og:title" content="Data sources – Open Road Risk">
 <meta property="og:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Methodology – Open Road Risk">
+<meta name="twitter:title" content="Data sources – Open Road Risk">
 <meta name="twitter:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 <meta name="twitter:card" content="summary">
 </head>
@@ -273,11 +273,16 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
+  <ul>
+  <li><a href="#how-the-sources-fit-together" id="toc-how-the-sources-fit-together" class="nav-link active" data-scroll-target="#how-the-sources-fit-together">How the sources fit together</a></li>
+  <li><a href="#source-roles-in-the-model" id="toc-source-roles-in-the-model" class="nav-link" data-scroll-target="#source-roles-in-the-model">Source roles in the model</a>
   <ul class="collapse">
-  <li><a href="#what-this-section-covers" id="toc-what-this-section-covers" class="nav-link active" data-scroll-target="#what-this-section-covers">What this section covers</a></li>
-  <li><a href="#pages-in-this-section" id="toc-pages-in-this-section" class="nav-link" data-scroll-target="#pages-in-this-section">Pages in this section</a></li>
-  <li><a href="#methodology-vs-models" id="toc-methodology-vs-models" class="nav-link" data-scroll-target="#methodology-vs-models">Methodology vs Models</a></li>
-  <li><a href="#what-is-not-in-methodology" id="toc-what-is-not-in-methodology" class="nav-link" data-scroll-target="#what-is-not-in-methodology">What is <em>not</em> in Methodology</a></li>
+  <li><a href="#outcome-source" id="toc-outcome-source" class="nav-link" data-scroll-target="#outcome-source">Outcome source</a></li>
+  <li><a href="#network-source" id="toc-network-source" class="nav-link" data-scroll-target="#network-source">Network source</a></li>
+  <li><a href="#exposure-sources" id="toc-exposure-sources" class="nav-link" data-scroll-target="#exposure-sources">Exposure sources</a></li>
+  <li><a href="#context-sources" id="toc-context-sources" class="nav-link" data-scroll-target="#context-sources">Context sources</a></li>
+  </ul></li>
+  <li><a href="#detailed-pages" id="toc-detailed-pages" class="nav-link" data-scroll-target="#detailed-pages">Detailed pages</a></li>
   </ul>
 </nav>
     </div>
@@ -286,7 +291,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Methodology</h1>
+<h1 class="title">Data sources</h1>
 </div>
 
 
@@ -303,39 +308,109 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<section id="what-this-section-covers" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-section-covers">What this section covers</h2>
-<p>The Methodology section documents the <strong>decisions and processes</strong> that turn raw data sources into model-ready features. It is distinct from the <a href="../methodology/modelling.html">Models</a> section, which covers the predictive models themselves and their performance.</p>
-<p>A useful way to think of the split:</p>
-<ul>
-<li><strong>Methodology</strong>: how the data is shaped — joining sources together, building features, handling overdispersion in count data.</li>
-<li><strong>Models</strong>: what predictions are made from that data — traffic estimation, time-zone profiles, collision risk.</li>
-</ul>
-<p>The two sections sit on either side of a clear handoff. Methodology produces <code>road_link_annual.parquet</code> with one row per link per year and a fixed schema. Models consume that table and produce predictions.</p>
+<p>This project combines collision, traffic, road-network, and contextual datasets to estimate road risk relative to exposure. Each source has a distinct role: some define the road network, some provide observed outcomes, and others provide traffic or contextual predictors used by the modelling pipeline.</p>
+<section id="how-the-sources-fit-together" class="level2">
+<h2 class="anchored" data-anchor-id="how-the-sources-fit-together">How the sources fit together</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Source</th>
+<th>Main role</th>
+<th>Used for</th>
+<th>Key limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>STATS19</td>
+<td>Collision outcome data</td>
+<td>Observed injury collisions used as the response variable in the collision model</td>
+<td>Police-reported injury collisions only; excludes damage-only incidents</td>
+</tr>
+<tr class="even">
+<td>OS Open Roads</td>
+<td>Road network geometry</td>
+<td>Base road-link network for snapping, feature generation, and scoring</td>
+<td>Simplified representation of real-world road layout</td>
+</tr>
+<tr class="odd">
+<td>AADF</td>
+<td>Observed traffic counts</td>
+<td>Training data for estimating annual average daily traffic where direct counts are unavailable</td>
+<td>Sparse coverage, especially away from major roads</td>
+</tr>
+<tr class="even">
+<td>WebTRIS</td>
+<td>Traffic timing and vehicle mix</td>
+<td>Time-of-day profiles, traffic composition, and support for exposure features</td>
+<td>Biased toward National Highways / major-road sensors</td>
+</tr>
+<tr class="odd">
+<td>OpenStreetMap</td>
+<td>Supplementary road attributes</td>
+<td>Additional tags such as bridge/tunnel or road context where useful</td>
+<td>Uneven coverage and tagging consistency</td>
+</tr>
+<tr class="even">
+<td>MRDB</td>
+<td>Major-road reference data</td>
+<td>Major-road structure and classification support</td>
+<td>Mainly useful for major-road context</td>
+</tr>
+<tr class="odd">
+<td>LSOA / population data</td>
+<td>Area context</td>
+<td>Population-density and local-area contextual features</td>
+<td>Area-level proxy, not direct road use</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="pages-in-this-section" class="level2">
-<h2 class="anchored" data-anchor-id="pages-in-this-section">Pages in this section</h2>
-<p><a href="../methodology/data-joining.html"><strong>Joining the Datasets</strong></a> — how STATS19 collisions, AADF count points, WebTRIS sensors, and OS Open Roads links are spatially joined into a single road-link-by-year table. Includes the four-dimension weighted snap, distance caps, and quality tracking.</p>
-<p><a href="../methodology/feature-engineering.html"><strong>Feature Engineering</strong></a> — link-level features built on top of the joined table: network centrality, road geometry, OSM attributes, population density. Documents the imputation rules for sparse OSM fields and the <code>speed_limit_mph_effective</code> tiered fallback.</p>
-<p><a href="../methodology/empirical-bayes-shrinkage.html"><strong>Empirical Bayes Shrinkage</strong></a> — the post-modelling adjustment that handles overconfidence on links with zero observed collisions. Explains the choice of shrinkage parameter <em>k</em> and the operational impact on rankings.</p>
-</section>
-<section id="methodology-vs-models" class="level2">
-<h2 class="anchored" data-anchor-id="methodology-vs-models">Methodology vs Models</h2>
-<p>A few decisions sit on the boundary between sections:</p>
+<section id="source-roles-in-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="source-roles-in-the-model">Source roles in the model</h2>
+<section id="outcome-source" class="level3">
+<h3 class="anchored" data-anchor-id="outcome-source">Outcome source</h3>
 <ul>
-<li><strong>Year handling</strong> is a methodology question (how to encode time) but interacts directly with model choice. The pipeline uses year as a categorical feature; the COVID years (2020–2021) are absorbed by year-specific fixed effects. An <code>is_covid</code> flag is the natural alternative if year is not already in the model.</li>
-<li><strong>Group-aware cross-validation</strong> is a model-choice decision but depends on methodology — the grouping key (<code>count_point_id</code>, <code>site_id</code>, <code>link_id</code>) is determined by what the joining pipeline produces.</li>
-<li><strong>Forbidden post-event columns</strong> — several derived columns are excluded from modelling because they are computed from collision records themselves. This is enforced in the modelling code but the list is documented as a methodology decision.</li>
+<li><strong>STATS19</strong> provides the observed collision outcome.</li>
 </ul>
-<p>These cross-cutting items are documented on the page where they have most impact. Cross-references run in both directions.</p>
 </section>
-<section id="what-is-not-in-methodology" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-not-in-methodology">What is <em>not</em> in Methodology</h2>
+<section id="network-source" class="level3">
+<h3 class="anchored" data-anchor-id="network-source">Network source</h3>
 <ul>
-<li>Individual model details (architectures, hyperparameters, metrics) are in <a href="../methodology/modelling.html">Models</a>.</li>
-<li>Exploratory analysis of source data is in <a href="../analysis/eda-collisions.html">Exploratory Data Analysis</a> — what the raw data looks like before processing.</li>
-<li>Source dataset descriptions are in <a href="../data-sources/stats19.html">Data Sources</a> — provider, format, fields, project location.</li>
+<li><strong>OS Open Roads</strong> defines the scored road-link network.</li>
 </ul>
+</section>
+<section id="exposure-sources" class="level3">
+<h3 class="anchored" data-anchor-id="exposure-sources">Exposure sources</h3>
+<ul>
+<li><strong>AADF</strong> provides direct traffic-count training examples.</li>
+<li><strong>WebTRIS</strong> provides time-profile and vehicle-mix information.</li>
+</ul>
+</section>
+<section id="context-sources" class="level3">
+<h3 class="anchored" data-anchor-id="context-sources">Context sources</h3>
+<ul>
+<li><strong>OSM</strong>, <strong>MRDB</strong>, and area-level <strong>population data</strong> provide supporting road and local-context features.</li>
+</ul>
+</section>
+</section>
+<section id="detailed-pages" class="level2">
+<h2 class="anchored" data-anchor-id="detailed-pages">Detailed pages</h2>
+<ul>
+<li><a href="../data-sources/stats19.html">STATS19</a></li>
+<li><a href="../data-sources/openroads.html">OS Open Roads</a></li>
+<li><a href="../data-sources/aadf.html">AADF Traffic Counts</a></li>
+<li><a href="../data-sources/webtris.html">WebTRIS Sensors</a></li>
+<li><a href="../data-sources/network-model-gdb.html">Network Model GDB</a></li>
+</ul>
+<hr>
+<p>Next: <a href="../methodology/data-joining.html">How the sources are joined</a></p>
 
 
 </section>
