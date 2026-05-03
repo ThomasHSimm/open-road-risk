@@ -1,5 +1,10 @@
 # Temporal features plan
 
+**Status:** complete. All scoped temporal evaluation steps are done and the
+verdict has been reached: temporal descriptors are real but below the
+pre-registered adoption threshold, so no further temporal integration work is
+in scope for the current project phase.
+
 ## Problem
 
 The collision model produces per-link annual risk scores. Crash timestamps
@@ -142,43 +147,89 @@ Supporting artefacts:
 
 ### Step 2 — Confirm leakage geometry
 
-Check whether any links in the collision model's evaluation folds
-correspond to WebTRIS sites used to train either temporal model. If so,
-descriptors for those links are in-sample predictions and will inflate
-collision-model CV results.
+**Complete.** Checked whether links in the collision model's evaluation fold
+correspond to WebTRIS sites used by the temporal pipelines.
 
-Either align folds by site or document the optimism explicitly.
+Result using the Stage 2 seed-42 `GroupShuffleSplit` over Open Roads
+`link_id`:
+
+- `timezone_profile.py` training sites: 5,946 snapped sites on 3,625 Open
+  Roads links.
+- Sites on Stage 2 held-out links: 1,246 sites on 736 held-out links
+  (21.0% of snapped sites).
+- Raw temporal/HGV profile sites: 6,003 snapped sites on 3,640 links.
+- Raw temporal/HGV sites on Stage 2 held-out links: 1,255 sites on 737
+  held-out links (20.9% of snapped sites).
+
+This confirms the leakage geometry. The overlap is roughly the expected 20%
+from a random link split, but it is still real: for those held-out collision
+links, temporal descriptors are predictions from a temporal model trained on
+the corresponding WebTRIS site. Step 3 must either align/exclude those links
+or document the optimism explicitly.
+
+Supporting artefacts:
+
+- `src/road_risk/diagnostics/temporal_leakage.py`
+- `reports/supporting/temporal_leakage_summary.csv`
+- `reports/supporting/temporal_leakage_site_link_map.csv`
 
 ### Step 3 — Run the collision-model ablation
 
-Three configurations, same folds, same seed:
+**Complete.**
 
-- Post-grade collision model, scored with the chunked path.
-- Post-grade + `core_overnight_ratio` + HGV%.
-- Post-grade + cheap proxy (e.g. road class × urban density interaction, or
-  whatever the existing feature set can encode of the same idea).
+Three configurations were evaluated across seeds `42-46`:
 
-Compare headline CV metric with confidence intervals from resampling.
+- `A`: post-fix baseline
+- `B`: baseline + `core_overnight_ratio`
+- `C`: baseline + `core_overnight_ratio` + WebTRIS HGV%
 
-Decision rule: pre-registered, TBD — to be set before results are seen.
-The threshold needs to sit above the noise floor of the post-grade collision
-model's CV. Re-measure that noise floor on the post-fix training population
-before setting the decision threshold, because the IMD/grade imputation
-refactor changed the GLM estimation sample and the chunked scoring path
-changed the operational scoring implementation.
+Leakage-handling rule:
 
-Three possible verdicts:
+- **Primary comparison:** exclude the 737 WebTRIS-snapped held-out links from
+  the temporal-ablation score comparison.
+- **Sensitivity comparison:** also report the full held-out result, labelled
+  as mildly optimistic for the WebTRIS-snapped subset.
 
-- Descriptors clearly beat both baselines → adopt in production.
-- Descriptors match the cheap proxy → do not adopt; the information was
-  already available from existing features.
-- Descriptors do not beat the post-grade baseline → do not adopt; park the
-  temporal models honestly.
+Feature-overlap prep result remained the same: existing post-grade Stage 2
+features can predict `core_overnight_ratio` with R² ≈ `0.36` on a 300k-link
+sample. HGV remained meaningful only as a distinct WebTRIS-derived descriptor,
+not as a re-addition of existing AADF vehicle mix.
+
+Pre-registered decision rule:
+
+- pseudo-R² improvement > `0.009` over baseline, and
+- test deviance reduction > `0.6%`,
+
+with improvement required on at least `4/5` seeds. Mixed results across
+`1-3` seeds count as null.
+
+Observed result:
+
+- Config `B`: pseudo-R² improvement `0.0036-0.0045`; deviance reduction
+  `0.53%-0.66%`; verdict `null`
+- Config `C`: pseudo-R² improvement `0.0056-0.0063`; deviance reduction
+  `0.82%-0.92%`; verdict `null`
+
+Honest conclusion:
+
+- Both configurations produce small, consistent improvements.
+- Config `C` is the stronger result: about `0.006` pseudo-R² improvement and
+  about `0.85%` deviance reduction across all 5 seeds.
+- The improvements are statistically detectable but fall below the
+  pre-registered adoption threshold of `0.009` pseudo-R² and `0.6%`
+  deviance.
+- Config `C` narrowly clears the deviance criterion but fails the pseudo-R²
+  criterion on every seed.
+- The temporal descriptors therefore carry real but marginal signal. They are
+  not redundant with existing features, but they are not large enough to
+  justify the additional pipeline complexity at the agreed bar.
+
+Verdict: both descriptors are parked as **real but below threshold**.
 
 ### Step 4 — Month / seasonality
 
-Only if step 3 passes for the time-of-day and weekday/weekend descriptors,
-and there is headroom.
+**Parked.** Step 3 did not pass the pre-registered adoption rule, so no
+further temporal modelling is in scope at the current threshold.
 
 `temporal.py` already produces `seasonal_index` at corridor grain. Lower
 priority per project goals. Two paths:
@@ -190,7 +241,7 @@ priority per project goals. Two paths:
   amplitude target. More work; defer unless step 3 results suggest seasonal
   signal is worth pursuing.
 
-Defer the choice until step 3 results are in.
+Defer indefinitely unless project priorities change materially.
 
 ## Out of scope
 
@@ -207,36 +258,42 @@ Defer the choice until step 3 results are in.
   any downstream code consuming `prepeak_frac` etc. needs updating. Larger
   scope than a renaming.
 - **Leakage between WebTRIS sites and collision-model test folds is
-  unverified.** Step 2 is a real gate.
-- **Cheap-proxy baseline is loosely specified.** Whatever proxy is chosen
-  determines whether the comparison is meaningful. If the proxy is too
-  weak, descriptors will appear to add value they do not.
+  confirmed.** The overlap is bounded (~21% of snapped WebTRIS sites, 737
+  held-out links) and was handled explicitly in the ablation's primary vs
+  sensitivity comparison.
 - **IMD/grade features may absorb urban-character signal.** Those features
   may capture part of the same spatial/urban structure that previously gave
   `core_overnight_ratio` apparent lift. Check feature overlap before running
   the ablation.
-- **Pre-registered decision rule is not yet set.** Must be set before
-  step 3 results are inspected.
 - **R² values currently quoted in `timezone-profile.qmd` are stale and
   attached to mislabelled targets.** They should not be cited in the plan
   or anywhere else until step 0 is complete.
 
 ## Effort
 
-Step 0: one focused session. Mostly mechanical (rename, re-run, update
-narrative), but the cascade through dependent code is the unknown.
+Step 2: complete. Leakage geometry is real and bounded; Step 3 carries the
+handling choice.
 
-Step 1: one focused session. New target, existing architecture, no new
-data pulls.
+Step 3: complete.
 
-Step 2: short check, possibly extending if leakage is real.
+## Final verdict
 
-Step 3: one focused session given a working evaluation harness.
+Temporal evaluation is complete for the current scope.
 
-Step 4: deferred decision.
+- `core_overnight_ratio`: real but below threshold
+- WebTRIS HGV% descriptor: real but below threshold
+- weekday/weekend at link grain: parked for lack of link-specific variation
+- month/seasonality at link grain: parked for lack of link-specific variation
 
-Total: probably 3–4 focused sessions to a go/no-go verdict on the
-descriptors.
+No further temporal integration work is in scope unless either:
+
+1. project priorities change and the adoption threshold is intentionally
+   reset, or
+2. the underlying Stage 1b time-zone / WebTRIS HGV models improve enough to
+   justify a fresh ablation.
+
+Do not revisit these descriptors at the same threshold based on the current
+results.
 
 ## What this plan replaces
 

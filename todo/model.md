@@ -1,5 +1,10 @@
 ## 🟡 Medium Priority — Model
 
+- [ ] Build a feature-audit script that runs the coverage-by-collision-history
+  check across every Stage 2 feature, not just `hgv_proportion`. The HGV
+  investigation found a real source-table/grain bug and fixed it; this audit
+  is open work that could surface similar issues elsewhere.
+
 - [ ] Consider: given consistent rank stability across feature additions
   (Jaccard >0.95 on each of RUC, tiered imputation), future feature work
   has diminishing returns on ranking vs structural modelling changes (EB

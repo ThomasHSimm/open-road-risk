@@ -122,8 +122,9 @@ Each stage has its own held-out validation:
 - **Stage 1a:** CV R² ~0.83 on counted-only AADF rows.
 - **Stage 1b:** CV R² ~0.65 on `core_daytime_frac`, ~0.46 on
   `late_evening_frac` (weakest band).
-- **Stage 2:** Out-of-sample pseudo-R² 0.858 (XGBoost), 0.301 (GLM
-  in-sample on downsampled training set).
+- **Stage 2:** Out-of-sample pseudo-R² about 0.32 for the post-fix
+  XGBoost baseline (five-seed mean 0.323, with temporal features included),
+  and 0.347 for the GLM in-sample on the downsampled training set.
 
 **The Stage 1a and Stage 2 metrics are not directly comparable** —
 different targets, different null models, different row subsets. See
@@ -132,6 +133,12 @@ and [Empirical Bayes Shrinkage](../methodology/empirical-bayes-shrinkage.qmd)
 for the post-modelling adjustment that handles overconfidence on
 zero-collision links.
 
+Earlier internal docs and site pages cited a Stage 2 XGBoost pseudo-R²
+around `0.86`. That number came from a pre-fix evaluation surface that was
+later superseded after a Stage 2 feature-table bug and leakage issue were
+diagnosed. For current project positioning, use the post-fix `~0.32`
+baseline instead.
+
 ## What this section covers
 
 - [Stage 1a: Traffic Volume](exposure-model.qmd) — AADT estimation, training data, validation
@@ -139,4 +146,3 @@ zero-collision links.
 - [Stage 2: Collision Risk Model](../analysis/model-results.qmd) Collision risk modelling, features, diagnostics, SHAP interpretation
 - [Facility Family Split](facility-family-split.qmd) — separate per-family models for motorway / trunk A / urban / rural
 - [Model Inventory](model-inventory.qmd) — concrete list of models, hyperparameters, metrics
-

@@ -1,12 +1,12 @@
 # Family-Split Session 2 Validation
 
-Session-1 artefacts: commit `e446d677b0b2`, scored at `2026-04-25T22:01:23.794929+00:00`. Held-out pseudo-R² in §6.1 is computed on the union of per-family held-out links (20% of each family, seed=42) using link-grain collision counts from `risk_scores_family.parquet`. The rank_stability.md baseline (0.859 ± 0.001) is link-year grain; §6.2 column `held_out_pr2` (from session-1 training) is the per-family link-year grain equivalent. Supporting CSVs are in `reports/supporting/family_validation_*.csv`.
+Session-1 artefacts: commit `e446d677b0b2`, scored at `2026-04-25T22:01:23.794929+00:00`. Held-out pseudo-R² in §6.1 is computed on the union of per-family held-out links (20% of each family, seed=42) using link-grain collision counts from `risk_scores_family.parquet`. Important supersession note: this report was produced on the older pre-fix Stage 2 surface that later yielded the inflated `~0.86` global pseudo-R² figure. The current honest post-fix global baseline from `reports/rank_stability.md` is `0.323498 ± 0.002678` at link-year grain. Treat the family-vs-global comparisons here as a historical within-experiment comparison, not as directly comparable to the current production baseline. Supporting CSVs are in `reports/supporting/family_validation_*.csv`.
 
 ## §6.1 Headline: stitched vs global
 
 | metric | stitched_family | global | baseline_5seed |
 | --- | --- | --- | --- |
-| pseudo_R² (all-links, link-grain) | 0.895214 | 0.888691 | 0.859041 ± 0.001411 |
+| pseudo_R² (all-links, link-grain; historical pre-fix experiment) | 0.895214 | 0.888691 | superseded; current post-fix global baseline is 0.323498 ± 0.002678 at link-year grain |
 | Spearman vs global rank | 0.981128 | 1.000000 | 0.998106 |
 | top-1% intersection | 20,285 (93.59%) | 21,675 (100.00%) | — |
 | top-1% entrants (family new) | 1,390 | — | — |
@@ -14,7 +14,7 @@ Session-1 artefacts: commit `e446d677b0b2`, scored at `2026-04-25T22:01:23.79492
 
 ### Held-out comparison
 
-Pseudo-R² on the union of per-family held-out link_ids (433,513 links, ≈20% of network). Both models evaluated on the same held-out set; this is apples-to-apples between stitched and global, and directionally comparable to the rank_stability.md baseline of 0.859 ± 0.001 (note: baseline is link-year grain; these figures are link-grain).
+Pseudo-R² on the union of per-family held-out link_ids (433,513 links, ≈20% of network). Both models evaluated on the same held-out set; this is apples-to-apples within the historical stitched-vs-global experiment. It should not be read against the old `0.859 ± 0.001` baseline any more; the current post-fix global baseline is `0.323498 ± 0.002678`, and the two evaluation surfaces are not directly comparable.
 
 | metric | stitched_family | global |
 | --- | --- | --- |
@@ -132,7 +132,7 @@ Consecutive-rank pairs in ±500 window around each threshold where adjacent link
 
 ## §6.4 Rural pseudo-R² gap diagnostic
 
-other_rural held-out pseudo-R² = 0.648 vs global baseline 0.859. Collision-count signal distribution by family:
+other_rural held-out pseudo-R² = 0.648 in this historical experiment. Collision-count signal distribution by family:
 
 | family | n_links | mean_collision | median_collision | zero_pct | p95_collision | mean_aadt |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -145,7 +145,7 @@ other_rural held-out pseudo-R² = 0.648 vs global baseline 0.859. Collision-coun
 
 ## §6.5 Urban pseudo-R² check
 
-other_urban held-out pseudo-R² = 0.917. The correct within-experiment comparison (§6.2.1) is per-family other_urban R² (0.938 all-data) vs global-on-urban-subset R² (0.936 all-data), a delta of +0.002 — essentially zero. The 0.917 vs 0.859 global baseline gap is largely explained by urban roads being inherently more predictable than the full mixed network, not by per-family modelling adding value. The calibration table below confirms the 0.917 figure reflects genuine discrimination across a large population, not concentration in a small high-count subset:
+other_urban held-out pseudo-R² = 0.917. The correct within-experiment comparison (§6.2.1) is per-family other_urban R² (0.938 all-data) vs global-on-urban-subset R² (0.936 all-data), a delta of +0.002 — essentially zero. The elevation of that number relative to the full mixed-network historical baseline is largely explained by urban roads being inherently more predictable, not by per-family modelling adding value. The calibration table below confirms the 0.917 figure reflects genuine discrimination across a large population, not concentration in a small high-count subset:
 
 | family | n_links | mean_collision | pct_zero | pct_gt10 | collision_share_pct |
 | --- | --- | --- | --- | --- | --- |
@@ -158,10 +158,10 @@ other_urban held-out pseudo-R² = 0.917. The correct within-experiment compariso
 
 ## Closing observations
 
-- Held-out stitched pseudo-R² (link-grain): 0.889772 vs global 0.889216 (rank_stability.md baseline 0.859 ± 0.001 is link-year grain).
+- Held-out stitched pseudo-R² (link-grain, historical pre-fix experiment): 0.889772 vs global 0.889216.
 - Stitched pseudo-R² (all-links link-grain): 0.895214 vs global 0.888691.
 - Top-1% intersection (stitched vs global): 20,285 / 21,675 (93.59%).
 - Motorway mean residual (family model, link-grain): 0.1276.
-- other_rural held-out pseudo-R²: 0.648 (global baseline 0.859); gap consistent with sparse low-AADT signal.
-- other_urban per-family gain over global: +0.002 (all-data link-grain); elevation vs 0.859 baseline explained by urban predictability, not per-family modelling.
+- other_rural held-out pseudo-R²: 0.648; gap consistent with sparse low-AADT signal.
+- other_urban per-family gain over global: +0.002 (all-data link-grain); elevation is explained by urban predictability, not per-family modelling.
 - Largest adjacent different-family predicted-value gap near boundary: 0.004712 — stitched ranking is smoothly calibrated.

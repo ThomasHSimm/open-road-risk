@@ -2,7 +2,7 @@
 
 ## Executive summary
 
-Your instinct is correct, but the highest-value use of iRAP is **not** to add a star rating column straight into the current production model. The more defensible move is to use iRAP-class data as an **external benchmark** for convergent validity. From the project material you supplied, the current pipeline is already substantial: an OS Open Roads link×year model over about 2.17 million links for 2015–2024, with Stage 1a counted-only AADT CV R² around 0.83 and Stage 2 XGBoost pseudo-R² of 0.858. That is a strong starting point, but it still leaves the main credibility gap that most transport stakeholders care about: **does the risk signal agree with an accepted infrastructure-safety standard outside your own training setup?** fileciteturn0file1 fileciteturn0file2
+Your instinct is correct, but the highest-value use of iRAP is **not** to add a star rating column straight into the current production model. The more defensible move is to use iRAP-class data as an **external benchmark** for convergent validity. From the project material you supplied, the current pipeline is already substantial: an OS Open Roads link×year model over about 2.17 million links for 2015–2024, with Stage 1a counted-only AADT CV R² around 0.83 and a current post-fix Stage 2 XGBoost pseudo-R² of about 0.323, measured out of sample as the mean across 5 seeds with temporal features included. That is a strong starting point, but it still leaves the main credibility gap that most transport stakeholders care about: **does the risk signal agree with an accepted infrastructure-safety standard outside your own training setup?** fileciteturn0file1 fileciteturn0file2
 
 That benchmark needs to use the **right iRAP output**. Official iRAP documentation makes a sharp distinction between **Star Ratings**, which measure the safety “built in” to roads using more than 50 coded attributes, and **Risk Maps** or FSI estimates, which use crash history and flow calibration. For your model, Star Ratings are the cleaner label because they are infrastructure-oriented and more independent of your own crash-based target. Risk Maps and FSI estimates are still useful, but mainly as secondary sense-checks because they import historic crash and traffic information back into the evaluation. citeturn5view6turn16search3turn16search8
 
@@ -22,7 +22,7 @@ Your own evaluation notes are directionally right here. The most defensible inte
 |---|---|---|---|
 | Modelling grain | OS Open Roads link×year | External benchmark must be conflated onto a common section basis | Project docs fileciteturn0file1 fileciteturn0file2 |
 | Exposure logic | Collision model uses an exposure offset built from AADT and link length | Direct star-for-score substitution would mix unlike targets | Project docs fileciteturn0file2 |
-| Current headline metric | XGBoost pseudo-R² 0.858 | Good internal signal, but not external proof | Project docs fileciteturn0file1 fileciteturn0file2 |
+| Current headline metric | XGBoost pseudo-R² about 0.323 post-fix | Good internal signal, but not external proof | Project docs fileciteturn0file1 fileciteturn0file2 |
 | Known evaluation gaps | Rank stability and EB shrinkage still queued | Benchmark claims should be paired with stability evidence | Project backlog fileciteturn0file3 |
 
 ## Where iRAP helps and where it does not

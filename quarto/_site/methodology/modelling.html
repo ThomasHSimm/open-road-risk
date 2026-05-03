@@ -68,6 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -266,10 +267,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../future-work.html"> 
 <span class="menu-text">Future Work</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../api-reference/index.html"> 
-<span class="menu-text">API Reference</span></a>
-  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -406,9 +403,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <ul>
 <li><strong>Stage 1a:</strong> CV R² ~0.83 on counted-only AADF rows.</li>
 <li><strong>Stage 1b:</strong> CV R² ~0.65 on <code>core_daytime_frac</code>, ~0.46 on <code>late_evening_frac</code> (weakest band).</li>
-<li><strong>Stage 2:</strong> Out-of-sample pseudo-R² 0.858 (XGBoost), 0.301 (GLM in-sample on downsampled training set).</li>
+<li><strong>Stage 2:</strong> Out-of-sample pseudo-R² about 0.32 for the post-fix XGBoost baseline (five-seed mean 0.323, with temporal features included), and 0.347 for the GLM in-sample on the downsampled training set.</li>
 </ul>
 <p><strong>The Stage 1a and Stage 2 metrics are not directly comparable</strong> — different targets, different null models, different row subsets. See <a href="../methodology/model-inventory.html">Model Inventory</a> for full performance metrics and <a href="../methodology/empirical-bayes-shrinkage.html">Empirical Bayes Shrinkage</a> for the post-modelling adjustment that handles overconfidence on zero-collision links.</p>
+<p>Earlier internal docs and site pages cited a Stage 2 XGBoost pseudo-R² around <code>0.86</code>. That number came from a pre-fix evaluation surface that was later superseded after a Stage 2 feature-table bug and leakage issue were diagnosed. For current project positioning, use the post-fix <code>~0.32</code> baseline instead.</p>
 </section>
 <section id="what-this-section-covers" class="level2">
 <h2 class="anchored" data-anchor-id="what-this-section-covers">What this section covers</h2>
@@ -1001,23 +999,30 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stage 1a:** CV R² ~0.83 on counted-only AADF rows.</span>
 <span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stage 1b:** CV R² ~0.65 on <span class="in">`core_daytime_frac`</span>, ~0.46 on</span>
 <span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a>  <span class="in">`late_evening_frac`</span> (weakest band).</span>
-<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stage 2:** Out-of-sample pseudo-R² 0.858 (XGBoost), 0.301 (GLM</span>
-<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a>  in-sample on downsampled training set).</span>
-<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>**The Stage 1a and Stage 2 metrics are not directly comparable** —</span>
-<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>different targets, different null models, different row subsets. See</span>
-<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Model Inventory</span><span class="co">](model-inventory.qmd)</span> for full performance metrics</span>
-<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a>and <span class="co">[</span><span class="ot">Empirical Bayes Shrinkage</span><span class="co">](../methodology/empirical-bayes-shrinkage.qmd)</span></span>
-<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>for the post-modelling adjustment that handles overconfidence on</span>
-<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>zero-collision links.</span>
-<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a><span class="fu">## What this section covers</span></span>
-<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Stage 1a: Traffic Volume</span><span class="co">](exposure-model.qmd)</span> — AADT estimation, training data, validation</span>
-<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Stage 1b: Time-Zone Profiles</span><span class="co">](timezone-profile.qmd)</span> — within-day shape modelling</span>
-<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Stage 2: Collision Risk Model</span><span class="co">](../analysis/model-results.qmd)</span> Collision risk modelling, features, diagnostics, SHAP interpretation</span>
-<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Facility Family Split</span><span class="co">](facility-family-split.qmd)</span> — separate per-family models for motorway / trunk A / urban / rural</span>
-<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Model Inventory</span><span class="co">](model-inventory.qmd)</span> — concrete list of models, hyperparameters, metrics</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Stage 2:** Out-of-sample pseudo-R² about 0.32 for the post-fix</span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a>  XGBoost baseline (five-seed mean 0.323, with temporal features included),</span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a>  and 0.347 for the GLM in-sample on the downsampled training set.</span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>**The Stage 1a and Stage 2 metrics are not directly comparable** —</span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>different targets, different null models, different row subsets. See</span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Model Inventory</span><span class="co">](model-inventory.qmd)</span> for full performance metrics</span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>and <span class="co">[</span><span class="ot">Empirical Bayes Shrinkage</span><span class="co">](../methodology/empirical-bayes-shrinkage.qmd)</span></span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>for the post-modelling adjustment that handles overconfidence on</span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a>zero-collision links.</span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a>Earlier internal docs and site pages cited a Stage 2 XGBoost pseudo-R²</span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a>around <span class="in">`0.86`</span>. That number came from a pre-fix evaluation surface that was</span>
+<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a>later superseded after a Stage 2 feature-table bug and leakage issue were</span>
+<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a>diagnosed. For current project positioning, use the post-fix <span class="in">`~0.32`</span></span>
+<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a>baseline instead.</span>
+<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## What this section covers</span></span>
+<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Stage 1a: Traffic Volume</span><span class="co">](exposure-model.qmd)</span> — AADT estimation, training data, validation</span>
+<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Stage 1b: Time-Zone Profiles</span><span class="co">](timezone-profile.qmd)</span> — within-day shape modelling</span>
+<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Stage 2: Collision Risk Model</span><span class="co">](../analysis/model-results.qmd)</span> Collision risk modelling, features, diagnostics, SHAP interpretation</span>
+<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Facility Family Split</span><span class="co">](facility-family-split.qmd)</span> — separate per-family models for motorway / trunk A / urban / rural</span>
+<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Model Inventory</span><span class="co">](model-inventory.qmd)</span> — concrete list of models, hyperparameters, metrics</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

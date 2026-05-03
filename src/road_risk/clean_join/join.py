@@ -693,6 +693,20 @@ def save_road_link_annual(
     logger.info(f"Saved road_link_annual to {path} ({len(df):,} rows)")
 
 
+def save_road_traffic_features(
+    df: pd.DataFrame,
+    output_folder: str | Path = None,
+) -> None:
+    """Save the all-link × year pre-collision traffic feature table."""
+    if output_folder is None:
+        output_folder = _ROOT / cfg["paths"]["features"]
+    out = Path(output_folder)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "road_traffic_features.parquet"
+    df.to_parquet(path, index=False)
+    logger.info(f"Saved road_traffic_features to {path} ({len(df):,} rows)")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -750,6 +764,7 @@ def main() -> None:
 
     logger.info("Step 2: Building road features ...")
     road_features = build_road_features(openroads, aadf, webtris)
+    save_road_traffic_features(road_features)
 
     logger.info("Step 3: Building road_link × year table ...")
     result = build_road_link_annual(collisions_snapped, road_features, openroads)

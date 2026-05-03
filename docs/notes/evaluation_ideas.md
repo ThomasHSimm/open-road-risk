@@ -17,7 +17,10 @@ The ultimate test of a predictive safety model is whether it accurately flags ro
 * **Success Metric:** Calculate the percentage of 2022-2024 crashes that occurred on road links residing in the top 10% (90th percentile) of the model's 2021 risk scores. A disproportionate concentration of future crashes on flagged roads proves high predictive validity.
 
 ### B. The "Naive" Baseline Test
-To prove that the Stage 2 XGBoost model (pseudo-R² 0.858) is capturing complex infrastructural signals rather than just acting as a routing algorithm, it must beat a basic mathematical assumption.
+To prove that the Stage 2 XGBoost model (current honest post-fix pseudo-R²
+about 0.32, not the older leaky `~0.86` figure) is capturing complex
+infrastructural signals rather than just acting as a routing algorithm, it
+must beat a basic mathematical assumption.
 * **The Baseline:** Calculate a naive risk score assuming crashes are strictly proportional to `AADT * link_length`. 
 * **The Test:** Compare the out-of-sample predictive accuracy of the XGBoost model (which includes OSM features, network centrality, and curvature) against this naive baseline to isolate the exact value the machine learning adds.
 

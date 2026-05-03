@@ -37,7 +37,13 @@ not part of the current Stage 2 collision feature set.
 **Stage 2 — Collision risk model** Poisson GLM + XGBoost predicting collision counts per link per year.
 Uses `log(AADT × length_km × 365 / 1e6)` as exposure offset so the model learns
 *which roads are dangerous given their traffic* — not just which are busy.
-XGBoost (pseudo-R² 0.8587, out-of-sample) drives the final risk percentile ranking (`risk_scores.parquet`).
+XGBoost drives the final risk percentile ranking (`risk_scores.parquet`).
+The current honest post-fix baseline is pseudo-R² `0.323` out of sample,
+measured as the mean across five seeds with temporal features included
+(`0.321-0.327` range). Earlier repo
+documentation cited `~0.86`, but that figure came from a pre-fix evaluation
+surface that was later found to be contaminated by feature-table leakage and
+should not be used for current project positioning.
 The GLM (pseudo-R² 0.3472, in-sample on downsampled training set) provides
 interpretable coefficients and diagnostic residuals. Features include a tiered
 speed limit imputation (`speed_limit_mph_effective`), IMD deprivation deciles,
@@ -153,8 +159,8 @@ open-road-risk/
 | Mean snap score | 0.860 |
 | Road links scored (full network) | 2,167,557 |
 | AADT estimator CV R² | ~0.83 (counted-only AADF rows) |
-| Poisson GLM pseudo-R² | 0.3472 (in-sample, downsampled training set; not directly comparable to XGBoost) |
-| XGBoost pseudo-R² | 0.8587 |
+| Poisson GLM pseudo-R² | 0.3472 (verified post-fix; in-sample, downsampled training set; not directly comparable to XGBoost) |
+| XGBoost pseudo-R² | 0.3235 mean across 5 post-fix seeds with temporal features included (range 0.3214-0.3265) |
 
 ---
 

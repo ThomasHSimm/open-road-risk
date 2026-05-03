@@ -68,6 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -294,10 +295,6 @@ window.Quarto = {
   <li class="nav-item">
     <a class="nav-link" href="../future-work.html"> 
 <span class="menu-text">Future Work</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../api-reference/index.html"> 
-<span class="menu-text">API Reference</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -877,7 +874,7 @@ Warning
 </section>
 <section id="pseudo-r-comparability" class="level3" data-number="9.2">
 <h3 data-number="9.2" class="anchored" data-anchor-id="pseudo-r-comparability"><span class="header-section-number">9.2</span> Pseudo-R² comparability between GLM and XGBoost</h3>
-<p>The current GLM pseudo-R² (0.347) and XGBoost pseudo-R² (0.859) are computed on different row subsets with different null models. <strong>They are not directly comparable.</strong></p>
+<p>The current GLM pseudo-R² (0.347) and post-fix XGBoost pseudo-R² (~0.323) are computed on different row subsets with different null models. <strong>They are not directly comparable.</strong></p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -915,8 +912,8 @@ Warning
 </tbody>
 </table>
 <p>The current Stage 2 metrics reflect the state after the counted-only Stage 1a AADF filter, the Stage 2 post-event provenance guard, OSM network feature enrichment, tiered speed-limit imputation, IMD deprivation features, terrain grade, and the GLM optional-feature imputation refactor. These were shipped to improve methodological correctness and feature coverage rather than to optimise pseudo-R², and attribution of changes across them was not formally ablated. Future feature and modelling work should be evaluated against a saved baseline using the rank-stability harness where possible.</p>
-<p>Because the GLM null model sees an artificially balanced zero rate, it is easier to beat — the true 98% zero rate would produce a higher null deviance and a lower pseudo-R² for the same model. Because XGBoost is evaluated on the real held-out distribution against that harder null, its 0.859 is the more conservative and honest metric.</p>
-<p>The practical implication: the 0.347 vs 0.859 gap overstates the genuine predictive lift of XGBoost over the GLM. A fair comparison would require both models evaluated on the same held-out set against the same null model. This has not been done; recomputing both on a common evaluation set is a known pending improvement.</p>
+<p>Because the GLM null model sees an artificially balanced zero rate, it is easier to beat — the true 98% zero rate would produce a higher null deviance and a lower pseudo-R² for the same model. Because XGBoost is evaluated on the real held-out distribution against that harder null, the post-fix <code>~0.323</code> figure is the current honest baseline. Earlier repo docs cited <code>~0.86</code>, but that came from a pre-fix evaluation surface that was later superseded after a feature-table leakage diagnosis.</p>
+<p>The practical implication: the 0.347 vs ~0.323 gap should not be read as a simple model horse race either, because the evaluation surfaces still differ. A fair comparison would require both models evaluated on the same held-out set against the same null model. This has not been done; recomputing both on a common evaluation set is a known pending improvement.</p>
 </section>
 <section id="glm-intercept-bias" class="level3" data-number="9.3">
 <h3 data-number="9.3" class="anchored" data-anchor-id="glm-intercept-bias"><span class="header-section-number">9.3</span> GLM intercept bias</h3>
@@ -1893,7 +1890,7 @@ Warning
 <span id="cb2-467"><a href="#cb2-467" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-468"><a href="#cb2-468" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}</span></span>
 <span id="cb2-469"><a href="#cb2-469" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-470"><a href="#cb2-470" aria-hidden="true" tabindex="-1"></a>The current GLM pseudo-R² (0.347) and XGBoost pseudo-R² (0.859) are computed on</span>
+<span id="cb2-470"><a href="#cb2-470" aria-hidden="true" tabindex="-1"></a>The current GLM pseudo-R² (0.347) and post-fix XGBoost pseudo-R² (~0.323) are computed on</span>
 <span id="cb2-471"><a href="#cb2-471" aria-hidden="true" tabindex="-1"></a>different row subsets with different null models. **They are not directly</span>
 <span id="cb2-472"><a href="#cb2-472" aria-hidden="true" tabindex="-1"></a>comparable.**</span>
 <span id="cb2-473"><a href="#cb2-473" aria-hidden="true" tabindex="-1"></a></span>
@@ -1916,105 +1913,108 @@ Warning
 <span id="cb2-490"><a href="#cb2-490" aria-hidden="true" tabindex="-1"></a>Because the GLM null model sees an artificially balanced zero rate, it is</span>
 <span id="cb2-491"><a href="#cb2-491" aria-hidden="true" tabindex="-1"></a>easier to beat — the true 98% zero rate would produce a higher null deviance</span>
 <span id="cb2-492"><a href="#cb2-492" aria-hidden="true" tabindex="-1"></a>and a lower pseudo-R² for the same model. Because XGBoost is evaluated on</span>
-<span id="cb2-493"><a href="#cb2-493" aria-hidden="true" tabindex="-1"></a>the real held-out distribution against that harder null, its 0.859 is the</span>
-<span id="cb2-494"><a href="#cb2-494" aria-hidden="true" tabindex="-1"></a>more conservative and honest metric.</span>
-<span id="cb2-495"><a href="#cb2-495" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-496"><a href="#cb2-496" aria-hidden="true" tabindex="-1"></a>The practical implication: the 0.347 vs 0.859 gap overstates the genuine</span>
-<span id="cb2-497"><a href="#cb2-497" aria-hidden="true" tabindex="-1"></a>predictive lift of XGBoost over the GLM. A fair comparison would require</span>
-<span id="cb2-498"><a href="#cb2-498" aria-hidden="true" tabindex="-1"></a>both models evaluated on the same held-out set against the same null model.</span>
-<span id="cb2-499"><a href="#cb2-499" aria-hidden="true" tabindex="-1"></a>This has not been done; recomputing both on a common evaluation set is a</span>
-<span id="cb2-500"><a href="#cb2-500" aria-hidden="true" tabindex="-1"></a>known pending improvement.</span>
-<span id="cb2-501"><a href="#cb2-501" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-502"><a href="#cb2-502" aria-hidden="true" tabindex="-1"></a><span class="fu">### GLM intercept bias</span></span>
-<span id="cb2-503"><a href="#cb2-503" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-504"><a href="#cb2-504" aria-hidden="true" tabindex="-1"></a>Zero-downsampling shifts the baseline rate upward. Absolute predicted</span>
-<span id="cb2-505"><a href="#cb2-505" aria-hidden="true" tabindex="-1"></a>counts from the GLM should not be taken at face value; percentiles and</span>
-<span id="cb2-506"><a href="#cb2-506" aria-hidden="true" tabindex="-1"></a>relative comparisons are the intended use.</span>
-<span id="cb2-507"><a href="#cb2-507" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-508"><a href="#cb2-508" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 1a uncertainty is ignored</span></span>
-<span id="cb2-509"><a href="#cb2-509" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-510"><a href="#cb2-510" aria-hidden="true" tabindex="-1"></a>AADT estimates feed Stage 2 as exact exposure. AADT validation MAE is reported</span>
-<span id="cb2-511"><a href="#cb2-511" aria-hidden="true" tabindex="-1"></a>in log-units by the traffic stage. This is not propagated, so confidence</span>
-<span id="cb2-512"><a href="#cb2-512" aria-hidden="true" tabindex="-1"></a>intervals on <span class="in">`predicted_glm`</span> understate total uncertainty.</span>
-<span id="cb2-513"><a href="#cb2-513" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-514"><a href="#cb2-514" aria-hidden="true" tabindex="-1"></a><span class="fu">### No inter-model ensembling or disagreement analysis</span></span>
-<span id="cb2-515"><a href="#cb2-515" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-516"><a href="#cb2-516" aria-hidden="true" tabindex="-1"></a>Both models are trained; XGBoost drives the final ranking, GLM is</span>
-<span id="cb2-517"><a href="#cb2-517" aria-hidden="true" tabindex="-1"></a>diagnostic. A future extension could flag links where the two disagree</span>
-<span id="cb2-518"><a href="#cb2-518" aria-hidden="true" tabindex="-1"></a>substantially — those are candidates for manual review or ensemble weighting.</span>
-<span id="cb2-519"><a href="#cb2-519" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-520"><a href="#cb2-520" aria-hidden="true" tabindex="-1"></a><span class="fu">### Rare-event instability</span></span>
-<span id="cb2-521"><a href="#cb2-521" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-522"><a href="#cb2-522" aria-hidden="true" tabindex="-1"></a>Fatal-only collision modelling is not implemented as a separate target.</span>
-<span id="cb2-523"><a href="#cb2-523" aria-hidden="true" tabindex="-1"></a><span class="in">`fatal_count`</span> and <span class="in">`serious_count`</span> are summed in the output but the primary</span>
-<span id="cb2-524"><a href="#cb2-524" aria-hidden="true" tabindex="-1"></a>model is on <span class="in">`collision_count`</span> (all severities). Severity-specific risk</span>
-<span id="cb2-525"><a href="#cb2-525" aria-hidden="true" tabindex="-1"></a>would need a separate model — counts are small enough that regularisation</span>
-<span id="cb2-526"><a href="#cb2-526" aria-hidden="true" tabindex="-1"></a>or a hurdle model may be required.</span>
-<span id="cb2-527"><a href="#cb2-527" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-528"><a href="#cb2-528" aria-hidden="true" tabindex="-1"></a><span class="fu">### OSM and network feature availability</span></span>
-<span id="cb2-529"><a href="#cb2-529" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-530"><a href="#cb2-530" aria-hidden="true" tabindex="-1"></a>The current Stage 2 run is OSM-enriched: <span class="in">`speed_limit_mph_effective`</span> is included</span>
-<span id="cb2-531"><a href="#cb2-531" aria-hidden="true" tabindex="-1"></a>in both the GLM and XGBoost feature lists, while raw <span class="in">`speed_limit_mph`</span> is</span>
-<span id="cb2-532"><a href="#cb2-532" aria-hidden="true" tabindex="-1"></a>retained in the scored output as provenance. <span class="in">`lanes`</span> and <span class="in">`is_unpaved`</span> are used</span>
-<span id="cb2-533"><a href="#cb2-533" aria-hidden="true" tabindex="-1"></a>by XGBoost and median-imputed for the GLM. Coverage remains class-conditional</span>
-<span id="cb2-534"><a href="#cb2-534" aria-hidden="true" tabindex="-1"></a>and uneven, but the speed-limit coverage edge case described below has been</span>
-<span id="cb2-535"><a href="#cb2-535" aria-hidden="true" tabindex="-1"></a>resolved by tiered imputation.</span>
-<span id="cb2-536"><a href="#cb2-536" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-537"><a href="#cb2-537" aria-hidden="true" tabindex="-1"></a><span class="fu">### GLM training-set size under OSM coverage</span></span>
-<span id="cb2-538"><a href="#cb2-538" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-539"><a href="#cb2-539" aria-hidden="true" tabindex="-1"></a>The GLM feature-selection rule uses any column with **&gt;50% coverage** directly,</span>
-<span id="cb2-540"><a href="#cb2-540" aria-hidden="true" tabindex="-1"></a>then applies <span class="in">`.dropna()`</span> to the assembled feature matrix. The previous raw OSM</span>
-<span id="cb2-541"><a href="#cb2-541" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_mph`</span> feature had 56.4% coverage, barely cleared that threshold,</span>
-<span id="cb2-542"><a href="#cb2-542" aria-hidden="true" tabindex="-1"></a>and reduced the GLM training table to **10,892,180** complete-case link-years.</span>
-<span id="cb2-543"><a href="#cb2-543" aria-hidden="true" tabindex="-1"></a>Replacing it with <span class="in">`speed_limit_mph_effective`</span> resolved that threshold issue:</span>
-<span id="cb2-544"><a href="#cb2-544" aria-hidden="true" tabindex="-1"></a>the current retrain uses **18,302,830** complete-case link-years before GLM</span>
-<span id="cb2-545"><a href="#cb2-545" aria-hidden="true" tabindex="-1"></a>zero-downsampling, then **3,967,414** rows after the 1:10 positive-to-zero</span>
-<span id="cb2-546"><a href="#cb2-546" aria-hidden="true" tabindex="-1"></a>sample. The remaining complete-case loss is dominated by other network/context</span>
-<span id="cb2-547"><a href="#cb2-547" aria-hidden="true" tabindex="-1"></a>coverage, especially the RUC-related population/context tail.</span>
-<span id="cb2-548"><a href="#cb2-548" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-549"><a href="#cb2-549" aria-hidden="true" tabindex="-1"></a>XGBoost is unaffected by this GLM threshold because <span class="in">`train_collision_xgb()`</span></span>
-<span id="cb2-550"><a href="#cb2-550" aria-hidden="true" tabindex="-1"></a>fills missing values with 0 rather than dropping rows. The Stage 2 base table</span>
-<span id="cb2-551"><a href="#cb2-551" aria-hidden="true" tabindex="-1"></a>remains **21,675,570** link-years, with the current grouped split yielding</span>
-<span id="cb2-552"><a href="#cb2-552" aria-hidden="true" tabindex="-1"></a><span class="in">`xgb.n_train = 17,340,450`</span> (80% of the full table). The production ranking</span>
-<span id="cb2-553"><a href="#cb2-553" aria-hidden="true" tabindex="-1"></a>therefore still covers all **2,167,557** links.</span>
-<span id="cb2-554"><a href="#cb2-554" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-555"><a href="#cb2-555" aria-hidden="true" tabindex="-1"></a>The effective-speed retrain left the final rank surface stable relative to the</span>
-<span id="cb2-556"><a href="#cb2-556" aria-hidden="true" tabindex="-1"></a>raw-speed baseline: Spearman rank correlation across all links was **0.9962**,</span>
-<span id="cb2-557"><a href="#cb2-557" aria-hidden="true" tabindex="-1"></a>and the top-1% Jaccard overlap was **0.9512** (21,134 shared links out of</span>
-<span id="cb2-558"><a href="#cb2-558" aria-hidden="true" tabindex="-1"></a>22,218 in the union). The feature swap changed local ordering but did not</span>
-<span id="cb2-559"><a href="#cb2-559" aria-hidden="true" tabindex="-1"></a>materially reshuffle the highest-risk set.</span>
-<span id="cb2-560"><a href="#cb2-560" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-561"><a href="#cb2-561" aria-hidden="true" tabindex="-1"></a>The pipeline also reduces feature count if <span class="in">`network_features.parquet`</span> is</span>
-<span id="cb2-562"><a href="#cb2-562" aria-hidden="true" tabindex="-1"></a>missing, producing lower-quality scores without an obvious downstream signal.</span>
-<span id="cb2-563"><a href="#cb2-563" aria-hidden="true" tabindex="-1"></a>The train log reports this, but consumers of <span class="in">`risk_scores.parquet`</span> should check</span>
-<span id="cb2-564"><a href="#cb2-564" aria-hidden="true" tabindex="-1"></a><span class="in">`data/models/collision_metrics.json`</span> for the actual feature list used by a run.</span>
-<span id="cb2-565"><a href="#cb2-565" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-566"><a href="#cb2-566" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb2-567"><a href="#cb2-567" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-568"><a href="#cb2-568" aria-hidden="true" tabindex="-1"></a><span class="fu">## Running the pipeline</span></span>
-<span id="cb2-569"><a href="#cb2-569" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-570"><a href="#cb2-570" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb2-571"><a href="#cb2-571" aria-hidden="true" tabindex="-1"></a><span class="co"># Run all stages</span></span>
-<span id="cb2-572"><a href="#cb2-572" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> all</span>
-<span id="cb2-573"><a href="#cb2-573" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-574"><a href="#cb2-574" aria-hidden="true" tabindex="-1"></a><span class="co"># Individual stages</span></span>
-<span id="cb2-575"><a href="#cb2-575" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> traffic    <span class="co"># Stage 1a: AADT</span></span>
-<span id="cb2-576"><a href="#cb2-576" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> profile    <span class="co"># Stage 1b: Time-zone profiles</span></span>
-<span id="cb2-577"><a href="#cb2-577" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> collision  <span class="co"># Stage 2: Risk model</span></span>
-<span id="cb2-578"><a href="#cb2-578" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-579"><a href="#cb2-579" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-580"><a href="#cb2-580" aria-hidden="true" tabindex="-1"></a>Stage 2 requires Stage 1a output (<span class="in">`aadt_estimates.parquet`</span>) and will fail</span>
-<span id="cb2-581"><a href="#cb2-581" aria-hidden="true" tabindex="-1"></a>with a clear error if it's missing.</span>
+<span id="cb2-493"><a href="#cb2-493" aria-hidden="true" tabindex="-1"></a>the real held-out distribution against that harder null, the post-fix <span class="in">`~0.323`</span></span>
+<span id="cb2-494"><a href="#cb2-494" aria-hidden="true" tabindex="-1"></a>figure is the current honest baseline. Earlier repo docs cited <span class="in">`~0.86`</span>, but</span>
+<span id="cb2-495"><a href="#cb2-495" aria-hidden="true" tabindex="-1"></a>that came from a pre-fix evaluation surface that was later superseded after a</span>
+<span id="cb2-496"><a href="#cb2-496" aria-hidden="true" tabindex="-1"></a>feature-table leakage diagnosis.</span>
+<span id="cb2-497"><a href="#cb2-497" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-498"><a href="#cb2-498" aria-hidden="true" tabindex="-1"></a>The practical implication: the 0.347 vs ~0.323 gap should not be read as a</span>
+<span id="cb2-499"><a href="#cb2-499" aria-hidden="true" tabindex="-1"></a>simple model horse race either, because the evaluation surfaces still differ.</span>
+<span id="cb2-500"><a href="#cb2-500" aria-hidden="true" tabindex="-1"></a>A fair comparison would require</span>
+<span id="cb2-501"><a href="#cb2-501" aria-hidden="true" tabindex="-1"></a>both models evaluated on the same held-out set against the same null model.</span>
+<span id="cb2-502"><a href="#cb2-502" aria-hidden="true" tabindex="-1"></a>This has not been done; recomputing both on a common evaluation set is a</span>
+<span id="cb2-503"><a href="#cb2-503" aria-hidden="true" tabindex="-1"></a>known pending improvement.</span>
+<span id="cb2-504"><a href="#cb2-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-505"><a href="#cb2-505" aria-hidden="true" tabindex="-1"></a><span class="fu">### GLM intercept bias</span></span>
+<span id="cb2-506"><a href="#cb2-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-507"><a href="#cb2-507" aria-hidden="true" tabindex="-1"></a>Zero-downsampling shifts the baseline rate upward. Absolute predicted</span>
+<span id="cb2-508"><a href="#cb2-508" aria-hidden="true" tabindex="-1"></a>counts from the GLM should not be taken at face value; percentiles and</span>
+<span id="cb2-509"><a href="#cb2-509" aria-hidden="true" tabindex="-1"></a>relative comparisons are the intended use.</span>
+<span id="cb2-510"><a href="#cb2-510" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-511"><a href="#cb2-511" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 1a uncertainty is ignored</span></span>
+<span id="cb2-512"><a href="#cb2-512" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-513"><a href="#cb2-513" aria-hidden="true" tabindex="-1"></a>AADT estimates feed Stage 2 as exact exposure. AADT validation MAE is reported</span>
+<span id="cb2-514"><a href="#cb2-514" aria-hidden="true" tabindex="-1"></a>in log-units by the traffic stage. This is not propagated, so confidence</span>
+<span id="cb2-515"><a href="#cb2-515" aria-hidden="true" tabindex="-1"></a>intervals on <span class="in">`predicted_glm`</span> understate total uncertainty.</span>
+<span id="cb2-516"><a href="#cb2-516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-517"><a href="#cb2-517" aria-hidden="true" tabindex="-1"></a><span class="fu">### No inter-model ensembling or disagreement analysis</span></span>
+<span id="cb2-518"><a href="#cb2-518" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-519"><a href="#cb2-519" aria-hidden="true" tabindex="-1"></a>Both models are trained; XGBoost drives the final ranking, GLM is</span>
+<span id="cb2-520"><a href="#cb2-520" aria-hidden="true" tabindex="-1"></a>diagnostic. A future extension could flag links where the two disagree</span>
+<span id="cb2-521"><a href="#cb2-521" aria-hidden="true" tabindex="-1"></a>substantially — those are candidates for manual review or ensemble weighting.</span>
+<span id="cb2-522"><a href="#cb2-522" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-523"><a href="#cb2-523" aria-hidden="true" tabindex="-1"></a><span class="fu">### Rare-event instability</span></span>
+<span id="cb2-524"><a href="#cb2-524" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-525"><a href="#cb2-525" aria-hidden="true" tabindex="-1"></a>Fatal-only collision modelling is not implemented as a separate target.</span>
+<span id="cb2-526"><a href="#cb2-526" aria-hidden="true" tabindex="-1"></a><span class="in">`fatal_count`</span> and <span class="in">`serious_count`</span> are summed in the output but the primary</span>
+<span id="cb2-527"><a href="#cb2-527" aria-hidden="true" tabindex="-1"></a>model is on <span class="in">`collision_count`</span> (all severities). Severity-specific risk</span>
+<span id="cb2-528"><a href="#cb2-528" aria-hidden="true" tabindex="-1"></a>would need a separate model — counts are small enough that regularisation</span>
+<span id="cb2-529"><a href="#cb2-529" aria-hidden="true" tabindex="-1"></a>or a hurdle model may be required.</span>
+<span id="cb2-530"><a href="#cb2-530" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-531"><a href="#cb2-531" aria-hidden="true" tabindex="-1"></a><span class="fu">### OSM and network feature availability</span></span>
+<span id="cb2-532"><a href="#cb2-532" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-533"><a href="#cb2-533" aria-hidden="true" tabindex="-1"></a>The current Stage 2 run is OSM-enriched: <span class="in">`speed_limit_mph_effective`</span> is included</span>
+<span id="cb2-534"><a href="#cb2-534" aria-hidden="true" tabindex="-1"></a>in both the GLM and XGBoost feature lists, while raw <span class="in">`speed_limit_mph`</span> is</span>
+<span id="cb2-535"><a href="#cb2-535" aria-hidden="true" tabindex="-1"></a>retained in the scored output as provenance. <span class="in">`lanes`</span> and <span class="in">`is_unpaved`</span> are used</span>
+<span id="cb2-536"><a href="#cb2-536" aria-hidden="true" tabindex="-1"></a>by XGBoost and median-imputed for the GLM. Coverage remains class-conditional</span>
+<span id="cb2-537"><a href="#cb2-537" aria-hidden="true" tabindex="-1"></a>and uneven, but the speed-limit coverage edge case described below has been</span>
+<span id="cb2-538"><a href="#cb2-538" aria-hidden="true" tabindex="-1"></a>resolved by tiered imputation.</span>
+<span id="cb2-539"><a href="#cb2-539" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-540"><a href="#cb2-540" aria-hidden="true" tabindex="-1"></a><span class="fu">### GLM training-set size under OSM coverage</span></span>
+<span id="cb2-541"><a href="#cb2-541" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-542"><a href="#cb2-542" aria-hidden="true" tabindex="-1"></a>The GLM feature-selection rule uses any column with **&gt;50% coverage** directly,</span>
+<span id="cb2-543"><a href="#cb2-543" aria-hidden="true" tabindex="-1"></a>then applies <span class="in">`.dropna()`</span> to the assembled feature matrix. The previous raw OSM</span>
+<span id="cb2-544"><a href="#cb2-544" aria-hidden="true" tabindex="-1"></a><span class="in">`speed_limit_mph`</span> feature had 56.4% coverage, barely cleared that threshold,</span>
+<span id="cb2-545"><a href="#cb2-545" aria-hidden="true" tabindex="-1"></a>and reduced the GLM training table to **10,892,180** complete-case link-years.</span>
+<span id="cb2-546"><a href="#cb2-546" aria-hidden="true" tabindex="-1"></a>Replacing it with <span class="in">`speed_limit_mph_effective`</span> resolved that threshold issue:</span>
+<span id="cb2-547"><a href="#cb2-547" aria-hidden="true" tabindex="-1"></a>the current retrain uses **18,302,830** complete-case link-years before GLM</span>
+<span id="cb2-548"><a href="#cb2-548" aria-hidden="true" tabindex="-1"></a>zero-downsampling, then **3,967,414** rows after the 1:10 positive-to-zero</span>
+<span id="cb2-549"><a href="#cb2-549" aria-hidden="true" tabindex="-1"></a>sample. The remaining complete-case loss is dominated by other network/context</span>
+<span id="cb2-550"><a href="#cb2-550" aria-hidden="true" tabindex="-1"></a>coverage, especially the RUC-related population/context tail.</span>
+<span id="cb2-551"><a href="#cb2-551" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-552"><a href="#cb2-552" aria-hidden="true" tabindex="-1"></a>XGBoost is unaffected by this GLM threshold because <span class="in">`train_collision_xgb()`</span></span>
+<span id="cb2-553"><a href="#cb2-553" aria-hidden="true" tabindex="-1"></a>fills missing values with 0 rather than dropping rows. The Stage 2 base table</span>
+<span id="cb2-554"><a href="#cb2-554" aria-hidden="true" tabindex="-1"></a>remains **21,675,570** link-years, with the current grouped split yielding</span>
+<span id="cb2-555"><a href="#cb2-555" aria-hidden="true" tabindex="-1"></a><span class="in">`xgb.n_train = 17,340,450`</span> (80% of the full table). The production ranking</span>
+<span id="cb2-556"><a href="#cb2-556" aria-hidden="true" tabindex="-1"></a>therefore still covers all **2,167,557** links.</span>
+<span id="cb2-557"><a href="#cb2-557" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-558"><a href="#cb2-558" aria-hidden="true" tabindex="-1"></a>The effective-speed retrain left the final rank surface stable relative to the</span>
+<span id="cb2-559"><a href="#cb2-559" aria-hidden="true" tabindex="-1"></a>raw-speed baseline: Spearman rank correlation across all links was **0.9962**,</span>
+<span id="cb2-560"><a href="#cb2-560" aria-hidden="true" tabindex="-1"></a>and the top-1% Jaccard overlap was **0.9512** (21,134 shared links out of</span>
+<span id="cb2-561"><a href="#cb2-561" aria-hidden="true" tabindex="-1"></a>22,218 in the union). The feature swap changed local ordering but did not</span>
+<span id="cb2-562"><a href="#cb2-562" aria-hidden="true" tabindex="-1"></a>materially reshuffle the highest-risk set.</span>
+<span id="cb2-563"><a href="#cb2-563" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-564"><a href="#cb2-564" aria-hidden="true" tabindex="-1"></a>The pipeline also reduces feature count if <span class="in">`network_features.parquet`</span> is</span>
+<span id="cb2-565"><a href="#cb2-565" aria-hidden="true" tabindex="-1"></a>missing, producing lower-quality scores without an obvious downstream signal.</span>
+<span id="cb2-566"><a href="#cb2-566" aria-hidden="true" tabindex="-1"></a>The train log reports this, but consumers of <span class="in">`risk_scores.parquet`</span> should check</span>
+<span id="cb2-567"><a href="#cb2-567" aria-hidden="true" tabindex="-1"></a><span class="in">`data/models/collision_metrics.json`</span> for the actual feature list used by a run.</span>
+<span id="cb2-568"><a href="#cb2-568" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-569"><a href="#cb2-569" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-570"><a href="#cb2-570" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-571"><a href="#cb2-571" aria-hidden="true" tabindex="-1"></a><span class="fu">## Running the pipeline</span></span>
+<span id="cb2-572"><a href="#cb2-572" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-573"><a href="#cb2-573" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb2-574"><a href="#cb2-574" aria-hidden="true" tabindex="-1"></a><span class="co"># Run all stages</span></span>
+<span id="cb2-575"><a href="#cb2-575" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> all</span>
+<span id="cb2-576"><a href="#cb2-576" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-577"><a href="#cb2-577" aria-hidden="true" tabindex="-1"></a><span class="co"># Individual stages</span></span>
+<span id="cb2-578"><a href="#cb2-578" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> traffic    <span class="co"># Stage 1a: AADT</span></span>
+<span id="cb2-579"><a href="#cb2-579" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> profile    <span class="co"># Stage 1b: Time-zone profiles</span></span>
+<span id="cb2-580"><a href="#cb2-580" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> road_risk.model <span class="at">--stage</span> collision  <span class="co"># Stage 2: Risk model</span></span>
+<span id="cb2-581"><a href="#cb2-581" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb2-582"><a href="#cb2-582" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-583"><a href="#cb2-583" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb2-584"><a href="#cb2-584" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-585"><a href="#cb2-585" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next steps</span></span>
-<span id="cb2-586"><a href="#cb2-586" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-587"><a href="#cb2-587" aria-hidden="true" tabindex="-1"></a><span class="in">`risk_scores.parquet`</span> feeds into:</span>
-<span id="cb2-588"><a href="#cb2-588" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-589"><a href="#cb2-589" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Application layer** — ranking, mapping, and exploratory UIs.</span>
-<span id="cb2-590"><a href="#cb2-590" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Residual analysis** — identifying links with large positive residuals</span>
-<span id="cb2-591"><a href="#cb2-591" aria-hidden="true" tabindex="-1"></a>  for review and investigation.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb2-583"><a href="#cb2-583" aria-hidden="true" tabindex="-1"></a>Stage 2 requires Stage 1a output (<span class="in">`aadt_estimates.parquet`</span>) and will fail</span>
+<span id="cb2-584"><a href="#cb2-584" aria-hidden="true" tabindex="-1"></a>with a clear error if it's missing.</span>
+<span id="cb2-585"><a href="#cb2-585" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-586"><a href="#cb2-586" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb2-587"><a href="#cb2-587" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-588"><a href="#cb2-588" aria-hidden="true" tabindex="-1"></a><span class="fu">## Next steps</span></span>
+<span id="cb2-589"><a href="#cb2-589" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-590"><a href="#cb2-590" aria-hidden="true" tabindex="-1"></a><span class="in">`risk_scores.parquet`</span> feeds into:</span>
+<span id="cb2-591"><a href="#cb2-591" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-592"><a href="#cb2-592" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Application layer** — ranking, mapping, and exploratory UIs.</span>
+<span id="cb2-593"><a href="#cb2-593" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Residual analysis** — identifying links with large positive residuals</span>
+<span id="cb2-594"><a href="#cb2-594" aria-hidden="true" tabindex="-1"></a>  for review and investigation.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

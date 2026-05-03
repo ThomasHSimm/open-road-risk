@@ -68,6 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -266,10 +267,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../future-work.html"> 
 <span class="menu-text">Future Work</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../api-reference/index.html"> 
-<span class="menu-text">API Reference</span></a>
-  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -325,8 +322,8 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<p><strong>Date:</strong> April 2026<br>
-<strong>Status:</strong> Refreshed against the current Stage 2 artefacts on 24 April 2026.<br>
+<p><strong>Date:</strong> May 2026<br>
+<strong>Status:</strong> Refreshed against the current post-fix Stage 2 artefacts, including the completed temporal-ablation run.<br>
 <strong>Canonical metrics source:</strong> <code>data/models/collision_metrics.json</code></p>
 <hr>
 <section id="stage-2-collision-risk-model-srcroad_riskmodelcollision.py" class="level2" data-number="1">
@@ -510,19 +507,19 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Pseudo-R²</td>
-<td>0.3013 (in-sample on downsampled training set)</td>
+<td>0.3472 (in-sample on downsampled training set)</td>
 </tr>
 <tr class="even">
 <td>Deviance</td>
-<td>1,376,539</td>
+<td>1,423,147</td>
 </tr>
 <tr class="odd">
 <td>Null deviance</td>
-<td>1,970,118</td>
+<td>2,180,048</td>
 </tr>
 <tr class="even">
 <td>AIC</td>
-<td>2,126,878</td>
+<td>2,237,488</td>
 </tr>
 <tr class="odd">
 <td>Converged</td>
@@ -691,6 +688,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p>XGBoost receives <code>estimated_aadt</code> as a raw feature in addition to the log-offset (XGBoost can exploit non-linear interactions with exposure that the offset constrains in the GLM). <code>hgv_proportion</code> was included in XGBoost because its coverage threshold is simply <code>if col in df.columns</code> (no percentage check); it was present at training time. The current XGBoost run includes effective speed, lanes, and unpaved/surface flag features. Raw <code>speed_limit_mph</code> is retained as provenance but is not in the trained feature list. <code>lit</code> is present in <code>network_features.parquet</code> but is not currently in the trained feature list.</p>
 <p><strong>Metrics:</strong></p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Metric</th>
@@ -700,15 +701,15 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Pseudo-R²</td>
-<td>0.8575 (out-of-sample, held-out test set)</td>
+<td>0.3235 mean across 5 post-fix seeds with temporal features included (range 0.3214-0.3265)</td>
 </tr>
 <tr class="even">
 <td>Test deviance</td>
-<td>104,503</td>
+<td>497,289 mean across 5 post-fix seeds</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Comparability caveat:</strong> GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, and tiered speed-limit imputation; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.</p>
+<p><strong>Comparability caveat:</strong> GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap should not be read as a clean model horse race — the two metrics are not computed on a common evaluation set or against a common null model. Earlier docs cited XGBoost pseudo-R² around <code>0.86</code>, but that number came from a pre-fix evaluation surface that was later superseded after a Stage 2 leakage diagnosis. For current project positioning, use the post-fix <code>~0.32</code> baseline instead.</p>
 </section>
 <section id="output" class="level3" data-number="1.4">
 <h3 data-number="1.4" class="anchored" data-anchor-id="output"><span class="header-section-number">1.4</span> Output</h3>
@@ -1184,8 +1185,8 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>**Date:** April 2026  </span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>**Status:** Refreshed against the current Stage 2 artefacts on 24 April 2026.  </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>**Date:** May 2026  </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>**Status:** Refreshed against the current post-fix Stage 2 artefacts, including the completed temporal-ablation run.  </span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>**Canonical metrics source:** <span class="in">`data/models/collision_metrics.json`</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>---</span>
@@ -1249,10 +1250,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Metric <span class="pp">|</span> Value <span class="pp">|</span></span>
 <span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pseudo-R² <span class="pp">|</span> 0.3013 (in-sample on downsampled training set) <span class="pp">|</span></span>
-<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Deviance <span class="pp">|</span> 1,376,539 <span class="pp">|</span></span>
-<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Null deviance <span class="pp">|</span> 1,970,118 <span class="pp">|</span></span>
-<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> AIC <span class="pp">|</span> 2,126,878 <span class="pp">|</span></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pseudo-R² <span class="pp">|</span> 0.3472 (in-sample on downsampled training set) <span class="pp">|</span></span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Deviance <span class="pp">|</span> 1,423,147 <span class="pp">|</span></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Null deviance <span class="pp">|</span> 2,180,048 <span class="pp">|</span></span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> AIC <span class="pp">|</span> 2,237,488 <span class="pp">|</span></span>
 <span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Converged <span class="pp">|</span> Yes <span class="pp">|</span></span>
 <span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a><span class="fu">### XGBoost — Poisson with base_margin offset</span></span>
@@ -1305,10 +1306,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-129"><a href="#cb1-129" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-130"><a href="#cb1-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Metric <span class="pp">|</span> Value <span class="pp">|</span></span>
 <span id="cb1-131"><a href="#cb1-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb1-132"><a href="#cb1-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pseudo-R² <span class="pp">|</span> 0.8575 (out-of-sample, held-out test set) <span class="pp">|</span></span>
-<span id="cb1-133"><a href="#cb1-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Test deviance <span class="pp">|</span> 104,503 <span class="pp">|</span></span>
+<span id="cb1-132"><a href="#cb1-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pseudo-R² <span class="pp">|</span> 0.3235 mean across 5 post-fix seeds with temporal features included (range 0.3214-0.3265) <span class="pp">|</span></span>
+<span id="cb1-133"><a href="#cb1-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Test deviance <span class="pp">|</span> 497,289 mean across 5 post-fix seeds <span class="pp">|</span></span>
 <span id="cb1-134"><a href="#cb1-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a>**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap overstates genuine modelling lift — the two metrics are not computed on a common evaluation set or against a common null model. These metrics are from a run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, and tiered speed-limit imputation; the earlier 0.269 GLM pseudo-R² figure was a prior-run snapshot, not a directly comparable ablation.</span>
+<span id="cb1-135"><a href="#cb1-135" aria-hidden="true" tabindex="-1"></a>**Comparability caveat:** GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap should not be read as a clean model horse race — the two metrics are not computed on a common evaluation set or against a common null model. Earlier docs cited XGBoost pseudo-R² around <span class="in">`0.86`</span>, but that number came from a pre-fix evaluation surface that was later superseded after a Stage 2 leakage diagnosis. For current project positioning, use the post-fix <span class="in">`~0.32`</span> baseline instead.</span>
 <span id="cb1-136"><a href="#cb1-136" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-137"><a href="#cb1-137" aria-hidden="true" tabindex="-1"></a><span class="fu">### Output</span></span>
 <span id="cb1-138"><a href="#cb1-138" aria-hidden="true" tabindex="-1"></a></span>
