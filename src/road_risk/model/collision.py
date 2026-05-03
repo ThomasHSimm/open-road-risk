@@ -576,6 +576,11 @@ def score_collision_models(
     """
     Apply both models to full dataset and pool across years.
 
+    Mutates ``df`` in place by adding/replacing ``predicted_glm`` and
+    ``predicted_xgb`` link-year columns before pooling. This avoids a full-frame
+    copy during national-scale scoring; callers that need the input frame
+    without prediction columns should pass a copy.
+
     Pooling logic:
     - collision_count : sum across years (total observed)
     - estimated_aadt  : mean across years
@@ -595,7 +600,9 @@ def score_collision_models(
     missing_features = getattr(glm_result, "_road_risk_missing_features", {})
     # Avoid a full-frame defensive copy here: at national scale this can double
     # scoring memory. The caller's df is intentionally annotated with temporary
-    # prediction columns before pooling.
+    # prediction columns before pooling. Repeated callers overwrite these two
+    # columns on each run; training feature lists are explicit, so they are never
+    # model inputs.
     predicted_glm = np.empty(len(df), dtype="float32")
     predicted_xgb = np.empty(len(df), dtype="float32")
 

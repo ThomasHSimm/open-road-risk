@@ -201,6 +201,9 @@ def _train_and_evaluate(
     importance = pd.Series(model.feature_importances_, index=feature_cols)
 
     logger.info("Scoring pooled outputs for config %s seed %s ...", config, seed)
+    # score_collision_models mutates df with prediction columns. Ablation configs
+    # reuse df safely because each scoring pass overwrites them and the XGBoost
+    # feature list is explicit per config.
     scores = score_collision_models(
         glm_result,
         model,
