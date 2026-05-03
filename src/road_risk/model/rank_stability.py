@@ -486,6 +486,9 @@ def run_rank_stability(seeds: list[int] | None = None) -> dict[str, Any]:
         if xgb_metrics.get("n_jobs") != 1:
             raise RuntimeError(f"XGBoost n_jobs is not confirmed as 1 for seed {seed}")
 
+        # score_collision_models annotates df with prediction columns in place.
+        # This harness reuses df across seeds; each scoring pass overwrites those
+        # columns, and train_collision_xgb uses an explicit feature list.
         scores = score_collision_models(
             glm_result,
             xgb_model,

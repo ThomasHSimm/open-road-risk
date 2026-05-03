@@ -67,7 +67,7 @@
   `_missing` columns are perfectly collinear (all reported as −1.6258 in
   the final GLM coefficient table). Cosmetic only; saves ~30MB.
 
-- [ ] Document `score_collision_models` mutation contract. After the
+- [x] Document `score_collision_models` mutation contract. After the
   May 2026 chunked-scoring rewrite, the function no longer copies its
   input. Verify no other callers depend on non-mutation; document the
   new contract in the docstring.

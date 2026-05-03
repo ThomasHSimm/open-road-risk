@@ -20,8 +20,16 @@ website:
     left:
       - href: index.qmd
         text: Home
+      - text: Project
+        menu:
+          - href: project/project-overview.qmd
+            text: Project overview
+          - href: project/model-status.qmd
+            text: Current model status
       - text: Data Sources
         menu:
+          - href: data-sources/index.qmd
+            text: Overview
           - href: data-sources/stats19.qmd
             text: STATS19 Collisions
           - href: data-sources/openroads.qmd
@@ -89,8 +97,11 @@ format:
   html:
     theme: cosmo
     page-layout: full
-    code-fold: true
-    code-tools: true
+    code-fold: false
+    code-tools: false
+    code-links: false
+    notebook-links: false
+    repo-actions: false
     toc: true
     toc-depth: 3
     number-sections: false

@@ -150,10 +150,29 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Data Sources</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../data-sources/stats19.html">
  <span class="dropdown-text">STATS19 Collisions</span></a>
@@ -350,7 +369,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">Empirical Bayes Shrinkage</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+<h1 class="title">Empirical Bayes Shrinkage</h1>
 </div>
 
 
@@ -384,13 +403,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <h3 class="anchored" data-anchor-id="interactive-demonstration">Interactive Demonstration</h3>
 <p>Use the sliders below to see how the EB formula balances the model against reality. Notice how adjusting the <strong>k (Noise Parameter)</strong>—which represents how chaotic the baseline data is—shifts the balance of trust.</p>
 <div class="cell panel-input card bg-light p-2">
-<details class="code-fold hidden">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="41" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 40;"><span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>viewof predicted_rate <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.01</span><span class="op">,</span> <span class="fl">5.0</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"AI Predicted Rate (/yr)"</span>})</span>
 <span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>viewof observed_total <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">50</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Observed Total Crashes"</span>})</span>
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>viewof years_observed <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">1</span><span class="op">,</span> <span class="dv">20</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Years Observed"</span>})</span>
 <span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>viewof k_parameter <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.1</span><span class="op">,</span> <span class="fl">10.0</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">3.07</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"k (Noise Parameter)"</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-1-1" data-nodetype="declaration">
@@ -421,8 +437,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </div>
 </div>
 <div class="cell">
-<details class="code-fold hidden">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="50" data-source-offset="-24"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 49;"><span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>predicted_total <span class="op">=</span> predicted_rate <span class="op">*</span> years_observed</span>
 <span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>weight <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> (k_parameter <span class="op">*</span> predicted_total))</span>
 <span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>eb_total <span class="op">=</span> (weight <span class="op">*</span> predicted_total) <span class="op">+</span> ((<span class="dv">1</span> <span class="op">-</span> weight) <span class="op">*</span> observed_total)</span>
@@ -434,7 +448,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="vs">**Model Trust (Weight w):** </span><span class="sc">${</span>(weight <span class="op">*</span> <span class="dv">100</span>)<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs">% &amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp; **History Trust (1 - w):** </span><span class="sc">${</span>((<span class="dv">1</span> <span class="op">-</span> weight) <span class="op">*</span> <span class="dv">100</span>)<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs">%  </span></span>
 <span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="vs">**Final EB Adjusted Rate:** **</span><span class="sc">${</span>eb_annual_rate<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs"> crashes/year**</span></span>
 <span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="vs">`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-2-1" data-nodetype="declaration">
@@ -479,8 +492,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </div>
 </div>
 <div class="cell">
-<details class="code-fold hidden">
-<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="64" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 63;"><span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="co">// 3. Render the interactive chart</span></span>
 <span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
 <span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">150</span><span class="op">,</span></span>
@@ -517,7 +528,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>    })</span>
 <span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>  ]</span>
 <span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 <div class="cell-output cell-output-display">
 <div id="ojs-cell-3" data-nodetype="expression">
 
@@ -1113,8 +1123,6 @@ k_median             (diagnostic)</code></pre>
 <p>Per-family or per-bin EB remains the cleaner methodological answer to the non-constant dispersion finding from session 1, and is recommended for v2 paired with the planned facility-family split.</p>
 
 
-<!-- -->
-
 </section>
 
 </main> <!-- /main -->
@@ -1199,57 +1207,6 @@ window._ojs.runtime.interpretFromScriptTags();
         container: window.document.getElementById('quarto-embedded-source-code-modal')
       });
       clipboardModal.on('success', onCopySuccess);
-    }
-    const viewSource = window.document.getElementById('quarto-view-source') ||
-                       window.document.getElementById('quarto-code-tools-source');
-    if (viewSource) {
-      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
-      viewSource.addEventListener("click", function(e) {
-        if (sourceUrl) {
-          // rstudio viewer pane
-          if (/\bcapabilities=\b/.test(window.location)) {
-            window.open(sourceUrl);
-          } else {
-            window.location.href = sourceUrl;
-          }
-        } else {
-          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
-          modal.show();
-        }
-        return false;
-      });
-    }
-    function toggleCodeHandler(show) {
-      return function(e) {
-        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
-        for (let i=0; i<detailsSrc.length; i++) {
-          const details = detailsSrc[i].parentElement;
-          if (show) {
-            details.open = true;
-          } else {
-            details.removeAttribute("open");
-          }
-        }
-        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
-        const fromCls = show ? "hidden" : "unhidden";
-        const toCls = show ? "unhidden" : "hidden";
-        for (let i=0; i<cellCodeDivs.length; i++) {
-          const codeDiv = cellCodeDivs[i];
-          if (codeDiv.classList.contains(fromCls)) {
-            codeDiv.classList.remove(fromCls);
-            codeDiv.classList.add(toCls);
-          } 
-        }
-        return false;
-      }
-    }
-    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
-    if (hideAllCode) {
-      hideAllCode.addEventListener("click", toggleCodeHandler(false));
-    }
-    const showAllCode = window.document.getElementById("quarto-show-all-code");
-    if (showAllCode) {
-      showAllCode.addEventListener("click", toggleCodeHandler(true));
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
@@ -1579,789 +1536,7 @@ window._ojs.runtime.interpretFromScriptTags();
       }
     }
   });
-  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Empirical Bayes Shrinkage"</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: false</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page-layout: full</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>**Status:** Design complete; sessions 1–2 complete. Adoption recommendation in §10.</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>**Scope:** v1 empirical-Bayes-flavoured shrinkage for Stage 2 risk ranking.</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>**Primary code path:** <span class="in">`src/road_risk/model/collision.py`</span> and a small diagnostic</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>module.</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>**Reference model:** FHWA Highway Safety Manual (HSM) network-screening EB</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>formula, adapted to the current XGBoost point predictions.</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0. Background: Empirical Bayes Shrinkage: A Primer</span></span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>Before diving into the mathematical formulation and implementation details, it is helpful to understand the core concept of Empirical Bayes (EB) Shrinkage and why we are applying it to our Stage 2 risk rankings.</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="fu">### The Problem: Pure Prediction vs. Reality</span></span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>Currently, our XGBoost model ranks road links based *purely* on mathematical predictions. While powerful, this approach has two major blind spots when dealing with rare events like car crashes:</span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**The "Fluke" Problem:** A historically safe road might experience one freak accident. Relying purely on that raw observation makes the road look artificially dangerous.</span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**The "Blind Spot" Problem:** The model might predict a road is perfectly safe based on its features, but if there have been 10 crashes there in the last 5 years, the model is clearly missing something.</span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="fu">### The Solution: EB Shrinkage</span></span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>Empirical Bayes Shrinkage acts as a reality check. It calculates a statistical "weight" to blend the **Model's Prediction** with the **Observed Reality**. </span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>If a road has very little data or low exposure, the formula heavily trusts the AI model, preventing a single fluke accident from skewing the rankings.</span>
-<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>If a road has a long, sustained history of actual crashes, the formula overrides the AI and trusts the historical reality.</span>
-<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interactive Demonstration</span></span>
-<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>Use the sliders below to see how the EB formula balances the model against reality. Notice how adjusting the **k (Noise Parameter)**—which represents how chaotic the baseline data is—shifts the balance of trust.</span>
-<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="in">```{ojs}</span></span>
-<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="co">//| echo: false</span></span>
-<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="co">//| panel: input</span></span>
-<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>viewof predicted_rate <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.01</span><span class="op">,</span> <span class="fl">5.0</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">0.5</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"AI Predicted Rate (/yr)"</span>})</span>
-<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>viewof observed_total <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">0</span><span class="op">,</span> <span class="dv">50</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Observed Total Crashes"</span>})</span>
-<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>viewof years_observed <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">1</span><span class="op">,</span> <span class="dv">20</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"Years Observed"</span>})</span>
-<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>viewof k_parameter <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="fl">0.1</span><span class="op">,</span> <span class="fl">10.0</span>]<span class="op">,</span> {<span class="dt">value</span><span class="op">:</span> <span class="fl">3.07</span><span class="op">,</span> <span class="dt">step</span><span class="op">:</span> <span class="fl">0.01</span><span class="op">,</span> <span class="dt">label</span><span class="op">:</span> <span class="st">"k (Noise Parameter)"</span>})</span>
-<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a><span class="in">```{ojs}</span></span>
-<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a><span class="co">//| echo: false</span></span>
-<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a><span class="co">// 1. Core Calculations</span></span>
-<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>predicted_total <span class="op">=</span> predicted_rate <span class="op">*</span> years_observed</span>
-<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>weight <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> (k_parameter <span class="op">*</span> predicted_total))</span>
-<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>eb_total <span class="op">=</span> (weight <span class="op">*</span> predicted_total) <span class="op">+</span> ((<span class="dv">1</span> <span class="op">-</span> weight) <span class="op">*</span> observed_total)</span>
-<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>eb_annual_rate <span class="op">=</span> eb_total <span class="op">/</span> years_observed</span>
-<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a>observed_annual <span class="op">=</span> observed_total <span class="op">/</span> years_observed</span>
-<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a><span class="co">// 2. Display the mathematical breakdown</span></span>
-<span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a><span class="fu">md</span><span class="vs">`</span></span>
-<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a><span class="vs">**Model Trust (Weight w):** </span><span class="sc">${</span>(weight <span class="op">*</span> <span class="dv">100</span>)<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs">% &amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp; **History Trust (1 - w):** </span><span class="sc">${</span>((<span class="dv">1</span> <span class="op">-</span> weight) <span class="op">*</span> <span class="dv">100</span>)<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">1</span>)<span class="sc">}</span><span class="vs">%  </span></span>
-<span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a><span class="vs">**Final EB Adjusted Rate:** **</span><span class="sc">${</span>eb_annual_rate<span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="sc">}</span><span class="vs"> crashes/year**</span></span>
-<span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a><span class="vs">`</span></span>
-<span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-69"><a href="#cb15-69" aria-hidden="true" tabindex="-1"></a><span class="in">```{ojs}</span></span>
-<span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a><span class="co">//| echo: false</span></span>
-<span id="cb15-71"><a href="#cb15-71" aria-hidden="true" tabindex="-1"></a><span class="co">// 3. Render the interactive chart</span></span>
-<span id="cb15-72"><a href="#cb15-72" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
-<span id="cb15-73"><a href="#cb15-73" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marginLeft</span><span class="op">:</span> <span class="dv">150</span><span class="op">,</span></span>
-<span id="cb15-74"><a href="#cb15-74" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> { </span>
-<span id="cb15-75"><a href="#cb15-75" aria-hidden="true" tabindex="-1"></a>    <span class="dt">label</span><span class="op">:</span> <span class="st">"Annual Crash Rate"</span><span class="op">,</span> </span>
-<span id="cb15-76"><a href="#cb15-76" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(predicted_rate<span class="op">,</span> observed_annual<span class="op">,</span> eb_annual_rate) <span class="op">*</span> <span class="fl">1.2</span>] </span>
-<span id="cb15-77"><a href="#cb15-77" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
-<span id="cb15-78"><a href="#cb15-78" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> { <span class="dt">label</span><span class="op">:</span> <span class="kw">null</span> }<span class="op">,</span></span>
-<span id="cb15-79"><a href="#cb15-79" aria-hidden="true" tabindex="-1"></a>  <span class="dt">color</span><span class="op">:</span> { </span>
-<span id="cb15-80"><a href="#cb15-80" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [<span class="st">"1. AI Prediction"</span><span class="op">,</span> <span class="st">"2. Observed Reality"</span><span class="op">,</span> <span class="st">"3. EB Adjusted Result"</span>]<span class="op">,</span></span>
-<span id="cb15-81"><a href="#cb15-81" aria-hidden="true" tabindex="-1"></a>    <span class="dt">range</span><span class="op">:</span> [<span class="st">"#4285F4"</span><span class="op">,</span> <span class="st">"#EA4335"</span><span class="op">,</span> <span class="st">"#34A853"</span>]</span>
-<span id="cb15-82"><a href="#cb15-82" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
-<span id="cb15-83"><a href="#cb15-83" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
-<span id="cb15-84"><a href="#cb15-84" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">barX</span>([</span>
-<span id="cb15-85"><a href="#cb15-85" aria-hidden="true" tabindex="-1"></a>      {<span class="dt">type</span><span class="op">:</span> <span class="st">"1. AI Prediction"</span><span class="op">,</span> <span class="dt">rate</span><span class="op">:</span> predicted_rate}<span class="op">,</span></span>
-<span id="cb15-86"><a href="#cb15-86" aria-hidden="true" tabindex="-1"></a>      {<span class="dt">type</span><span class="op">:</span> <span class="st">"2. Observed Reality"</span><span class="op">,</span> <span class="dt">rate</span><span class="op">:</span> observed_annual}<span class="op">,</span></span>
-<span id="cb15-87"><a href="#cb15-87" aria-hidden="true" tabindex="-1"></a>      {<span class="dt">type</span><span class="op">:</span> <span class="st">"3. EB Adjusted Result"</span><span class="op">,</span> <span class="dt">rate</span><span class="op">:</span> eb_annual_rate}</span>
-<span id="cb15-88"><a href="#cb15-88" aria-hidden="true" tabindex="-1"></a>    ]<span class="op">,</span> {</span>
-<span id="cb15-89"><a href="#cb15-89" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"rate"</span><span class="op">,</span> </span>
-<span id="cb15-90"><a href="#cb15-90" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"type"</span><span class="op">,</span> </span>
-<span id="cb15-91"><a href="#cb15-91" aria-hidden="true" tabindex="-1"></a>      <span class="dt">fill</span><span class="op">:</span> <span class="st">"type"</span><span class="op">,</span> </span>
-<span id="cb15-92"><a href="#cb15-92" aria-hidden="true" tabindex="-1"></a>      <span class="dt">sort</span><span class="op">:</span> {<span class="dt">y</span><span class="op">:</span> <span class="kw">null</span>}</span>
-<span id="cb15-93"><a href="#cb15-93" aria-hidden="true" tabindex="-1"></a>    })<span class="op">,</span></span>
-<span id="cb15-94"><a href="#cb15-94" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>([</span>
-<span id="cb15-95"><a href="#cb15-95" aria-hidden="true" tabindex="-1"></a>      {<span class="dt">type</span><span class="op">:</span> <span class="st">"1. AI Prediction"</span><span class="op">,</span> <span class="dt">rate</span><span class="op">:</span> predicted_rate}<span class="op">,</span></span>
-<span id="cb15-96"><a href="#cb15-96" aria-hidden="true" tabindex="-1"></a>      {<span class="dt">type</span><span class="op">:</span> <span class="st">"2. Observed Reality"</span><span class="op">,</span> <span class="dt">rate</span><span class="op">:</span> observed_annual}<span class="op">,</span></span>
-<span id="cb15-97"><a href="#cb15-97" aria-hidden="true" tabindex="-1"></a>      {<span class="dt">type</span><span class="op">:</span> <span class="st">"3. EB Adjusted Result"</span><span class="op">,</span> <span class="dt">rate</span><span class="op">:</span> eb_annual_rate}</span>
-<span id="cb15-98"><a href="#cb15-98" aria-hidden="true" tabindex="-1"></a>    ]<span class="op">,</span> {</span>
-<span id="cb15-99"><a href="#cb15-99" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"rate"</span><span class="op">,</span> </span>
-<span id="cb15-100"><a href="#cb15-100" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"type"</span><span class="op">,</span> </span>
-<span id="cb15-101"><a href="#cb15-101" aria-hidden="true" tabindex="-1"></a>      <span class="dt">text</span><span class="op">:</span> d <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">rate</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">2</span>)<span class="op">,</span> </span>
-<span id="cb15-102"><a href="#cb15-102" aria-hidden="true" tabindex="-1"></a>      <span class="dt">textAnchor</span><span class="op">:</span> <span class="st">"start"</span><span class="op">,</span> </span>
-<span id="cb15-103"><a href="#cb15-103" aria-hidden="true" tabindex="-1"></a>      <span class="dt">dx</span><span class="op">:</span> <span class="dv">5</span></span>
-<span id="cb15-104"><a href="#cb15-104" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb15-105"><a href="#cb15-105" aria-hidden="true" tabindex="-1"></a>  ]</span>
-<span id="cb15-106"><a href="#cb15-106" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb15-107"><a href="#cb15-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-108"><a href="#cb15-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-109"><a href="#cb15-109" aria-hidden="true" tabindex="-1"></a>***</span>
-<span id="cb15-110"><a href="#cb15-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-111"><a href="#cb15-111" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-112"><a href="#cb15-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-113"><a href="#cb15-113" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. Motivation and current units</span></span>
-<span id="cb15-114"><a href="#cb15-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-115"><a href="#cb15-115" aria-hidden="true" tabindex="-1"></a>Stage 2 currently ranks links by pooled <span class="in">`predicted_xgb`</span>. This is a model-only</span>
-<span id="cb15-116"><a href="#cb15-116" aria-hidden="true" tabindex="-1"></a>ranking: it uses the XGBoost Poisson expectation and does not directly borrow</span>
-<span id="cb15-117"><a href="#cb15-117" aria-hidden="true" tabindex="-1"></a>from observed collision history. For rare events across roughly 2.17 million</span>
-<span id="cb15-118"><a href="#cb15-118" aria-hidden="true" tabindex="-1"></a>links, a pure point-prediction ranking can overstate certainty near narrow</span>
-<span id="cb15-119"><a href="#cb15-119" aria-hidden="true" tabindex="-1"></a>top-k thresholds.</span>
-<span id="cb15-120"><a href="#cb15-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-121"><a href="#cb15-121" aria-hidden="true" tabindex="-1"></a>Empirical Bayes (EB) shrinkage combines a model expectation with observed</span>
-<span id="cb15-122"><a href="#cb15-122" aria-hidden="true" tabindex="-1"></a>history. In highway safety screening, this controls regression to the mean:</span>
-<span id="cb15-123"><a href="#cb15-123" aria-hidden="true" tabindex="-1"></a>short links with one unusual collision are shrunk toward model expectation,</span>
-<span id="cb15-124"><a href="#cb15-124" aria-hidden="true" tabindex="-1"></a>while links with repeated observed collisions retain more observed evidence.</span>
-<span id="cb15-125"><a href="#cb15-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-126"><a href="#cb15-126" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 Current Stage 2 prediction unit</span></span>
-<span id="cb15-127"><a href="#cb15-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-128"><a href="#cb15-128" aria-hidden="true" tabindex="-1"></a>In <span class="in">`train_collision_xgb()`</span>, XGBoost is trained with:</span>
-<span id="cb15-129"><a href="#cb15-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-130"><a href="#cb15-130" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb15-131"><a href="#cb15-131" aria-hidden="true" tabindex="-1"></a>objective <span class="op">=</span> <span class="st">"count:poisson"</span></span>
-<span id="cb15-132"><a href="#cb15-132" aria-hidden="true" tabindex="-1"></a>base_margin <span class="op">=</span> log_offset</span>
-<span id="cb15-133"><a href="#cb15-133" aria-hidden="true" tabindex="-1"></a>log_offset <span class="op">=</span> log(estimated_aadt <span class="op">*</span> link_length_km <span class="op">*</span> <span class="dv">365</span> <span class="op">/</span> <span class="fl">1e6</span>)</span>
-<span id="cb15-134"><a href="#cb15-134" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-135"><a href="#cb15-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-136"><a href="#cb15-136" aria-hidden="true" tabindex="-1"></a>The offset is exposure in million vehicle-kilometres. XGBoost therefore returns</span>
-<span id="cb15-137"><a href="#cb15-137" aria-hidden="true" tabindex="-1"></a>an expected **collision count per link-year**, not a rate per vehicle-km.</span>
-<span id="cb15-138"><a href="#cb15-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-139"><a href="#cb15-139" aria-hidden="true" tabindex="-1"></a>In <span class="in">`score_collision_models()`</span>, predictions are pooled to one row per link:</span>
-<span id="cb15-140"><a href="#cb15-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-141"><a href="#cb15-141" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb15-142"><a href="#cb15-142" aria-hidden="true" tabindex="-1"></a>pool_agg <span class="op">=</span> {</span>
-<span id="cb15-143"><a href="#cb15-143" aria-hidden="true" tabindex="-1"></a>    <span class="st">"collision_count"</span>: <span class="st">"sum"</span>,</span>
-<span id="cb15-144"><a href="#cb15-144" aria-hidden="true" tabindex="-1"></a>    <span class="st">"predicted_xgb"</span>: <span class="st">"mean"</span>,</span>
-<span id="cb15-145"><a href="#cb15-145" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb15-146"><a href="#cb15-146" aria-hidden="true" tabindex="-1"></a>pooled <span class="op">=</span> df.groupby(<span class="st">"link_id"</span>).agg(pool_agg).reset_index()</span>
-<span id="cb15-147"><a href="#cb15-147" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-148"><a href="#cb15-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-149"><a href="#cb15-149" aria-hidden="true" tabindex="-1"></a>The output <span class="in">`predicted_xgb`</span> in <span class="in">`risk_scores.parquet`</span> is therefore:</span>
-<span id="cb15-150"><a href="#cb15-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-151"><a href="#cb15-151" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; mean expected collisions per year for the link.</span></span>
-<span id="cb15-152"><a href="#cb15-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-153"><a href="#cb15-153" aria-hidden="true" tabindex="-1"></a>The output <span class="in">`collision_count`</span> is:</span>
-<span id="cb15-154"><a href="#cb15-154" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-155"><a href="#cb15-155" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; total observed collisions over all link-years included in the Stage 2 base</span></span>
-<span id="cb15-156"><a href="#cb15-156" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; table.</span></span>
-<span id="cb15-157"><a href="#cb15-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-158"><a href="#cb15-158" aria-hidden="true" tabindex="-1"></a>The current Stage 2 dataset is built from all years in <span class="in">`aadt_estimates.parquet`</span>;</span>
-<span id="cb15-159"><a href="#cb15-159" aria-hidden="true" tabindex="-1"></a>the 5-seed rank-stability run logged 10 years, 2015-2024, giving 21,675,570</span>
-<span id="cb15-160"><a href="#cb15-160" aria-hidden="true" tabindex="-1"></a>link-years and 2,167,557 scored links. The EB implementation should not assume</span>
-<span id="cb15-161"><a href="#cb15-161" aria-hidden="true" tabindex="-1"></a>10 years permanently: it should compute <span class="in">`n_years`</span> per link from the link-year</span>
-<span id="cb15-162"><a href="#cb15-162" aria-hidden="true" tabindex="-1"></a>table.</span>
-<span id="cb15-163"><a href="#cb15-163" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-164"><a href="#cb15-164" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-165"><a href="#cb15-165" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-166"><a href="#cb15-166" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. Mathematical formulation</span></span>
-<span id="cb15-167"><a href="#cb15-167" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-168"><a href="#cb15-168" aria-hidden="true" tabindex="-1"></a>Use the HSM combining formula, with XGBoost predictions as the prior mean:</span>
-<span id="cb15-169"><a href="#cb15-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-170"><a href="#cb15-170" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb15-171"><a href="#cb15-171" aria-hidden="true" tabindex="-1"></a><span class="in">expected_EB = w * predicted + (1 - w) * observed</span></span>
-<span id="cb15-172"><a href="#cb15-172" aria-hidden="true" tabindex="-1"></a><span class="in">w = 1 / (1 + k * predicted * n_years)</span></span>
-<span id="cb15-173"><a href="#cb15-173" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-174"><a href="#cb15-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-175"><a href="#cb15-175" aria-hidden="true" tabindex="-1"></a>For a single link:</span>
-<span id="cb15-176"><a href="#cb15-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-177"><a href="#cb15-177" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Symbol <span class="pp">|</span> Definition <span class="pp">|</span> Units <span class="pp">|</span></span>
-<span id="cb15-178"><a href="#cb15-178" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
-<span id="cb15-179"><a href="#cb15-179" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> μ <span class="pp">|</span> pooled <span class="in">`predicted_xgb`</span> <span class="pp">|</span> expected collisions/year <span class="pp">|</span></span>
-<span id="cb15-180"><a href="#cb15-180" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> n <span class="pp">|</span> <span class="in">`n_years`</span> for the link <span class="pp">|</span> years <span class="pp">|</span></span>
-<span id="cb15-181"><a href="#cb15-181" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> N_pred <span class="pp">|</span> μ × n <span class="pp">|</span> total predicted collisions over observed period <span class="pp">|</span></span>
-<span id="cb15-182"><a href="#cb15-182" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> N_obs <span class="pp">|</span> <span class="in">`collision_count`</span> <span class="pp">|</span> total observed collisions over observed period <span class="pp">|</span></span>
-<span id="cb15-183"><a href="#cb15-183" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> k <span class="pp">|</span> global NB2 overdispersion parameter <span class="pp">|</span> dimensionless <span class="pp">|</span></span>
-<span id="cb15-184"><a href="#cb15-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-185"><a href="#cb15-185" aria-hidden="true" tabindex="-1"></a>Apply the formula in total-count space:</span>
-<span id="cb15-186"><a href="#cb15-186" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-187"><a href="#cb15-187" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb15-188"><a href="#cb15-188" aria-hidden="true" tabindex="-1"></a><span class="in">w = 1 / (1 + k * N_pred)</span></span>
-<span id="cb15-189"><a href="#cb15-189" aria-hidden="true" tabindex="-1"></a><span class="in">N_EB = w * N_pred + (1 - w) * N_obs</span></span>
-<span id="cb15-190"><a href="#cb15-190" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-191"><a href="#cb15-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-192"><a href="#cb15-192" aria-hidden="true" tabindex="-1"></a>Then convert back to a per-year ranking score:</span>
-<span id="cb15-193"><a href="#cb15-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-194"><a href="#cb15-194" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb15-195"><a href="#cb15-195" aria-hidden="true" tabindex="-1"></a><span class="in">predicted_eb = N_EB / n</span></span>
-<span id="cb15-196"><a href="#cb15-196" aria-hidden="true" tabindex="-1"></a><span class="in">risk_percentile_eb = percentile_rank(predicted_eb)</span></span>
-<span id="cb15-197"><a href="#cb15-197" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-198"><a href="#cb15-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-199"><a href="#cb15-199" aria-hidden="true" tabindex="-1"></a>This keeps the weight and the observed history in count units, which matches</span>
-<span id="cb15-200"><a href="#cb15-200" aria-hidden="true" tabindex="-1"></a>the HSM form and avoids mixing annual means with multi-year totals inside the</span>
-<span id="cb15-201"><a href="#cb15-201" aria-hidden="true" tabindex="-1"></a>same term.</span>
-<span id="cb15-202"><a href="#cb15-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-203"><a href="#cb15-203" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.1 Weight interpretation</span></span>
-<span id="cb15-204"><a href="#cb15-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-205"><a href="#cb15-205" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Condition <span class="pp">|</span> Effect on w <span class="pp">|</span> Ranking effect <span class="pp">|</span></span>
-<span id="cb15-206"><a href="#cb15-206" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
-<span id="cb15-207"><a href="#cb15-207" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Low predicted count and few observed years <span class="pp">|</span> w closer to 1 <span class="pp">|</span> stronger pull to model prediction <span class="pp">|</span></span>
-<span id="cb15-208"><a href="#cb15-208" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> High predicted count or many observed years <span class="pp">|</span> w lower <span class="pp">|</span> more observed-history influence <span class="pp">|</span></span>
-<span id="cb15-209"><a href="#cb15-209" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Higher k <span class="pp">|</span> w lower <span class="pp">|</span> more observed-history influence <span class="pp">|</span></span>
-<span id="cb15-210"><a href="#cb15-210" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> k near 0 <span class="pp">|</span> w near 1 <span class="pp">|</span> EB converges toward current model ranking <span class="pp">|</span></span>
-<span id="cb15-211"><a href="#cb15-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-212"><a href="#cb15-212" aria-hidden="true" tabindex="-1"></a>The intended behaviour is conservative. A very short, low-exposure link with a</span>
-<span id="cb15-213"><a href="#cb15-213" aria-hidden="true" tabindex="-1"></a>single unusual collision should not leap to the top solely because its observed</span>
-<span id="cb15-214"><a href="#cb15-214" aria-hidden="true" tabindex="-1"></a>rate is extreme. A link with sustained observed collisions across many years</span>
-<span id="cb15-215"><a href="#cb15-215" aria-hidden="true" tabindex="-1"></a>should retain more of that history.</span>
-<span id="cb15-216"><a href="#cb15-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-217"><a href="#cb15-217" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-218"><a href="#cb15-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-219"><a href="#cb15-219" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. k estimation</span></span>
-<span id="cb15-220"><a href="#cb15-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-221"><a href="#cb15-221" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.1 Primary method for v1: method-of-moments</span></span>
-<span id="cb15-222"><a href="#cb15-222" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-223"><a href="#cb15-223" aria-hidden="true" tabindex="-1"></a>v1 uses one global NB2 overdispersion parameter, <span class="in">`k`</span>, estimated by</span>
-<span id="cb15-224"><a href="#cb15-224" aria-hidden="true" tabindex="-1"></a>method-of-moments (MoM) from the existing Stage 2 predictions and observed</span>
-<span id="cb15-225"><a href="#cb15-225" aria-hidden="true" tabindex="-1"></a>link-year collision counts. This avoids fitting a global NB GLM on 17M+</span>
-<span id="cb15-226"><a href="#cb15-226" aria-hidden="true" tabindex="-1"></a>complete-case link-years as the default path.</span>
-<span id="cb15-227"><a href="#cb15-227" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-228"><a href="#cb15-228" aria-hidden="true" tabindex="-1"></a>The procedure is:</span>
-<span id="cb15-229"><a href="#cb15-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-230"><a href="#cb15-230" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Use existing <span class="in">`predicted_xgb`</span> values from the current Stage 2 scoring output,</span>
-<span id="cb15-231"><a href="#cb15-231" aria-hidden="true" tabindex="-1"></a>   or rerun scoring once for this purpose without retraining the model.</span>
-<span id="cb15-232"><a href="#cb15-232" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Work at link-year grain, pairing each observed <span class="in">`collision_count`</span> with its</span>
-<span id="cb15-233"><a href="#cb15-233" aria-hidden="true" tabindex="-1"></a>   link-year <span class="in">`predicted_xgb`</span>.</span>
-<span id="cb15-234"><a href="#cb15-234" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Bin link-years by predicted collision count, using 20 quantile bins by</span>
-<span id="cb15-235"><a href="#cb15-235" aria-hidden="true" tabindex="-1"></a>   <span class="in">`predicted_xgb`</span> as the default. If many bins have too few positive</span>
-<span id="cb15-236"><a href="#cb15-236" aria-hidden="true" tabindex="-1"></a>   observations, merge adjacent bins until each retained bin has at least</span>
-<span id="cb15-237"><a href="#cb15-237" aria-hidden="true" tabindex="-1"></a>   10,000 link-years and at least 100 positive collision rows.</span>
-<span id="cb15-238"><a href="#cb15-238" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Within each bin, compute empirical mean and variance of observed</span>
-<span id="cb15-239"><a href="#cb15-239" aria-hidden="true" tabindex="-1"></a>   link-year <span class="in">`collision_count`</span>.</span>
-<span id="cb15-240"><a href="#cb15-240" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>Under NB2:</span>
-<span id="cb15-241"><a href="#cb15-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-242"><a href="#cb15-242" aria-hidden="true" tabindex="-1"></a>   <span class="in">```text</span></span>
-<span id="cb15-243"><a href="#cb15-243" aria-hidden="true" tabindex="-1"></a><span class="in">   Var(y) = E(y) + k * E(y)^2</span></span>
-<span id="cb15-244"><a href="#cb15-244" aria-hidden="true" tabindex="-1"></a><span class="in">   ```</span></span>
-<span id="cb15-245"><a href="#cb15-245" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-246"><a href="#cb15-246" aria-hidden="true" tabindex="-1"></a>   so:</span>
-<span id="cb15-247"><a href="#cb15-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-248"><a href="#cb15-248" aria-hidden="true" tabindex="-1"></a>   <span class="in">```text</span></span>
-<span id="cb15-249"><a href="#cb15-249" aria-hidden="true" tabindex="-1"></a><span class="in">   k_bin = (Var(y) - E(y)) / E(y)^2</span></span>
-<span id="cb15-250"><a href="#cb15-250" aria-hidden="true" tabindex="-1"></a><span class="in">   ```</span></span>
-<span id="cb15-251"><a href="#cb15-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-252"><a href="#cb15-252" aria-hidden="true" tabindex="-1"></a><span class="ss">6. </span>Drop bins where <span class="in">`Var(y) &lt;= E(y)`</span>, because they imply non-physical negative</span>
-<span id="cb15-253"><a href="#cb15-253" aria-hidden="true" tabindex="-1"></a>   NB2 dispersion. Log the dropped-bin count and fail loudly if more than 25%</span>
-<span id="cb15-254"><a href="#cb15-254" aria-hidden="true" tabindex="-1"></a>   of bins are dropped. A small number of non-overdispersed bins is plausible</span>
-<span id="cb15-255"><a href="#cb15-255" aria-hidden="true" tabindex="-1"></a>   sampling noise, especially in very low-risk bins; more than 25% suggests</span>
-<span id="cb15-256"><a href="#cb15-256" aria-hidden="true" tabindex="-1"></a>   the global NB2 dispersion assumption is not behaving well enough for a</span>
-<span id="cb15-257"><a href="#cb15-257" aria-hidden="true" tabindex="-1"></a>   single borrowed <span class="in">`k`</span>.</span>
-<span id="cb15-258"><a href="#cb15-258" aria-hidden="true" tabindex="-1"></a><span class="ss">7. </span>Aggregate retained <span class="in">`k_bin`</span> values using a **positive-event weighted mean**</span>
-<span id="cb15-259"><a href="#cb15-259" aria-hidden="true" tabindex="-1"></a>   as the primary k:</span>
-<span id="cb15-260"><a href="#cb15-260" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-261"><a href="#cb15-261" aria-hidden="true" tabindex="-1"></a>   <span class="in">```text</span></span>
-<span id="cb15-262"><a href="#cb15-262" aria-hidden="true" tabindex="-1"></a><span class="in">   k = sum(n_pos_bin * k_bin) / sum(n_pos_bin)</span></span>
-<span id="cb15-263"><a href="#cb15-263" aria-hidden="true" tabindex="-1"></a><span class="in">   ```</span></span>
-<span id="cb15-264"><a href="#cb15-264" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-265"><a href="#cb15-265" aria-hidden="true" tabindex="-1"></a>   where <span class="in">`n_pos_bin`</span> is the count of positive-collision link-years in each bin.</span>
-<span id="cb15-266"><a href="#cb15-266" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-267"><a href="#cb15-267" aria-hidden="true" tabindex="-1"></a>   Diagnostic alternatives — also computed by <span class="in">`eb_dispersion.py`</span> but not used</span>
-<span id="cb15-268"><a href="#cb15-268" aria-hidden="true" tabindex="-1"></a>   for production scoring:</span>
-<span id="cb15-269"><a href="#cb15-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-270"><a href="#cb15-270" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>**link-year weighted mean**: <span class="in">`sum(n_bin * k_bin) / sum(n_bin)`</span></span>
-<span id="cb15-271"><a href="#cb15-271" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>**median of retained `k_bin` values**</span>
-<span id="cb15-272"><a href="#cb15-272" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-273"><a href="#cb15-273" aria-hidden="true" tabindex="-1"></a>   **Why positive-event weighting?** Session 1 found strongly non-constant</span>
-<span id="cb15-274"><a href="#cb15-274" aria-hidden="true" tabindex="-1"></a>   dispersion: <span class="in">`k_bin`</span> varied by approximately 3,400× across predicted-risk</span>
-<span id="cb15-275"><a href="#cb15-275" aria-hidden="true" tabindex="-1"></a>   bins, declining monotonically from low- to high-prediction. When dispersion</span>
-<span id="cb15-276"><a href="#cb15-276" aria-hidden="true" tabindex="-1"></a>   is non-constant, the aggregation scheme determines which part of the risk</span>
-<span id="cb15-277"><a href="#cb15-277" aria-hidden="true" tabindex="-1"></a>   distribution dominates the global <span class="in">`k`</span>. For a top-k screening application,</span>
-<span id="cb15-278"><a href="#cb15-278" aria-hidden="true" tabindex="-1"></a>   the operationally relevant k weights toward where collision events actually</span>
-<span id="cb15-279"><a href="#cb15-279" aria-hidden="true" tabindex="-1"></a>   occur. Link-year weighting pulls k toward low-prediction bins — which</span>
-<span id="cb15-280"><a href="#cb15-280" aria-hidden="true" tabindex="-1"></a>   contain most link-years but few events, a region irrelevant for screening.</span>
-<span id="cb15-281"><a href="#cb15-281" aria-hidden="true" tabindex="-1"></a>   Positive-event weighting concentrates weight in the event-rich,</span>
-<span id="cb15-282"><a href="#cb15-282" aria-hidden="true" tabindex="-1"></a>   high-prediction bins where the top-k boundary sits. Session 1 estimates:</span>
-<span id="cb15-283"><a href="#cb15-283" aria-hidden="true" tabindex="-1"></a>   k_positive_weighted ≈ 3.07, k_link_year_weighted ≈ 146.4, k_median ≈ 82.4.</span>
-<span id="cb15-284"><a href="#cb15-284" aria-hidden="true" tabindex="-1"></a>   See <span class="in">`reports/eb_dispersion.md`</span> for detail.</span>
-<span id="cb15-285"><a href="#cb15-285" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-286"><a href="#cb15-286" aria-hidden="true" tabindex="-1"></a>The provenance report should include:</span>
-<span id="cb15-287"><a href="#cb15-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-288"><a href="#cb15-288" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`method: "method_of_moments"`</span>;</span>
-<span id="cb15-289"><a href="#cb15-289" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>k point estimate;</span>
-<span id="cb15-290"><a href="#cb15-290" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`k_bin`</span> values;</span>
-<span id="cb15-291"><a href="#cb15-291" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>bin definitions and row counts;</span>
-<span id="cb15-292"><a href="#cb15-292" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>aggregation rule;</span>
-<span id="cb15-293"><a href="#cb15-293" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>number and share of dropped negative-k bins;</span>
-<span id="cb15-294"><a href="#cb15-294" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>data fingerprint;</span>
-<span id="cb15-295"><a href="#cb15-295" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>git SHA;</span>
-<span id="cb15-296"><a href="#cb15-296" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>timestamp;</span>
-<span id="cb15-297"><a href="#cb15-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>row counts used.</span>
-<span id="cb15-298"><a href="#cb15-298" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-299"><a href="#cb15-299" aria-hidden="true" tabindex="-1"></a>Persist this to <span class="in">`data/provenance/eb_dispersion_provenance.json`</span>.</span>
-<span id="cb15-300"><a href="#cb15-300" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-301"><a href="#cb15-301" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.2 One-off calibration artefact, not every retrain</span></span>
-<span id="cb15-302"><a href="#cb15-302" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-303"><a href="#cb15-303" aria-hidden="true" tabindex="-1"></a>The persisted-k decision still applies under MoM. Estimate <span class="in">`k`</span> as a one-off</span>
-<span id="cb15-304"><a href="#cb15-304" aria-hidden="true" tabindex="-1"></a>calibration artefact, not as part of every production retrain. Reuse it for EB</span>
-<span id="cb15-305"><a href="#cb15-305" aria-hidden="true" tabindex="-1"></a>scoring until the Stage 2 data snapshot, scoring model, geography, modelling</span>
-<span id="cb15-306"><a href="#cb15-306" aria-hidden="true" tabindex="-1"></a>years, or exposure construction changes.</span>
-<span id="cb15-307"><a href="#cb15-307" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-308"><a href="#cb15-308" aria-hidden="true" tabindex="-1"></a>This is acceptable because <span class="in">`k`</span> is being used as a global overdispersion</span>
-<span id="cb15-309"><a href="#cb15-309" aria-hidden="true" tabindex="-1"></a>calibration constant, not as a model parameter that needs to track seed-level</span>
-<span id="cb15-310"><a href="#cb15-310" aria-hidden="true" tabindex="-1"></a>XGBoost variation. XGBoost seed changes perturb tree structure and rankings;</span>
-<span id="cb15-311"><a href="#cb15-311" aria-hidden="true" tabindex="-1"></a>they do not change the underlying collision-count overdispersion in the</span>
-<span id="cb15-312"><a href="#cb15-312" aria-hidden="true" tabindex="-1"></a>link-year table.</span>
-<span id="cb15-313"><a href="#cb15-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-314"><a href="#cb15-314" aria-hidden="true" tabindex="-1"></a>MoM scales well because it only requires binning and summary statistics. If</span>
-<span id="cb15-315"><a href="#cb15-315" aria-hidden="true" tabindex="-1"></a>some predicted-rate ranges have insufficient bin counts, increase bin width or</span>
-<span id="cb15-316"><a href="#cb15-316" aria-hidden="true" tabindex="-1"></a>merge adjacent bins rather than subsampling.</span>
-<span id="cb15-317"><a href="#cb15-317" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-318"><a href="#cb15-318" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.3 Optional follow-up: NB GLM cross-check</span></span>
-<span id="cb15-319"><a href="#cb15-319" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-320"><a href="#cb15-320" aria-hidden="true" tabindex="-1"></a>If the MoM <span class="in">`k`</span> looks suspicious, run an NB GLM as a cross-check rather than as</span>
-<span id="cb15-321"><a href="#cb15-321" aria-hidden="true" tabindex="-1"></a>a matter of course. Suspicious signs include:</span>
-<span id="cb15-322"><a href="#cb15-322" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-323"><a href="#cb15-323" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>implausibly tiny <span class="in">`k`</span>, making EB nearly identical to the unshrunken ranking;</span>
-<span id="cb15-324"><a href="#cb15-324" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>implausibly large <span class="in">`k`</span>, making EB behave almost like observed-history ranking;</span>
-<span id="cb15-325"><a href="#cb15-325" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`k_bin`</span> varying wildly across predicted-risk bins;</span>
-<span id="cb15-326"><a href="#cb15-326" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>more than a small number of bins dropped for non-physical negative <span class="in">`k_bin`</span>;</span>
-<span id="cb15-327"><a href="#cb15-327" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>strong sensitivity in §7 when comparing the three k aggregation schemes</span>
-<span id="cb15-328"><a href="#cb15-328" aria-hidden="true" tabindex="-1"></a>  (positive-event weighted, link-year weighted, and median).</span>
-<span id="cb15-329"><a href="#cb15-329" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-330"><a href="#cb15-330" aria-hidden="true" tabindex="-1"></a>Two cross-check paths are acceptable:</span>
-<span id="cb15-331"><a href="#cb15-331" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-332"><a href="#cb15-332" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Try statsmodels <span class="in">`NegativeBinomialP`</span> MLE first. It jointly estimates</span>
-<span id="cb15-333"><a href="#cb15-333" aria-hidden="true" tabindex="-1"></a>  coefficients and alpha in a single fit, which should be faster than a profile</span>
-<span id="cb15-334"><a href="#cb15-334" aria-hidden="true" tabindex="-1"></a>  likelihood, but may have convergence issues on this data size.</span>
-<span id="cb15-335"><a href="#cb15-335" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>If <span class="in">`NegativeBinomialP`</span> fails to converge or gives unstable alpha, use profile</span>
-<span id="cb15-336"><a href="#cb15-336" aria-hidden="true" tabindex="-1"></a>  likelihood over an alpha grid. This is slower, but more diagnosable because</span>
-<span id="cb15-337"><a href="#cb15-337" aria-hidden="true" tabindex="-1"></a>  the likelihood curve can be inspected directly.</span>
-<span id="cb15-338"><a href="#cb15-338" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-339"><a href="#cb15-339" aria-hidden="true" tabindex="-1"></a>The NB GLM cross-check should report whether its alpha is operationally close</span>
-<span id="cb15-340"><a href="#cb15-340" aria-hidden="true" tabindex="-1"></a>to the MoM <span class="in">`k`</span>, not replace MoM automatically. Any decision to switch from MoM</span>
-<span id="cb15-341"><a href="#cb15-341" aria-hidden="true" tabindex="-1"></a>to an NB-GLM-derived <span class="in">`k`</span> should be recorded as a methodology change.</span>
-<span id="cb15-342"><a href="#cb15-342" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-343"><a href="#cb15-343" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.4 Methodological note</span></span>
-<span id="cb15-344"><a href="#cb15-344" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-345"><a href="#cb15-345" aria-hidden="true" tabindex="-1"></a>MoM and maximum-likelihood estimation target the same NB2 dispersion parameter</span>
-<span id="cb15-346"><a href="#cb15-346" aria-hidden="true" tabindex="-1"></a>under a correctly specified NB2 data-generating process. They can differ when</span>
-<span id="cb15-347"><a href="#cb15-347" aria-hidden="true" tabindex="-1"></a>the data deviate from NB assumptions, when dispersion varies by facility type,</span>
-<span id="cb15-348"><a href="#cb15-348" aria-hidden="true" tabindex="-1"></a>or when the mean model is misspecified.</span>
-<span id="cb15-349"><a href="#cb15-349" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-350"><a href="#cb15-350" aria-hidden="true" tabindex="-1"></a>For this v1 design, the practical consequence is limited: <span class="in">`k`</span> is a global</span>
-<span id="cb15-351"><a href="#cb15-351" aria-hidden="true" tabindex="-1"></a>dispersion constant feeding a sensitivity-analysed shrinkage formula, not a</span>
-<span id="cb15-352"><a href="#cb15-352" aria-hidden="true" tabindex="-1"></a>link-level posterior. If MoM and MLE differ modestly, the §7 sensitivity</span>
-<span id="cb15-353"><a href="#cb15-353" aria-hidden="true" tabindex="-1"></a>analysis should reveal whether that difference matters operationally. If they</span>
-<span id="cb15-354"><a href="#cb15-354" aria-hidden="true" tabindex="-1"></a>diverge enough to change top-k membership materially, the borrowed-k method is</span>
-<span id="cb15-355"><a href="#cb15-355" aria-hidden="true" tabindex="-1"></a>fragile and should remain diagnostic.</span>
-<span id="cb15-356"><a href="#cb15-356" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-357"><a href="#cb15-357" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.5 Design choices retained from TODO</span></span>
-<span id="cb15-358"><a href="#cb15-358" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-359"><a href="#cb15-359" aria-hidden="true" tabindex="-1"></a>This follows the TODO decisions:</span>
-<span id="cb15-360"><a href="#cb15-360" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-361"><a href="#cb15-361" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>global <span class="in">`k`</span>, not per-family <span class="in">`k`</span>;</span>
-<span id="cb15-362"><a href="#cb15-362" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Stage 2 scoring inputs (the GLM/XGBoost feature lists that produce</span>
-<span id="cb15-363"><a href="#cb15-363" aria-hidden="true" tabindex="-1"></a>  <span class="in">`predicted_xgb`</span>) are unchanged;</span>
-<span id="cb15-364"><a href="#cb15-364" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>exposure offset <span class="in">`log_offset`</span>;</span>
-<span id="cb15-365"><a href="#cb15-365" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>full-data distribution, not the GLM's downsampled zero table;</span>
-<span id="cb15-366"><a href="#cb15-366" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>shrink toward <span class="in">`predicted_xgb`</span>, not <span class="in">`predicted_glm`</span>.</span>
-<span id="cb15-367"><a href="#cb15-367" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-368"><a href="#cb15-368" aria-hidden="true" tabindex="-1"></a>Because MoM estimates dispersion from binned prediction/observation summaries,</span>
-<span id="cb15-369"><a href="#cb15-369" aria-hidden="true" tabindex="-1"></a>the predictions used for binning should come from the current Stage 2 scoring</span>
-<span id="cb15-370"><a href="#cb15-370" aria-hidden="true" tabindex="-1"></a>path whose GLM/XGBoost inputs are already fixed and documented.</span>
-<span id="cb15-371"><a href="#cb15-371" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-372"><a href="#cb15-372" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.6 Future extension: per-family k</span></span>
-<span id="cb15-373"><a href="#cb15-373" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-374"><a href="#cb15-374" aria-hidden="true" tabindex="-1"></a>One global <span class="in">`k`</span> is a v1 simplicity choice. Different facility families likely</span>
-<span id="cb15-375"><a href="#cb15-375" aria-hidden="true" tabindex="-1"></a>have different residual dispersion: motorways may be more predictable than</span>
-<span id="cb15-376"><a href="#cb15-376" aria-hidden="true" tabindex="-1"></a>minor rural roads. Per-family <span class="in">`k`</span> belongs with the planned facility-family</span>
-<span id="cb15-377"><a href="#cb15-377" aria-hidden="true" tabindex="-1"></a>split, where both the mean model and dispersion estimate can be separated in a</span>
-<span id="cb15-378"><a href="#cb15-378" aria-hidden="true" tabindex="-1"></a>coherent way.</span>
-<span id="cb15-379"><a href="#cb15-379" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-380"><a href="#cb15-380" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-381"><a href="#cb15-381" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-382"><a href="#cb15-382" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. Handling n_years</span></span>
-<span id="cb15-383"><a href="#cb15-383" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-384"><a href="#cb15-384" aria-hidden="true" tabindex="-1"></a><span class="in">`n_years`</span> must be computed per link from the same link-year table that is being</span>
-<span id="cb15-385"><a href="#cb15-385" aria-hidden="true" tabindex="-1"></a>scored:</span>
-<span id="cb15-386"><a href="#cb15-386" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-387"><a href="#cb15-387" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb15-388"><a href="#cb15-388" aria-hidden="true" tabindex="-1"></a>n_years <span class="op">=</span> df.groupby(<span class="st">"link_id"</span>)[<span class="st">"year"</span>].nunique()</span>
-<span id="cb15-389"><a href="#cb15-389" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-390"><a href="#cb15-390" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-391"><a href="#cb15-391" aria-hidden="true" tabindex="-1"></a>Do not assume a fixed 10-year value. Current production-like runs use 10 years,</span>
-<span id="cb15-392"><a href="#cb15-392" aria-hidden="true" tabindex="-1"></a>but future Stage 2 runs may add, drop, or partially cover years. Per-link</span>
-<span id="cb15-393"><a href="#cb15-393" aria-hidden="true" tabindex="-1"></a><span class="in">`n_years`</span> makes EB weights robust to missing-year coverage and makes the output</span>
-<span id="cb15-394"><a href="#cb15-394" aria-hidden="true" tabindex="-1"></a>auditable.</span>
-<span id="cb15-395"><a href="#cb15-395" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-396"><a href="#cb15-396" aria-hidden="true" tabindex="-1"></a>A pooled link with <span class="in">`n_years = 0`</span> indicates unexpected pooled dataframe</span>
-<span id="cb15-397"><a href="#cb15-397" aria-hidden="true" tabindex="-1"></a>contents, not a normal EB input edge case. Such a link should not exist if the</span>
-<span id="cb15-398"><a href="#cb15-398" aria-hidden="true" tabindex="-1"></a>pooled output was produced from link-year rows, so the guard should point back</span>
-<span id="cb15-399"><a href="#cb15-399" aria-hidden="true" tabindex="-1"></a>to pooling/scoring rather than silently trying to repair EB inputs.</span>
-<span id="cb15-400"><a href="#cb15-400" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-401"><a href="#cb15-401" aria-hidden="true" tabindex="-1"></a>The EB output should include:</span>
-<span id="cb15-402"><a href="#cb15-402" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-403"><a href="#cb15-403" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Column <span class="pp">|</span> Meaning <span class="pp">|</span></span>
-<span id="cb15-404"><a href="#cb15-404" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb15-405"><a href="#cb15-405" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`n_years`</span> <span class="pp">|</span> distinct scoring years contributing to the link <span class="pp">|</span></span>
-<span id="cb15-406"><a href="#cb15-406" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`eb_weight`</span> <span class="pp">|</span> <span class="in">`w = 1 / (1 + k * predicted_xgb * n_years)`</span> <span class="pp">|</span></span>
-<span id="cb15-407"><a href="#cb15-407" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`predicted_eb`</span> <span class="pp">|</span> EB-adjusted expected collisions/year <span class="pp">|</span></span>
-<span id="cb15-408"><a href="#cb15-408" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile_eb`</span> <span class="pp">|</span> percentile rank of <span class="in">`predicted_eb`</span> <span class="pp">|</span></span>
-<span id="cb15-409"><a href="#cb15-409" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-410"><a href="#cb15-410" aria-hidden="true" tabindex="-1"></a>Keep the existing <span class="in">`risk_percentile`</span> unchanged. EB is an additional ranking, not</span>
-<span id="cb15-411"><a href="#cb15-411" aria-hidden="true" tabindex="-1"></a>a replacement until validation justifies adoption.</span>
-<span id="cb15-412"><a href="#cb15-412" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-413"><a href="#cb15-413" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-414"><a href="#cb15-414" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-415"><a href="#cb15-415" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. Implementation design</span></span>
-<span id="cb15-416"><a href="#cb15-416" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-417"><a href="#cb15-417" aria-hidden="true" tabindex="-1"></a>This is a design document only. The implementation should be small and</span>
-<span id="cb15-418"><a href="#cb15-418" aria-hidden="true" tabindex="-1"></a>separable from model training.</span>
-<span id="cb15-419"><a href="#cb15-419" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-420"><a href="#cb15-420" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.1 Proposed files</span></span>
-<span id="cb15-421"><a href="#cb15-421" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-422"><a href="#cb15-422" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> File <span class="pp">|</span> Proposed change <span class="pp">|</span></span>
-<span id="cb15-423"><a href="#cb15-423" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb15-424"><a href="#cb15-424" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/model/collision.py`</span> <span class="pp">|</span> Add optional EB scoring hook after pooling, without changing GLM/XGBoost training <span class="pp">|</span></span>
-<span id="cb15-425"><a href="#cb15-425" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/model/eb_shrinkage.py`</span> <span class="pp">|</span> New small module for <span class="in">`compute_eb_scores()`</span> and loading persisted <span class="in">`k`</span> <span class="pp">|</span></span>
-<span id="cb15-426"><a href="#cb15-426" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`src/road_risk/diagnostics/eb_validation.py`</span> <span class="pp">|</span> New diagnostic script/report generator <span class="pp">|</span></span>
-<span id="cb15-427"><a href="#cb15-427" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data/provenance/eb_dispersion_provenance.json`</span> <span class="pp">|</span> New provenance for one-off <span class="in">`k`</span> estimation <span class="pp">|</span></span>
-<span id="cb15-428"><a href="#cb15-428" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`data/models/risk_scores.parquet`</span> <span class="pp">|</span> Eventually add EB columns only after review <span class="pp">|</span></span>
-<span id="cb15-429"><a href="#cb15-429" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-430"><a href="#cb15-430" aria-hidden="true" tabindex="-1"></a>The first implementation pass should avoid retraining the GLM or changing</span>
-<span id="cb15-431"><a href="#cb15-431" aria-hidden="true" tabindex="-1"></a>XGBoost hyperparameters. It should compute EB after the existing pooled scores</span>
-<span id="cb15-432"><a href="#cb15-432" aria-hidden="true" tabindex="-1"></a>exist.</span>
-<span id="cb15-433"><a href="#cb15-433" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-434"><a href="#cb15-434" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.2 Core function</span></span>
-<span id="cb15-435"><a href="#cb15-435" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-436"><a href="#cb15-436" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
-<span id="cb15-437"><a href="#cb15-437" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_eb_scores(pooled, n_years_by_link, k):</span>
-<span id="cb15-438"><a href="#cb15-438" aria-hidden="true" tabindex="-1"></a>    pooled <span class="op">=</span> pooled.merge(n_years_by_link, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span>
-<span id="cb15-439"><a href="#cb15-439" aria-hidden="true" tabindex="-1"></a>    n_pred <span class="op">=</span> pooled[<span class="st">"predicted_xgb"</span>] <span class="op">*</span> pooled[<span class="st">"n_years"</span>]</span>
-<span id="cb15-440"><a href="#cb15-440" aria-hidden="true" tabindex="-1"></a>    pooled[<span class="st">"eb_weight"</span>] <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> k <span class="op">*</span> n_pred)</span>
-<span id="cb15-441"><a href="#cb15-441" aria-hidden="true" tabindex="-1"></a>    n_eb <span class="op">=</span> (</span>
-<span id="cb15-442"><a href="#cb15-442" aria-hidden="true" tabindex="-1"></a>        pooled[<span class="st">"eb_weight"</span>] <span class="op">*</span> n_pred</span>
-<span id="cb15-443"><a href="#cb15-443" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> (<span class="dv">1</span> <span class="op">-</span> pooled[<span class="st">"eb_weight"</span>]) <span class="op">*</span> pooled[<span class="st">"collision_count"</span>]</span>
-<span id="cb15-444"><a href="#cb15-444" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb15-445"><a href="#cb15-445" aria-hidden="true" tabindex="-1"></a>    pooled[<span class="st">"predicted_eb"</span>] <span class="op">=</span> n_eb <span class="op">/</span> pooled[<span class="st">"n_years"</span>]</span>
-<span id="cb15-446"><a href="#cb15-446" aria-hidden="true" tabindex="-1"></a>    pooled[<span class="st">"risk_percentile_eb"</span>] <span class="op">=</span> pooled[<span class="st">"predicted_eb"</span>].rank(pct<span class="op">=</span><span class="va">True</span>) <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb15-447"><a href="#cb15-447" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pooled</span>
-<span id="cb15-448"><a href="#cb15-448" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-449"><a href="#cb15-449" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-450"><a href="#cb15-450" aria-hidden="true" tabindex="-1"></a>The implementation should guard against missing <span class="in">`n_years`</span>, zero <span class="in">`n_years`</span>,</span>
-<span id="cb15-451"><a href="#cb15-451" aria-hidden="true" tabindex="-1"></a>negative predictions, and missing <span class="in">`collision_count`</span>. Missing or zero <span class="in">`n_years`</span></span>
-<span id="cb15-452"><a href="#cb15-452" aria-hidden="true" tabindex="-1"></a>should be reported as unexpected pooled dataframe contents, because a link with</span>
-<span id="cb15-453"><a href="#cb15-453" aria-hidden="true" tabindex="-1"></a>no link-year rows should not appear in the pooled score output. Negative</span>
-<span id="cb15-454"><a href="#cb15-454" aria-hidden="true" tabindex="-1"></a>predictions or missing counts should fail loudly as invalid EB inputs; silently</span>
-<span id="cb15-455"><a href="#cb15-455" aria-hidden="true" tabindex="-1"></a>imputing them would make the ranking hard to audit.</span>
-<span id="cb15-456"><a href="#cb15-456" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-457"><a href="#cb15-457" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.3 What does not change</span></span>
-<span id="cb15-458"><a href="#cb15-458" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-459"><a href="#cb15-459" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Stage 1a exposure estimation.</span>
-<span id="cb15-460"><a href="#cb15-460" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`build_collision_dataset()`</span>.</span>
-<span id="cb15-461"><a href="#cb15-461" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>GLM or XGBoost feature lists.</span>
-<span id="cb15-462"><a href="#cb15-462" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>XGBoost hyperparameters, including <span class="in">`n_jobs=1`</span>.</span>
-<span id="cb15-463"><a href="#cb15-463" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Existing <span class="in">`risk_percentile`</span> semantics.</span>
-<span id="cb15-464"><a href="#cb15-464" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The canonical <span class="in">`risk_scores.parquet`</span> until EB has been reviewed.</span>
-<span id="cb15-465"><a href="#cb15-465" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-466"><a href="#cb15-466" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-467"><a href="#cb15-467" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-468"><a href="#cb15-468" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Validation plan</span></span>
-<span id="cb15-469"><a href="#cb15-469" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-470"><a href="#cb15-470" aria-hidden="true" tabindex="-1"></a>Validation has two goals: determine whether EB improves the ranking's</span>
-<span id="cb15-471"><a href="#cb15-471" aria-hidden="true" tabindex="-1"></a>operational usefulness, and determine whether it reduces seed-induced churn at</span>
-<span id="cb15-472"><a href="#cb15-472" aria-hidden="true" tabindex="-1"></a>narrow top-k thresholds.</span>
-<span id="cb15-473"><a href="#cb15-473" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-474"><a href="#cb15-474" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.1 Single-run ranking movement</span></span>
-<span id="cb15-475"><a href="#cb15-475" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-476"><a href="#cb15-476" aria-hidden="true" tabindex="-1"></a>Run the EB diagnostic against one scored output and report:</span>
-<span id="cb15-477"><a href="#cb15-477" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-478"><a href="#cb15-478" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>distribution of <span class="in">`n_years`</span>;</span>
-<span id="cb15-479"><a href="#cb15-479" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>value of <span class="in">`k`</span> and its provenance;</span>
-<span id="cb15-480"><a href="#cb15-480" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>distribution of <span class="in">`eb_weight`</span>;</span>
-<span id="cb15-481"><a href="#cb15-481" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>median absolute percentile change;</span>
-<span id="cb15-482"><a href="#cb15-482" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>90th and 99th percentile absolute percentile change;</span>
-<span id="cb15-483"><a href="#cb15-483" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>number and percentage of links that move more than 10 percentile points;</span>
-<span id="cb15-484"><a href="#cb15-484" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>number and percentage of links that move more than 25 percentile points.</span>
-<span id="cb15-485"><a href="#cb15-485" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-486"><a href="#cb15-486" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.2 Top-1% comparison</span></span>
-<span id="cb15-487"><a href="#cb15-487" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-488"><a href="#cb15-488" aria-hidden="true" tabindex="-1"></a>Compare current and EB-adjusted top-1% membership:</span>
-<span id="cb15-489"><a href="#cb15-489" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-490"><a href="#cb15-490" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>current top-1% count;</span>
-<span id="cb15-491"><a href="#cb15-491" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>EB top-1% count;</span>
-<span id="cb15-492"><a href="#cb15-492" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>intersection size;</span>
-<span id="cb15-493"><a href="#cb15-493" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>count entering EB top-1%;</span>
-<span id="cb15-494"><a href="#cb15-494" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>count leaving EB top-1%;</span>
-<span id="cb15-495"><a href="#cb15-495" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>road-class breakdown of entrants and leavers.</span>
-<span id="cb15-496"><a href="#cb15-496" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-497"><a href="#cb15-497" aria-hidden="true" tabindex="-1"></a>The top-1% count should be mechanically similar because both rankings are</span>
-<span id="cb15-498"><a href="#cb15-498" aria-hidden="true" tabindex="-1"></a>percentiles. The useful signal is membership change and the characteristics of</span>
-<span id="cb15-499"><a href="#cb15-499" aria-hidden="true" tabindex="-1"></a>links entering or leaving. At low predicted values, many links can have very</span>
-<span id="cb15-500"><a href="#cb15-500" aria-hidden="true" tabindex="-1"></a>similar XGBoost predictions; use pandas percentile ranking with</span>
-<span id="cb15-501"><a href="#cb15-501" aria-hidden="true" tabindex="-1"></a><span class="in">`method="average"`</span> for the percentile columns, and use an explicit</span>
-<span id="cb15-502"><a href="#cb15-502" aria-hidden="true" tabindex="-1"></a><span class="in">`predicted_score desc, link_id asc`</span> sort when selecting exact top-k sets so the</span>
-<span id="cb15-503"><a href="#cb15-503" aria-hidden="true" tabindex="-1"></a>membership comparison is well-defined.</span>
-<span id="cb15-504"><a href="#cb15-504" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-505"><a href="#cb15-505" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.3 Qualitative link review</span></span>
-<span id="cb15-506"><a href="#cb15-506" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-507"><a href="#cb15-507" aria-hidden="true" tabindex="-1"></a>Review 5 links that leave the top 1% under EB and 5 links that enter. For each,</span>
-<span id="cb15-508"><a href="#cb15-508" aria-hidden="true" tabindex="-1"></a>record:</span>
-<span id="cb15-509"><a href="#cb15-509" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-510"><a href="#cb15-510" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Field <span class="pp">|</span> Purpose <span class="pp">|</span></span>
-<span id="cb15-511"><a href="#cb15-511" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb15-512"><a href="#cb15-512" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`link_id`</span> <span class="pp">|</span> auditability <span class="pp">|</span></span>
-<span id="cb15-513"><a href="#cb15-513" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`road_classification`</span> <span class="pp">|</span> road type <span class="pp">|</span></span>
-<span id="cb15-514"><a href="#cb15-514" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`estimated_aadt`</span> <span class="pp">|</span> exposure proxy <span class="pp">|</span></span>
-<span id="cb15-515"><a href="#cb15-515" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`collision_count`</span> <span class="pp">|</span> observed total <span class="pp">|</span></span>
-<span id="cb15-516"><a href="#cb15-516" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`n_years`</span> <span class="pp">|</span> observed period <span class="pp">|</span></span>
-<span id="cb15-517"><a href="#cb15-517" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`predicted_xgb`</span> <span class="pp">|</span> model prior per year <span class="pp">|</span></span>
-<span id="cb15-518"><a href="#cb15-518" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`predicted_eb`</span> <span class="pp">|</span> EB-adjusted expected collisions/year <span class="pp">|</span></span>
-<span id="cb15-519"><a href="#cb15-519" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`eb_weight`</span> <span class="pp">|</span> amount of shrinkage <span class="pp">|</span></span>
-<span id="cb15-520"><a href="#cb15-520" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile`</span> <span class="pp">|</span> current percentile <span class="pp">|</span></span>
-<span id="cb15-521"><a href="#cb15-521" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`risk_percentile_eb`</span> <span class="pp">|</span> EB percentile <span class="pp">|</span></span>
-<span id="cb15-522"><a href="#cb15-522" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-523"><a href="#cb15-523" aria-hidden="true" tabindex="-1"></a>Expected patterns are hypotheses, not pass/fail criteria:</span>
-<span id="cb15-524"><a href="#cb15-524" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-525"><a href="#cb15-525" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>exits may be short or low-exposure links whose high rank is not supported by</span>
-<span id="cb15-526"><a href="#cb15-526" aria-hidden="true" tabindex="-1"></a>  repeated observed history;</span>
-<span id="cb15-527"><a href="#cb15-527" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>entrants may be links where observed history is persistently higher than the</span>
-<span id="cb15-528"><a href="#cb15-528" aria-hidden="true" tabindex="-1"></a>  model prior.</span>
-<span id="cb15-529"><a href="#cb15-529" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-530"><a href="#cb15-530" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.4 Seed-churn intersection diagnostic</span></span>
-<span id="cb15-531"><a href="#cb15-531" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-532"><a href="#cb15-532" aria-hidden="true" tabindex="-1"></a>After identifying EB entrants and leavers, cross-reference the same links</span>
-<span id="cb15-533"><a href="#cb15-533" aria-hidden="true" tabindex="-1"></a>against the seed-churn sets from <span class="in">`reports/rank_stability_investigation.md`</span>.</span>
-<span id="cb15-534"><a href="#cb15-534" aria-hidden="true" tabindex="-1"></a>The current unshrunken 5-seed investigation found:</span>
-<span id="cb15-535"><a href="#cb15-535" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-536"><a href="#cb15-536" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>234 distinct links churning in or out of top-1000 across seed pairs;</span>
-<span id="cb15-537"><a href="#cb15-537" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>21 distinct links churning in or out of top-100 across seed pairs.</span>
-<span id="cb15-538"><a href="#cb15-538" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-539"><a href="#cb15-539" aria-hidden="true" tabindex="-1"></a>For each seed-churn set, report:</span>
-<span id="cb15-540"><a href="#cb15-540" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-541"><a href="#cb15-541" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>count of seed-churning links whose EB percentile changes by more than 5</span>
-<span id="cb15-542"><a href="#cb15-542" aria-hidden="true" tabindex="-1"></a>  points;</span>
-<span id="cb15-543"><a href="#cb15-543" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>count of seed-churning links whose EB percentile changes by more than 10</span>
-<span id="cb15-544"><a href="#cb15-544" aria-hidden="true" tabindex="-1"></a>  points;</span>
-<span id="cb15-545"><a href="#cb15-545" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>direction of EB movement for seed-churning links, separated into movement</span>
-<span id="cb15-546"><a href="#cb15-546" aria-hidden="true" tabindex="-1"></a>  toward the top 1% and movement away from the top 1%;</span>
-<span id="cb15-547"><a href="#cb15-547" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the same movement rates for the full scored population, as a reference.</span>
-<span id="cb15-548"><a href="#cb15-548" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-549"><a href="#cb15-549" aria-hidden="true" tabindex="-1"></a>The hypothesis is that EB should disproportionately affect borderline links,</span>
-<span id="cb15-550"><a href="#cb15-550" aria-hidden="true" tabindex="-1"></a>which should overlap with the population that seed-churns. If seed-churning</span>
-<span id="cb15-551"><a href="#cb15-551" aria-hidden="true" tabindex="-1"></a>links do not show systematically larger EB movement than the general</span>
-<span id="cb15-552"><a href="#cb15-552" aria-hidden="true" tabindex="-1"></a>population, EB is probably not addressing the source of seed-induced ranking</span>
-<span id="cb15-553"><a href="#cb15-553" aria-hidden="true" tabindex="-1"></a>instability, even if its overall ranking effects are sensible. This is a</span>
-<span id="cb15-554"><a href="#cb15-554" aria-hidden="true" tabindex="-1"></a>diagnostic, not a pass/fail criterion.</span>
-<span id="cb15-555"><a href="#cb15-555" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-556"><a href="#cb15-556" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Session 2 finding</span></span>
-<span id="cb15-557"><a href="#cb15-557" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-558"><a href="#cb15-558" aria-hidden="true" tabindex="-1"></a>The hypothesis was tested in session 2 and was **not supported**. The</span>
-<span id="cb15-559"><a href="#cb15-559" aria-hidden="true" tabindex="-1"></a>seed-churn population moved barely more than the general scored population:</span>
-<span id="cb15-560"><a href="#cb15-560" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-561"><a href="#cb15-561" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> population <span class="pp">|</span> n_links <span class="pp">|</span> EB change &gt;5 pts <span class="pp">|</span> EB change &gt;10 pts <span class="pp">|</span></span>
-<span id="cb15-562"><a href="#cb15-562" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---:|---:|---:|</span></span>
-<span id="cb15-563"><a href="#cb15-563" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> seed_churn_top_100 <span class="pp">|</span> 21 <span class="pp">|</span> 0 (0.00%) <span class="pp">|</span> 0 (0.00%) <span class="pp">|</span></span>
-<span id="cb15-564"><a href="#cb15-564" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> seed_churn_top_1000 <span class="pp">|</span> 234 <span class="pp">|</span> 2 (0.85%) <span class="pp">|</span> 1 (0.43%) <span class="pp">|</span></span>
-<span id="cb15-565"><a href="#cb15-565" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> full scored population <span class="pp">|</span> 2,167,557 <span class="pp">|</span> 16,114 (0.74%) <span class="pp">|</span> 6,597 (0.30%) <span class="pp">|</span></span>
-<span id="cb15-566"><a href="#cb15-566" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-567"><a href="#cb15-567" aria-hidden="true" tabindex="-1"></a>The seed-churn population showed movement rates at or below the general</span>
-<span id="cb15-568"><a href="#cb15-568" aria-hidden="true" tabindex="-1"></a>population rate — the opposite of what the hypothesis predicted.</span>
-<span id="cb15-569"><a href="#cb15-569" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-570"><a href="#cb15-570" aria-hidden="true" tabindex="-1"></a>**Caveat:** The seed-churn sets are small (21 and 234 links). The result should</span>
-<span id="cb15-571"><a href="#cb15-571" aria-hidden="true" tabindex="-1"></a>be read as "no detectable effect" rather than a precisely quantified null. The</span>
-<span id="cb15-572"><a href="#cb15-572" aria-hidden="true" tabindex="-1"></a>qualitative direction is nonetheless clear: if EB were targeting borderline</span>
-<span id="cb15-573"><a href="#cb15-573" aria-hidden="true" tabindex="-1"></a>links, we would expect substantially elevated movement rates in the churn</span>
-<span id="cb15-574"><a href="#cb15-574" aria-hidden="true" tabindex="-1"></a>population, not parity with the general population. EB and seed stability</span>
-<span id="cb15-575"><a href="#cb15-575" aria-hidden="true" tabindex="-1"></a>address different mechanisms (see §8.5).</span>
-<span id="cb15-576"><a href="#cb15-576" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-577"><a href="#cb15-577" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.5 Five-seed stability comparison (optional — deferred)</span></span>
-<span id="cb15-578"><a href="#cb15-578" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-579"><a href="#cb15-579" aria-hidden="true" tabindex="-1"></a>The 5-seed rank-stability harness exists at</span>
-<span id="cb15-580"><a href="#cb15-580" aria-hidden="true" tabindex="-1"></a><span class="in">`src/road_risk/model/rank_stability.py`</span> and produces per-seed score files in</span>
-<span id="cb15-581"><a href="#cb15-581" aria-hidden="true" tabindex="-1"></a><span class="in">`data/models/rank_stability/`</span>. The harness could be used for EB validation by</span>
-<span id="cb15-582"><a href="#cb15-582" aria-hidden="true" tabindex="-1"></a>applying EB columns to each seed's pooled predictions with the same persisted</span>
-<span id="cb15-583"><a href="#cb15-583" aria-hidden="true" tabindex="-1"></a><span class="in">`k`</span> and comparing pairwise Jaccard on EB-adjusted top-k sets against the</span>
-<span id="cb15-584"><a href="#cb15-584" aria-hidden="true" tabindex="-1"></a>unshrunken baseline:</span>
-<span id="cb15-585"><a href="#cb15-585" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-586"><a href="#cb15-586" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> k <span class="pp">|</span> unshrunken mean Jaccard <span class="pp">|</span> unshrunken min Jaccard <span class="pp">|</span></span>
-<span id="cb15-587"><a href="#cb15-587" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---:|---:|</span></span>
-<span id="cb15-588"><a href="#cb15-588" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 100 <span class="pp">|</span> 0.903 <span class="pp">|</span> 0.869 <span class="pp">|</span></span>
-<span id="cb15-589"><a href="#cb15-589" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1000 <span class="pp">|</span> 0.893 <span class="pp">|</span> 0.864 <span class="pp">|</span></span>
-<span id="cb15-590"><a href="#cb15-590" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 10000 <span class="pp">|</span> 0.927 <span class="pp">|</span> 0.919 <span class="pp">|</span></span>
-<span id="cb15-591"><a href="#cb15-591" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> top-1% <span class="pp">|</span> 0.918 <span class="pp">|</span> 0.908 <span class="pp">|</span></span>
-<span id="cb15-592"><a href="#cb15-592" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-593"><a href="#cb15-593" aria-hidden="true" tabindex="-1"></a>This comparison is deferred. Session 2's seed-churn diagnostic found that EB</span>
-<span id="cb15-594"><a href="#cb15-594" aria-hidden="true" tabindex="-1"></a>does not disproportionately affect borderline links — the population that</span>
-<span id="cb15-595"><a href="#cb15-595" aria-hidden="true" tabindex="-1"></a>seed-churns. Running the full 5-seed EB comparison is therefore unlikely to</span>
-<span id="cb15-596"><a href="#cb15-596" aria-hidden="true" tabindex="-1"></a>surface a different conclusion (EB-adjusted Jaccard is likely to be similar to</span>
-<span id="cb15-597"><a href="#cb15-597" aria-hidden="true" tabindex="-1"></a>or slightly worse than unshrunken, because EB introduces movement without</span>
-<span id="cb15-598"><a href="#cb15-598" aria-hidden="true" tabindex="-1"></a>addressing the underlying source of seed-induced churn). The 5-seed EB</span>
-<span id="cb15-599"><a href="#cb15-599" aria-hidden="true" tabindex="-1"></a>comparison remains feasible if explicit confirmation is wanted, but it is not</span>
-<span id="cb15-600"><a href="#cb15-600" aria-hidden="true" tabindex="-1"></a>required for the adoption decision and is deferred.</span>
-<span id="cb15-601"><a href="#cb15-601" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-602"><a href="#cb15-602" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.6 Reporting</span></span>
-<span id="cb15-603"><a href="#cb15-603" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-604"><a href="#cb15-604" aria-hidden="true" tabindex="-1"></a>The EB validation report should include:</span>
-<span id="cb15-605"><a href="#cb15-605" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-606"><a href="#cb15-606" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>old vs EB Jaccard table;</span>
-<span id="cb15-607"><a href="#cb15-607" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>old vs EB Spearman rank correlation;</span>
-<span id="cb15-608"><a href="#cb15-608" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>top-1% entrant/leaver review;</span>
-<span id="cb15-609"><a href="#cb15-609" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>k-sensitivity results from §7;</span>
-<span id="cb15-610"><a href="#cb15-610" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>clear recommendation: adopt EB, keep as diagnostic only, or defer pending a</span>
-<span id="cb15-611"><a href="#cb15-611" aria-hidden="true" tabindex="-1"></a>  better dispersion model.</span>
-<span id="cb15-612"><a href="#cb15-612" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-613"><a href="#cb15-613" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-614"><a href="#cb15-614" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-615"><a href="#cb15-615" aria-hidden="true" tabindex="-1"></a><span class="fu">## 7. k sensitivity</span></span>
-<span id="cb15-616"><a href="#cb15-616" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-617"><a href="#cb15-617" aria-hidden="true" tabindex="-1"></a>Because v1 borrows a single global <span class="in">`k`</span>, adoption should depend on whether the</span>
-<span id="cb15-618"><a href="#cb15-618" aria-hidden="true" tabindex="-1"></a>ranking is robust to plausible <span class="in">`k`</span> variation. Given the session 1 finding of</span>
-<span id="cb15-619"><a href="#cb15-619" aria-hidden="true" tabindex="-1"></a>strongly non-constant dispersion (k_bin varying ~3,400× across the</span>
-<span id="cb15-620"><a href="#cb15-620" aria-hidden="true" tabindex="-1"></a>predicted-risk range), the relevant uncertainty in the global <span class="in">`k`</span> is the</span>
-<span id="cb15-621"><a href="#cb15-621" aria-hidden="true" tabindex="-1"></a>ambiguity between aggregation schemes, not noise around a single estimate.</span>
-<span id="cb15-622"><a href="#cb15-622" aria-hidden="true" tabindex="-1"></a>Testing 0.5×k / 2×k around any single aggregation tests less-relevant</span>
-<span id="cb15-623"><a href="#cb15-623" aria-hidden="true" tabindex="-1"></a>variation. Compute EB rankings at the three aggregation values:</span>
-<span id="cb15-624"><a href="#cb15-624" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-625"><a href="#cb15-625" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb15-626"><a href="#cb15-626" aria-hidden="true" tabindex="-1"></a><span class="in">k_positive_weighted  (production)</span></span>
-<span id="cb15-627"><a href="#cb15-627" aria-hidden="true" tabindex="-1"></a><span class="in">k_link_year_weighted (diagnostic)</span></span>
-<span id="cb15-628"><a href="#cb15-628" aria-hidden="true" tabindex="-1"></a><span class="in">k_median             (diagnostic)</span></span>
-<span id="cb15-629"><a href="#cb15-629" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb15-630"><a href="#cb15-630" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-631"><a href="#cb15-631" aria-hidden="true" tabindex="-1"></a>For each value, report:</span>
-<span id="cb15-632"><a href="#cb15-632" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-633"><a href="#cb15-633" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>top-1% membership size;</span>
-<span id="cb15-634"><a href="#cb15-634" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>pairwise top-1% Jaccard across the three k values;</span>
-<span id="cb15-635"><a href="#cb15-635" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Spearman correlation between EB rankings produced by the three k values;</span>
-<span id="cb15-636"><a href="#cb15-636" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>count of links whose EB percentile changes by more than 1, 5, and 10</span>
-<span id="cb15-637"><a href="#cb15-637" aria-hidden="true" tabindex="-1"></a>  percentile points between production k and each diagnostic alternative.</span>
-<span id="cb15-638"><a href="#cb15-638" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-639"><a href="#cb15-639" aria-hidden="true" tabindex="-1"></a>If top-1% membership or pairwise Jaccard moves materially across the three</span>
-<span id="cb15-640"><a href="#cb15-640" aria-hidden="true" tabindex="-1"></a>aggregations, then the borrowed-k methodology is operationally fragile under</span>
-<span id="cb15-641"><a href="#cb15-641" aria-hidden="true" tabindex="-1"></a>non-constant dispersion. That would not invalidate EB as a concept, but it</span>
-<span id="cb15-642"><a href="#cb15-642" aria-hidden="true" tabindex="-1"></a>would mean this v1 implementation should remain diagnostic until dispersion is</span>
-<span id="cb15-643"><a href="#cb15-643" aria-hidden="true" tabindex="-1"></a>estimated more coherently, for example by facility family or by an NB model</span>
-<span id="cb15-644"><a href="#cb15-644" aria-hidden="true" tabindex="-1"></a>whose mean is itself used for screening.</span>
-<span id="cb15-645"><a href="#cb15-645" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-646"><a href="#cb15-646" aria-hidden="true" tabindex="-1"></a>**Session 2 finding.** Top-1% Jaccard between <span class="in">`positive_weighted`</span> and each</span>
-<span id="cb15-647"><a href="#cb15-647" aria-hidden="true" tabindex="-1"></a>diagnostic alternative is approximately 0.96, meaning about 4% top-1%</span>
-<span id="cb15-648"><a href="#cb15-648" aria-hidden="true" tabindex="-1"></a>membership churn from the aggregation choice alone. Spearman rank correlation</span>
-<span id="cb15-649"><a href="#cb15-649" aria-hidden="true" tabindex="-1"></a>is &gt;0.999 across all pairs, but this is dominated by the low-prediction tail</span>
-<span id="cb15-650"><a href="#cb15-650" aria-hidden="true" tabindex="-1"></a>where all three k values agree; the meaningful disagreement is at the top of</span>
-<span id="cb15-651"><a href="#cb15-651" aria-hidden="true" tabindex="-1"></a>the ranking. The ~4% top-1% membership churn is fragile but not catastrophic.</span>
-<span id="cb15-652"><a href="#cb15-652" aria-hidden="true" tabindex="-1"></a>The borrowed-k method is sensitive enough to the aggregation choice that the</span>
-<span id="cb15-653"><a href="#cb15-653" aria-hidden="true" tabindex="-1"></a>adoption decision should be logged alongside the specific k value used. See</span>
-<span id="cb15-654"><a href="#cb15-654" aria-hidden="true" tabindex="-1"></a><span class="in">`reports/eb_validation.md`</span> §7 for the full numbers.</span>
-<span id="cb15-655"><a href="#cb15-655" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-656"><a href="#cb15-656" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-657"><a href="#cb15-657" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-658"><a href="#cb15-658" aria-hidden="true" tabindex="-1"></a><span class="fu">## 8. Caveats</span></span>
-<span id="cb15-659"><a href="#cb15-659" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-660"><a href="#cb15-660" aria-hidden="true" tabindex="-1"></a><span class="fu">### 8.1 Borrowed k is a compromise</span></span>
-<span id="cb15-661"><a href="#cb15-661" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-662"><a href="#cb15-662" aria-hidden="true" tabindex="-1"></a>HSM EB assumes an NB safety-performance function supplies both the prior mean</span>
-<span id="cb15-663"><a href="#cb15-663" aria-hidden="true" tabindex="-1"></a>and the dispersion parameter. In this design, the prior mean is the XGBoost</span>
-<span id="cb15-664"><a href="#cb15-664" aria-hidden="true" tabindex="-1"></a>Poisson point prediction, while <span class="in">`k`</span> is borrowed from a global dispersion</span>
-<span id="cb15-665"><a href="#cb15-665" aria-hidden="true" tabindex="-1"></a>estimate, primarily method-of-moments and optionally an auxiliary NB GLM</span>
-<span id="cb15-666"><a href="#cb15-666" aria-hidden="true" tabindex="-1"></a>cross-check.</span>
-<span id="cb15-667"><a href="#cb15-667" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-668"><a href="#cb15-668" aria-hidden="true" tabindex="-1"></a>This can be reasonable for a v1 diagnostic because <span class="in">`k`</span> describes residual</span>
-<span id="cb15-669"><a href="#cb15-669" aria-hidden="true" tabindex="-1"></a>overdispersion in collision counts, but it is not fully statistically coherent.</span>
-<span id="cb15-670"><a href="#cb15-670" aria-hidden="true" tabindex="-1"></a>If <span class="in">`k`</span> is too high, EB will overweight observed history; if <span class="in">`k`</span> is too low, EB</span>
-<span id="cb15-671"><a href="#cb15-671" aria-hidden="true" tabindex="-1"></a>will look too similar to the current XGBoost ranking.</span>
-<span id="cb15-672"><a href="#cb15-672" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-673"><a href="#cb15-673" aria-hidden="true" tabindex="-1"></a><span class="fu">### 8.2 This is not a full HSM EB implementation</span></span>
-<span id="cb15-674"><a href="#cb15-674" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-675"><a href="#cb15-675" aria-hidden="true" tabindex="-1"></a>The output should be described downstream as HSM's shrinkage formula applied to</span>
-<span id="cb15-676"><a href="#cb15-676" aria-hidden="true" tabindex="-1"></a>our model's point predictions with a borrowed dispersion parameter. It is</span>
-<span id="cb15-677"><a href="#cb15-677" aria-hidden="true" tabindex="-1"></a>empirical-Bayes-flavoured shrinkage, not a full HSM EB implementation and not a</span>
-<span id="cb15-678"><a href="#cb15-678" aria-hidden="true" tabindex="-1"></a>posterior distribution. In particular:</span>
-<span id="cb15-679"><a href="#cb15-679" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-680"><a href="#cb15-680" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`predicted_eb`</span> is a point estimate, not a posterior mean with uncertainty</span>
-<span id="cb15-681"><a href="#cb15-681" aria-hidden="true" tabindex="-1"></a>  intervals;</span>
-<span id="cb15-682"><a href="#cb15-682" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`risk_percentile_eb`</span> is a deterministic ranking from that point estimate;</span>
-<span id="cb15-683"><a href="#cb15-683" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the method does not produce posterior credible intervals or link-level</span>
-<span id="cb15-684"><a href="#cb15-684" aria-hidden="true" tabindex="-1"></a>  uncertainty bands;</span>
-<span id="cb15-685"><a href="#cb15-685" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the dispersion parameter is not jointly estimated with the XGBoost mean.</span>
-<span id="cb15-686"><a href="#cb15-686" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-687"><a href="#cb15-687" aria-hidden="true" tabindex="-1"></a>This distinction matters for public wording. The safest language is</span>
-<span id="cb15-688"><a href="#cb15-688" aria-hidden="true" tabindex="-1"></a>"EB-adjusted ranking" or "EB-style shrinkage", not "posterior risk".</span>
-<span id="cb15-689"><a href="#cb15-689" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-690"><a href="#cb15-690" aria-hidden="true" tabindex="-1"></a><span class="fu">### 8.3 The GLM intercept issue is avoided, not solved</span></span>
-<span id="cb15-691"><a href="#cb15-691" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-692"><a href="#cb15-692" aria-hidden="true" tabindex="-1"></a>The current Poisson GLM is fit after zero downsampling, so its intercept is not</span>
-<span id="cb15-693"><a href="#cb15-693" aria-hidden="true" tabindex="-1"></a>a calibrated production prior. EB therefore shrinks toward <span class="in">`predicted_xgb`</span>,</span>
-<span id="cb15-694"><a href="#cb15-694" aria-hidden="true" tabindex="-1"></a>not <span class="in">`predicted_glm`</span>. The primary MoM <span class="in">`k`</span> estimate should use the full scored</span>
-<span id="cb15-695"><a href="#cb15-695" aria-hidden="true" tabindex="-1"></a>link-year distribution, not the downsampled GLM table. If an auxiliary NB GLM</span>
-<span id="cb15-696"><a href="#cb15-696" aria-hidden="true" tabindex="-1"></a>is used as a conditional cross-check, it also must not reuse the downsampled</span>
-<span id="cb15-697"><a href="#cb15-697" aria-hidden="true" tabindex="-1"></a>GLM table; it must be fit on the full-data distribution or a transparently</span>
-<span id="cb15-698"><a href="#cb15-698" aria-hidden="true" tabindex="-1"></a>weighted approximation to it.</span>
-<span id="cb15-699"><a href="#cb15-699" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-700"><a href="#cb15-700" aria-hidden="true" tabindex="-1"></a><span class="fu">### 8.4 EB should not be mixed with feature ablations</span></span>
-<span id="cb15-701"><a href="#cb15-701" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-702"><a href="#cb15-702" aria-hidden="true" tabindex="-1"></a>EB changes the ranking definition. Feature/model ablations such as OSM</span>
-<span id="cb15-703"><a href="#cb15-703" aria-hidden="true" tabindex="-1"></a>imputation, curvature/grade, or facility-family splitting should either:</span>
-<span id="cb15-704"><a href="#cb15-704" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-705"><a href="#cb15-705" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>compare all arms without EB; or</span>
-<span id="cb15-706"><a href="#cb15-706" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>apply the same EB procedure to every arm.</span>
-<span id="cb15-707"><a href="#cb15-707" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-708"><a href="#cb15-708" aria-hidden="true" tabindex="-1"></a>Otherwise the effect of a new feature set will be confounded with the effect of</span>
-<span id="cb15-709"><a href="#cb15-709" aria-hidden="true" tabindex="-1"></a>changing the ranking target.</span>
-<span id="cb15-710"><a href="#cb15-710" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-711"><a href="#cb15-711" aria-hidden="true" tabindex="-1"></a><span class="fu">### 8.5 EB scope: regression-to-the-mean, not seed stability</span></span>
-<span id="cb15-712"><a href="#cb15-712" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-713"><a href="#cb15-713" aria-hidden="true" tabindex="-1"></a>EB shrinkage corrects regression-to-the-mean at the extremes of the</span>
-<span id="cb15-714"><a href="#cb15-714" aria-hidden="true" tabindex="-1"></a>predicted/observed alignment: links with high model prediction and zero observed</span>
-<span id="cb15-715"><a href="#cb15-715" aria-hidden="true" tabindex="-1"></a>collisions move down; links with low model prediction and many observed</span>
-<span id="cb15-716"><a href="#cb15-716" aria-hidden="true" tabindex="-1"></a>collisions move up. This is a genuine and defensible adjustment for a screening</span>
-<span id="cb15-717"><a href="#cb15-717" aria-hidden="true" tabindex="-1"></a>output.</span>
-<span id="cb15-718"><a href="#cb15-718" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-719"><a href="#cb15-719" aria-hidden="true" tabindex="-1"></a>It is not, however, a solution to seed-induced top-k churn, which arises from a</span>
-<span id="cb15-720"><a href="#cb15-720" aria-hidden="true" tabindex="-1"></a>separate mechanism — small perturbations to model predictions across XGBoost</span>
-<span id="cb15-721"><a href="#cb15-721" aria-hidden="true" tabindex="-1"></a>seeds flipping borderline links across narrow thresholds. The session 2</span>
-<span id="cb15-722"><a href="#cb15-722" aria-hidden="true" tabindex="-1"></a>seed-churn diagnostic confirmed empirically that EB does not target the</span>
-<span id="cb15-723"><a href="#cb15-723" aria-hidden="true" tabindex="-1"></a>seed-churn population (§6.4). Practitioners should not adopt EB expecting it to</span>
-<span id="cb15-724"><a href="#cb15-724" aria-hidden="true" tabindex="-1"></a>improve cross-seed ranking stability.</span>
-<span id="cb15-725"><a href="#cb15-725" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-726"><a href="#cb15-726" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-727"><a href="#cb15-727" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-728"><a href="#cb15-728" aria-hidden="true" tabindex="-1"></a><span class="fu">## 9. Observed outcomes</span></span>
-<span id="cb15-729"><a href="#cb15-729" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-730"><a href="#cb15-730" aria-hidden="true" tabindex="-1"></a>Session 2 provides empirical evidence against the pre-run priors stated in</span>
-<span id="cb15-731"><a href="#cb15-731" aria-hidden="true" tabindex="-1"></a>this section.</span>
-<span id="cb15-732"><a href="#cb15-732" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-733"><a href="#cb15-733" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**<span class="in">`risk_percentile_eb`</span> is highly correlated with <span class="in">`risk_percentile`</span>, but not</span>
-<span id="cb15-734"><a href="#cb15-734" aria-hidden="true" tabindex="-1"></a>  identical.** This matched: top-1% intersection is 84.93% (18,408 of 21,675</span>
-<span id="cb15-735"><a href="#cb15-735" aria-hidden="true" tabindex="-1"></a>  links); median absolute percentile change is 0.07 points; p99 change is</span>
-<span id="cb15-736"><a href="#cb15-736" aria-hidden="true" tabindex="-1"></a>  2.96 points.</span>
-<span id="cb15-737"><a href="#cb15-737" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-738"><a href="#cb15-738" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Narrow top-k lists are not stabilised by EB.** The pre-run prior</span>
-<span id="cb15-739"><a href="#cb15-739" aria-hidden="true" tabindex="-1"></a>  ("narrow top-k lists may become more stable if EB dampens seed-specific</span>
-<span id="cb15-740"><a href="#cb15-740" aria-hidden="true" tabindex="-1"></a>  threshold churn") was not supported. Session 2's seed-churn diagnostic found</span>
-<span id="cb15-741"><a href="#cb15-741" aria-hidden="true" tabindex="-1"></a>  EB does not disproportionately affect the seed-churn population. EB is</span>
-<span id="cb15-742"><a href="#cb15-742" aria-hidden="true" tabindex="-1"></a>  unlikely to improve narrow top-k stability.</span>
-<span id="cb15-743"><a href="#cb15-743" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-744"><a href="#cb15-744" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Short or low-exposure links with limited observed support drop.** This</span>
-<span id="cb15-745"><a href="#cb15-745" aria-hidden="true" tabindex="-1"></a>  matched: the qualitative review found 5 Motorway links with</span>
-<span id="cb15-746"><a href="#cb15-746" aria-hidden="true" tabindex="-1"></a>  <span class="in">`predicted_xgb`</span> ≈ 1.0 collision/year and zero observed collisions over</span>
-<span id="cb15-747"><a href="#cb15-747" aria-hidden="true" tabindex="-1"></a>  10 years dropping out of top-1%.</span>
-<span id="cb15-748"><a href="#cb15-748" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-749"><a href="#cb15-749" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Links with repeated observed collisions relative to the model prior rise.**</span>
-<span id="cb15-750"><a href="#cb15-750" aria-hidden="true" tabindex="-1"></a>  This matched: A Road, Motorway, and Classified Unnumbered links with 9–14</span>
-<span id="cb15-751"><a href="#cb15-751" aria-hidden="true" tabindex="-1"></a>  observed collisions against a model prior of ~0.03 collisions/year entered</span>
-<span id="cb15-752"><a href="#cb15-752" aria-hidden="true" tabindex="-1"></a>  top-1%.</span>
-<span id="cb15-753"><a href="#cb15-753" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-754"><a href="#cb15-754" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Headline XGBoost pseudo-R² is unchanged.** EB is a post-scoring ranking</span>
-<span id="cb15-755"><a href="#cb15-755" aria-hidden="true" tabindex="-1"></a>  adjustment; it does not alter the XGBoost training-time metric. If</span>
-<span id="cb15-756"><a href="#cb15-756" aria-hidden="true" tabindex="-1"></a>  EB-adjusted predictions are scored against held-out collisions in a downstream</span>
-<span id="cb15-757"><a href="#cb15-757" aria-hidden="true" tabindex="-1"></a>  evaluation, that metric can move, and ideally should improve because EB</span>
-<span id="cb15-758"><a href="#cb15-758" aria-hidden="true" tabindex="-1"></a>  incorporates observed counts.</span>
-<span id="cb15-759"><a href="#cb15-759" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-760"><a href="#cb15-760" aria-hidden="true" tabindex="-1"></a>The substantive ranking shifts EB produces — motorway zero-collision links down;</span>
-<span id="cb15-761"><a href="#cb15-761" aria-hidden="true" tabindex="-1"></a>high-observation links up — are mechanically defensible regression-to-the-mean</span>
-<span id="cb15-762"><a href="#cb15-762" aria-hidden="true" tabindex="-1"></a>corrections. The adoption case rests on whether those shifts are operationally</span>
-<span id="cb15-763"><a href="#cb15-763" aria-hidden="true" tabindex="-1"></a>wanted, not on whether EB also fixes seed stability (it does not; see §8.5).</span>
-<span id="cb15-764"><a href="#cb15-764" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-765"><a href="#cb15-765" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb15-766"><a href="#cb15-766" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-767"><a href="#cb15-767" aria-hidden="true" tabindex="-1"></a><span class="fu">## 10. Adoption recommendation</span></span>
-<span id="cb15-768"><a href="#cb15-768" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-769"><a href="#cb15-769" aria-hidden="true" tabindex="-1"></a>Following sessions 1–2, the recommendation is:</span>
-<span id="cb15-770"><a href="#cb15-770" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-771"><a href="#cb15-771" aria-hidden="true" tabindex="-1"></a>**Adopt EB as an additional ranking (<span class="in">`risk_percentile_eb`</span>), not a replacement</span>
-<span id="cb15-772"><a href="#cb15-772" aria-hidden="true" tabindex="-1"></a>for <span class="in">`risk_percentile`</span>.** EB does defensible regression-to-the-mean correction</span>
-<span id="cb15-773"><a href="#cb15-773" aria-hidden="true" tabindex="-1"></a>at the prediction/observation extremes. It does not improve cross-seed top-k</span>
-<span id="cb15-774"><a href="#cb15-774" aria-hidden="true" tabindex="-1"></a>stability. Both rankings should be available in downstream outputs with their</span>
-<span id="cb15-775"><a href="#cb15-775" aria-hidden="true" tabindex="-1"></a>semantics clearly documented:</span>
-<span id="cb15-776"><a href="#cb15-776" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-777"><a href="#cb15-777" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`risk_percentile`</span> — pure model-prior ranking; seed-sensitive near narrow</span>
-<span id="cb15-778"><a href="#cb15-778" aria-hidden="true" tabindex="-1"></a>  thresholds; no observed-history correction.</span>
-<span id="cb15-779"><a href="#cb15-779" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`risk_percentile_eb`</span> — EB-adjusted ranking; corrects regression-to-the-mean</span>
-<span id="cb15-780"><a href="#cb15-780" aria-hidden="true" tabindex="-1"></a>  at the extremes; uses positive-event-weighted k ≈ 3.07 (session 1); about 4%</span>
-<span id="cb15-781"><a href="#cb15-781" aria-hidden="true" tabindex="-1"></a>  top-1% membership differs from <span class="in">`risk_percentile`</span>; does not reduce cross-seed</span>
-<span id="cb15-782"><a href="#cb15-782" aria-hidden="true" tabindex="-1"></a>  membership churn.</span>
-<span id="cb15-783"><a href="#cb15-783" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-784"><a href="#cb15-784" aria-hidden="true" tabindex="-1"></a>Per-family or per-bin EB remains the cleaner methodological answer to the</span>
-<span id="cb15-785"><a href="#cb15-785" aria-hidden="true" tabindex="-1"></a>non-constant dispersion finding from session 1, and is recommended for v2</span>
-<span id="cb15-786"><a href="#cb15-786" aria-hidden="true" tabindex="-1"></a>paired with the planned facility-family split.</span>
-</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
-</div></div></div></div></div>
+  </script>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
