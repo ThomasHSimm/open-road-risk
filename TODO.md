@@ -13,7 +13,8 @@ task.
 - [ ] Fix temporal trend chart in `03_model_results.ipynb` — observed collision bars
   are invisible because the y-axis is dominated by the predicted × 1000 line. Either
   drop the ×1000 scaling or use a secondary y-axis.
-
+  Notebooks no longer in repo but the figure needs incoporation in qmd files.
+  
 - [ ] Fix middle panel in risk score distribution plot (section 5) — flat uniform
   distribution because it's plotting risk_percentile which is by construction uniform.
   Replace with collision count distribution on collision links instead.
