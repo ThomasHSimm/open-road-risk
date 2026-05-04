@@ -1,0 +1,445 @@
+{
+  "summary": {
+    "dispersion_ratio": 1.4014,
+    "negbin_run": false,
+    "model_a": {
+      "exposure": "full offset: log(AADT \u00d7 length \u00d7 365/1e6)",
+      "pseudo_r2": 0.3117,
+      "deviance": 1499899.0,
+      "aic": 2314203.5,
+      "converged": true,
+      "coef_log_aadt": null,
+      "coef_log_link_length": -0.6564,
+      "jaccard_vs_prod": 0.3748,
+      "motorway_mean_resid": 0.0
+    },
+    "model_b": {
+      "exposure": "no offset; log_aadt and log_link_length as features",
+      "pseudo_r2": 0.3266,
+      "deviance": 1499042.2,
+      "aic": 2313348.7,
+      "converged": true,
+      "coef_log_aadt": 0.9321,
+      "coef_log_link_length": 0.3392,
+      "jaccard_vs_prod": 0.3819,
+      "motorway_mean_resid": 0.0
+    },
+    "model_c": {
+      "exposure": "hybrid: offset=log(length\u00d7365/1e6); log_aadt learned",
+      "pseudo_r2": 0.2544,
+      "deviance": 1734603.0,
+      "aic": 2548907.6,
+      "converged": true,
+      "coef_log_aadt": 1.1031,
+      "coef_log_link_length": null,
+      "jaccard_vs_prod": 0.279,
+      "motorway_mean_resid": 0.0
+    },
+    "negbin": "not_run"
+  },
+  "residuals": {
+    "by_road_class": {
+      "model_a": [
+        {
+          "road_classification": "A Road",
+          "n": 404175,
+          "sum_obs": 174615,
+          "sum_pred": 174615.0,
+          "mean_resid": 0.0
+        },
+        {
+          "road_classification": "B Road",
+          "n": 204739,
+          "sum_obs": 56216,
+          "sum_pred": 78498.7966,
+          "mean_resid": -0.1088
+        },
+        {
+          "road_classification": "Classified Unnumbered",
+          "n": 399428,
+          "sum_obs": 65399,
+          "sum_pred": 35333.6628,
+          "mean_resid": 0.0753
+        },
+        {
+          "road_classification": "Motorway",
+          "n": 13996,
+          "sum_obs": 16981,
+          "sum_pred": 16981.0,
+          "mean_resid": 0.0
+        },
+        {
+          "road_classification": "Not Classified",
+          "n": 416772,
+          "sum_obs": 5133,
+          "sum_pred": 15619.2806,
+          "mean_resid": -0.0252
+        },
+        {
+          "road_classification": "Unclassified",
+          "n": 2043277,
+          "sum_obs": 121071,
+          "sum_pred": 101163.2637,
+          "mean_resid": 0.0097
+        },
+        {
+          "road_classification": "Unknown",
+          "n": 821418,
+          "sum_obs": 11577,
+          "sum_pred": 28780.9962,
+          "mean_resid": -0.0209
+        }
+      ],
+      "model_b": [
+        {
+          "road_classification": "A Road",
+          "n": 404175,
+          "sum_obs": 174615,
+          "sum_pred": 174615.0,
+          "mean_resid": 0.0
+        },
+        {
+          "road_classification": "B Road",
+          "n": 204739,
+          "sum_obs": 56216,
+          "sum_pred": 77069.2481,
+          "mean_resid": -0.1019
+        },
+        {
+          "road_classification": "Classified Unnumbered",
+          "n": 399428,
+          "sum_obs": 65399,
+          "sum_pred": 36815.9753,
+          "mean_resid": 0.0716
+        },
+        {
+          "road_classification": "Motorway",
+          "n": 13996,
+          "sum_obs": 16981,
+          "sum_pred": 16981.0,
+          "mean_resid": 0.0
+        },
+        {
+          "road_classification": "Not Classified",
+          "n": 416772,
+          "sum_obs": 5133,
+          "sum_pred": 16518.1134,
+          "mean_resid": -0.0273
+        },
+        {
+          "road_classification": "Unclassified",
+          "n": 2043277,
+          "sum_obs": 121071,
+          "sum_pred": 100636.8551,
+          "mean_resid": 0.01
+        },
+        {
+          "road_classification": "Unknown",
+          "n": 821418,
+          "sum_obs": 11577,
+          "sum_pred": 28355.8082,
+          "mean_resid": -0.0204
+        }
+      ],
+      "model_c": [
+        {
+          "road_classification": "A Road",
+          "n": 404175,
+          "sum_obs": 174615,
+          "sum_pred": 174615.0,
+          "mean_resid": 0.0
+        },
+        {
+          "road_classification": "B Road",
+          "n": 204739,
+          "sum_obs": 56216,
+          "sum_pred": 79500.8163,
+          "mean_resid": -0.1137
+        },
+        {
+          "road_classification": "Classified Unnumbered",
+          "n": 399428,
+          "sum_obs": 65399,
+          "sum_pred": 37920.3473,
+          "mean_resid": 0.0688
+        },
+        {
+          "road_classification": "Motorway",
+          "n": 13996,
+          "sum_obs": 16981,
+          "sum_pred": 16981.0,
+          "mean_resid": 0.0
+        },
+        {
+          "road_classification": "Not Classified",
+          "n": 416772,
+          "sum_obs": 5133,
+          "sum_pred": 13429.7196,
+          "mean_resid": -0.0199
+        },
+        {
+          "road_classification": "Unclassified",
+          "n": 2043277,
+          "sum_obs": 121071,
+          "sum_pred": 93774.2537,
+          "mean_resid": 0.0134
+        },
+        {
+          "road_classification": "Unknown",
+          "n": 821418,
+          "sum_obs": 11577,
+          "sum_pred": 34770.8631,
+          "mean_resid": -0.0282
+        }
+      ]
+    },
+    "by_aadt_decile": {
+      "model_a": [
+        {
+          "aadt_decile": 0,
+          "n": 431189,
+          "aadt_mean": 232.41,
+          "sum_obs": 2106,
+          "sum_pred": 6575.029,
+          "mean_resid": -4469.029
+        },
+        {
+          "aadt_decile": 1,
+          "n": 433451,
+          "aadt_mean": 354.174,
+          "sum_obs": 5619,
+          "sum_pred": 9207.963,
+          "mean_resid": -3588.963
+        },
+        {
+          "aadt_decile": 2,
+          "n": 430027,
+          "aadt_mean": 437.614,
+          "sum_obs": 7270,
+          "sum_pred": 10336.468,
+          "mean_resid": -3066.468
+        },
+        {
+          "aadt_decile": 3,
+          "n": 429986,
+          "aadt_mean": 519.798,
+          "sum_obs": 9271,
+          "sum_pred": 11861.322,
+          "mean_resid": -2590.322
+        },
+        {
+          "aadt_decile": 4,
+          "n": 429215,
+          "aadt_mean": 631.473,
+          "sum_obs": 12770,
+          "sum_pred": 14512.016,
+          "mean_resid": -1742.016
+        },
+        {
+          "aadt_decile": 5,
+          "n": 428823,
+          "aadt_mean": 834.603,
+          "sum_obs": 20299,
+          "sum_pred": 19553.086,
+          "mean_resid": 745.914
+        },
+        {
+          "aadt_decile": 6,
+          "n": 430327,
+          "aadt_mean": 1213.549,
+          "sum_obs": 34253,
+          "sum_pred": 28172.768,
+          "mean_resid": 6080.232
+        },
+        {
+          "aadt_decile": 7,
+          "n": 430278,
+          "aadt_mean": 1851.307,
+          "sum_obs": 54912,
+          "sum_pred": 41759.831,
+          "mean_resid": 13152.169
+        },
+        {
+          "aadt_decile": 8,
+          "n": 430161,
+          "aadt_mean": 3853.781,
+          "sum_obs": 98390,
+          "sum_pred": 84563.01,
+          "mean_resid": 13826.99
+        },
+        {
+          "aadt_decile": 9,
+          "n": 430348,
+          "aadt_mean": 14632.583,
+          "sum_obs": 206102,
+          "sum_pred": 224450.508,
+          "mean_resid": -18348.508
+        }
+      ],
+      "model_b": [
+        {
+          "aadt_decile": 0,
+          "n": 431189,
+          "aadt_mean": 232.41,
+          "sum_obs": 2106,
+          "sum_pred": 7231.495,
+          "mean_resid": -5125.495
+        },
+        {
+          "aadt_decile": 1,
+          "n": 433451,
+          "aadt_mean": 354.174,
+          "sum_obs": 5619,
+          "sum_pred": 9928.755,
+          "mean_resid": -4309.755
+        },
+        {
+          "aadt_decile": 2,
+          "n": 430027,
+          "aadt_mean": 437.614,
+          "sum_obs": 7270,
+          "sum_pred": 11021.986,
+          "mean_resid": -3751.986
+        },
+        {
+          "aadt_decile": 3,
+          "n": 429986,
+          "aadt_mean": 519.798,
+          "sum_obs": 9271,
+          "sum_pred": 12532.58,
+          "mean_resid": -3261.58
+        },
+        {
+          "aadt_decile": 4,
+          "n": 429215,
+          "aadt_mean": 631.473,
+          "sum_obs": 12770,
+          "sum_pred": 15182.63,
+          "mean_resid": -2412.63
+        },
+        {
+          "aadt_decile": 5,
+          "n": 428823,
+          "aadt_mean": 834.603,
+          "sum_obs": 20299,
+          "sum_pred": 20135.847,
+          "mean_resid": 163.153
+        },
+        {
+          "aadt_decile": 6,
+          "n": 430327,
+          "aadt_mean": 1213.549,
+          "sum_obs": 34253,
+          "sum_pred": 28313.844,
+          "mean_resid": 5939.156
+        },
+        {
+          "aadt_decile": 7,
+          "n": 430278,
+          "aadt_mean": 1851.307,
+          "sum_obs": 54912,
+          "sum_pred": 41103.787,
+          "mean_resid": 13808.213
+        },
+        {
+          "aadt_decile": 8,
+          "n": 430161,
+          "aadt_mean": 3853.781,
+          "sum_obs": 98390,
+          "sum_pred": 84043.858,
+          "mean_resid": 14346.142
+        },
+        {
+          "aadt_decile": 9,
+          "n": 430348,
+          "aadt_mean": 14632.583,
+          "sum_obs": 206102,
+          "sum_pred": 221497.218,
+          "mean_resid": -15395.218
+        }
+      ],
+      "model_c": [
+        {
+          "aadt_decile": 0,
+          "n": 431189,
+          "aadt_mean": 232.41,
+          "sum_obs": 2106,
+          "sum_pred": 8600.825,
+          "mean_resid": -6494.825
+        },
+        {
+          "aadt_decile": 1,
+          "n": 433451,
+          "aadt_mean": 354.174,
+          "sum_obs": 5619,
+          "sum_pred": 10063.484,
+          "mean_resid": -4444.484
+        },
+        {
+          "aadt_decile": 2,
+          "n": 430027,
+          "aadt_mean": 437.614,
+          "sum_obs": 7270,
+          "sum_pred": 10256.217,
+          "mean_resid": -2986.217
+        },
+        {
+          "aadt_decile": 3,
+          "n": 429986,
+          "aadt_mean": 519.798,
+          "sum_obs": 9271,
+          "sum_pred": 11740.983,
+          "mean_resid": -2469.983
+        },
+        {
+          "aadt_decile": 4,
+          "n": 429215,
+          "aadt_mean": 631.473,
+          "sum_obs": 12770,
+          "sum_pred": 15011.037,
+          "mean_resid": -2241.037
+        },
+        {
+          "aadt_decile": 5,
+          "n": 428823,
+          "aadt_mean": 834.603,
+          "sum_obs": 20299,
+          "sum_pred": 20708.558,
+          "mean_resid": -409.558
+        },
+        {
+          "aadt_decile": 6,
+          "n": 430327,
+          "aadt_mean": 1213.549,
+          "sum_obs": 34253,
+          "sum_pred": 28076.08,
+          "mean_resid": 6176.92
+        },
+        {
+          "aadt_decile": 7,
+          "n": 430278,
+          "aadt_mean": 1851.307,
+          "sum_obs": 54912,
+          "sum_pred": 41009.982,
+          "mean_resid": 13902.018
+        },
+        {
+          "aadt_decile": 8,
+          "n": 430161,
+          "aadt_mean": 3853.781,
+          "sum_obs": 98390,
+          "sum_pred": 89575.948,
+          "mean_resid": 8814.052
+        },
+        {
+          "aadt_decile": 9,
+          "n": 430348,
+          "aadt_mean": 14632.583,
+          "sum_obs": 206102,
+          "sum_pred": 215948.886,
+          "mean_resid": -9846.886
+        }
+      ]
+    }
+  }
+}
