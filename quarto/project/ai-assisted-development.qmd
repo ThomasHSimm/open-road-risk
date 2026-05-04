@@ -1,0 +1,65 @@
+---
+title: "AI-assisted development"
+---
+
+## Overview
+
+This project was developed with substantial AI assistance under human direction and review.
+All modelling decisions, methodology choices, and outputs were specified, directed, and validated by a human analyst.
+AI tools were used to accelerate code generation, documentation, and exploratory analysis — not to make independent research or design decisions.
+
+## What AI assistance was used for
+
+| Activity | Role of AI assistance |
+|---|---|
+| Code generation | Drafting pipeline components, utility functions, and test scaffolding |
+| Documentation | Drafting and editing QMD pages and docstrings from human-provided content |
+| Exploratory analysis | Suggesting visualisations and statistical summaries for human review |
+| Refactoring | Restructuring code under human direction |
+| Debugging | Diagnosing errors identified by the analyst |
+
+## What AI assistance was not used for
+
+AI tools did not:
+
+- choose modelling approaches or statistical methods independently
+- determine what data sources to use or how to interpret them
+- make decisions about scope, validation thresholds, or acceptable uncertainty
+- write outputs that went into the project without human review
+
+Every substantive output — model design, feature choices, risk scoring methodology, Empirical Bayes parameterisation — reflects deliberate decisions made by the project author.
+
+## Tools used
+
+Multiple AI tools were used, with different roles:
+
+- **[Claude](https://www.anthropic.com/claude) (Anthropic)** was used as the primary "driver" — the assistant the human worked with directly to plan work, review findings, and produce prompts for other tools. Claude's contributions were primarily reasoning, critique, and structured handoffs rather than direct code production.
+
+- **OpenAI Codex** was used for most of the actual code implementation, given prompts produced in collaboration with Claude. This separation created useful friction between planning and implementation, though all outputs still required human review and the human remained the integration point across tools.
+
+- **ChatGPT (deep research mode)** was used for broader literature and context searches, particularly when picking apart whether a problem was specific to this project or generic to the field. Useful for breadth; required verification on specifics, as deep research output sometimes cited sources that didn't quite say what was claimed.
+
+- **Claude Code** and **Gemini (CLI)** were also tested as code-implementation tools. Both worked, neither replaced the Codex workflow as the default.
+
+Using more than one tool helped expose inconsistencies. Disagreement between tools was often a useful signal that a claim, method, or implementation detail needed closer checking.
+
+## Human review process
+
+All AI-generated code and documentation was:
+
+1. reviewed by the project author before being accepted into the repository
+2. tested against known inputs and outputs where applicable
+3. cross-checked against the original data sources and domain knowledge
+
+Automated tests in `tests/` cover the key pipeline components and were written alongside the implementation to provide a verifiable baseline.
+
+## Why document this?
+
+Transparency about AI assistance is important for:
+
+- reproducibility — reviewers should know which parts of the pipeline were human-authored versus AI-assisted
+- trust calibration — users of the outputs should understand the degree of human oversight applied
+- responsible AI practice — normalising clear disclosure of AI use in analytical and research workflows
+
+This page is intended to be a straightforward record, not a claim that AI assistance either increases or decreases the validity of the work.
+The methodology and results stand on their own merits and are documented throughout the site.
