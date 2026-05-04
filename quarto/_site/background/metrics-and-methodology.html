@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Crash Modelling: Metrics, Benchmarks and Methodology – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Crash Modelling: Metrics, Benchmarks and Methodology – Open Road Risk">
+<meta property="og:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Crash Modelling: Metrics, Benchmarks and Methodology – Open Road Risk">
+<meta name="twitter:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#purpose" id="toc-purpose" class="nav-link active" data-scroll-target="#purpose"><span class="header-section-number">1</span> Purpose</a></li>
+  <li><a href="#why-standard-r²-doesnt-apply" id="toc-why-standard-r²-doesnt-apply" class="nav-link" data-scroll-target="#why-standard-r²-doesnt-apply"><span class="header-section-number">2</span> Why standard R² doesn’t apply</a></li>
+  <li><a href="#standard-metrics-for-count-regression" id="toc-standard-metrics-for-count-regression" class="nav-link" data-scroll-target="#standard-metrics-for-count-regression"><span class="header-section-number">3</span> Standard metrics for count regression</a>
+  <ul class="collapse">
+  <li><a href="#pseudo-r²-mcfaddens-ρ²" id="toc-pseudo-r²-mcfaddens-ρ²" class="nav-link" data-scroll-target="#pseudo-r²-mcfaddens-ρ²"><span class="header-section-number">3.1</span> Pseudo-R² / McFadden’s ρ²</a></li>
+  <li><a href="#deviance-and-deviance-reduction" id="toc-deviance-and-deviance-reduction" class="nav-link" data-scroll-target="#deviance-and-deviance-reduction"><span class="header-section-number">3.2</span> Deviance and deviance reduction</a></li>
+  <li><a href="#information-criteria" id="toc-information-criteria" class="nav-link" data-scroll-target="#information-criteria"><span class="header-section-number">3.3</span> Information criteria</a></li>
+  <li><a href="#confusion-matrix-based-metrics" id="toc-confusion-matrix-based-metrics" class="nav-link" data-scroll-target="#confusion-matrix-based-metrics"><span class="header-section-number">3.4</span> Confusion-matrix-based metrics</a></li>
+  <li><a href="#posterior-predictive-checks" id="toc-posterior-predictive-checks" class="nav-link" data-scroll-target="#posterior-predictive-checks"><span class="header-section-number">3.5</span> Posterior predictive checks</a></li>
+  </ul></li>
+  <li><a href="#what-counts-as-a-typical-result" id="toc-what-counts-as-a-typical-result" class="nav-link" data-scroll-target="#what-counts-as-a-typical-result"><span class="header-section-number">4</span> What counts as a typical result</a>
+  <ul class="collapse">
+  <li><a href="#whole-network-area-level-models" id="toc-whole-network-area-level-models" class="nav-link" data-scroll-target="#whole-network-area-level-models"><span class="header-section-number">4.1</span> Whole-network / area-level models</a></li>
+  <li><a href="#type-stratified-or-geometry-specific-sub-models" id="toc-type-stratified-or-geometry-specific-sub-models" class="nav-link" data-scroll-target="#type-stratified-or-geometry-specific-sub-models"><span class="header-section-number">4.2</span> Type-stratified or geometry-specific sub-models</a></li>
+  <li><a href="#behaviour-specific-models" id="toc-behaviour-specific-models" class="nav-link" data-scroll-target="#behaviour-specific-models"><span class="header-section-number">4.3</span> Behaviour-specific models</a></li>
+  <li><a href="#bayesian-hierarchical-models-on-networks" id="toc-bayesian-hierarchical-models-on-networks" class="nav-link" data-scroll-target="#bayesian-hierarchical-models-on-networks"><span class="header-section-number">4.4</span> Bayesian hierarchical models on networks</a></li>
+  </ul></li>
+  <li><a href="#methodological-approaches" id="toc-methodological-approaches" class="nav-link" data-scroll-target="#methodological-approaches"><span class="header-section-number">5</span> Methodological approaches</a>
+  <ul class="collapse">
+  <li><a href="#generalised-linear-models-poisson-negative-binomial" id="toc-generalised-linear-models-poisson-negative-binomial" class="nav-link" data-scroll-target="#generalised-linear-models-poisson-negative-binomial"><span class="header-section-number">5.1</span> Generalised linear models (Poisson, negative binomial)</a></li>
+  <li><a href="#bayesian-hierarchical-models-with-spatial-structure" id="toc-bayesian-hierarchical-models-with-spatial-structure" class="nav-link" data-scroll-target="#bayesian-hierarchical-models-with-spatial-structure"><span class="header-section-number">5.2</span> Bayesian hierarchical models with spatial structure</a></li>
+  <li><a href="#machine-learning-approaches" id="toc-machine-learning-approaches" class="nav-link" data-scroll-target="#machine-learning-approaches"><span class="header-section-number">5.3</span> Machine learning approaches</a></li>
+  <li><a href="#spatial-point-process-methods" id="toc-spatial-point-process-methods" class="nav-link" data-scroll-target="#spatial-point-process-methods"><span class="header-section-number">5.4</span> Spatial point process methods</a></li>
+  </ul></li>
+  <li><a href="#when-metrics-arent-comparable" id="toc-when-metrics-arent-comparable" class="nav-link" data-scroll-target="#when-metrics-arent-comparable"><span class="header-section-number">6</span> When metrics aren’t comparable</a>
+  <ul class="collapse">
+  <li><a href="#different-units-of-analysis" id="toc-different-units-of-analysis" class="nav-link" data-scroll-target="#different-units-of-analysis"><span class="header-section-number">6.1</span> Different units of analysis</a></li>
+  <li><a href="#different-temporal-aggregation" id="toc-different-temporal-aggregation" class="nav-link" data-scroll-target="#different-temporal-aggregation"><span class="header-section-number">6.2</span> Different temporal aggregation</a></li>
+  <li><a href="#different-severity-stratification" id="toc-different-severity-stratification" class="nav-link" data-scroll-target="#different-severity-stratification"><span class="header-section-number">6.3</span> Different severity stratification</a></li>
+  <li><a href="#in-sample-vs-out-of-sample" id="toc-in-sample-vs-out-of-sample" class="nav-link" data-scroll-target="#in-sample-vs-out-of-sample"><span class="header-section-number">6.4</span> In-sample vs out-of-sample</a></li>
+  <li><a href="#different-binarisation-thresholds" id="toc-different-binarisation-thresholds" class="nav-link" data-scroll-target="#different-binarisation-thresholds"><span class="header-section-number">6.5</span> Different binarisation thresholds</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">7</span> References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Crash Modelling: Metrics, Benchmarks and Methodology</h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="purpose" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="purpose"><span class="header-section-number">1</span> Purpose</h2>
+<p>Road crash count modelling has its own conventions for goodness-of-fit metrics, model comparison, and what counts as a defensible result. This page is a reference for those conventions: what the standard metrics measure, why ordinary R² doesn’t apply to count models, what published benchmarks look like, and how Bayesian and machine-learning approaches compare on this kind of data.</p>
+<p>The intent is descriptive, not positional. The page documents what the literature says, not how this project’s results sit within it.</p>
+</section>
+<section id="why-standard-r²-doesnt-apply" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="why-standard-r²-doesnt-apply"><span class="header-section-number">2</span> Why standard R² doesn’t apply</h2>
+<p>Crash counts are non-negative integers, often with a large fraction of zeros (typically 80–98% on road segment data depending on segmentation and exposure period). Ordinary least-squares regression assumes a continuous, approximately normal response variable. Standard R², defined as 1 − SS_residual / SS_total, has well-known problems on count data:</p>
+<ul>
+<li>It can be negative for count models that are otherwise reasonable.</li>
+<li>It rewards models that fit large counts at the expense of zero counts, which is the opposite of what crash analysts want.</li>
+<li>Its scale is not interpretable when the response distribution is zero-inflated or heavy-tailed.</li>
+</ul>
+<p>The literature has converged on Poisson and negative binomial regression as the appropriate likelihoods for crash counts, with goodness-of-fit assessed via deviance-based pseudo-R² metrics rather than standard R². The most widely used pseudo-R² in this field is McFadden’s, sometimes labelled ρ² (rho-squared), defined as:</p>
+<p><span class="math display">\[
+\rho^2 = 1 - \frac{\mathcal{L}(\hat{\beta})}{\mathcal{L}(0)}
+\]</span></p>
+<p>where <span class="math inline">\(\mathcal{L}(\hat{\beta})\)</span> is the log-likelihood at convergence and <span class="math inline">\(\mathcal{L}(0)\)</span> is the log-likelihood of the null (intercept-only) model.</p>
+<p>An equivalent formulation in deviance terms is:</p>
+<p><span class="math display">\[
+\rho^2 = 1 - \frac{D_{\text{model}}}{D_{\text{null}}}
+\]</span></p>
+<p>where <span class="math inline">\(D\)</span> denotes the model’s deviance — twice the difference between the saturated log-likelihood and the model log-likelihood. For Poisson and negative binomial GLMs, the two definitions coincide.</p>
+</section>
+<section id="standard-metrics-for-count-regression" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="standard-metrics-for-count-regression"><span class="header-section-number">3</span> Standard metrics for count regression</h2>
+<section id="pseudo-r²-mcfaddens-ρ²" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="pseudo-r²-mcfaddens-ρ²"><span class="header-section-number">3.1</span> Pseudo-R² / McFadden’s ρ²</h3>
+<p>Interpretation: the proportion of the null deviance explained by the model. Higher is better, but the scale is compressed compared to standard R². McFadden himself (1973) suggested that values between 0.2 and 0.4 “represent excellent fit” for choice models — a frequently cited calibration but one that is field-dependent. Crash count modelling literature typically reports values in roughly the 0.10 to 0.50 range for whole-network or whole-area models, with intersection or geometry-specific sub-models sometimes reaching higher values (Chengye &amp; Ranjitkar, 2013; Poch &amp; Mannering, 1996).</p>
+<p>Critically, pseudo-R² of count models is not directly comparable to standard R² of linear models. Reporting “R² = 0.3” without clarifying which metric is being used is a common source of confusion in the applied literature.</p>
+</section>
+<section id="deviance-and-deviance-reduction" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="deviance-and-deviance-reduction"><span class="header-section-number">3.2</span> Deviance and deviance reduction</h3>
+<p>Deviance is the natural goodness-of-fit measure for GLMs. It plays the same role residual sum-of-squares plays in linear regression, and is computed as:</p>
+<p><span class="math display">\[
+D = 2 \sum_i \left( y_i \log\left(\frac{y_i}{\hat{\mu}_i}\right) - (y_i - \hat{\mu}_i) \right)
+\]</span></p>
+<p>for Poisson regression (with the convention <span class="math inline">\(0 \log 0 = 0\)</span>). Smaller is better. Deviance reduction relative to a baseline model is a useful sensitivity measure when pseudo-R² values are small and compressed.</p>
+</section>
+<section id="information-criteria" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="information-criteria"><span class="header-section-number">3.3</span> Information criteria</h3>
+<p>Bayesian and likelihood-based model comparison typically uses information criteria rather than goodness-of-fit alone:</p>
+<ul>
+<li><strong>AIC</strong> (Akaike): penalises model complexity, used for likelihood-based models including Poisson/negative binomial GLMs.</li>
+<li><strong>DIC</strong> (Deviance Information Criterion): the Bayesian analogue of AIC, widely used in spatial Bayesian modelling. Has known limitations for hierarchical models with informative priors.</li>
+<li><strong>WAIC</strong> (Watanabe-Akaike): a more theoretically grounded alternative to DIC, increasingly preferred in the recent literature.</li>
+</ul>
+<p>Lower values indicate better-fitting models accounting for complexity. These criteria are tools for comparison between models on the same data, not absolute measures of fit.</p>
+</section>
+<section id="confusion-matrix-based-metrics" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="confusion-matrix-based-metrics"><span class="header-section-number">3.4</span> Confusion-matrix-based metrics</h3>
+<p>When the count outcome is dichotomised (crash vs no-crash), standard classification metrics become available:</p>
+<ul>
+<li><strong>Sensitivity</strong> (recall on positive class): of all segments that had crashes, what fraction did the model predict as high-risk?</li>
+<li><strong>Specificity</strong> (recall on negative class): of all segments without crashes, what fraction did the model predict as low-risk?</li>
+<li><strong>Balanced accuracy</strong>: <span class="math inline">\(\frac{1}{2}(\text{Sensitivity} + \text{Specificity})\)</span>. Equal-weighted average of the two recall measures. Particularly useful when classes are imbalanced, which is the typical case for crash data (most segments have no crashes).</li>
+<li><strong>Standard accuracy</strong>: fraction correctly classified. Misleading on imbalanced data because predicting “no crash” for everything achieves high accuracy whenever the positive rate is low. Not recommended as a headline metric.</li>
+</ul>
+<p>Brodersen et al.&nbsp;(2010) introduced balanced accuracy specifically to address class-imbalance distortions of standard accuracy. It has become common in Bayesian hierarchical crash modelling as a model-criticism tool when standard goodness-of-fit metrics are ambiguous on sparse count data (Gilardi et al., 2022).</p>
+<p>The threshold at which the count outcome is dichotomised matters. Different thresholds (median predicted score, 75th percentile, 95th percentile) produce different sensitivities and specificities. Some studies sweep across thresholds and report the best balanced accuracy; others use a fixed threshold rationale. Comparing balanced accuracy across studies requires checking that the dichotomisation methodology matches.</p>
+</section>
+<section id="posterior-predictive-checks" class="level3" data-number="3.5">
+<h3 data-number="3.5" class="anchored" data-anchor-id="posterior-predictive-checks"><span class="header-section-number">3.5</span> Posterior predictive checks</h3>
+<p>Bayesian hierarchical models additionally use posterior predictive distributions for model criticism: simulate counts from the posterior, bin them, compare to observed counts. Probability integral transform (PIT) diagnostics, with continuity corrections for discrete outcomes, are standard. These are unavailable for non-Bayesian models and represent a genuine methodological advantage of the Bayesian approach.</p>
+</section>
+</section>
+<section id="what-counts-as-a-typical-result" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="what-counts-as-a-typical-result"><span class="header-section-number">4</span> What counts as a typical result</h2>
+<p>The crash modelling literature reports a wide range of pseudo-R² values depending on the unit of analysis, the data sources, the temporal aggregation, and how the model is specified. Important categories include:</p>
+<section id="whole-network-area-level-models" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="whole-network-area-level-models"><span class="header-section-number">4.1</span> Whole-network / area-level models</h3>
+<p>These predict crash counts at link or zone grain across an entire study area, typically with an annual or multi-year aggregation. Feature sets vary widely. McFadden’s ρ² values in this category typically fall in the 0.15 to 0.35 range. Examples in the literature include:</p>
+<ul>
+<li>Chengye &amp; Ranjitkar (2013): New Zealand motorway segments. Total crash model with traffic and geometric features achieved ρ² of approximately 0.19.</li>
+<li>Poch &amp; Mannering (1996): Bellevue, WA intersection approaches. The total-accidents model achieved ρ² of approximately 0.20.</li>
+</ul>
+</section>
+<section id="type-stratified-or-geometry-specific-sub-models" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="type-stratified-or-geometry-specific-sub-models"><span class="header-section-number">4.2</span> Type-stratified or geometry-specific sub-models</h3>
+<p>Models predicting a specific accident type (rear-end only, angle only, approach-turn only) on a constrained subset (intersections only, motorway segments only) tend to achieve higher pseudo-R² because the outcome distribution is more constrained. Values of 0.40 to 0.55 are reported in this category. These should not be compared directly to whole-network models — the metrics are computed on different problems even if the formula is the same.</p>
+<p>Poch &amp; Mannering’s intersection rear-end, angle, and approach-turn sub-models achieved ρ² of approximately 0.51, 0.46, and 0.54 respectively on the same data their total-accidents model scored 0.20.</p>
+</section>
+<section id="behaviour-specific-models" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="behaviour-specific-models"><span class="header-section-number">4.3</span> Behaviour-specific models</h3>
+<p>Models predicting crash counts driven primarily by human factors (distraction, intoxication, speed-related) using only road-environment features tend to score very low on pseudo-R² regardless of methodology. Values below 0.10 are common. The implication is that road-environment features are not the right inputs for predicting behaviour-driven outcomes — the right inputs would be behavioural data, which is rarely available at the resolution required.</p>
+</section>
+<section id="bayesian-hierarchical-models-on-networks" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="bayesian-hierarchical-models-on-networks"><span class="header-section-number">4.4</span> Bayesian hierarchical models on networks</h3>
+<p>Bayesian models reporting balanced accuracy as their criticism metric include Gilardi et al.&nbsp;(2022), which achieved 0.675 balanced accuracy on severe crashes (at the 0.975 quantile threshold) and 0.720 on slight crashes (at the median threshold) on a Leeds road-segment lattice. These numbers are for a specific dichotomisation methodology and a specific network; the metric values are not interpretable in isolation without that context.</p>
+</section>
+</section>
+<section id="methodological-approaches" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="methodological-approaches"><span class="header-section-number">5</span> Methodological approaches</h2>
+<p>The crash modelling literature includes several distinct methodological families. Each makes different trade-offs.</p>
+<section id="generalised-linear-models-poisson-negative-binomial" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="generalised-linear-models-poisson-negative-binomial"><span class="header-section-number">5.1</span> Generalised linear models (Poisson, negative binomial)</h3>
+<p>The longest-established approach. Poisson regression is the natural likelihood for count data with mean equal to variance. Negative binomial generalises this by allowing variance to exceed the mean (overdispersion), which is almost always present in crash data.</p>
+<p>Strengths:</p>
+<ul>
+<li>Interpretable coefficients with direct elasticity calculation.</li>
+<li>Well-developed inference theory; standard errors and significance tests are straightforward.</li>
+<li>Computationally cheap; scales to large networks easily.</li>
+</ul>
+<p>Limitations:</p>
+<ul>
+<li>Assumes log-linear relationship between covariates and rate; nonlinear interactions must be specified by hand.</li>
+<li>No spatial structure unless explicitly added (e.g.&nbsp;spatial random effects, but then the model becomes hierarchical and inference becomes Bayesian or requires INLA-style approximation).</li>
+<li>Missing data and zero-inflation handling is non-trivial; specific variants (zero-inflated Poisson, hurdle models) address this but complicate inference.</li>
+</ul>
+</section>
+<section id="bayesian-hierarchical-models-with-spatial-structure" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="bayesian-hierarchical-models-with-spatial-structure"><span class="header-section-number">5.2</span> Bayesian hierarchical models with spatial structure</h3>
+<p>Builds on GLMs by adding spatially structured random effects, typically via conditional autoregressive (CAR) priors or their multivariate extensions. The posterior is approximated using MCMC or, for tractable cases, INLA.</p>
+<p>Strengths:</p>
+<ul>
+<li>Borrows strength from neighbouring locations, which improves estimation on rare events (severe/fatal crashes).</li>
+<li>Native uncertainty quantification through posterior distributions. Credible intervals are produced for every parameter and every prediction.</li>
+<li>Handles correlated multivariate outcomes naturally (e.g.&nbsp;severity levels modelled jointly).</li>
+<li>Posterior predictive checks enable formal model criticism that frequentist methods don’t directly support.</li>
+</ul>
+<p>Limitations:</p>
+<ul>
+<li>Computationally demanding. INLA is much faster than MCMC but still scales nonlinearly with network size; published papers in this area typically work with networks of a few thousand segments rather than millions.</li>
+<li>Specifying spatial neighbourhood structure introduces modelling decisions (first-order vs higher-order neighbours, distance-based weights) that require sensitivity analysis.</li>
+<li>Implementation requires specialist software and expertise; harder to hand off than a GLM or ML model.</li>
+</ul>
+<p>Recent examples include Aguero-Valverde &amp; Jovanis (2008), Boulieri et al. (2017), Gilardi et al.&nbsp;(2022). The Lord &amp; Mannering (2010), Savolainen et al.&nbsp;(2011), and Ziakopoulos &amp; Yannis (2020) reviews give a broader overview of the methodological developments.</p>
+</section>
+<section id="machine-learning-approaches" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="machine-learning-approaches"><span class="header-section-number">5.3</span> Machine learning approaches</h3>
+<p>Tree-based methods (random forests, gradient boosting) and neural networks have entered crash modelling more recently. They differ from the GLM / Bayesian families in not assuming a parametric likelihood for the response.</p>
+<p>Strengths:</p>
+<ul>
+<li>Capture nonlinear feature interactions automatically.</li>
+<li>Scale to very large networks (millions of links) without specialised approximations.</li>
+<li>Often competitive or superior on predictive accuracy when sufficient features are available.</li>
+<li>Can use Poisson loss directly (XGBoost, LightGBM all support this), so the count nature of the outcome is respected even though the model isn’t a GLM.</li>
+</ul>
+<p>Limitations:</p>
+<ul>
+<li>No native uncertainty quantification. Bootstrap-based confidence intervals are possible but expensive and don’t have the theoretical grounding of Bayesian credible intervals.</li>
+<li>Feature importance scores are unstable across correlated features and across random seeds; care is needed in interpretation.</li>
+<li>Less interpretable than GLMs at the coefficient level. SHAP values and partial dependence plots help but require additional analysis.</li>
+<li>Prone to learning data artefacts and missingness patterns that correlate with the outcome (target leakage). Auditing feature provenance is more important than for hand-specified GLMs.</li>
+<li>Spatial structure is not naturally represented; including spatial features (location, network position) helps but doesn’t borrow strength the way CAR priors do.</li>
+</ul>
+</section>
+<section id="spatial-point-process-methods" class="level3" data-number="5.4">
+<h3 data-number="5.4" class="anchored" data-anchor-id="spatial-point-process-methods"><span class="header-section-number">5.4</span> Spatial point process methods</h3>
+<p>A more recent strand uses point process theory directly on the road network, treating crashes as a spatial point pattern on a linear network rather than counts on aggregated segments. Reviewed in Baddeley et al. (2021); applied in Cronie et al.&nbsp;(2020) and Rakshit et al.&nbsp;(2019).</p>
+<p>Strengths:</p>
+<ul>
+<li>Avoids the modifiable areal unit problem (MAUP) by working at the point rather than segment level.</li>
+<li>Theoretically clean for asking questions about clustering and spatial intensity.</li>
+</ul>
+<p>Limitations:</p>
+<ul>
+<li>Mostly non- or semi-parametric; including covariates is an active methodological development rather than a standard approach.</li>
+<li>Limited tooling for prediction; the methods are stronger for description than for forward prediction.</li>
+</ul>
+</section>
+</section>
+<section id="when-metrics-arent-comparable" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="when-metrics-arent-comparable"><span class="header-section-number">6</span> When metrics aren’t comparable</h2>
+<p>Several common pitfalls produce misleading comparisons in this literature.</p>
+<section id="different-units-of-analysis" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="different-units-of-analysis"><span class="header-section-number">6.1</span> Different units of analysis</h3>
+<p>A model predicting crashes per intersection isn’t directly comparable to one predicting crashes per link-year. The latter has more rows and a sparser positive rate; pseudo-R² will look different even on the same underlying signal.</p>
+</section>
+<section id="different-temporal-aggregation" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="different-temporal-aggregation"><span class="header-section-number">6.2</span> Different temporal aggregation</h3>
+<p>A model predicting 8-year crash totals has a less zero-inflated outcome than one predicting per-year counts. The longer aggregation typically shows higher pseudo-R² and balanced accuracy.</p>
+</section>
+<section id="different-severity-stratification" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="different-severity-stratification"><span class="header-section-number">6.3</span> Different severity stratification</h3>
+<p>Models predicting a single severity level (severe only, slight only) typically achieve higher pseudo-R² than models predicting all severities pooled. The reason is mechanical: a narrower outcome has less variance to explain, so a smaller share is “explained” but the fraction looks larger.</p>
+</section>
+<section id="in-sample-vs-out-of-sample" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="in-sample-vs-out-of-sample"><span class="header-section-number">6.4</span> In-sample vs out-of-sample</h3>
+<p>Bayesian models often report in-sample fit metrics on the full data because the model’s regularisation (priors and partial pooling) handles overfitting differently than out-of-sample validation. ML models typically report cross-validated or holdout metrics. A direct comparison of “0.35 pseudo-R²” between an in-sample Bayesian model and an out-of-sample ML model isn’t meaningful without adjustment.</p>
+</section>
+<section id="different-binarisation-thresholds" class="level3" data-number="6.5">
+<h3 data-number="6.5" class="anchored" data-anchor-id="different-binarisation-thresholds"><span class="header-section-number">6.5</span> Different binarisation thresholds</h3>
+<p>When confusion-matrix metrics are reported, the threshold used to convert predicted scores to binary labels matters. A balanced accuracy of 0.70 at the median threshold isn’t comparable to 0.70 at the 95th percentile threshold; they’re describing different operating points of the model.</p>
+</section>
+</section>
+<section id="references" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="references"><span class="header-section-number">7</span> References</h2>
+<p>Aguero-Valverde, J. &amp; Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. <em>Transportation Research Record</em>, 2061(1), 55–63.</p>
+<p>Baddeley, A., Nair, G., Rakshit, S., McSwiggan, G. &amp; Davies, T.M. (2021). Analysing point patterns on networks — a review. <em>Spatial Statistics</em>, 42, 100435.</p>
+<p>Boulieri, A., Liverani, S., de Hoogh, K. &amp; Blangiardo, M. (2017). A space-time multivariate Bayesian model to analyse road traffic accidents by severity. <em>Journal of the Royal Statistical Society: Series A</em>, 180, 119–139.</p>
+<p>Brodersen, K.H., Ong, C.S., Stephan, K.E. &amp; Buhmann, J.M. (2010). The balanced accuracy and its posterior distribution. <em>2010 20th International Conference on Pattern Recognition</em>, 3121–3124.</p>
+<p>Chengye, P. &amp; Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. <em>Journal of the Eastern Asia Society for Transportation Studies</em>, 10, 1946–1963.</p>
+<p>Cronie, O., Moradi, M. &amp; Mateu, J. (2020). Inhomogeneous higher-order summary statistics for point processes on linear networks. <em>Statistics and Computing</em>, 30, 1221–1239.</p>
+<p>Gilardi, A., Mateu, J., Borgoni, R. &amp; Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. <em>Journal of the Royal Statistical Society: Series A</em>, 185(3), 1150–1177.</p>
+<p>Lord, D. &amp; Mannering, F. (2010). The statistical analysis of crash-frequency data: a review and assessment of methodological alternatives. <em>Transportation Research Part A: Policy and Practice</em>, 44, 291–305.</p>
+<p>McFadden, D. (1973). Conditional logit analysis of qualitative choice behavior. In P. Zarembka (ed.) <em>Frontiers in Econometrics</em>, 105–142. Academic Press.</p>
+<p>Poch, M. &amp; Mannering, F. (1996). Negative binomial analysis of intersection-accident frequencies. <em>Journal of Transportation Engineering</em>, 122(2), 105–113.</p>
+<p>Rakshit, S., Davies, T., Moradi, M.M., McSwiggan, G., Nair, G., Mateu, J. &amp; Baddeley, A. (2019). Fast kernel smoothing of point patterns on a large network using two-dimensional convolution. <em>International Statistical Review</em>, 87, 531–556.</p>
+<p>Savolainen, P.T., Mannering, F.L., Lord, D. &amp; Quddus, M.A.&nbsp;(2011). The statistical analysis of highway crash-injury severities: a review and assessment of methodological alternatives. <em>Accident Analysis &amp; Prevention</em>, 43, 1666–1676.</p>
+<p>Ziakopoulos, A. &amp; Yannis, G. (2020). A review of spatial approaches in road safety. <em>Accident Analysis &amp; Prevention</em>, 135, 105323.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/thomashsimm\.github\.io\/open-road-risk\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

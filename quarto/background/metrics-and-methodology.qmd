@@ -1,0 +1,420 @@
+---
+title: "Crash Modelling: Metrics, Benchmarks and Methodology"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    page-layout: full
+---
+
+## Purpose
+
+Road crash count modelling has its own conventions for goodness-of-fit
+metrics, model comparison, and what counts as a defensible result. This page
+is a reference for those conventions: what the standard metrics measure, why
+ordinary R² doesn't apply to count models, what published benchmarks look
+like, and how Bayesian and machine-learning approaches compare on this kind
+of data.
+
+The intent is descriptive, not positional. The page documents what the
+literature says, not how this project's results sit within it.
+
+## Why standard R² doesn't apply
+
+Crash counts are non-negative integers, often with a large fraction of zeros
+(typically 80–98% on road segment data depending on segmentation and
+exposure period). Ordinary least-squares regression assumes a continuous,
+approximately normal response variable. Standard R², defined as
+1 − SS_residual / SS_total, has well-known problems on count data:
+
+- It can be negative for count models that are otherwise reasonable.
+- It rewards models that fit large counts at the expense of zero counts,
+  which is the opposite of what crash analysts want.
+- Its scale is not interpretable when the response distribution is
+  zero-inflated or heavy-tailed.
+
+The literature has converged on Poisson and negative binomial regression as
+the appropriate likelihoods for crash counts, with goodness-of-fit assessed
+via deviance-based pseudo-R² metrics rather than standard R². The most
+widely used pseudo-R² in this field is McFadden's, sometimes labelled ρ²
+(rho-squared), defined as:
+
+$$
+\rho^2 = 1 - \frac{\mathcal{L}(\hat{\beta})}{\mathcal{L}(0)}
+$$
+
+where $\mathcal{L}(\hat{\beta})$ is the log-likelihood at convergence and
+$\mathcal{L}(0)$ is the log-likelihood of the null (intercept-only) model.
+
+An equivalent formulation in deviance terms is:
+
+$$
+\rho^2 = 1 - \frac{D_{\text{model}}}{D_{\text{null}}}
+$$
+
+where $D$ denotes the model's deviance — twice the difference between the
+saturated log-likelihood and the model log-likelihood. For Poisson and
+negative binomial GLMs, the two definitions coincide.
+
+## Standard metrics for count regression
+
+### Pseudo-R² / McFadden's ρ²
+
+Interpretation: the proportion of the null deviance explained by the model.
+Higher is better, but the scale is compressed compared to standard R².
+McFadden himself (1973) suggested that values between 0.2 and 0.4
+"represent excellent fit" for choice models — a frequently cited
+calibration but one that is field-dependent. Crash count modelling
+literature typically reports values in roughly the 0.10 to 0.50 range for
+whole-network or whole-area models, with intersection or geometry-specific
+sub-models sometimes reaching higher values (Chengye & Ranjitkar, 2013;
+Poch & Mannering, 1996).
+
+Critically, pseudo-R² of count models is not directly comparable to
+standard R² of linear models. Reporting "R² = 0.3" without clarifying which
+metric is being used is a common source of confusion in the applied
+literature.
+
+### Deviance and deviance reduction
+
+Deviance is the natural goodness-of-fit measure for GLMs. It plays the same
+role residual sum-of-squares plays in linear regression, and is computed
+as:
+
+$$
+D = 2 \sum_i \left( y_i \log\left(\frac{y_i}{\hat{\mu}_i}\right) - (y_i - \hat{\mu}_i) \right)
+$$
+
+for Poisson regression (with the convention $0 \log 0 = 0$). Smaller is
+better. Deviance reduction relative to a baseline model is a useful
+sensitivity measure when pseudo-R² values are small and compressed.
+
+### Information criteria
+
+Bayesian and likelihood-based model comparison typically uses information
+criteria rather than goodness-of-fit alone:
+
+- **AIC** (Akaike): penalises model complexity, used for likelihood-based
+  models including Poisson/negative binomial GLMs.
+- **DIC** (Deviance Information Criterion): the Bayesian analogue of AIC,
+  widely used in spatial Bayesian modelling. Has known limitations for
+  hierarchical models with informative priors.
+- **WAIC** (Watanabe-Akaike): a more theoretically grounded alternative to
+  DIC, increasingly preferred in the recent literature.
+
+Lower values indicate better-fitting models accounting for complexity.
+These criteria are tools for comparison between models on the same data,
+not absolute measures of fit.
+
+### Confusion-matrix-based metrics
+
+When the count outcome is dichotomised (crash vs no-crash), standard
+classification metrics become available:
+
+- **Sensitivity** (recall on positive class): of all segments that had
+  crashes, what fraction did the model predict as high-risk?
+- **Specificity** (recall on negative class): of all segments without
+  crashes, what fraction did the model predict as low-risk?
+- **Balanced accuracy**: $\frac{1}{2}(\text{Sensitivity} + \text{Specificity})$.
+  Equal-weighted average of the two recall measures. Particularly useful
+  when classes are imbalanced, which is the typical case for crash data
+  (most segments have no crashes).
+- **Standard accuracy**: fraction correctly classified. Misleading on
+  imbalanced data because predicting "no crash" for everything achieves
+  high accuracy whenever the positive rate is low. Not recommended as a
+  headline metric.
+
+Brodersen et al. (2010) introduced balanced accuracy specifically to
+address class-imbalance distortions of standard accuracy. It has become
+common in Bayesian hierarchical crash modelling as a model-criticism tool
+when standard goodness-of-fit metrics are ambiguous on sparse count data
+(Gilardi et al., 2022).
+
+The threshold at which the count outcome is dichotomised matters. Different
+thresholds (median predicted score, 75th percentile, 95th percentile)
+produce different sensitivities and specificities. Some studies sweep
+across thresholds and report the best balanced accuracy; others use a
+fixed threshold rationale. Comparing balanced accuracy across studies
+requires checking that the dichotomisation methodology matches.
+
+### Posterior predictive checks
+
+Bayesian hierarchical models additionally use posterior predictive
+distributions for model criticism: simulate counts from the posterior, bin
+them, compare to observed counts. Probability integral transform (PIT)
+diagnostics, with continuity corrections for discrete outcomes, are
+standard. These are unavailable for non-Bayesian models and represent a
+genuine methodological advantage of the Bayesian approach.
+
+## What counts as a typical result
+
+The crash modelling literature reports a wide range of pseudo-R² values
+depending on the unit of analysis, the data sources, the temporal
+aggregation, and how the model is specified. Important categories include:
+
+### Whole-network / area-level models
+
+These predict crash counts at link or zone grain across an entire study
+area, typically with an annual or multi-year aggregation. Feature sets
+vary widely. McFadden's ρ² values in this category typically fall in the
+0.15 to 0.35 range. Examples in the literature include:
+
+- Chengye & Ranjitkar (2013): New Zealand motorway segments. Total crash
+  model with traffic and geometric features achieved ρ² of approximately
+  0.19.
+- Poch & Mannering (1996): Bellevue, WA intersection approaches. The
+  total-accidents model achieved ρ² of approximately 0.20.
+
+### Type-stratified or geometry-specific sub-models
+
+Models predicting a specific accident type (rear-end only, angle only,
+approach-turn only) on a constrained subset (intersections only, motorway
+segments only) tend to achieve higher pseudo-R² because the outcome
+distribution is more constrained. Values of 0.40 to 0.55 are reported in
+this category. These should not be compared directly to whole-network
+models — the metrics are computed on different problems even if the
+formula is the same.
+
+Poch & Mannering's intersection rear-end, angle, and approach-turn
+sub-models achieved ρ² of approximately 0.51, 0.46, and 0.54 respectively
+on the same data their total-accidents model scored 0.20.
+
+### Behaviour-specific models
+
+Models predicting crash counts driven primarily by human factors
+(distraction, intoxication, speed-related) using only road-environment
+features tend to score very low on pseudo-R² regardless of methodology.
+Values below 0.10 are common. The implication is that road-environment
+features are not the right inputs for predicting behaviour-driven outcomes
+— the right inputs would be behavioural data, which is rarely available
+at the resolution required.
+
+### Bayesian hierarchical models on networks
+
+Bayesian models reporting balanced accuracy as their criticism metric
+include Gilardi et al. (2022), which achieved 0.675 balanced accuracy on
+severe crashes (at the 0.975 quantile threshold) and 0.720 on slight
+crashes (at the median threshold) on a Leeds road-segment lattice. These
+numbers are for a specific dichotomisation methodology and a specific
+network; the metric values are not interpretable in isolation without
+that context.
+
+## Methodological approaches
+
+The crash modelling literature includes several distinct methodological
+families. Each makes different trade-offs.
+
+### Generalised linear models (Poisson, negative binomial)
+
+The longest-established approach. Poisson regression is the natural
+likelihood for count data with mean equal to variance. Negative binomial
+generalises this by allowing variance to exceed the mean (overdispersion),
+which is almost always present in crash data.
+
+Strengths:
+
+- Interpretable coefficients with direct elasticity calculation.
+- Well-developed inference theory; standard errors and significance tests
+  are straightforward.
+- Computationally cheap; scales to large networks easily.
+
+Limitations:
+
+- Assumes log-linear relationship between covariates and rate; nonlinear
+  interactions must be specified by hand.
+- No spatial structure unless explicitly added (e.g. spatial random
+  effects, but then the model becomes hierarchical and inference becomes
+  Bayesian or requires INLA-style approximation).
+- Missing data and zero-inflation handling is non-trivial; specific
+  variants (zero-inflated Poisson, hurdle models) address this but
+  complicate inference.
+
+### Bayesian hierarchical models with spatial structure
+
+Builds on GLMs by adding spatially structured random effects, typically
+via conditional autoregressive (CAR) priors or their multivariate
+extensions. The posterior is approximated using MCMC or, for tractable
+cases, INLA.
+
+Strengths:
+
+- Borrows strength from neighbouring locations, which improves estimation
+  on rare events (severe/fatal crashes).
+- Native uncertainty quantification through posterior distributions.
+  Credible intervals are produced for every parameter and every
+  prediction.
+- Handles correlated multivariate outcomes naturally (e.g. severity
+  levels modelled jointly).
+- Posterior predictive checks enable formal model criticism that frequentist
+  methods don't directly support.
+
+Limitations:
+
+- Computationally demanding. INLA is much faster than MCMC but still
+  scales nonlinearly with network size; published papers in this area
+  typically work with networks of a few thousand segments rather than
+  millions.
+- Specifying spatial neighbourhood structure introduces modelling
+  decisions (first-order vs higher-order neighbours, distance-based
+  weights) that require sensitivity analysis.
+- Implementation requires specialist software and expertise; harder to
+  hand off than a GLM or ML model.
+
+Recent examples include Aguero-Valverde & Jovanis (2008), Boulieri et al.
+(2017), Gilardi et al. (2022). The Lord & Mannering (2010), Savolainen
+et al. (2011), and Ziakopoulos & Yannis (2020) reviews give a broader
+overview of the methodological developments.
+
+### Machine learning approaches
+
+Tree-based methods (random forests, gradient boosting) and neural networks
+have entered crash modelling more recently. They differ from the GLM /
+Bayesian families in not assuming a parametric likelihood for the
+response.
+
+Strengths:
+
+- Capture nonlinear feature interactions automatically.
+- Scale to very large networks (millions of links) without specialised
+  approximations.
+- Often competitive or superior on predictive accuracy when sufficient
+  features are available.
+- Can use Poisson loss directly (XGBoost, LightGBM all support this), so
+  the count nature of the outcome is respected even though the model
+  isn't a GLM.
+
+Limitations:
+
+- No native uncertainty quantification. Bootstrap-based confidence
+  intervals are possible but expensive and don't have the theoretical
+  grounding of Bayesian credible intervals.
+- Feature importance scores are unstable across correlated features and
+  across random seeds; care is needed in interpretation.
+- Less interpretable than GLMs at the coefficient level. SHAP values and
+  partial dependence plots help but require additional analysis.
+- Prone to learning data artefacts and missingness patterns that
+  correlate with the outcome (target leakage). Auditing feature provenance
+  is more important than for hand-specified GLMs.
+- Spatial structure is not naturally represented; including spatial
+  features (location, network position) helps but doesn't borrow strength
+  the way CAR priors do.
+
+### Spatial point process methods
+
+A more recent strand uses point process theory directly on the road
+network, treating crashes as a spatial point pattern on a linear network
+rather than counts on aggregated segments. Reviewed in Baddeley et al.
+(2021); applied in Cronie et al. (2020) and Rakshit et al. (2019).
+
+Strengths:
+
+- Avoids the modifiable areal unit problem (MAUP) by working at the point
+  rather than segment level.
+- Theoretically clean for asking questions about clustering and spatial
+  intensity.
+
+Limitations:
+
+- Mostly non- or semi-parametric; including covariates is an active
+  methodological development rather than a standard approach.
+- Limited tooling for prediction; the methods are stronger for
+  description than for forward prediction.
+
+## When metrics aren't comparable
+
+Several common pitfalls produce misleading comparisons in this literature.
+
+### Different units of analysis
+
+A model predicting crashes per intersection isn't directly comparable to
+one predicting crashes per link-year. The latter has more rows and a
+sparser positive rate; pseudo-R² will look different even on the same
+underlying signal.
+
+### Different temporal aggregation
+
+A model predicting 8-year crash totals has a less zero-inflated outcome
+than one predicting per-year counts. The longer aggregation typically
+shows higher pseudo-R² and balanced accuracy.
+
+### Different severity stratification
+
+Models predicting a single severity level (severe only, slight only)
+typically achieve higher pseudo-R² than models predicting all severities
+pooled. The reason is mechanical: a narrower outcome has less variance to
+explain, so a smaller share is "explained" but the fraction looks larger.
+
+### In-sample vs out-of-sample
+
+Bayesian models often report in-sample fit metrics on the full data
+because the model's regularisation (priors and partial pooling) handles
+overfitting differently than out-of-sample validation. ML models typically
+report cross-validated or holdout metrics. A direct comparison of "0.35
+pseudo-R²" between an in-sample Bayesian model and an out-of-sample ML
+model isn't meaningful without adjustment.
+
+### Different binarisation thresholds
+
+When confusion-matrix metrics are reported, the threshold used to convert
+predicted scores to binary labels matters. A balanced accuracy of 0.70 at
+the median threshold isn't comparable to 0.70 at the 95th percentile
+threshold; they're describing different operating points of the model.
+
+## References
+
+Aguero-Valverde, J. & Jovanis, P.P. (2008). Analysis of road crash
+frequency with spatial models. *Transportation Research Record*, 2061(1),
+55–63.
+
+Baddeley, A., Nair, G., Rakshit, S., McSwiggan, G. & Davies, T.M. (2021).
+Analysing point patterns on networks — a review. *Spatial Statistics*,
+42, 100435.
+
+Boulieri, A., Liverani, S., de Hoogh, K. & Blangiardo, M. (2017). A
+space-time multivariate Bayesian model to analyse road traffic accidents
+by severity. *Journal of the Royal Statistical Society: Series A*, 180,
+119–139.
+
+Brodersen, K.H., Ong, C.S., Stephan, K.E. & Buhmann, J.M. (2010). The
+balanced accuracy and its posterior distribution. *2010 20th
+International Conference on Pattern Recognition*, 3121–3124.
+
+Chengye, P. & Ranjitkar, P. (2013). Modelling motorway accidents using
+negative binomial regression. *Journal of the Eastern Asia Society for
+Transportation Studies*, 10, 1946–1963.
+
+Cronie, O., Moradi, M. & Mateu, J. (2020). Inhomogeneous higher-order
+summary statistics for point processes on linear networks. *Statistics
+and Computing*, 30, 1221–1239.
+
+Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate
+hierarchical analysis of car crashes data considering a spatial network
+lattice. *Journal of the Royal Statistical Society: Series A*, 185(3),
+1150–1177.
+
+Lord, D. & Mannering, F. (2010). The statistical analysis of
+crash-frequency data: a review and assessment of methodological
+alternatives. *Transportation Research Part A: Policy and Practice*, 44,
+291–305.
+
+McFadden, D. (1973). Conditional logit analysis of qualitative choice
+behavior. In P. Zarembka (ed.) *Frontiers in Econometrics*, 105–142.
+Academic Press.
+
+Poch, M. & Mannering, F. (1996). Negative binomial analysis of
+intersection-accident frequencies. *Journal of Transportation
+Engineering*, 122(2), 105–113.
+
+Rakshit, S., Davies, T., Moradi, M.M., McSwiggan, G., Nair, G., Mateu, J.
+& Baddeley, A. (2019). Fast kernel smoothing of point patterns on a
+large network using two-dimensional convolution. *International
+Statistical Review*, 87, 531–556.
+
+Savolainen, P.T., Mannering, F.L., Lord, D. & Quddus, M.A. (2011). The
+statistical analysis of highway crash-injury severities: a review and
+assessment of methodological alternatives. *Accident Analysis &
+Prevention*, 43, 1666–1676.
+
+Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in
+road safety. *Accident Analysis & Prevention*, 135, 105323.

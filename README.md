@@ -12,6 +12,8 @@ including the large share of roads without direct traffic counters.
 
 **Documentation site:** https://thomashsimm.github.io/open-road-risk/
 
+This project was developed with substantial AI assistance under human direction and review. See the project pages for details on the [AI-assisted development methodology](https://thomashsimm.github.io/open-road-risk/project/ai-assisted-development.html).
+
 ---
 
 ## What this builds

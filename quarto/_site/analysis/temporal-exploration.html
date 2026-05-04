@@ -169,6 +169,21 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../project/model-status.html">
  <span class="dropdown-text">Current model status</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -372,7 +387,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p>This notebook explores the temporal dimensions of traffic flow using WebTRIS sensor data. We analyze how traffic volumes and compositions change across different months and between weekdays and weekends.</p>
 <p>The goal is to determine which temporal patterns are link-specific (requiring granular modelling) and which are stable enough to be treated as global constants.</p>
 <p>We investigate: 1. <strong>Monthly Seasonality</strong>: High-season vs.&nbsp;low-season flow amplitudes. 2. <strong>Weekday/Weekend Ratios</strong>: Commuter-heavy vs.&nbsp;leisure-heavy road signatures. 3. <strong>Time-of-Day Intensity</strong>: The ratio of daytime to nighttime flow. 4. <strong>HGV Mixing</strong>: How vehicle composition shifts across these same axes.</p>
-<div id="e9601bff" class="cell" data-execution_count="1">
+<div id="ba177cbe" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -397,7 +412,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <h2 data-number="1" class="anchored" data-anchor-id="variance-analysis-weekdayweekend"><span class="header-section-number">1</span> Variance Analysis (Weekday/Weekend)</h2>
 <p>We begin by testing the variance of the weekday/weekend ratio at the individual sensor level. If the ratio is stable across different sites within the same month, it suggests the pattern is universal rather than link-specific.</p>
 <p>We start with the strongest test: whether different sensors in the same month give similar weekday/weekend ratios. If they do, the descriptor has no link-specific variation to model.</p>
-<div id="25927360" class="cell" data-execution_count="2">
+<div id="fa0d11c3" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a larger sample of raw parquets to test variance</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>files <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> os.listdir(WEBTRIS_RAW) <span class="cf">if</span> <span class="st">"2023"</span> <span class="kw">in</span> f <span class="kw">and</span> f.endswith(<span class="st">".parquet"</span>)]</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>df_list <span class="op">=</span> []</span>
@@ -446,7 +461,7 @@ Average within-month standard deviation across sites: 0.033</code></pre>
 <section id="monthly-seasonality-analysis" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="monthly-seasonality-analysis"><span class="header-section-number">2</span> Monthly Seasonality Analysis</h2>
 <p>We now switch to the <code>temporal_profiles.parquet</code>, which aggregates data at the road corridor grain and calculates seasonal indices.</p>
-<div id="84e6b9a7" class="cell" data-execution_count="3">
+<div id="8923b82c" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> pd.read_parquet(TEMPORAL_PROFILES)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> profiles[profiles[<span class="st">"n_site_months"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -481,69 +496,69 @@ Average within-month standard deviation across sites: 0.033</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<th data-quarto-table-cell-role="th">48318</th>
-<td>7548</td>
-<td>Jul</td>
-<td>7</td>
-<td>15663.666667</td>
-<td>17236.000000</td>
-<td>15.433333</td>
-<td>3</td>
-<td>1.013245</td>
-<td>1.100381</td>
-<td>Other</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">19872</th>
-<td>6798</td>
-<td>Jan</td>
-<td>1</td>
-<td>20920.333333</td>
-<td>23431.666667</td>
-<td>24.600000</td>
-<td>3</td>
-<td>0.811422</td>
-<td>1.120043</td>
-<td>Other</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">8784</th>
-<td>6353</td>
-<td>Jan</td>
-<td>1</td>
-<td>19218.333333</td>
-<td>21163.333333</td>
-<td>8.366667</td>
-<td>3</td>
-<td>0.814093</td>
-<td>1.101205</td>
-<td>Other</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">13732</th>
-<td>6532</td>
-<td>May</td>
-<td>5</td>
-<td>24124.666667</td>
-<td>25615.000000</td>
-<td>22.700000</td>
-<td>3</td>
-<td>1.016597</td>
-<td>1.061776</td>
-<td>Other</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">118066</th>
-<td>9961</td>
+<th data-quarto-table-cell-role="th">80482</th>
+<td>8996</td>
 <td>Nov</td>
 <td>11</td>
-<td>28297.666667</td>
-<td>30243.666667</td>
-<td>16.400000</td>
-<td>3</td>
-<td>1.071667</td>
-<td>1.068769</td>
+<td>2423.562500</td>
+<td>2727.687500</td>
+<td>12.581250</td>
+<td>16</td>
+<td>1.051685</td>
+<td>1.125487</td>
 <td>Other</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">83965</th>
+<td>9055</td>
+<td>Feb</td>
+<td>2</td>
+<td>15282.000000</td>
+<td>17056.000000</td>
+<td>11.633333</td>
+<td>3</td>
+<td>0.940908</td>
+<td>1.116084</td>
+<td>Other</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">61461</th>
+<td>8269</td>
+<td>Oct</td>
+<td>10</td>
+<td>25701.333333</td>
+<td>27193.333333</td>
+<td>19.066667</td>
+<td>3</td>
+<td>1.074822</td>
+<td>1.058051</td>
+<td>Other</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">26050</th>
+<td>7003</td>
+<td>Nov</td>
+<td>11</td>
+<td>14156.833333</td>
+<td>14991.833333</td>
+<td>10.100000</td>
+<td>6</td>
+<td>1.032264</td>
+<td>1.058982</td>
+<td>Other</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">122138</th>
+<td>A556</td>
+<td>Mar</td>
+<td>3</td>
+<td>15995.611111</td>
+<td>17043.222222</td>
+<td>10.394444</td>
+<td>18</td>
+<td>0.935311</td>
+<td>1.065494</td>
+<td>A-Road</td>
 </tr>
 </tbody>
 </table>
@@ -554,7 +569,7 @@ Average within-month standard deviation across sites: 0.033</code></pre>
 <section id="seasonal-index-distribution" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="seasonal-index-distribution"><span class="header-section-number">2.1</span> Seasonal Index Distribution</h3>
 <p>The seasonal index is the monthly flow divided by the annual average. We want to see if different road types have different seasonal “signatures.”</p>
-<div id="2ff86af9" class="cell" data-execution_count="4">
+<div id="81248b53" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sns.lineplot(</span>
@@ -613,7 +628,7 @@ Dec         0.950     0.935  0.931</code></pre>
 <h2 data-number="3" class="anchored" data-anchor-id="weekday-vs.-weekend-profiles"><span class="header-section-number">3</span> Weekday vs.&nbsp;Weekend Profiles</h2>
 <p>We investigate the stability of the weekday/weekend ratio across the network.</p>
 <p>The Variance Analysis section used raw 2023 chunks at site grain. This section uses the corridor-level aggregations from temporal_profiles.parquet, confirming the same result holds at corridor grain.</p>
-<div id="08efce48" class="cell" data-execution_count="5">
+<div id="380d63ce" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">6</span>))</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Distribution across all sites/months</span></span>
@@ -659,7 +674,7 @@ Name: weekday_weekend_ratio, dtype: float64</code></pre>
 <section id="time-of-day-intensity-day-vs.-night" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="time-of-day-intensity-day-vs.-night"><span class="header-section-number">4</span> Time-of-Day Intensity (Day vs.&nbsp;Night)</h2>
 <p>Using the <code>webtris_clean.parquet</code> dataset, we examine the <code>core_overnight_ratio</code>. This measures the daytime flow per hour relative to the nighttime flow per hour.</p>
-<div id="a14f6e9e" class="cell" data-execution_count="6">
+<div id="6610a108" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>webtris_clean <span class="op">=</span> pd.read_parquet(WEBTRIS_CLEAN)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>site_tod <span class="op">=</span> webtris_clean.groupby(<span class="st">"site_id"</span>)[<span class="st">"core_overnight_ratio"</span>].mean().dropna()</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -692,7 +707,7 @@ Name: weekday_weekend_ratio, dtype: float64</code></pre>
 <section id="heavy-goods-vehicle-hgv-composition" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="heavy-goods-vehicle-hgv-composition"><span class="header-section-number">5</span> Heavy Goods Vehicle (HGV) Composition</h2>
 <p>Finally, we look at how the large vehicle percentage fluctuates across the network.</p>
-<div id="919208fb" class="cell" data-execution_count="7">
+<div id="18e7a574" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>sns.boxplot(data<span class="op">=</span>profiles, x<span class="op">=</span><span class="st">"monthname"</span>, y<span class="op">=</span><span class="st">"mean_large_pct"</span>, hue<span class="op">=</span><span class="st">"road_type"</span>, ax<span class="op">=</span>ax)</span>
@@ -737,7 +752,7 @@ Dec         13.89     13.86  11.55</code></pre>
 <section id="data-depth-check" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="data-depth-check"><span class="header-section-number">6</span> Data Depth Check</h2>
 <p>We verify the amount of data backing these observations to ensure statistical confidence.</p>
-<div id="093a9f89" class="cell" data-execution_count="8">
+<div id="a99b9ebb" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Site counts per corridor</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>site_counts <span class="op">=</span> profiles.groupby(<span class="st">"road_prefix"</span>)[<span class="st">"n_site_months"</span>].<span class="bu">sum</span>() <span class="op">/</span> <span class="dv">12</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total Unique Corridors: </span><span class="sc">{</span><span class="bu">len</span>(site_counts)<span class="sc">}</span><span class="ss">"</span>)</span>
