@@ -1,5 +1,18 @@
 ## ✅ Done
 
+- [x] Stage 2 GLM exposure/calibration diagnostics (May 2026) —
+  tested fixed exposure offset vs learned exposure, global intercept calibration,
+  per-family intercept calibration, pooled family interaction GLM, and separate
+  per-family GLMs on held-out links. Conclusion: retain global Model A as the
+  GLM formulation; prefer A + per-family intercept calibration as a candidate
+  v3 diagnostic calibration layer only. Model B and M4 remain diagnostic; M5
+  rejected due to overfit risk. Motorway remains unresolved and should not be
+  declared solved. Reports:
+  `reports/exposure_offset_full_frame_diagnostics.md`,
+  `reports/family_intercept_calibration_diagnostics.md`,
+  `reports/family_within_aadt_diagnostics.md`,
+  `reports/family_exposure_slope_heldout_diagnostics.md`.
+
 - [x] Temporal features evaluation completed (3 May 2026) — Step 0 band relabelling,
       weekday/weekend and seasonal variation checks, HGV variation check, leakage
       geometry check, feature-overlap prep, post-fix rank-stability rerun, and
