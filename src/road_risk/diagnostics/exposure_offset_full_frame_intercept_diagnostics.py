@@ -1070,6 +1070,8 @@ def _write_within_family_markdown(results: dict[str, list[dict]]) -> None:
             "Per-family GLMs with separate exposure slopes should be tested.**"
         )
 
+    joined_sections = "---".join(f"\n{s}\n" for s in sections)
+
     md = f"""---
 title: "Stage 2 GLM: Within-family AADT decile calibration"
 date: "2026-05-04"
@@ -1103,8 +1105,7 @@ within that family, not across the full population).
 
 ---
 
-{"---".join(f"\n{s}\n" for s in sections)}
-
+{joined_sections}
 ---
 
 ## Overall verdict

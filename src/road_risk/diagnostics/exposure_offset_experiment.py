@@ -125,11 +125,11 @@ def _pseudo_r2(result, y=None, offset=None) -> float:
         null_dev = float(result.null_deviance)
         if not np.isfinite(null_dev) or null_dev <= 0:
             raise ValueError("non-finite null_deviance")
-    except Exception:
+    except Exception as err:
         if y is None or offset is None:
             raise RuntimeError(
                 "null_deviance computation failed; pass y= and offset= to _pseudo_r2"
-            )
+            ) from err
         null_dev = _null_deviance_poisson(
             np.asarray(y, dtype=float), np.asarray(offset, dtype=float)
         )
