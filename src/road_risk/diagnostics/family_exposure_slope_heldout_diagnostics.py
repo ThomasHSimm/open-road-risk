@@ -769,7 +769,6 @@ def run() -> dict:
         )
 
     # --- build thin held-out scoring frame (keep only what we need) ---
-    interaction_cols = _interaction_col_names()
     thin_cols = list(
         dict.fromkeys(
             STRUCTURAL_COLS
@@ -891,7 +890,7 @@ def run() -> dict:
     df_d = df_held[
         ["family", "estimated_aadt", "collision_count", "link_id", "year"] + pred_cols
     ].copy()
-    df_d.rename(columns=dict(zip(pred_cols, short_cols)), inplace=True)
+    df_d.rename(columns=dict(zip(pred_cols, short_cols, strict=True)), inplace=True)
 
     by_family = _resid_by_group(df_d, "family", short_cols)
     wf_decile = _within_family_aadt_all(df_d, short_cols)
