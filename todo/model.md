@@ -24,24 +24,16 @@
 - [ ] Remove `smartmotorway`, `parentlinkref`, `enddate` from any feature derivation
   lists — all empty (100% null) in current Network Model GDB release.
 
-- [ ] Test exposure-as-offset vs exposure-as-feature in Stage 2 GLM —
-  current implementation uses `log(AADT × length_km × 365 / 1e6)` as
-  fixed offset (forces β_AADT = β_length = 1). Re-fit GLM with
-  `log(AADT)` and `log(length)` as features and compare. SPF literature
-  suggests β_AADT ≈ 0.7-0.9 is typical; if confirmed, the offset
-  formulation distorts predictions at AADT extremes (over-predicts at
-  high AADT, under-predicts at low). XGBoost partly compensates via
-  `estimated_aadt` as a feature on top of the offset, but a cleaner
-  formulation is preferable. Affects ranking interpretation: motorways
-  may rank higher than they should, unclassified roads lower. Document
-  result on methodology page regardless of outcome.
+- [x] Test exposure-as-offset vs exposure-as-feature in Stage 2 GLM —
+  completed May 2026. Model B learned exposure improved downsampled training
+  pseudo-R² but did not improve calibrated full-frame residuals. Retain Model A;
+  keep Model B as diagnostic only. See
+  `reports/exposure_offset_full_frame_diagnostics.md`.
 
-- [ ] Test for Poisson overdispersion in Stage 2 — compute
-  variance/mean ratio of `collision_count`. If > ~1.5, switch GLM to
-  Negative Binomial via `sm.families.NegativeBinomial(alpha=...)`.
-  Independent of the offset/feature decision: NB mostly affects
-  standard errors and inference, not point estimates. Do in the same
-  session as the offset experiment since the data inspection overlaps.
+- [x] Test for Poisson overdispersion in Stage 2 —
+  completed alongside exposure-offset experiment. Dispersion ratio ≈ 1.401,
+  below the pre-set 1.5 Negative Binomial sensitivity threshold. NegBin not run.
+  See `reports/exposure_offset_full_frame_diagnostics.md`.
 
 - [ ] Tighten Stage 1a feature selection against `network_features.parquet`
   drift. `build_aadt_features()` in `aadt.py` currently appends every
@@ -94,3 +86,22 @@
   rejected — no road-safety prior, lots of stitching pain. Link-grain
   collapse rejected as a memory fix — it changes the estimand, treat as
   a separate modelling experiment.
+
+- [ ] **Rank-shuffle diagnostic (if A+fcal ever affects ranking).** Compare raw Model A
+  vs A+fcal at top-1%, top-5%, top-10%: report Jaccard, Spearman, entrants/leavers by
+  family, and family composition of each top band. Motivation: fcal is multiplicative by
+  family so it preserves within-family ranking but can reshuffle cross-family boundaries.
+  Not required while A+fcal remains a diagnostic-only GLM calibration layer; revisit if
+  A+fcal is ever applied upstream of the ranking output.
+
+- [ ] **Motorway follow-up — do not declare solved.** Both A+fcal and M4+fcal leave large
+  within-motorway AADT residual ranges (~1.17–1.21). Investigate longer-period motorway
+  aggregation, motorway-specific features, or EB-led handling. Avoid jumping straight to
+  a full motorway GLM unless held-out evidence supports it. See
+  `reports/family_exposure_slope_heldout_diagnostics.md §7` for current state.
+
+- [ ] **Optional: isolate interaction-term effect from calibration-factor effect.** The
+  current M4+fcal comparison is valid for adoption but conflates interaction terms with
+  separately estimated M4 calibration factors. If this isolation is needed later, compare
+  M4 raw vs A raw, or apply A's calibration factors to M4 raw predictions. Low priority
+  unless M4 is reconsidered as a candidate formulation.

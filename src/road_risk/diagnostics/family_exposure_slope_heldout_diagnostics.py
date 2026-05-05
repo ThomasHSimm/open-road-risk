@@ -384,47 +384,95 @@ def _write_markdown(report: dict) -> None:
         "m4_fcal": "M4 fcal",
         "m5": "M5 raw",
     }
-    pred_cols = [c for c in ["raw", "gcal", "fcal", "m4", "m5"] if c in ms]
+    all_cols = [c for c in ["raw", "gcal", "fcal", "m4", "m4_gcal", "m4_fcal", "m5"] if c in ms]
 
-    def _col_headers(extra=""):
-        return " | ".join(f"{MODELS_LABEL[c]}" for c in pred_cols) + extra
+    # --- focused tables: A+fcal vs M4+fcal only (main body) ---
 
-    def _fam_table() -> str:
+    def _fam_table_focused() -> str:
         lines = [
-            "| Family | N | Obs | "
-            + " | ".join(f"rel {MODELS_LABEL[c]}" for c in pred_cols)
-            + " |",
-            "|---|---:|---:|" + "|".join(["---:"] * len(pred_cols)) + "|",
+            "| Family | N | Obs | rel A fcal | rel M4 fcal | M4−A fcal |",
+            "|---|---:|---:|---:|---:|---:|",
         ]
         for r in by_fam:
-            fam = r["family"]
-            cells = [f"| {fam} | {int(r['n']):,} | {r['sum_obs']:,.0f}"]
-            for c in pred_cols:
+            a = r.get("rel_resid_fcal", float("nan"))
+            m4 = r.get("rel_resid_m4_fcal", float("nan"))
+            diff = m4 - a if np.isfinite(a) and np.isfinite(m4) else float("nan")
+            diff_s = f"{diff:+.4f}" if np.isfinite(diff) else "n/a"
+            lines.append(
+                f"| {r['family']} | {int(r['n']):,} | {r['sum_obs']:,.0f} "
+                f"| {a:+.4f} | {m4:+.4f} | {diff_s} |"
+            )
+        return "\n".join(lines)
+
+    def _band_table_focused() -> str:
+        lines = [
+            "| Band | Links | Obs | rel A fcal | rel M4 fcal | M4−A fcal |",
+            "|---|---:|---:|---:|---:|---:|",
+        ]
+        for r in bands:
+            a = r.get("rel_resid_fcal", float("nan"))
+            m4 = r.get("rel_resid_m4_fcal", float("nan"))
+            diff = m4 - a if np.isfinite(a) and np.isfinite(m4) else float("nan")
+            diff_s = f"{diff:+.4f}" if np.isfinite(diff) else "n/a"
+            lines.append(
+                f"| {r['band']} | {int(r['n_links']):,} | {r['sum_obs']:,.0f} "
+                f"| {a:+.4f} | {m4:+.4f} | {diff_s} |"
+            )
+        return "\n".join(lines)
+
+    def _wf_section_focused(fam: str, records: list[dict]) -> str:
+        lines = [
+            f"### {fam}\n",
+            "| Decile | N | AADT mean | Obs | rel A fcal | rel M4 fcal | M4−A fcal |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
+        for r in records:
+            a = r.get("rel_resid_fcal", float("nan"))
+            m4 = r.get("rel_resid_m4_fcal", float("nan"))
+            diff = m4 - a if np.isfinite(a) and np.isfinite(m4) else float("nan")
+            diff_s = f"{diff:+.4f}" if np.isfinite(diff) else "n/a"
+            lines.append(
+                f"| {int(r['aadt_decile'])} | {int(r['n']):,} "
+                f"| {r['aadt_mean']:,.0f} | {r['sum_obs']:,.0f} "
+                f"| {a:+.4f} | {m4:+.4f} | {diff_s} |"
+            )
+        return "\n".join(lines)
+
+    # --- full tables: all variants (appendix) ---
+
+    def _fam_table_full() -> str:
+        lines = [
+            "| Family | N | Obs | " + " | ".join(f"rel {MODELS_LABEL[c]}" for c in all_cols) + " |",
+            "|---|---:|---:|" + "|".join(["---:"] * len(all_cols)) + "|",
+        ]
+        for r in by_fam:
+            cells = [f"| {r['family']} | {int(r['n']):,} | {r['sum_obs']:,.0f}"]
+            for c in all_cols:
                 cells.append(f"{r.get(f'rel_resid_{c}', float('nan')):+.4f}")
             lines.append(" | ".join(cells) + " |")
         return "\n".join(lines)
 
-    def _band_table() -> str:
+    def _band_table_full() -> str:
         lines = [
             "| Band | Links | Obs | "
-            + " | ".join(f"rel {MODELS_LABEL[c]}" for c in pred_cols)
+            + " | ".join(f"rel {MODELS_LABEL[c]}" for c in all_cols)
             + " |",
-            "|---|---:|---:|" + "|".join(["---:"] * len(pred_cols)) + "|",
+            "|---|---:|---:|" + "|".join(["---:"] * len(all_cols)) + "|",
         ]
         for r in bands:
             cells = [f"| {r['band']} | {int(r['n_links']):,} | {r['sum_obs']:,.0f}"]
-            for c in pred_cols:
+            for c in all_cols:
                 cells.append(f"{r.get(f'rel_resid_{c}', float('nan')):+.4f}")
             lines.append(" | ".join(cells) + " |")
         return "\n".join(lines)
 
-    def _wf_section(fam: str, records: list[dict]) -> str:
+    def _wf_section_full(fam: str, records: list[dict]) -> str:
         lines = [
             f"### {fam}\n",
             "| Decile | N | AADT p10 | AADT mean | AADT p90 | Obs | "
-            + " | ".join(f"rel {MODELS_LABEL[c]}" for c in pred_cols)
+            + " | ".join(f"rel {MODELS_LABEL[c]}" for c in all_cols)
             + " |",
-            "|---|---:|---:|---:|---:|---:|" + "|".join(["---:"] * len(pred_cols)) + "|",
+            "|---|---:|---:|---:|---:|---:|" + "|".join(["---:"] * len(all_cols)) + "|",
         ]
         for r in records:
             cells = [
@@ -432,7 +480,7 @@ def _write_markdown(report: dict) -> None:
                 f"| {r['aadt_p10']:,.0f} | {r['aadt_mean']:,.0f} | {r['aadt_p90']:,.0f} "
                 f"| {r['sum_obs']:,.0f}"
             ]
-            for c in pred_cols:
+            for c in all_cols:
                 cells.append(f"{r.get(f'rel_resid_{c}', float('nan')):+.4f}")
             lines.append(" | ".join(cells) + " |")
         return "\n".join(lines)
@@ -466,67 +514,55 @@ def _write_markdown(report: dict) -> None:
             )
         return "\n".join(lines)
 
-    # Derive verdict
     def _verdict() -> str:
-        m4_in = "m4" in ms
-        m5_in = "m5" in ms
-
-        def _range(key: str) -> float:
-            """Max family-cal rel_resid range across families for a given model."""
-            ranges = []
-            for fam, records in wf.items():
-                rels = [r.get(f"rel_resid_{key}", float("nan")) for r in records]
-                rels = [r for r in rels if np.isfinite(r)]
-                if rels:
-                    ranges.append(max(rels) - min(rels))
-            return max(ranges) if ranges else float("nan")
-
-        fcal_range = _range("fcal")
-        m4_range = _range("m4") if m4_in else float("nan")
-        m5_range = _range("m5") if m5_in else float("nan")
-
-        # Primary comparison: M4+fcal vs A+fcal (both calibrated, apples-to-apples).
-        m4_fcal_in = "m4_fcal" in ms
-        m4_fcal_range = _range("m4_fcal") if m4_fcal_in else float("nan")
+        fcal_dev = ms.get("fcal", {}).get("deviance_heldout", float("nan"))
+        m4fcal_dev = ms.get("m4_fcal", {}).get("deviance_heldout", float("nan"))
+        if np.isfinite(fcal_dev) and np.isfinite(m4fcal_dev) and fcal_dev > 0:
+            pct_imp = (fcal_dev - m4fcal_dev) / fcal_dev * 100
+        else:
+            pct_imp = float("nan")
+        pct_str = f"~{pct_imp:.2f}%" if np.isfinite(pct_imp) else "N/A"
         top1 = next((r for r in bands if r["band"] == "top_1pct"), None)
-        m4_fcal_top1_ok = (
-            top1 is not None
-            and m4_fcal_in
-            and abs(top1.get("rel_resid_m4_fcal", float("nan")))
-            <= abs(top1.get("rel_resid_fcal", float("nan"))) * 1.05  # allow 5% slack
+        top1_fcal = top1.get("rel_resid_fcal", float("nan")) if top1 else float("nan")
+        top1_m4fcal = top1.get("rel_resid_m4_fcal", float("nan")) if top1 else float("nan")
+        return (
+            "**A + per-family intercept calibration is the preferred candidate v3 GLM "
+            "calibration layer.** "
+            f"M4+fcal gives a very small held-out deviance improvement over A+fcal "
+            f"({m4fcal_dev:,.1f} vs {fcal_dev:,.1f}; {pct_str}), "
+            "but it does not consistently improve within-family AADT calibration. "
+            "M4+fcal improves the residual range slightly for motorway and other, "
+            "is effectively neutral for other_rural, and worsens trunk_a and other_urban. "
+            "In trunk_a, M4+fcal increases high-AADT over-prediction relative to A+fcal. "
+            "Family-level residuals are very similar. "
+            f"On the common Model A top-1% band, M4+fcal is worse than A+fcal "
+            f"(rel_resid {top1_m4fcal:+.4f} vs {top1_fcal:+.4f}). "
+            "Because the top 1% is the operationally important prioritisation band, "
+            "this weighs against adopting M4 despite its small deviance gain. "
+            "Given the small gain and added interaction complexity, prefer A+fcal for now. "
+            "M4 remains a useful diagnostic but is not worth adopting as the default GLM "
+            "formulation.\n\n"
+            "The M4−A fcal delta reflects both interaction terms and separately estimated "
+            "M4 calibration factors. It answers the adoption question for the full M4+fcal "
+            "package; it does not isolate the interaction-term effect alone."
         )
 
-        if m4_fcal_in and np.isfinite(m4_fcal_range) and m4_fcal_range < fcal_range * 0.85:
-            if m4_fcal_top1_ok:
-                return (
-                    "**M4+fcal (pooled interaction GLM + per-family calibration) improves "
-                    "held-out within-family AADT calibration vs A+fcal "
-                    f"(max range: M4+fcal={m4_fcal_range:.3f} vs A+fcal={fcal_range:.3f}) "
-                    "without materially worsening top-1% band calibration. "
-                    "Recommend M4 as candidate v3 GLM formulation, to be combined with "
-                    "per-family intercept calibration.**"
-                )
-            else:
-                return (
-                    "**M4+fcal improves held-out within-family AADT calibration "
-                    f"(max range: M4+fcal={m4_fcal_range:.3f} vs A+fcal={fcal_range:.3f}) "
-                    "but worsens top-1% band calibration. "
-                    "Investigate top-risk-band shift before adopting M4.**"
-                )
-        elif m4_fcal_in and np.isfinite(m4_fcal_range):
-            return (
-                "**M4+fcal does not materially improve held-out within-family AADT calibration "
-                f"vs A+fcal (max range: M4+fcal={m4_fcal_range:.3f} vs A+fcal={fcal_range:.3f}). "
-                "Prefer A + per-family intercept calibration for simplicity.**"
-            )
-        else:
-            return (
-                "A + per-family intercept calibration is the best-performing held-out "
-                "variant tested. M4 calibrated results not available."
-            )
+    def _motorway_caveat() -> str:
+        return (
+            "**Motorway remains unresolved.** A+fcal and M4+fcal both leave large "
+            "within-motorway AADT residual ranges. M4+fcal does not solve the pattern; "
+            "it reshapes it, with low-to-mid AADT motorway deciles under-predicted and "
+            "high-AADT deciles over-predicted. A simple motorway×AADT interaction is "
+            "therefore not enough. Plausible later options are longer-period motorway "
+            "aggregation, motorway-specific features, or EB-led handling rather than "
+            "another global GLM tweak."
+        )
 
-    wf_sections = "\n\n---\n\n".join(
-        _wf_section(fam, records) for fam, records in wf.items() if records
+    wf_focused = "\n\n---\n\n".join(
+        _wf_section_focused(fam, records) for fam, records in wf.items() if records
+    )
+    wf_full = "\n\n---\n\n".join(
+        _wf_section_full(fam, records) for fam, records in wf.items() if records
     )
 
     md = f"""---
@@ -564,34 +600,43 @@ Global factor: {cal["global_factor"]:.4f} (log {np.log(cal["global_factor"]):+.4
 
 ---
 
-## 4. Held-out residuals by family
+## 4. Held-out residuals by family (A+fcal vs M4+fcal)
 
-{_fam_table()}
+`M4−A fcal` = rel_resid_m4_fcal − rel_resid_a_fcal. Values closer to zero are better;
+the sign only shows whether M4 predicts higher or lower than A relative to observations.
+Full variant comparison in Appendix A.
+
+{_fam_table_focused()}
 
 ---
 
-## 5. Held-out residuals by top-risk band (common Model A raw ranking)
+## 5. Held-out residuals by top-risk band (A+fcal vs M4+fcal)
 
 Bands fixed by raw Model A held-out link-level predicted rate.
-All models evaluated on the same link groups.
+`M4−A fcal` = rel_resid_m4_fcal − rel_resid_a_fcal. Values closer to zero are better;
+the sign only shows whether M4 predicts higher or lower than A relative to observations.
+All models evaluated on the same link groups. Full variant comparison in Appendix B.
 
-{_band_table()}
+{_band_table_focused()}
 
 ---
 
-## 6. Held-out within-family AADT decile residuals
+## 6. Held-out within-family AADT decile residuals (A+fcal vs M4+fcal)
 
 AADT deciles are within each family (decile 0 = lowest 10 % of AADT within that family).
-This is the primary test of whether interaction slopes fix the residual bias seen in the
-family intercept calibration diagnostics.
+`M4−A fcal` = rel_resid_m4_fcal − rel_resid_a_fcal. Values closer to zero are better;
+the sign only shows whether M4 predicts higher or lower than A relative to observations.
+Full variant comparison (including raw, gcal, M5) in Appendix C.
 
-{wf_sections}
+{wf_focused}
 
 ---
 
 ## 7. Verdict
 
 {_verdict()}
+
+{_motorway_caveat()}
 
 ### Decision rules applied
 - M4 improves held-out within-family AADT calibration (max range < 85 % of family-cal
@@ -603,11 +648,44 @@ family intercept calibration diagnostics.
   per-family GLM risks learning noise rather than signal.
 
 _Machine-readable: `docs/internal/family_exposure_slope_heldout_diagnostics.json`_
+
+---
+
+## Appendix A: Held-out residuals by family — all variants
+
+{_fam_table_full()}
+
+---
+
+## Appendix B: Held-out residuals by top-risk band — all variants
+
+{_band_table_full()}
+
+---
+
+## Appendix C: Held-out within-family AADT decile residuals — all variants
+
+{wf_full}
 """
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     with open(OUT_MD, "w") as f:
         f.write(md)
     logger.info(f"Markdown written to {OUT_MD}")
+
+
+# ---------------------------------------------------------------------------
+# markdown regeneration shortcut
+# ---------------------------------------------------------------------------
+
+
+def regenerate_markdown_from_json() -> None:
+    """Regenerate the markdown report from the existing JSON without refitting models."""
+    if not OUT_JSON.exists():
+        raise FileNotFoundError(f"JSON not found: {OUT_JSON}. Run run() first.")
+    with open(OUT_JSON) as f:
+        report = json.load(f)
+    _write_markdown(report)
+    logger.info("Markdown regenerated from JSON (no model refit).")
 
 
 # ---------------------------------------------------------------------------
@@ -950,4 +1028,7 @@ def run() -> dict:
 
 
 if __name__ == "__main__":
-    run()
+    if "--regen-md" in sys.argv:
+        regenerate_markdown_from_json()
+    else:
+        run()
