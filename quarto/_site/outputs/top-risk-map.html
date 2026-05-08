@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Interactive screening map for the top 1% highest-risk road links.">
+
+<title>Top-Risk Road Segments – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta property="og:title" content="Top-Risk Road Segments – Open Road Risk">
+<meta property="og:description" content="Interactive screening map for the top 1% highest-risk road links.">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Top-Risk Road Segments – Open Road Risk">
+<meta name="twitter:description" content="Interactive screening map for the top 1% highest-risk road links.">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outputs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outputs">    
+        <li>
+    <a class="dropdown-item" href="../outputs/top-risk-map.html">
+ <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#interactive-map" id="toc-interactive-map" class="nav-link active" data-scroll-target="#interactive-map">Interactive Map</a></li>
+  <li><a href="#summary-tables" id="toc-summary-tables" class="nav-link" data-scroll-target="#summary-tables">Summary Tables</a></li>
+  <li><a href="#data-notes" id="toc-data-notes" class="nav-link" data-scroll-target="#data-notes">Data Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Top-Risk Road Segments</h1>
+</div>
+
+<div>
+  <div class="description">
+    Interactive screening map for the top 1% highest-risk road links.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The ranking uses <code>risk_percentile_eb</code>, the empirical-Bayes-adjusted production ranking field.</p>
+<p>These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. Motorway calibration remains a known caveat, and sparse collision histories should be interpreted cautiously.</p>
+<p>The map colours links by <code>log_predicted_eb = log1p(predicted_eb)</code> rather than by <code>risk_percentile_eb</code>, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.</p>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  .risk-map-panel {
+    border: 1px solid #d9dee7;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .risk-map-toolbar {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 0.75rem;
+    padding: 0.85rem;
+    background: #f7f9fc;
+    border-bottom: 1px solid #d9dee7;
+    align-items: end;
+  }
+
+  .risk-map-toolbar label {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #243447;
+  }
+
+  .risk-map-toolbar select,
+  .risk-map-toolbar button {
+    min-height: 2.3rem;
+    border: 1px solid #b8c2d0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #17202a;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .risk-map-toolbar button {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  #top-risk-map {
+    height: 72vh;
+    min-height: 520px;
+    background: #eef2f5;
+  }
+
+  .risk-map-status {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+    color: #405064;
+    background: #ffffff;
+    border-top: 1px solid #d9dee7;
+  }
+
+  .risk-legend {
+    background: rgba(255, 255, 255, 0.94);
+    padding: 0.6rem 0.7rem;
+    border: 1px solid #c8d0dc;
+    border-radius: 6px;
+    line-height: 1.35;
+    color: #1f2933;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+
+  .risk-legend-gradient {
+    width: 170px;
+    height: 11px;
+    margin: 0.35rem 0;
+    background: linear-gradient(90deg, #2c7bb6, #abd9e9, #ffffbf, #fdae61, #d7191c);
+  }
+
+  .risk-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .risk-summary-grid table,
+  #numeric-summary table {
+    width: 100%;
+    font-size: 0.88rem;
+  }
+
+  .risk-note {
+    color: #526173;
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 900px) {
+    .risk-map-toolbar,
+    .risk-summary-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #top-risk-map {
+      height: 68vh;
+      min-height: 420px;
+    }
+  }
+</style>
+<section id="interactive-map" class="level2">
+<h2 class="anchored" data-anchor-id="interactive-map">Interactive Map</h2>
+<div class="risk-map-panel">
+<div class="risk-map-toolbar" aria-label="Top-risk map filters">
+<label>Family <select id="family-filter"></select></label><label>Road archetype <select id="archetype-filter"></select></label><label>Road classification <select id="classification-filter"></select></label><button id="reset-filters" type="button">Reset filters</button>
+</div>
+<div id="top-risk-map">
+
+</div>
+<div id="risk-map-status" class="risk-map-status">
+Loading static GeoJSON…
+</div>
+</div>
+<p class="risk-note">
+The map uses client-side filters over one static GeoJSON file. Only one selected value per grouping axis is supported at a time; this keeps the page GitHub-Pages-compatible without a Python backend or external data service.
+</p>
+</section>
+<section id="summary-tables" class="level2">
+<h2 class="anchored" data-anchor-id="summary-tables">Summary Tables</h2>
+<div class="risk-summary-grid">
+<div>
+<h3 class="anchored">
+Count by family
+</h3>
+<div id="family-summary">
+
+</div>
+</div>
+<div>
+<h3 class="anchored">
+Count by road classification
+</h3>
+<div id="classification-summary">
+
+</div>
+</div>
+<div>
+<h3 class="anchored">
+Count by road archetype
+</h3>
+<div id="archetype-summary">
+
+</div>
+</div>
+</div>
+<h3 class="anchored">
+Numeric summary
+</h3>
+<div id="numeric-summary">
+
+</div>
+</section>
+<section id="data-notes" class="level2">
+<h2 class="anchored" data-anchor-id="data-notes">Data Notes</h2>
+<ul>
+<li>Source layer: <code>data/outputs/top_1pct_risk_segments.parquet</code>.</li>
+<li>Web layer: <code>data/outputs/web/top_1pct_risk_segments.geojson</code>.</li>
+<li>Context network layers: <code>data/outputs/web/context/context_manifest.json</code> plus split GeoJSON files. Motorway and trunk-A links are shown in full; <code>other_urban</code> and <code>other_rural</code> show the top context percentile by <code>risk_percentile_eb</code> recorded in the manifest.</li>
+<li>Features: 21,676 road links.</li>
+<li>GeoJSON size: 14,709,969 bytes.</li>
+<li>Geometry simplification: 25 m tolerance in EPSG:3857, then written as EPSG:4326 with coordinates rounded to 0.00001 degrees.</li>
+<li>Colour scaling: <code>log_predicted_eb = log1p(predicted_eb)</code>.</li>
+<li>Background map: OpenStreetMap tiles, with static project GeoJSON files for the risk and context layers.</li>
+</ul>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const REQUIRED_IDS = [
+    "top-risk-map",
+    "risk-map-status",
+    "family-summary",
+    "classification-summary",
+    "archetype-summary",
+    "numeric-summary",
+    "family-filter",
+    "archetype-filter",
+    "classification-filter",
+    "reset-filters"
+  ];
+  const elements = Object.fromEntries(
+    REQUIRED_IDS.map((id) => [id, document.getElementById(id)])
+  );
+
+  function showPageError(message) {
+    const target = elements["risk-map-status"] || document.querySelector("main") || document.body;
+    const error = document.createElement("div");
+    error.className = "risk-map-status";
+    error.style.color = "#9f1d20";
+    error.style.background = "#fff4f4";
+    error.textContent = message;
+    if (target === elements["risk-map-status"]) {
+      target.textContent = message;
+      target.style.color = "#9f1d20";
+      target.style.background = "#fff4f4";
+    } else {
+      target.prepend(error);
+    }
+    console.error(message);
+  }
+
+  const missing = REQUIRED_IDS.filter((id) => !elements[id]);
+  if (missing.length > 0) {
+    showPageError(`Top-risk map cannot initialise: missing required page elements: ${missing.join(", ")}`);
+    return;
+  }
+
+  if (!window.L) {
+    showPageError("Top-risk map cannot initialise: Leaflet did not load.");
+    return;
+  }
+
+  const DATA_URL = "../data/outputs/web/top_1pct_risk_segments.geojson";
+  const META_URL = "../data/outputs/web/top_1pct_risk_segments_web_metadata.json";
+  const CONTEXT_MANIFEST_URL = "../data/outputs/web/context/context_manifest.json";
+  const CONTEXT_BASE_URL = "../data/outputs/web/context/";
+  const CONTEXT_FAMILIES = new Set(["motorway", "trunk_a", "other_urban", "other_rural"]);
+  const renderer = L.canvas({ padding: 0.35 });
+  const map = L.map(elements["top-risk-map"], {
+    renderer,
+    zoomControl: true,
+    preferCanvas: true,
+    attributionControl: true
+  }).setView([53.35, -1.3], 7);
+
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  })
+    .addTo(map);
+
+  const status = elements["risk-map-status"];
+  const filters = {
+    family: elements["family-filter"],
+    road_archetype: elements["archetype-filter"],
+    road_classification: elements["classification-filter"]
+  };
+  const resetButton = elements["reset-filters"];
+
+  let allFeatures = [];
+  let currentHaloLayer = null;
+  let currentLayer = null;
+  let logMin = 0;
+  let logMax = 1;
+  let legendScaleLabel = null;
+
+  const colors = ["#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c"];
+  const contextStyles = {
+    "motorway": { color: "#5a6b78", weight: 2.5, opacity: 0.55 },
+    "trunk_a": { color: "#6b7d8a", weight: 2.0, opacity: 0.50 },
+    "other_urban": { color: "#8a9baa", weight: 1.2, opacity: 0.35 },
+    "other_rural": { color: "#a0adb8", weight: 1.0, opacity: 0.30 },
+    "__default__": { color: "#b8c2cc", weight: 0.6, opacity: 0.20 }
+  };
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function formatNumber(value, digits = 0) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return "";
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    });
+  }
+
+  function featureColor(feature) {
+    const raw = Number(feature.properties.log_predicted_eb);
+    const value = Number.isFinite(raw) ? raw : logMin;
+    const t = Math.max(0, Math.min(0.9999, (value - logMin) / Math.max(logMax - logMin, 1e-9)));
+    return colors[Math.floor(t * colors.length)];
+  }
+
+  function riskWeight(feature) {
+    const rank = Number(feature.properties.global_risk_rank);
+    if (Number.isFinite(rank) && rank <= 100) return 7.2;
+    if (Number.isFinite(rank) && rank <= 1000) return 5.8;
+    if (Number.isFinite(rank) && rank <= 5000) return 4.4;
+    return 3.0;
+  }
+
+  function haloStyle(feature) {
+    return {
+      color: "#15202b",
+      weight: riskWeight(feature) + 3.2,
+      opacity: 0.66,
+      lineCap: "round",
+      lineJoin: "round"
+    };
+  }
+
+  function featureStyle(feature) {
+    return {
+      color: featureColor(feature),
+      weight: riskWeight(feature),
+      opacity: 0.96,
+      lineCap: "round",
+      lineJoin: "round"
+    };
+  }
+
+  function hoverStyle(feature) {
+    return {
+      color: "#ffe45c",
+      weight: riskWeight(feature) + 3.0,
+      opacity: 1.0,
+      lineCap: "round",
+      lineJoin: "round"
+    };
+  }
+
+  function contextStyle(feature) {
+    const family = feature.properties.family || "__default__";
+    return contextStyles[family] || contextStyles.__default__;
+  }
+
+  function popupHtml(properties) {
+    const fields = [
+      ["Global risk rank", properties.global_risk_rank],
+      ["Link ID", properties.link_id],
+      ["Road classification", properties.road_classification],
+      ["Road function", properties.road_function],
+      ["Family", properties.family],
+      ["Road archetype", properties.road_archetype],
+      ["Form of way", properties.form_of_way],
+      ["Collision count", properties.collision_count],
+      ["Fatal count", properties.fatal_count],
+      ["Serious count", properties.serious_count],
+      ["Estimated AADT", formatNumber(properties.estimated_aadt, 1)],
+      ["Link length km", formatNumber(properties.link_length_km, 3)],
+      ["Predicted EB", formatNumber(properties.predicted_eb, 3)],
+      ["Predicted XGB", formatNumber(properties.predicted_xgb, 3)],
+      ["Risk percentile EB", formatNumber(properties.risk_percentile_eb, 3)],
+      ["Calibration caveat", properties.calibration_caveat || "None flagged"]
+    ];
+
+    return `
+      <div style="min-width: 260px">
+        <strong>Top-risk road link</strong>
+        <${"table"}>
+          ${fields.map(([key, value]) => `
+            <tr>
+              <th style="text-align:left;padding-right:0.6rem;vertical-align:top">${escapeHtml(key)}</th>
+              <td>${escapeHtml(value)}</td>
+            </tr>
+          `).join("")}
+        </${"table"}>
+      </div>
+    `;
+  }
+
+  function filteredFeatures() {
+    return allFeatures.filter((feature) => {
+      const props = feature.properties;
+      return Object.entries(filters).every(([field, select]) => {
+        return select.value === "__all__" || String(props[field] ?? "") === select.value;
+      });
+    });
+  }
+
+  function renderLayer() {
+    const features = filteredFeatures();
+    const visibleLogValues = features
+      .map((feature) => Number(feature.properties.log_predicted_eb))
+      .filter(Number.isFinite);
+    if (visibleLogValues.length > 0) {
+      logMin = Math.min(...visibleLogValues);
+      logMax = Math.max(...visibleLogValues);
+    } else {
+      logMin = 0;
+      logMax = 1;
+    }
+    const hasFilter = Object.values(filters).some((select) => select.value !== "__all__");
+    if (legendScaleLabel) {
+      legendScaleLabel.textContent = hasFilter
+        ? "log1p(predicted EB) (filtered range)"
+        : "log1p(predicted EB)";
+    }
+
+    if (currentHaloLayer) {
+      map.removeLayer(currentHaloLayer);
+    }
+    if (currentLayer) {
+      map.removeLayer(currentLayer);
+    }
+
+    currentHaloLayer = L.geoJSON(
+      { type: "FeatureCollection", features },
+      {
+        renderer,
+        style: haloStyle,
+        interactive: false
+      }
+    ).addTo(map);
+
+    currentLayer = L.geoJSON(
+      { type: "FeatureCollection", features },
+      {
+        renderer,
+        style: featureStyle,
+        onEachFeature: (feature, layer) => {
+          layer.bindPopup(popupHtml(feature.properties), { maxWidth: 420 });
+          layer.on({
+            mouseover: () => {
+              layer.setStyle(hoverStyle(feature));
+              layer.bringToFront();
+            },
+            mouseout: () => {
+              currentLayer.resetStyle(layer);
+            }
+          });
+        }
+      }
+    ).addTo(map);
+
+    if (features.length > 0) {
+      map.fitBounds(currentLayer.getBounds(), { padding: [18, 18], maxZoom: 13 });
+    }
+
+    status.textContent = `${features.length.toLocaleString()} of ${allFeatures.length.toLocaleString()} links shown`;
+  }
+
+  function populateFilter(select, features, field) {
+    const values = [...new Set(features.map((feature) => String(feature.properties[field] ?? "Unknown")))]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+    select.innerHTML = `<option value="__all__">All</option>` +
+      values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+  }
+
+  function countRows(counts) {
+    const total = Object.values(counts).reduce((acc, value) => acc + Number(value), 0);
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, count]) => {
+        const share = total ? (Number(count) / total * 100).toFixed(1) : "0.0";
+        return `<tr><td>${escapeHtml(label)}</td><td>${formatNumber(count)}</td><td>${share}%</td></tr>`;
+      })
+      .join("");
+  }
+
+  function renderCountTable(elementId, labelHeader, counts) {
+    elements[elementId].innerHTML = `
+      <${"table"}>
+        <thead><tr><th>${escapeHtml(labelHeader)}</th><th>count</th><th>share</th></tr></thead>
+        <tbody>${countRows(counts)}</tbody>
+      </${"table"}>
+    `;
+  }
+
+  function renderNumericSummary(summary) {
+    const rows = Object.entries(summary).map(([field, stats]) => `
+      <tr>
+        <td>${escapeHtml(field)}</td>
+        <td>${formatNumber(stats.n)}</td>
+        <td>${formatNumber(stats.min, 3)}</td>
+        <td>${formatNumber(stats.median, 3)}</td>
+        <td>${formatNumber(stats.mean, 3)}</td>
+        <td>${formatNumber(stats.p90, 3)}</td>
+        <td>${formatNumber(stats.max, 3)}</td>
+      </tr>
+    `).join("");
+
+    elements["numeric-summary"].innerHTML = `
+      <${"table"}>
+        <thead>
+          <tr><th>field</th><th>n</th><th>min</th><th>median</th><th>mean</th><th>p90</th><th>max</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </${"table"}>
+    `;
+  }
+
+  const legend = L.control({ position: "bottomright" });
+  legend.onAdd = () => {
+    const div = L.DomUtil.create("div", "risk-legend");
+    div.innerHTML = `
+      <strong>Risk links</strong><br>
+      colour = <span id="risk-legend-scale-label">log1p(predicted EB)</span><br>
+      width = global risk rank band
+      <div class="risk-legend-gradient"></div>
+      <div style="display:flex;justify-content:space-between;gap:1rem">
+        <span>lower</span><span>higher</span>
+      </div>
+      <div style="margin-top:0.35rem;font-size:0.82rem;color:#405064">
+        widest: rank 1-100; normal: rank 5,001+
+      </div>
+    `;
+    legendScaleLabel = div.querySelector("#risk-legend-scale-label");
+    return div;
+  };
+  legend.addTo(map);
+
+  function loadContextLayers() {
+    return fetch(CONTEXT_MANIFEST_URL)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Could not load ${CONTEXT_MANIFEST_URL}`);
+        }
+        return response.json();
+      })
+      .then((manifest) => {
+        const files = Array.isArray(manifest.files) ? manifest.files : [];
+        const contextFiles = files.filter((entry) => CONTEXT_FAMILIES.has(entry.family));
+        return Promise.all(contextFiles.map((entry) => {
+          const url = CONTEXT_BASE_URL + entry.filename;
+          return fetch(url)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Could not load ${url}`);
+              }
+              return response.json();
+            })
+            .then((geojson) => {
+              L.geoJSON(geojson, {
+                renderer,
+                style: contextStyle,
+                interactive: false
+              }).addTo(map);
+            })
+            .catch((error) => {
+              console.warn(`Skipping context layer ${url}: ${error.message}`);
+            });
+        }));
+      })
+      .catch((error) => {
+        console.warn(`Context network unavailable: ${error.message}`);
+      });
+  }
+
+  Promise.all([
+    fetch(DATA_URL).then((response) => {
+      if (!response.ok) throw new Error(`Could not load ${DATA_URL}`);
+      return response.json();
+    }),
+    fetch(META_URL).then((response) => {
+      if (!response.ok) throw new Error(`Could not load ${META_URL}`);
+      return response.json();
+    })
+  ]).then(([geojson, metadata]) => {
+    allFeatures = geojson.features || [];
+    const logValues = allFeatures
+      .map((feature) => Number(feature.properties.log_predicted_eb))
+      .filter(Number.isFinite);
+    logMin = Math.min(...logValues);
+    logMax = Math.max(...logValues);
+
+    populateFilter(filters.family, allFeatures, "family");
+    populateFilter(filters.road_archetype, allFeatures, "road_archetype");
+    populateFilter(filters.road_classification, allFeatures, "road_classification");
+
+    Object.values(filters).forEach((select) => select.addEventListener("change", renderLayer));
+    resetButton.addEventListener("click", () => {
+      Object.values(filters).forEach((select) => { select.value = "__all__"; });
+      renderLayer();
+    });
+
+    renderCountTable("family-summary", "family", metadata.count_by_family);
+    renderCountTable("classification-summary", "road_classification", metadata.count_by_road_classification);
+    renderCountTable("archetype-summary", "road_archetype", metadata.count_by_road_archetype);
+    renderNumericSummary(metadata.numeric_summary);
+    return loadContextLayers().then(renderLayer);
+  }).catch((error) => {
+    status.textContent = `Map failed to load: ${error.message}`;
+    status.style.color = "#9f1d20";
+    status.style.background = "#fff4f4";
+    console.error(error);
+  });
+});
+</script>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/thomashsimm\.github\.io\/open-road-risk\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
