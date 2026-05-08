@@ -84,6 +84,13 @@
 
 ## 🔵 Applications / Demonstrations
 
-- [ ] Risk-normalised output table — "Top 1% highest-risk road segments controlling
-  for traffic" as a clean publishable output.
-
+- [x] Risk-normalised output table and website page — "Top 1% highest-risk road
+  segments controlling for traffic" as a clean publishable output.
+  - Built interactive Quarto page for top-1% risk segments.
+  - Added static GeoJSON and metadata export for web use.
+  - Fixed Quarto rendering issue where live HTML containers were escaped as code
+    blocks.
+  - Added working summary tables and filters.
+  - Improved map visual hierarchy with rank-based line width, halo/outline styling,
+    and hover emphasis.
+  - Kept the page static-site compatible; no model outputs regenerated.
