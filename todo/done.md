@@ -1,5 +1,20 @@
 ## ✅ Done
 
+- [x] Short-link neighbourhood diagnostic for top-1% outputs (8 May 2026) —
+  QA diagnostic checking whether very short top-1% links are outliers relative
+  to their immediate OpenRoads graph neighbours. Method: per-link z-score of
+  `predicted_eb` vs neighbour mean/SD using node-sharing topology. Filter
+  (rank < 2000, length < 50 m, z > 3) yields 55 flagged links for manual
+  review. Does not change rankings or model scores. Outputs:
+  `data/outputs/top_1pct_neighbourhood_flags.parquet`,
+  `reports/short_link_neighbourhood_diagnostic.md`,
+  `reports/short_link_neighbourhood_actionable_subset.md`.
+
+- [x] Top-1% output QA refresh (8 May 2026) — regenerated all top-1% CSVs,
+  GeoJSON, and web metadata from May 4 production `risk_scores.parquet` +
+  refreshed `risk_scores_eb.parquet`. QA report:
+  `reports/top_risk_output_qa.md`.
+
 - [x] Stage 2 GLM exposure/calibration diagnostics (May 2026) —
   tested fixed exposure offset vs learned exposure, global intercept calibration,
   per-family intercept calibration, pooled family interaction GLM, and separate
