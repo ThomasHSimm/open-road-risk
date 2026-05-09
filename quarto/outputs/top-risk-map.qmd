@@ -1,0 +1,741 @@
+---
+title: "Top-Risk Road Segments"
+description: "Interactive screening map for the top 1% highest-risk road links."
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    page-layout: full
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The ranking uses `risk_percentile_eb`, the preferred empirical-Bayes-adjusted screening ranking for this output; raw `risk_percentile` remains available in the source outputs.
+
+These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. This page uses global EB shrinkage, not the diagnostic family-stitched model, so motorway calibration remains unresolved for this published screening layer. Sparse collision histories should be interpreted cautiously.
+
+The refreshed outputs were reviewed in May 2026 and judged suitable for screening with caveats. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples. Family-level EB outliers are also flagged for later review.
+
+The map colours links by `log_predicted_eb = log1p(predicted_eb)` rather than by `risk_percentile_eb`, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  .risk-map-panel {
+    border: 1px solid #d9dee7;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .risk-map-toolbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 0.75rem;
+    padding: 0.85rem;
+    background: #f7f9fc;
+    border-bottom: 1px solid #d9dee7;
+    align-items: start;
+  }
+
+  .risk-map-toolbar label {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #243447;
+  }
+
+  .risk-map-toolbar select,
+  .risk-map-toolbar button {
+    border: 1px solid #b8c2d0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #17202a;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .risk-map-toolbar select {
+    min-height: 8.2rem;
+  }
+
+  .risk-map-toolbar button {
+    cursor: pointer;
+    font-weight: 600;
+    min-height: 2.3rem;
+  }
+
+  .risk-map-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .risk-map-actions button {
+    background: #ffffff;
+  }
+
+  .filter-hint {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #5b6a7d;
+  }
+
+  #top-risk-map {
+    height: 72vh;
+    min-height: 520px;
+    background: #eef2f5;
+  }
+
+  .risk-map-status {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+    color: #405064;
+    background: #ffffff;
+    border-top: 1px solid #d9dee7;
+  }
+
+  .risk-legend {
+    background: rgba(255, 255, 255, 0.94);
+    padding: 0.6rem 0.7rem;
+    border: 1px solid #c8d0dc;
+    border-radius: 6px;
+    line-height: 1.35;
+    color: #1f2933;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+
+  .risk-legend-gradient {
+    width: 170px;
+    height: 11px;
+    margin: 0.35rem 0;
+    background: linear-gradient(90deg, #2c7bb6, #abd9e9, #ffffbf, #fdae61, #d7191c);
+  }
+
+  .risk-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .risk-summary-grid table,
+  #numeric-summary table {
+    width: 100%;
+    font-size: 0.88rem;
+  }
+
+  .risk-note {
+    color: #526173;
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 900px) {
+    .risk-map-toolbar,
+    .risk-summary-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #top-risk-map {
+      height: 68vh;
+      min-height: 420px;
+    }
+  }
+</style>
+
+## Interactive Map
+
+<div class="risk-map-panel">
+<div class="risk-map-toolbar" aria-label="Top-risk map filters"><label>Family <span class="filter-hint">No selection = all</span><select id="family-filter" multiple size="6"></select></label><label>Road archetype <span class="filter-hint">Use Ctrl/Cmd or Shift for ranges</span><select id="archetype-filter" multiple size="6"></select></label><label>Road classification <span class="filter-hint">Selected values use OR logic</span><select id="classification-filter" multiple size="6"></select></label><div class="risk-map-actions" aria-label="Quick filter actions"><button id="select-all-filters" type="button">Select all</button><button id="clear-filters" type="button">Clear</button><button id="non-motorway-filter" type="button">Non-motorway</button><button id="other-urban-rural-filter" type="button">Urban + rural other</button><button id="a-roads-filter" type="button">A roads</button><button id="minor-roads-filter" type="button">Minor roads</button><button id="reset-filters" type="button">Reset filters</button></div></div>
+<div id="top-risk-map"></div>
+<div id="risk-map-status" class="risk-map-status">Loading static GeoJSON...</div>
+</div>
+
+<p class="risk-note">The map uses client-side multi-select filters over one static GeoJSON file. Values within a filter are combined with OR logic; different filters are combined with AND logic. No selection in a filter means all values for that filter.</p>
+
+## Summary Tables
+
+<div class="risk-summary-grid">
+<div>
+<h3>Count by family</h3>
+<div id="family-summary"></div>
+</div>
+<div>
+<h3>Count by road classification</h3>
+<div id="classification-summary"></div>
+</div>
+<div>
+<h3>Count by road archetype</h3>
+<div id="archetype-summary"></div>
+</div>
+</div>
+
+<h3>Numeric summary</h3>
+<div id="numeric-summary"></div>
+
+## Data Notes
+
+- Source layer: `data/outputs/top_1pct_risk_segments.parquet`.
+- Web layer: `data/outputs/web/top_1pct_risk_segments.geojson`.
+- Context network layers: `data/outputs/web/context/context_manifest.json` plus split GeoJSON files.
+  Motorway and trunk-A links are shown in full; `other_urban` and `other_rural`
+  show the top context percentile by `risk_percentile_eb` recorded in the manifest.
+- Features: 21,676 road links.
+- GeoJSON size: 14,709,969 bytes.
+- Geometry simplification: 25 m tolerance in EPSG:3857, then written as EPSG:4326 with coordinates rounded to 0.00001 degrees.
+- Colour scaling: `log_predicted_eb = log1p(predicted_eb)`.
+- QA status: reviewed May 2026; suitable for screening with caveats. See `reports/top_risk_output_qa.md`.
+- Background map: OpenStreetMap tiles, with static project GeoJSON files for the risk and context layers.
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const REQUIRED_IDS = [
+    "top-risk-map",
+    "risk-map-status",
+    "family-summary",
+    "classification-summary",
+    "archetype-summary",
+    "numeric-summary",
+    "family-filter",
+    "archetype-filter",
+    "classification-filter",
+    "select-all-filters",
+    "clear-filters",
+    "non-motorway-filter",
+    "other-urban-rural-filter",
+    "a-roads-filter",
+    "minor-roads-filter",
+    "reset-filters"
+  ];
+  const elements = Object.fromEntries(
+    REQUIRED_IDS.map((id) => [id, document.getElementById(id)])
+  );
+
+  function showPageError(message) {
+    const target = elements["risk-map-status"] || document.querySelector("main") || document.body;
+    const error = document.createElement("div");
+    error.className = "risk-map-status";
+    error.style.color = "#9f1d20";
+    error.style.background = "#fff4f4";
+    error.textContent = message;
+    if (target === elements["risk-map-status"]) {
+      target.textContent = message;
+      target.style.color = "#9f1d20";
+      target.style.background = "#fff4f4";
+    } else {
+      target.prepend(error);
+    }
+    console.error(message);
+  }
+
+  const missing = REQUIRED_IDS.filter((id) => !elements[id]);
+  if (missing.length > 0) {
+    showPageError(`Top-risk map cannot initialise: missing required page elements: ${missing.join(", ")}`);
+    return;
+  }
+
+  if (!window.L) {
+    showPageError("Top-risk map cannot initialise: Leaflet did not load.");
+    return;
+  }
+
+  const DATA_URL = "../data/outputs/web/top_1pct_risk_segments.geojson";
+  const META_URL = "../data/outputs/web/top_1pct_risk_segments_web_metadata.json";
+  const CONTEXT_MANIFEST_URL = "../data/outputs/web/context/context_manifest.json";
+  const CONTEXT_BASE_URL = "../data/outputs/web/context/";
+  const CONTEXT_FAMILIES = new Set(["motorway", "trunk_a", "other_urban", "other_rural"]);
+  const renderer = L.canvas({ padding: 0.35 });
+  const map = L.map(elements["top-risk-map"], {
+    renderer,
+    zoomControl: true,
+    preferCanvas: true,
+    attributionControl: true
+  }).setView([53.35, -1.3], 7);
+
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  })
+    .addTo(map);
+
+  const status = elements["risk-map-status"];
+  const filters = {
+    family: elements["family-filter"],
+    road_archetype: elements["archetype-filter"],
+    road_classification: elements["classification-filter"]
+  };
+  const filterLabels = {
+    family: "family",
+    road_archetype: "road archetype",
+    road_classification: "road classification"
+  };
+  const actionButtons = {
+    selectAll: elements["select-all-filters"],
+    clear: elements["clear-filters"],
+    nonMotorway: elements["non-motorway-filter"],
+    otherUrbanRural: elements["other-urban-rural-filter"],
+    aRoads: elements["a-roads-filter"],
+    minorRoads: elements["minor-roads-filter"]
+  };
+  const resetButton = elements["reset-filters"];
+
+  let allFeatures = [];
+  let currentHaloLayer = null;
+  let currentLayer = null;
+  let logMin = 0;
+  let logMax = 1;
+  let legendScaleLabel = null;
+
+  const colors = ["#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c"];
+  const contextStyles = {
+    "motorway": { color: "#5a6b78", weight: 2.5, opacity: 0.55 },
+    "trunk_a": { color: "#6b7d8a", weight: 2.0, opacity: 0.50 },
+    "other_urban": { color: "#8a9baa", weight: 1.2, opacity: 0.35 },
+    "other_rural": { color: "#a0adb8", weight: 1.0, opacity: 0.30 },
+    "__default__": { color: "#b8c2cc", weight: 0.6, opacity: 0.20 }
+  };
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function formatNumber(value, digits = 0) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return "";
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    });
+  }
+
+  function quantile(sortedValues, probability) {
+    if (!sortedValues.length) return NaN;
+    const position = (sortedValues.length - 1) * probability;
+    const lower = Math.floor(position);
+    const upper = Math.ceil(position);
+    if (lower === upper) return sortedValues[lower];
+    const weight = position - lower;
+    return sortedValues[lower] * (1 - weight) + sortedValues[upper] * weight;
+  }
+
+  function colourLimitsForFeatures(features) {
+    const values = features
+      .map((feature) => Number(feature.properties.log_predicted_eb))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+
+    if (values.length === 0) {
+      return { min: 0, max: 1, mode: "no valid values", count: 0 };
+    }
+
+    let min = values[0];
+    let max = values[values.length - 1];
+    let mode = "visible raw min-max";
+
+    if (values.length >= 5) {
+      min = quantile(values, 0.02);
+      max = quantile(values, 0.98);
+      mode = "visible 2nd-98th percentile";
+    }
+
+    if (min === max) {
+      const centre = min;
+      const padding = Math.max(Math.abs(centre) * 0.01, 0.001);
+      min = centre - padding;
+      max = centre + padding;
+      mode = `${mode}, padded equal values`;
+    }
+
+    return { min, max, mode, count: values.length };
+  }
+
+  function featureColor(feature) {
+    const raw = Number(feature.properties.log_predicted_eb);
+    const value = Number.isFinite(raw) ? raw : logMin;
+    const t = Math.max(0, Math.min(0.9999, (value - logMin) / Math.max(logMax - logMin, 1e-9)));
+    return colors[Math.floor(t * colors.length)];
+  }
+
+  function riskWeight(feature) {
+    const rank = Number(feature.properties.global_risk_rank);
+    if (Number.isFinite(rank) && rank <= 100) return 7.2;
+    if (Number.isFinite(rank) && rank <= 1000) return 5.8;
+    if (Number.isFinite(rank) && rank <= 5000) return 4.4;
+    return 3.0;
+  }
+
+  function haloStyle(feature) {
+    return {
+      color: "#15202b",
+      weight: riskWeight(feature) + 3.2,
+      opacity: 0.66,
+      lineCap: "round",
+      lineJoin: "round"
+    };
+  }
+
+  function featureStyle(feature) {
+    return {
+      color: featureColor(feature),
+      weight: riskWeight(feature),
+      opacity: 0.96,
+      lineCap: "round",
+      lineJoin: "round"
+    };
+  }
+
+  function hoverStyle(feature) {
+    return {
+      color: "#ffe45c",
+      weight: riskWeight(feature) + 3.0,
+      opacity: 1.0,
+      lineCap: "round",
+      lineJoin: "round"
+    };
+  }
+
+  function contextStyle(feature) {
+    const family = feature.properties.family || "__default__";
+    return contextStyles[family] || contextStyles.__default__;
+  }
+
+  function popupHtml(properties) {
+    const fields = [
+      ["Global risk rank", properties.global_risk_rank],
+      ["Link ID", properties.link_id],
+      ["Road classification", properties.road_classification],
+      ["Road function", properties.road_function],
+      ["Family", properties.family],
+      ["Road archetype", properties.road_archetype],
+      ["Form of way", properties.form_of_way],
+      ["Collision count", properties.collision_count],
+      ["Fatal count", properties.fatal_count],
+      ["Serious count", properties.serious_count],
+      ["Estimated AADT", formatNumber(properties.estimated_aadt, 1)],
+      ["Link length km", formatNumber(properties.link_length_km, 3)],
+      ["Predicted EB", formatNumber(properties.predicted_eb, 3)],
+      ["Predicted XGB", formatNumber(properties.predicted_xgb, 3)],
+      ["Risk percentile EB", formatNumber(properties.risk_percentile_eb, 3)],
+      ["Calibration caveat", properties.calibration_caveat || "None flagged"]
+    ];
+
+    return `
+      <div style="min-width: 260px">
+        <strong>Top-risk road link</strong>
+        <${"table"}>
+          ${fields.map(([key, value]) => `
+            <tr>
+              <th style="text-align:left;padding-right:0.6rem;vertical-align:top">${escapeHtml(key)}</th>
+              <td>${escapeHtml(value)}</td>
+            </tr>
+          `).join("")}
+        </${"table"}>
+      </div>
+    `;
+  }
+
+  function getSelectedValues(select) {
+    return Array.from(select.selectedOptions)
+      .map((option) => option.value)
+      .filter(Boolean);
+  }
+
+  function setSelectedValues(select, values) {
+    const wanted = new Set(values);
+    Array.from(select.options).forEach((option) => {
+      option.selected = wanted.has(option.value);
+    });
+  }
+
+  function selectExistingValues(select, values) {
+    const available = new Set(Array.from(select.options).map((option) => option.value));
+    setSelectedValues(select, values.filter((value) => available.has(value)));
+  }
+
+  function clearAllFilters() {
+    Object.values(filters).forEach((select) => setSelectedValues(select, []));
+  }
+
+  function selectAllFilters() {
+    Object.values(filters).forEach((select) => {
+      setSelectedValues(select, Array.from(select.options).map((option) => option.value));
+    });
+  }
+
+  function selectedLabel(values) {
+    if (values.length === 0) return "all";
+    if (values.length <= 3) return values.join(", ");
+    return `${values.slice(0, 3).join(", ")} +${values.length - 3} more`;
+  }
+
+  function activeFilterText() {
+    const active = Object.entries(filters)
+      .map(([field, select]) => [filterLabels[field], getSelectedValues(select)])
+      .filter(([, values]) => values.length > 0);
+
+    if (active.length === 0) return "active filters: none";
+    return `active filters: ${active
+      .map(([label, values]) => `${label} = ${selectedLabel(values)}`)
+      .join("; ")}`;
+  }
+
+  function valueMatchesFilter(properties, field, select) {
+    const selected = getSelectedValues(select);
+    return selected.length === 0 || selected.includes(String(properties[field] ?? "Unknown"));
+  }
+
+  function filteredFeatures() {
+    return allFeatures.filter((feature) => {
+      const props = feature.properties;
+      return Object.entries(filters).every(([field, select]) =>
+        valueMatchesFilter(props, field, select)
+      );
+    });
+  }
+
+  function renderLayer() {
+    const features = filteredFeatures();
+    const colourLimits = colourLimitsForFeatures(features);
+    logMin = colourLimits.min;
+    logMax = colourLimits.max;
+    if (legendScaleLabel) {
+      legendScaleLabel.textContent = colourLimits.count >= 5
+        ? "log1p(predicted EB), clipped to visible 2nd-98th percentile"
+        : "log1p(predicted EB), visible raw min-max";
+    }
+
+    if (currentHaloLayer) {
+      map.removeLayer(currentHaloLayer);
+    }
+    if (currentLayer) {
+      map.removeLayer(currentLayer);
+    }
+
+    currentHaloLayer = L.geoJSON(
+      { type: "FeatureCollection", features },
+      {
+        renderer,
+        style: haloStyle,
+        interactive: false
+      }
+    ).addTo(map);
+
+    currentLayer = L.geoJSON(
+      { type: "FeatureCollection", features },
+      {
+        renderer,
+        style: featureStyle,
+        onEachFeature: (feature, layer) => {
+          layer.bindPopup(popupHtml(feature.properties), { maxWidth: 420 });
+          layer.on({
+            mouseover: () => {
+              layer.setStyle(hoverStyle(feature));
+              layer.bringToFront();
+            },
+            mouseout: () => {
+              currentLayer.resetStyle(layer);
+            }
+          });
+        }
+      }
+    ).addTo(map);
+
+    if (features.length > 0) {
+      map.fitBounds(currentLayer.getBounds(), { padding: [18, 18], maxZoom: 13 });
+    }
+
+    status.textContent = [
+      `${features.length.toLocaleString()} of ${allFeatures.length.toLocaleString()} links shown`,
+      activeFilterText(),
+      `colour scale: ${formatNumber(logMin, 3)}-${formatNumber(logMax, 3)} (${colourLimits.mode})`
+    ].join(" | ");
+  }
+
+  function populateFilter(select, features, field) {
+    const values = [...new Set(features.map((feature) => String(feature.properties[field] ?? "Unknown")))]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+    select.innerHTML = values
+      .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
+      .join("");
+  }
+
+  function countRows(counts) {
+    const total = Object.values(counts).reduce((acc, value) => acc + Number(value), 0);
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, count]) => {
+        const share = total ? (Number(count) / total * 100).toFixed(1) : "0.0";
+        return `<tr><td>${escapeHtml(label)}</td><td>${formatNumber(count)}</td><td>${share}%</td></tr>`;
+      })
+      .join("");
+  }
+
+  function renderCountTable(elementId, labelHeader, counts) {
+    elements[elementId].innerHTML = `
+      <${"table"}>
+        <thead><tr><th>${escapeHtml(labelHeader)}</th><th>count</th><th>share</th></tr></thead>
+        <tbody>${countRows(counts)}</tbody>
+      </${"table"}>
+    `;
+  }
+
+  function renderNumericSummary(summary) {
+    const rows = Object.entries(summary).map(([field, stats]) => `
+      <tr>
+        <td>${escapeHtml(field)}</td>
+        <td>${formatNumber(stats.n)}</td>
+        <td>${formatNumber(stats.min, 3)}</td>
+        <td>${formatNumber(stats.median, 3)}</td>
+        <td>${formatNumber(stats.mean, 3)}</td>
+        <td>${formatNumber(stats.p90, 3)}</td>
+        <td>${formatNumber(stats.max, 3)}</td>
+      </tr>
+    `).join("");
+
+    elements["numeric-summary"].innerHTML = `
+      <${"table"}>
+        <thead>
+          <tr><th>field</th><th>n</th><th>min</th><th>median</th><th>mean</th><th>p90</th><th>max</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </${"table"}>
+    `;
+  }
+
+  const legend = L.control({ position: "bottomright" });
+  legend.onAdd = () => {
+    const div = L.DomUtil.create("div", "risk-legend");
+    div.innerHTML = `
+      <strong>Risk links</strong><br>
+      colour = <span id="risk-legend-scale-label">log1p(predicted EB), clipped to visible 2nd-98th percentile</span><br>
+      width = global risk rank band
+      <div class="risk-legend-gradient"></div>
+      <div style="display:flex;justify-content:space-between;gap:1rem">
+        <span>lower</span><span>higher</span>
+      </div>
+      <div style="margin-top:0.35rem;font-size:0.82rem;color:#405064">
+        widest: rank 1-100; normal: rank 5,001+
+      </div>
+    `;
+    legendScaleLabel = div.querySelector("#risk-legend-scale-label");
+    return div;
+  };
+  legend.addTo(map);
+
+  function loadContextLayers() {
+    return fetch(CONTEXT_MANIFEST_URL)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Could not load ${CONTEXT_MANIFEST_URL}`);
+        }
+        return response.json();
+      })
+      .then((manifest) => {
+        const files = Array.isArray(manifest.files) ? manifest.files : [];
+        const contextFiles = files.filter((entry) => CONTEXT_FAMILIES.has(entry.family));
+        return Promise.all(contextFiles.map((entry) => {
+          const url = CONTEXT_BASE_URL + entry.filename;
+          return fetch(url)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`Could not load ${url}`);
+              }
+              return response.json();
+            })
+            .then((geojson) => {
+              L.geoJSON(geojson, {
+                renderer,
+                style: contextStyle,
+                interactive: false
+              }).addTo(map);
+            })
+            .catch((error) => {
+              console.warn(`Skipping context layer ${url}: ${error.message}`);
+            });
+        }));
+      })
+      .catch((error) => {
+        console.warn(`Context network unavailable: ${error.message}`);
+      });
+  }
+
+  Promise.all([
+    fetch(DATA_URL).then((response) => {
+      if (!response.ok) throw new Error(`Could not load ${DATA_URL}`);
+      return response.json();
+    }),
+    fetch(META_URL).then((response) => {
+      if (!response.ok) throw new Error(`Could not load ${META_URL}`);
+      return response.json();
+    })
+  ]).then(([geojson, metadata]) => {
+    allFeatures = geojson.features || [];
+    const colourLimits = colourLimitsForFeatures(allFeatures);
+    logMin = colourLimits.min;
+    logMax = colourLimits.max;
+
+    populateFilter(filters.family, allFeatures, "family");
+    populateFilter(filters.road_archetype, allFeatures, "road_archetype");
+    populateFilter(filters.road_classification, allFeatures, "road_classification");
+
+    Object.values(filters).forEach((select) => select.addEventListener("change", renderLayer));
+    actionButtons.selectAll.addEventListener("click", () => {
+      selectAllFilters();
+      renderLayer();
+    });
+    actionButtons.clear.addEventListener("click", () => {
+      clearAllFilters();
+      renderLayer();
+    });
+    actionButtons.nonMotorway.addEventListener("click", () => {
+      clearAllFilters();
+      selectExistingValues(filters.family, ["trunk_a", "other_urban", "other_rural", "other_unknown"]);
+      renderLayer();
+    });
+    actionButtons.otherUrbanRural.addEventListener("click", () => {
+      clearAllFilters();
+      selectExistingValues(filters.family, ["other_urban", "other_rural"]);
+      renderLayer();
+    });
+    actionButtons.aRoads.addEventListener("click", () => {
+      clearAllFilters();
+      selectExistingValues(filters.road_classification, ["A Road"]);
+      renderLayer();
+    });
+    actionButtons.minorRoads.addEventListener("click", () => {
+      clearAllFilters();
+      selectExistingValues(filters.road_classification, [
+        "Classified Unnumbered",
+        "Unclassified",
+        "Not Classified",
+        "Unknown"
+      ]);
+      renderLayer();
+    });
+    resetButton.addEventListener("click", () => {
+      clearAllFilters();
+      renderLayer();
+    });
+
+    renderCountTable("family-summary", "family", metadata.count_by_family);
+    renderCountTable("classification-summary", "road_classification", metadata.count_by_road_classification);
+    renderCountTable("archetype-summary", "road_archetype", metadata.count_by_road_archetype);
+    renderNumericSummary(metadata.numeric_summary);
+    return loadContextLayers().then(renderLayer);
+  }).catch((error) => {
+    status.textContent = `Map failed to load: ${error.message}`;
+    status.style.color = "#9f1d20";
+    status.style.background = "#fff4f4";
+    console.error(error);
+  });
+});
+</script>

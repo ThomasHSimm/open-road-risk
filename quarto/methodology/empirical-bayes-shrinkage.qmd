@@ -41,7 +41,7 @@ Use the sliders below to see how the EB formula balances the model against reali
 viewof predicted_rate = Inputs.range([0.01, 5.0], {value: 0.5, step: 0.01, label: "AI Predicted Rate (/yr)"})
 viewof observed_total = Inputs.range([0, 50], {value: 12, step: 1, label: "Observed Total Crashes"})
 viewof years_observed = Inputs.range([1, 20], {value: 10, step: 1, label: "Years Observed"})
-viewof k_parameter = Inputs.range([0.1, 10.0], {value: 3.07, step: 0.01, label: "k (Noise Parameter)"})
+viewof k_parameter = Inputs.range([0.1, 10.0], {value: 3.451158, step: 0.01, label: "k (Noise Parameter)"})
 ```
 
 ```{ojs}
@@ -273,9 +273,11 @@ The procedure is:
    occur. Link-year weighting pulls k toward low-prediction bins — which
    contain most link-years but few events, a region irrelevant for screening.
    Positive-event weighting concentrates weight in the event-rich,
-   high-prediction bins where the top-k boundary sits. Session 1 estimates:
-   k_positive_weighted ≈ 3.07, k_link_year_weighted ≈ 146.4, k_median ≈ 82.4.
-   See `reports/eb_dispersion.md` for detail.
+   high-prediction bins where the top-k boundary sits. The refreshed May 2026
+   production EB run uses k_positive_weighted = 3.451158, with diagnostic
+   alternatives k_link_year_weighted = 14.898721 and k_median = 7.573279.
+   See `reports/eb_dispersion.md` and `reports/top_risk_output_qa.md` for
+   detail.
 
 The provenance report should include:
 
@@ -637,12 +639,13 @@ would mean this v1 implementation should remain diagnostic until dispersion is
 estimated more coherently, for example by facility family or by an NB model
 whose mean is itself used for screening.
 
-**Session 2 finding.** Top-1% Jaccard between `positive_weighted` and each
-diagnostic alternative is approximately 0.96, meaning about 4% top-1%
-membership churn from the aggregation choice alone. Spearman rank correlation
-is >0.999 across all pairs, but this is dominated by the low-prediction tail
-where all three k values agree; the meaningful disagreement is at the top of
-the ranking. The ~4% top-1% membership churn is fragile but not catastrophic.
+**Refreshed May 2026 finding.** Top-1% Jaccard between `positive_weighted` and
+the link-year-weighted diagnostic alternative is 0.954375, meaning about 4.6%
+top-1% membership churn from the aggregation choice alone. Spearman rank
+correlation is >0.999 across all pairs, but this is dominated by the
+low-prediction tail where all three k values agree; the meaningful disagreement
+is at the top of the ranking. The ~4.6% top-1% membership churn is fragile but
+not catastrophic.
 The borrowed-k method is sensitive enough to the aggregation choice that the
 adoption decision should be logged alongside the specific k value used. See
 `reports/eb_validation.md` §7 for the full numbers.
@@ -764,16 +767,19 @@ Following sessions 1–2, the recommendation is:
 
 **Adopt EB as an additional ranking (`risk_percentile_eb`), not a replacement
 for `risk_percentile`.** EB does defensible regression-to-the-mean correction
-at the prediction/observation extremes. It does not improve cross-seed top-k
-stability. Both rankings should be available in downstream outputs with their
-semantics clearly documented:
+at the prediction/observation extremes. The top-risk map uses
+`risk_percentile_eb` as the preferred screening ranking for that output; raw
+`risk_percentile` remains available, so these positions are consistent. It does
+not improve cross-seed top-k stability. Both rankings should be available in
+downstream outputs with their semantics clearly documented:
 
 - `risk_percentile` — pure model-prior ranking; seed-sensitive near narrow
   thresholds; no observed-history correction.
 - `risk_percentile_eb` — EB-adjusted ranking; corrects regression-to-the-mean
-  at the extremes; uses positive-event-weighted k ≈ 3.07 (session 1); about 4%
-  top-1% membership differs from `risk_percentile`; does not reduce cross-seed
-  membership churn.
+  at the extremes; uses refreshed positive-event-weighted k = 3.451158; about
+  4.6% top-1% membership differs across the positive-event-weighted and
+  link-year-weighted MoM alternatives; does not reduce cross-seed membership
+  churn.
 
 Per-family or per-bin EB remains the cleaner methodological answer to the
 non-constant dispersion finding from session 1, and is recommended for v2
