@@ -94,3 +94,10 @@
   - Improved map visual hierarchy with rank-based line width, halo/outline styling,
     and hover emphasis.
   - Kept the page static-site compatible; no model outputs regenerated.
+  - May 2026 QA refresh: regenerated all top-1% outputs from May 4 production
+    scores + refreshed EB file. QA report: `reports/top_risk_output_qa.md`.
+  - Short-link neighbourhood diagnostic added (8 May 2026): z-score of each
+    top-1% link's EB score vs its OpenRoads graph neighbours; 55 links flagged
+    at rank < 2000, length < 50 m, z > 3. Reports:
+    `reports/short_link_neighbourhood_diagnostic.md`,
+    `reports/short_link_neighbourhood_actionable_subset.md`.

@@ -12,9 +12,11 @@ execute:
   message: false
 ---
 
-This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The ranking uses `risk_percentile_eb`, the empirical-Bayes-adjusted production ranking field.
+This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The ranking uses `risk_percentile_eb`, the preferred empirical-Bayes-adjusted screening ranking for this output; raw `risk_percentile` remains available in the source outputs.
 
-These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. Motorway calibration remains a known caveat, and sparse collision histories should be interpreted cautiously.
+These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. This page uses global EB shrinkage, not the diagnostic family-stitched model, so motorway calibration remains unresolved for this published screening layer. Sparse collision histories should be interpreted cautiously.
+
+The refreshed outputs were reviewed in May 2026 and judged suitable for screening with caveats. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples. Family-level EB outliers are also flagged for later review.
 
 The map colours links by `log_predicted_eb = log1p(predicted_eb)` rather than by `risk_percentile_eb`, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.
 
@@ -185,6 +187,7 @@ The map colours links by `log_predicted_eb = log1p(predicted_eb)` rather than by
 - GeoJSON size: 14,709,969 bytes.
 - Geometry simplification: 25 m tolerance in EPSG:3857, then written as EPSG:4326 with coordinates rounded to 0.00001 degrees.
 - Colour scaling: `log_predicted_eb = log1p(predicted_eb)`.
+- QA status: reviewed May 2026; suitable for screening with caveats. See `reports/top_risk_output_qa.md`.
 - Background map: OpenStreetMap tiles, with static project GeoJSON files for the risk and context layers.
 
 <script>

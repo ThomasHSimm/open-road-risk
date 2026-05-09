@@ -334,8 +334,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<p>This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The ranking uses <code>risk_percentile_eb</code>, the empirical-Bayes-adjusted production ranking field.</p>
-<p>These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. Motorway calibration remains a known caveat, and sparse collision histories should be interpreted cautiously.</p>
+<p>This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The ranking uses <code>risk_percentile_eb</code>, the preferred empirical-Bayes-adjusted screening ranking for this output; raw <code>risk_percentile</code> remains available in the source outputs.</p>
+<p>These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. This page uses global EB shrinkage, not the diagnostic family-stitched model, so motorway calibration remains unresolved for this published screening layer. Sparse collision histories should be interpreted cautiously.</p>
+<p>The refreshed outputs were reviewed in May 2026 and judged suitable for screening with caveats. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples. Family-level EB outliers are also flagged for later review.</p>
 <p>The map colours links by <code>log_predicted_eb = log1p(predicted_eb)</code> rather than by <code>risk_percentile_eb</code>, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.</p>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -546,6 +547,7 @@ Numeric summary
 <li>GeoJSON size: 14,709,969 bytes.</li>
 <li>Geometry simplification: 25 m tolerance in EPSG:3857, then written as EPSG:4326 with coordinates rounded to 0.00001 degrees.</li>
 <li>Colour scaling: <code>log_predicted_eb = log1p(predicted_eb)</code>.</li>
+<li>QA status: reviewed May 2026; suitable for screening with caveats. See <code>reports/top_risk_output_qa.md</code>.</li>
 <li>Background map: OpenStreetMap tiles, with static project GeoJSON files for the risk and context layers.</li>
 </ul>
 <script>
