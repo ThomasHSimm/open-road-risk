@@ -1,0 +1,334 @@
+---
+title: "Crash Frequency Models: Poisson, NB, and Zero-Inflation"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+---
+
+## Purpose and Scope
+
+This page documents the statistical model families relevant to Stage 2 of the Open Road Risk
+pipeline and their known limitations. It is directed at maintainers who need to understand why
+the current Poisson GLM was chosen and what the evidence says about when alternatives are
+warranted.
+
+The pipeline's Stage 2 outcome — annual injury collision count per link-year — is a
+non-negative integer that is sparse at the link-year level (approximately 98–99% of rows
+record zero collisions). This places it squarely in the data regime that the crash frequency
+modelling literature has studied most intensively. What follows synthesises evidence from
+seven reviewed papers.
+
+---
+
+## 1. Why Count Models
+
+Crash frequency data are non-negative integer counts. Ordinary least-squares regression
+is not appropriate: it produces non-integer and potentially negative predictions, and its
+variance assumptions are violated by the skewed, zero-heavy distributions typical of road
+safety data. Lord and Mannering (2010) state this explicitly — crash-frequency data are
+non-negative integers and OLS is generally inappropriate — and the starting point for all
+subsequent model families is Poisson regression, which uses a log-linear conditional mean.
+
+The Poisson model imposes mean equals variance: $\text{Var}(y) = \mathbb{E}[y]$. In
+practice, observed crash counts almost always show variance well in excess of the mean —
+*overdispersion*. Lord and Mannering (2010) identify overdispersion as one of the core
+methodological challenges in crash frequency modelling, alongside low sample mean, spatial
+and temporal correlation, omitted variable bias, and the zero-heavy structure of count data.
+
+Exposure must enter the model correctly. Crash count per road link is determined jointly by
+the link's inherent risk and the traffic it carries. The canonical form places
+$\log(\text{AADT} \times \text{length} \times 365)$ as a fixed offset in the log-linear
+predictor. Pan et al. (2017) report near-unity NB coefficients on
+$\log(\text{AADT} \times \text{length})$ across six North American highway types. Al-Omari
+(2021) reports DVMT-SPF coefficients between 0.74 and 0.93 for most Florida road classes,
+collectively supporting the log-offset constraint used in Open Road Risk's Stage 2 GLM.
+
+The constraint should not be treated as universally correct. Dense urban road classes in
+Al-Omari (2021) show sub-linear AADT coefficients (0.39–0.63), and Aguero-Valverde and
+Jovanis (2008) find an AADT elasticity of approximately 0.66 for rural two-lane Pennsylvania
+roads — below the 1.0 assumed by a fixed offset. The Al-Omari result is from in-sample
+comparison only with no holdout validation, so the magnitude of any sub-linear bias in Open
+Road Risk has not been tested.
+
+::: {.callout-note}
+The fixed-offset assumption (AADT and length elasticity = 1.0) is supported by multiple
+studies for most road classes but has not been tested directly in Open Road Risk. A
+diagnostic fitting $\ln(\text{AADT})$ and $\ln(L)$ as free covariates and comparing the
+estimated elasticities against 1.0 is a low-effort Stage 2 candidate action.
+:::
+
+---
+
+## 2. Overdispersion: The Primary Challenge
+
+The negative binomial (NB) model is the standard extension for overdispersion. It replaces
+Poisson mean-variance equality with
+$\text{Var}(y) = \mathbb{E}[y] + \alpha\,\mathbb{E}[y]^2$,
+where $\alpha$ is an overdispersion parameter. When $\alpha = 0$ the NB reduces to Poisson.
+
+Chengye and Ranjitkar (2013) fit NB models to a 74 km Auckland motorway corridor (7 years,
+959 segment-years) and report $\hat{\alpha} = 0.183$ for the overall model, falling to
+0.106–0.130 when the data are stratified by ramp type. The reduction demonstrates two
+things: overdispersion is present even in a relatively high-count motorway dataset, and
+facility stratification absorbs heterogeneity that the pooled model cannot. Al-Omari (2021)
+reports overdispersion parameter $k$ ranging from 0.29 to 1.37 across Florida road classes,
+consistent with this pattern.
+
+::: {.callout-warning}
+Chengye and Ranjitkar (2013) use an 80% confidence level (not 95%) as the variable
+selection threshold. Several retained coefficients would not survive stricter selection.
+Coefficient values from that paper should be treated as directional evidence rather than
+precise estimates.
+:::
+
+Lord and Mannering (2010) note that the NB is not a universal fix. Low sample mean and very
+small within-group sample sizes can destabilise NB parameter estimation. Open Road Risk's
+link-year mean of approximately 0.01–0.02 collisions per row is well below the regimes most
+commonly studied. This is the primary data challenge, and it motivates both the EB shrinkage
+step and careful attention to model family.
+
+Aguero-Valverde and Jovanis (2008) advocate Poisson log-normal (PLN) models — Poisson
+likelihood with log-normal random effects — as preferable to the Poisson-gamma (NB) for
+handling low sample mean, citing Lord and Miranda-Moreno in their review. In practice PLN
+and NB differ mainly in tail behaviour; the more actionable point from that paper is that
+approximately 59% of total random-effect variance in their spatial model is attributable to
+spatially structured effects, a finding discussed further in §5.
+
+---
+
+## 3. Zero-Inflation: What the Evidence Says
+
+Zero-inflated models (ZIP, ZINB) add a structural mixing probability $\pi$ — the probability
+that a site belongs to a state with no crash exposure. Lord and Mannering (2010) noted an
+objection to this interpretation: it implies some road sections are permanently incapable of
+crashes. Pew et al. (2020) rebut this on logical grounds. The zero-inflated PMF assigns zero
+probability mass only in the structural-zero component; excess zeros do not imply permanent
+safety. The distributional assumption is testable, and the theoretical objection is not a
+reason to exclude ZINB from candidate models.
+
+The more important finding from Pew et al. (2020) is empirical. Fitted to Utah signalised
+intersection crash data (1,738 intersections, 2014–2017), both ZIP and ZINB produce
+a posterior mean $\hat{\pi} \approx 0.00$ with posterior SD of 0.01. The improvement of
+ZINB over Poisson in that case study comes primarily from the NB dispersion parameter
+($\hat{\phi} = 17.04$), not from zero-inflation.
+
+::: {.callout-warning}
+The $\hat{\pi} \approx 0$ finding is reported in the appendix of Pew et al. (2020); the
+value should be verified against the original paper before citing in external documents.
+:::
+
+The practical implication for Open Road Risk is direct: at annual link-year resolution,
+overdispersion — not structural zero-inflation — appears to be the dominant distributional
+feature. A negative binomial GLM with the existing exposure offset is therefore the
+appropriate priority diagnostic step before considering ZINB. This is not a statement that
+ZINB is wrong, only that NB is the lower-risk intervention.
+
+A complementary methodological point from Pew et al. (2020): when comparing model families,
+all candidates must be given comparable random effect structures. Prior literature that
+found NB-Lindley superior to ZINB used comparisons where NB-Lindley had a site-level random
+effect and the zero-inflated models did not. Once equated, the models perform comparably on
+goodness-of-fit, posterior predictive zero calibration, and one-year-ahead held-out
+prediction. Any future model comparison in Open Road Risk must respect this design
+requirement.
+
+::: {.callout-note}
+The zero-calibration check from Pew et al. (2020) is described in §10. It should be run
+on the current Stage 2 Poisson GLM before deciding whether to progress to NB or ZINB.
+:::
+
+---
+
+## 4. Exposure Structure and the EB Link
+
+Hauer et al. (2001) describe the canonical SPF exposure structure in the context of
+EB estimation. For a road segment, the expected count over the observation period is
+$\eta = \mu \times L \times Y$, where $\mu$ is the SPF-predicted crash rate per vehicle-km
+per year, $L$ is segment length, and $Y$ is the observation period in years. The EB
+estimate is then a weighted average of $\eta$ and the observed count $x$:
+
+$$\hat{\lambda}_{\text{EB}} = w\,\eta + (1 - w)\,x, \quad w = \frac{1}{1 + \eta/\phi}$$
+
+The overdispersion parameter $\phi$ (in units per km for road segments) is estimated from
+NB regression on a reference population. It determines how much weight is placed on the
+SPF prediction versus the observed count. For sparse links with few observed collisions,
+$w \to 1$ and the EB estimate is dominated by the SPF; for links with a long accident
+history, $(1 - w) \to 1$ and the observed data dominates.
+
+This has a concrete consequence for Open Road Risk: the current Stage 2 Poisson GLM plays
+the role of the SPF. For the EB shrinkage weight to be correct, $\phi$ must be estimated
+from an NB regression fitted to the same data, not assumed from a Poisson fit (where
+$\phi = \infty$ and $w = 0$). The current EB implementation uses a method-of-moments
+estimate of $k$ that partially addresses this, but a direct NB estimate would be more
+principled.
+
+Hauer et al. (2001) also describe the *full EB procedure*, which accommodates year-specific
+AADT changes by replacing $\eta = \mu \times Y$ with $\sum_t \mu_t$ in the weight formula.
+Open Road Risk's Stage 1a estimates AADT per link per year, making the full procedure
+directly implementable. The full procedure produces more precise EB estimates because it
+uses the complete 2015–2024 accident history per link.
+
+---
+
+## 5. Spatial and Temporal Correlation
+
+Aguero-Valverde and Jovanis (2008) test Conditional Autoregressive (CAR) random effects on
+865 rural Pennsylvania road segments across a 4-year panel. Their preferred model — Poisson
+log-normal with both unstructured heterogeneity and first-order CAR spatial effects —
+achieves a DIC improvement of 23 points over the heterogeneity-only baseline (DIC 4180 vs
+4203), exceeding the conventional ΔDIC > 7 significance threshold. Approximately 59% of
+total random-effect variance is attributed to spatial structure. Covariates that were
+insignificant without spatial correction become significant with it, and vice versa,
+demonstrating that ignoring spatial structure can bias coefficient estimates and produce
+overconfident standard errors.
+
+The finding is informative about the direction of the problem; its magnitude in Open Road
+Risk's mixed urban/rural/motorway network is unknown. The paper covers a single rural county
+with one road type; generalisation to 2.1 million links spanning multiple road classes and
+geographies is uncertain.
+
+::: {.callout-note}
+A full Bayesian MCMC model with CAR spatial effects is computationally infeasible at Open
+Road Risk's scale. The actionable implication is a Moran's I diagnostic on Stage 2 GLM
+residuals using a sampled subset of links, and geographic residual mapping to identify
+persistent high-residual corridors. First-order OS Open Roads adjacency (links sharing a
+node) is the appropriate neighbour definition.
+:::
+
+Aguero-Valverde and Jovanis (2008) find that first-order adjacency provides the best-fitting
+spatial structure; adding second and third-order neighbours does not improve DIC further.
+This suggests that if a spatial diagnostic is implemented, a simple topology-based adjacency
+matrix is sufficient.
+
+Lord and Mannering (2010) discuss temporal correlation for repeated observations from the
+same road entity. Chengye and Ranjitkar (2013) compare a standard NB GLM against a GEE
+specification (which explicitly models within-segment temporal correlation) on the Auckland
+motorway data. The NB GLM marginally outperforms GEE on both fitting-period and held-out
+metrics (NB MAD 3.21, MSPE 24.92; GEE MAD 3.74, MSPE 34.46 on fitting data). This is weak
+evidence from a single corridor that temporal autocorrelation modelling does not materially
+improve annual count predictions.
+
+---
+
+## 6. Facility Stratification
+
+Multiple papers find that road-type-stratified models outperform single global models.
+Chengye and Ranjitkar (2013) show that stratifying a motorway dataset by ramp type
+(no ramp / on-ramp / off-ramp) reduces held-out MSPE from 36.60 to 27.87 — approximately
+24% — compared to the overall model, on a genuine temporal holdout (2009–2010 held out from
+2004–2008 fitting). Al-Omari (2021) reports that context-class-specific SPFs outperform
+statewide SPFs in in-sample MAE for all Florida road classes; the statewide model fails for
+dense urban roads (MAE > 100 vs CC-SPF MAE of the order of 20–30).
+
+::: {.callout-warning}
+Al-Omari (2021) is a master's thesis with no held-out validation. All performance comparisons
+are in-sample MAE on the same data used for fitting. The advantage of stratification may
+partly reflect overfitting to class-specific distributions. Findings should be treated as
+directional evidence only. Open Road Risk's facility-family split should be validated on a
+grouped or temporal holdout before production adoption.
+:::
+
+A structural consequence of stratification, visible in Chengye and Ranjitkar (2013): the
+NB overdispersion parameter $\hat{\alpha}$ falls from 0.183 in the overall model to
+0.106–0.130 in ramp-split sub-models. Once per-family NB models are estimated, the
+per-family $\hat{\phi}$ becomes available for the Hauer et al. (2001) EB weight formula,
+removing the need for a global dispersion estimate that spans heterogeneous road types. This
+connection — facility-family NB regression enabling per-family EB weights — is one of the
+main arguments for the v2 per-family EB recommendation already in the pipeline's open
+caveats.
+
+---
+
+## 7. Why DBN/MSE Is Not Appropriate
+
+Pan et al. (2017) train a Deep Belief Network on pooled crash data from Ontario Highway 401,
+Colorado, and Washington state, using mean squared error as the loss function. AADT and
+segment length are normalised input features rather than a formal exposure offset. The paper
+reports modest improvements over locally calibrated NB on temporally held-out data — 0–32%
+MAE reduction depending on dataset, with 0% improvement on rural multilane Washington data.
+
+Three structural properties make the DBN/MSE approach unsuitable for Open Road Risk's
+link-year data. First, MSE loss gives equal weight to all residuals and is dominated by the
+rare high-count rows on zero-heavy data; it does not penalise distributional mismatch in the
+zero regime. Second, without a Poisson offset, predicted values are continuous with no
+natural interpretation as expected crash counts. Third, the near-unity NB coefficients on
+$\log(\text{AADT} \times \text{length})$ reported in Pan et al. (2017) for all six highway
+types confirm that the exposure relationship the DBN handles implicitly through feature
+scaling is well-captured by a formal offset — an argument for the simpler structure, not
+against it.
+
+Pan et al. (2017) acknowledge "several unsolved questions" in their conclusions. The
+improvement over NB is marginal for most highway types and disappears entirely for the
+rural multilane case. The Open Road Risk XGBoost model faces the same exposure-offset
+problem (AADT enters as a feature rather than as a constrained offset), which is a known
+limitation of the current pipeline.
+
+---
+
+## 8. Model-Family Comparison Table
+
+| Model | Zero-heavy handling | Formal exposure offset | Computational scale | Open Road Risk status |
+|---|---|---|---|---|
+| **Poisson GLM** | None — mean = variance constraint | ✓ | Scales to 2.1M rows | **Current** (Stage 2 SPF) |
+| **Negative Binomial GLM** | Overdispersion parameter $\hat{\alpha}$ | ✓ | Scales to 2.1M rows | **Candidate** — priority next step |
+| **ZIP** | Structural-zero mixing + Poisson counts | Non-standard; possible | Scales well if frequentist | **Diagnostic only** |
+| **ZINB** | Structural-zero mixing + NB counts | Non-standard; possible | Moderate; MCMC heavy | **Diagnostic only** — lower priority than NB given $\hat{\pi} \approx 0$ (Pew 2020) |
+| **NB-Lindley** | Compound NB mixture; zero-heavy via random effect | ✓ | Moderate | **Not current** — comparable to ZINB with equivalent random effects |
+| **Poisson log-normal / CAR** | Structured + unstructured random effects | ✓ | MCMC; infeasible at 2.1M links | **Diagnostic on sample only** |
+| **DBN with MSE regression** | None — MSE loss | ✗ (AADT as feature) | GPU-intensive | **Avoid** — structurally mismatched to sparse count data (Pan et al. 2017) |
+
+---
+
+## 9. Open Road Risk Alignment
+
+| Requirement | Literature recommendation | Current pipeline | Gap |
+|---|---|---|---|
+| Distributional family | NB GLM before ZINB; run posterior predictive zero check first | Poisson GLM | NB GLM diagnostic pending |
+| Exposure offset | Fixed $\log(\text{AADT} \times L \times 365)$; elasticity near 1.0 for most classes | Fixed offset, elasticity = 1.0 | Free-coefficient diagnostic not yet run; sub-linear risk on urban classes |
+| EB shrinkage weight | Per-family $\hat{\phi}$ from NB regression (Hauer et al. 2001) | Global MoM $k$ | Per-family NB $\hat{\phi}$ recommended for v2 |
+| Facility stratification | Stratified models improve fit; holdout validation required before production | Diagnostic v1 (`risk_scores_family.parquet`) | Grouped/temporal holdout needed to confirm generalisation |
+| Spatial autocorrelation | CAR infeasible at scale; Moran's I on residuals is feasible diagnostic | Not modelled | Moran's I on sampled links is candidate action |
+| Zero calibration | Posterior predictive zero check on fitted model | Not yet run | Low effort; should precede NB vs ZINB decision |
+| Model comparison design | Equate random effect structures across families (Pew 2020) | N/A | Apply when NB vs Poisson vs ZINB comparison is run |
+| Temporal validation | Temporal holdout (MAD/MSPE) complements grouped-link CV | Grouped-link CV only | Temporal holdout is a candidate addition |
+
+---
+
+## 10. Zero-Calibration Diagnostic
+
+The posterior predictive zero check (Pew et al. 2020) tests whether a fitted model
+adequately reproduces the observed zero rate. The procedure is:
+
+1. Fit the Stage 2 model and obtain predicted $\hat{\lambda}_i$ per link-year (incorporating
+   the exposure offset).
+2. Draw $S = 1{,}000$ predictive realisations: for each draw $s$, sample
+   $\tilde{y}_i^{(s)} \sim \text{Poisson}(\hat{\lambda}_i)$ for all link-years independently.
+3. Count zeros in each realisation: $Z^{(s)} = \sum_i \mathbf{1}[\tilde{y}_i^{(s)} = 0]$.
+4. Record $p = \hat{\mathbb{P}}(Z^{(s)} > Z_{\text{obs}})$ — the proportion of simulated
+   datasets with more zeros than observed.
+
+A well-calibrated model produces $p \approx 0.50$. A Poisson GLM on data where variance
+substantially exceeds the mean will systematically underestimate the zero count, producing
+$p \ll 0.50$ — most simulated datasets will have fewer zeros than observed. Pew et al.
+(2020) report $p = 0.21$ for ZIP and $p \approx 0.50$ for ZINB on Utah intersection data;
+the NB-Lindley overestimates zeros ($p = 0.86$). For Open Road Risk's Poisson GLM, the
+expected result is $p \ll 0.50$, and the magnitude of the shortfall determines whether a NB
+GLM suffices or whether zero-inflation is warranted.
+
+The check is low effort: it requires only sampling from the fitted model's predictive
+distribution. It should be run before making any decision about distributional family.
+
+---
+
+## References
+
+| ID | Citation |
+|---|---|
+| LIT-019 | Lord, D. & Mannering, F. (2010). The statistical analysis of crash-frequency data: a review and assessment of methodological alternatives. *Transportation Research Part A*, 44(5), 291–305. DOI: 10.1016/j.tra.2010.02.001 |
+| LIT-015 | Hauer, E., Harwood, D.W., Council, F.M. & Griffith, M.S. (2001). Estimating safety by the empirical Bayes method: a tutorial. *National SPF Summit, Chicago.* |
+| LIT-001/002 | Aguero-Valverde, J. & Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. *Transportation Research Record*, 2061, 55–63. |
+| LIT-009 | Chengye, P. & Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. *EASTS Proceedings*, Vol. 9. |
+| LIT-025/037 | Pan, G., Fu, L. & Thakali, L. (2017). Development of a global road safety performance function using deep neural networks. *International Journal of Transportation Science and Technology*, 6(3), 159–173. DOI: 10.1016/j.ijtst.2017.07.004 |
+| LIT-003 | Al-Omari, M. (2021). Crash analysis and development of safety performance functions for Florida roads in the framework of the context classification system. *MSc thesis, University of Central Florida.* stars.library.ucf.edu/etd2020/633 |
+| LIT-032 | Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. *Transportation Research Interdisciplinary Perspectives*, 8, 100249. DOI: 10.1016/j.trip.2020.100249 |

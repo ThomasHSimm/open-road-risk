@@ -1,0 +1,432 @@
+---
+title: "Transferability and Open Data Limits"
+subtitle: "What the international literature can and cannot contribute to Open Road Risk"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+Open Road Risk uses only publicly available UK data. The crash-frequency and
+network-safety literature is predominantly built on US state DOT inventories,
+New Zealand motorway sensor networks, or proprietary UK data sources that are
+not freely accessible at national scale. Useful methodological ideas must be
+separated from data requirements that cannot be met in this pipeline.
+
+This page documents — per paper and per data domain — what transfers, what
+partially transfers with UK recalibration, and what is blocked by missing data
+or incompatible scale.
+
+::: {.callout-warning}
+**UK geography ≠ UK data availability.** Several papers in this literature set
+use London or England data (Gilardi 2022: Leeds OS segments; Wang 2009, Michalaki
+2015: M25; Gao 2024: London boroughs; Balawi & Tenekeci 2024: London A-roads).
+None of these are interchangeable with Open Road Risk's data stack. UK-geography
+papers may still require commercial sensors, STATS19 post-event attributes,
+private intersection inventories, or corridor-level aggregation that conflicts
+with a link-year national model.
+:::
+
+---
+
+## The Open Road Risk data stack
+
+What is freely available at national England scale, and what is not.
+
+| Data domain | Available (open) | Not available / not open |
+|---|---|---|
+| Road network geometry | OS Open Roads: link geometry, road name, road classification, form of way | Lane count (sparse in OSM, absent in OS Open Roads); shoulder width; median type/width; lane marking |
+| Traffic volume (AADT) | DfT AADF count points (~8,000 sites) | Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density |
+| Traffic profiles | WebTRIS sensor data (National Highways motorways/A-roads) | Push-button pedestrian actuations; turning-movement counts; corridor-level time series without exposure |
+| Collision records | STATS19 injury collisions: location, severity, date, road class | PDO collisions; contributory factors (not available in Stage 2 feature set); post-event crash attributes |
+| Road geometry/context | OS Terrain 50 DEM (grade derivable); OS Open Roads topology | Degree of horizontal curvature (derivable from polyline geometry but not a RAMM/DOT-style inventory); driveway/access density; side slope; fixed objects |
+| Junction context | OS Open Roads node topology; OSM junction tags | Turning volumes per approach; signal timing; pedestrian crossing presence/type |
+| Socioeconomic context | IMD (English indices); Census (ONS) | School proximity counts (at national scale); pedestrian demand models |
+| Administrative boundaries | Police force areas; local authorities; OS Boundary-Line | — |
+
+The single largest gap relative to the US/NZ literature is **complete observed
+traffic counts**. US studies (Chengye 2013 on Auckland, Huda 2024 on Oregon,
+Roll 2026 on Oregon, Wang 2009 on M25) either have full sensor coverage or
+proprietary probe data (INRIX). Open Road Risk estimates AADT for ~96% of links
+via Stage 1a machine learning; this introduces uncertainty that most comparison
+papers never face.
+
+---
+
+## Per-paper transferability
+
+### Fully or largely transferable
+
+#### Gilardi, Caimo & Ghosh 2022 — Leeds network lattice
+
+The most structurally similar paper. Uses OS road segments, UK crash data, and
+a log-offset on segment length × estimated traffic flow. Three things transfer
+directly:
+
+- The **log-offset form** (length × estimated flow) is mathematically identical
+  to Open Road Risk's exposure term.
+- **Balanced accuracy** via posterior predictive simulation for sparse zero/non-
+  zero crash counts is directly applicable.
+- The **MAUP sensitivity analysis** (contracting OS segments to longer links)
+  shows results are robust to network aggregation, which provides confidence
+  in using OS Open Roads as-is.
+
+Limitation: The paper's traffic exposure is Census-routed commuter flow —
+weaker than Open Road Risk's AADF-calibrated AADT. The INLA Bayesian spatial
+model is not feasible at 2.1M links.
+
+::: {.callout-caution}
+Three independent extractions exist (LIT-012, LIT-013, LIT-014). Active
+reconciliation is pending for Table 2 coefficient signs and the Primary Roads
+interpretation. Do not cite specific coefficient directions from Table 2 without
+checking the original PDF. Use these extractions for high-level structural
+conclusions only until the reconciliation is complete.
+:::
+
+#### Hauer, Harwood, Council & Griffith 2001 — EB tutorial
+
+The EB shrinkage formula, the role of the overdispersion parameter, and the
+regression-to-mean warning all transfer directly regardless of geography. The
+tutorial uses generic road entities (segments, intersections); no US-specific
+data source is needed.
+
+#### Lord & Mannering 2010 — crash-frequency methodology review
+
+The methodological checklist (overdispersion, low mean, zero-heavy counts,
+omitted variables, functional form, spatial/temporal correlation) transfers
+completely. It is a review, not an empirical study, so geography is irrelevant.
+
+#### Brodersen et al. 2010 — balanced accuracy
+
+A general classification methodology paper. Transfers with no modification.
+
+#### Mahoney et al. 2023 — spatial CV
+
+A simulation study on spatially autocorrelated data. Not road-safety specific.
+The directional finding (V-fold CV is severely optimistic; spatial clustering CV
+with buffer ≈ autocorrelation range is substantially better) transfers fully.
+The exact buffer percentages (24–41% of grid length) are simulation-specific
+and must be recalibrated from Open Road Risk's own residual variogram.
+
+#### Jayasinghe et al. 2019 — centrality-based AADT estimation
+
+The centrality-feature approach to AADT estimation (betweenness centrality,
+degree centrality, connected segment volumes) transfers directly to Stage 1a.
+Open Road Risk already uses centrality as a Stage 1a feature. The finding that
+random forest outperforms OLS for AADT estimation is consistent with Stage 1a.
+**Use combined record LIT-043 for citation.**
+
+**What does not transfer:** The paper uses developing-country city road
+networks (Sri Lanka, Japan, Bangladesh) with commercial AADT counts as labels.
+Random-split CV reported; spatial leakage likely. Exact RMSE values from
+Table 4 are not directly comparable to Stage 1a performance.
+
+---
+
+### Partially transferable — UK recalibration required
+
+#### Chengye & Ranjitkar 2013 — Auckland motorway NB regression
+
+**Transfers:** Temporal holdout design (train 2004–2008, test 2009–2010). MAD
+and MSPE as holdout metrics. The direction of ramp/facility-family effects
+(splitting by ramp type reduces MSPE ~24%). EB shrinkage diagnostic for
+motorway sub-families.
+
+**Does not transfer:**
+
+- **AADT per lane** requires lane counts. Lane count is sparsely available
+  in OSM and absent from OS Open Roads. For the motorway subset, OSM coverage
+  is better, but not complete.
+- **Ramp AADT** is not available in any UK open data source. A ramp-presence
+  binary (from OS Open Roads form-of-way) is derivable but not ramp volume.
+- **80% variable selection threshold**: Chengye & Ranjitkar use an 80%
+  confidence level for variable inclusion, not the standard 95%. This inflates
+  reported pseudo-R² and retains noise variables. Open Road Risk should use
+  95% or cross-validated importance.
+- New Zealand motorway geometry and traffic conditions differ from UK;
+  coefficient values should not be imported directly.
+
+#### Wang, Quddus & Ison 2009 — M25 spatial crash model
+
+**Transfers:** The M25 is a UK motorway; the junction-to-junction segment
+structure is analogous to OS Open Roads link topology. Motorway AADT elasticity
+direction (positive, likely near 1.0) transfers. Grade effect direction
+(positive for uphill sections) is consistent with Huda 2024 and general physics.
+Congestion null result for crash frequency (controlling for AADT, congestion
+proxies add little) is a useful documentation note for Stage 2.
+
+**Does not transfer:**
+
+- The M25 paper uses **UK Highways Agency (UKHA) sensor data** providing
+  full AADT coverage for every motorway segment. This is not available for
+  Open Road Risk's full national network; only National Highways routes have
+  WebTRIS coverage, and WebTRIS provides time profiles not raw AADT counts.
+- The paper's CAR spatial model and full Bayesian estimation are not feasible
+  at 2.1M links.
+- Coefficient values are motorway-specific; rural A-road or minor road
+  behaviour will differ.
+
+#### Michalaki, Quddus, Pitfield & Huetson 2015 — M25 accident severity
+
+**Transfers:** The methodological principle that frequency and severity are
+different modelling targets with different predictors. The hard-shoulder /
+main-carriageway distinction is STATS19-derivable.
+
+**Does not transfer:**
+
+- The paper models **conditional severity** (given a crash, what is the
+  severity?), not crash frequency. Post-event STATS19 attributes (number of
+  vehicles, casualties, road surface condition at time of crash) cannot be
+  used as prospective Stage 2 predictors without introducing data leakage.
+- Hard-shoulder coding changes with smart motorway rollout; STATS19 encodes
+  this differently across years.
+
+#### Al-Omari 2021 — Florida context classification SPF
+
+**Transfers:** The concept of context-class / facility-family stratification
+(separate NB models per road context rather than a single global model).
+Urban sub-linear AADT exposure relationships as a diagnostic to test in
+Open Road Risk. Junction density and access-point density as candidate
+segment features.
+
+**Does not transfer:**
+
+- Florida FDOT road inventory (lane width, shoulder width, access point
+  count, speed limit by class) has no equivalent in UK open data at
+  national scale.
+- Florida's context classification system differs from UK road classification.
+  Category boundaries need UK recalibration.
+- Thesis with no holdout validation; coefficient values should not be
+  transferred numerically.
+
+#### Pew, Warr, Schultz & Heaton 2020 — zero-inflated crash models
+
+**Transfers:** The posterior predictive zero check procedure. The overdispersion
+parameter φ as the primary diagnostic. The finding that π ≈ 0 (NB, not ZINB,
+should be the priority diagnostic) — applicable to Open Road Risk's Poisson
+GLM on link-year data.
+
+**Does not transfer:**
+
+- Utah **signalised intersection** crash counts (mean ~3–10 crashes/year per
+  intersection) are much higher than Open Road Risk's link-year rate
+  (~0.01–0.02 crashes/link-year). Zero-inflation structure may differ.
+- No exposure offset in Pew et al. — they use a standardised entering-vehicle
+  covariate, not a log-offset. This does not challenge Open Road Risk's
+  offset design; it is simply a different exposure treatment.
+- JAGS MCMC at intersection scale is not scalable to 2.1M link-years.
+
+#### Roll, Anderson & McNeil 2026 — Oregon pedestrian SPF
+
+**Use combined record LIT-045 for citation.**
+
+**Transfers:** CURE plots as in-sample model-fit diagnostics. The exposure-only
+baseline approach (compare full feature model vs log(AADT)-only baseline). The
+three-tier AADT estimation hierarchy (observed → probe → ML data fusion) as
+a conceptual analogue to Stage 1a.
+
+**Does not transfer:**
+
+- The SPF itself is **pedestrian crash frequency at urban intersections**.
+  Completely different target, unit, and exposure from Open Road Risk.
+- Pedestrian AADPT (annual average daily pedestrian traffic) has no UK
+  national open-data equivalent.
+- **INRIX probe-based AADT** is used as the second tier of the three-tier
+  hierarchy. INRIX is a commercial product not in Open Road Risk's stack.
+  WebTRIS provides motorway time profiles, not nationally complete probe AADT.
+- Push-button pedestrian actuation counts are from US traffic signal
+  controller data; no equivalent source in UK open data.
+- Oregon-specific AADT data fusion model coefficients (school proximity,
+  median income, urban area classification) are US-specific; direct
+  import is not appropriate.
+
+#### Huda & Al-Kaisy 2024 — low-volume road network screening
+
+**Use combined record LIT-042 for citation.**
+
+**Transfers:**
+
+- The finding that **AADT contributes minimally to risk ranking** on low-
+  volume links (≤1000 vpd; R² drop of only 0.009 when AADT is removed).
+  Directly relevant to Open Road Risk's rural minor-road links where Stage 1a
+  AADT estimates are most uncertain.
+- **Curvature** as the dominant geometric predictor (CART: sharp curves have
+  13× higher EB crash density than straight segments). Curvature is derivable
+  from OS Open Roads polyline geometry.
+- **Grade** (4% threshold) as a binary predictor; positive direction consistent
+  with two independent datasets (this paper + Wang 2009).
+- **CART-based threshold derivation** as a method for setting category
+  boundaries from data rather than importing US-specific cut-offs.
+- EB-based ranking as more reliable than raw count ranking on low-volume links.
+
+**Does not transfer:**
+
+- **Lane width** (< 11 ft / ≥ 11 ft): not available in OS Open Roads; sparse
+  in OSM; requires road inventory inspection data.
+- **Shoulder width** (< 1.8 ft / ≥ 1.8 ft): not in any UK national open
+  dataset.
+- **Driveway/access density**: the paper suggests derivation from Google Maps
+  aerial imagery. Not available at 2.1M link scale in UK open data.
+- **Side slope classification**: derived from video log inspection. No UK
+  open-data equivalent.
+- **Fixed object density**: from video logs. No open-data equivalent.
+- **CART thresholds** (9°, 28° curvature; 4% grade; 1.8 ft shoulder) are
+  calibrated to Oregon low-volume rural roads. UK-specific thresholds should
+  be derived from Open Road Risk's own data using CART on EB-ranked link-year
+  outcomes.
+- **OLS on log(EB expected crashes)** should not be used as a modelling
+  approach for Open Road Risk. The response variable is a smooth model
+  output, not raw crash counts, which inflates R² artificially (0.91–0.92
+  vs typical pseudo-R² of 0.05–0.20 for raw count models). The R² values
+  are not comparable.
+
+#### Poch & Mannering 1996 — intersection approach NB regression
+
+**Use combined record LIT-044 for citation.**
+
+**Transfers:** The conceptual point that junction approach mechanisms (turning
+volumes, conflict angles, signal phasing) differ structurally from mid-link
+crash risk. Relevant to documentation of what OS Open Roads link modelling
+misses.
+
+**Does not transfer:**
+
+- **Turning movement volumes** per intersection approach are not available
+  in UK open data.
+- **Signal phasing** data is not nationally available from open sources.
+- US intersection database geometry differs from OS Open Roads node topology.
+- Coefficient values from 1996 US intersections are not transferable.
+
+---
+
+### UK-geography papers with low transferability (negative-transfer examples)
+
+These papers use UK or London data. They appear relevant at first glance;
+they are included here to document specifically why they do not transfer to
+Open Road Risk's pipeline.
+
+#### Gao et al. 2024 — probabilistic GNN for London road risk
+
+Uses London urban road segments (Lambeth, Tower Hamlets, Westminster) from
+OS-style link geometry. Despite the UK geography and road-segment unit, this
+paper does not transfer to Open Road Risk for the following reasons:
+
+| Issue | Detail |
+|---|---|
+| **No exposure offset** | No AADT, no vehicle km travelled. The model cannot distinguish high-risk from high-traffic links. This is the single most important structural gap. |
+| **Severity-weighted composite response** | Response variable = Σ (collision count × severity weight 1/2/3). Not equivalent to raw injury count or exposure-adjusted frequency. |
+| **Daily temporal resolution** | Daily counts per road segment in a single year (2019). Aggregation to annual link-year counts, which Open Road Risk uses, changes the zero-inflation structure and predictive problem completely. |
+| **Within-year temporal split only** | 8:2:2 split within 2019. No cross-year test. No spatial holdout. Same roads appear in training and test. Weaker than Open Road Risk's grouped link CV. |
+| **GNN architecture** | GRU temporal encoder + GAT spatial encoder at borough scale (~4,700–5,700 nodes). Computationally infeasible at Open Road Risk's 2.1M link scale. |
+| **Three-borough scope** | Three London boroughs (highly urbanised). Generalisation to Open Road Risk's national rural/urban mixed scope is not tested. |
+
+**What does transfer:** AccHR@k (accuracy hit rate at top-k% predicted roads)
+as a ranking evaluation metric. MPIW/PICP as probabilistic uncertainty metrics
+for future probabilistic outputs.
+
+#### Balawi & Tenekeci 2024 — ARIMA/SARIMAX on London A-road corridors
+
+Uses STATS19 data from four London A-road corridors (A1, A3, A4, A6). Despite
+using open UK data, this paper should not be cited as methodological support
+for any Open Road Risk decision, for the following reasons:
+
+| Issue | Detail |
+|---|---|
+| **Wrong response variable** | Models "number of vehicles involved in accidents" (a per-collision property), not accident frequency. ARIMA on this quantity does not predict how many accidents occur on a road. |
+| **No exposure** | No AADT, no normalisation. The paper acknowledges this as a limitation but does not resolve it. |
+| **SARIMAX produces negative counts** | Table 7 test predictions include negative values (e.g., −15.107), which is a fundamental model specification error for a count variable. |
+| **Implausible R² values** | Table 3 reports R²=0.82 for Latitude, Day of Week, and Year as predictors of "number of vehicles." These values are not credible as simple pairwise correlations; no derivation is given. |
+| **Corridor-level aggregate** | All accidents on all four A-roads aggregated into a single daily time series. No segment-level structure. |
+| **Single-month holdout** | Despite describing an 80/20 train/test split, the reported test data covers December 2019 only. |
+
+**Nothing transfers** from this paper to Open Road Risk. It is documented here
+to flag that UK-geography papers require the same scrutiny as international
+studies.
+
+---
+
+## Data-availability matrix
+
+The table below maps each key feature or data element from the literature to
+its availability in the UK open data stack used by Open Road Risk.
+
+| Feature / data element | UK open source | Stage available | Gap severity | Papers requiring it |
+|---|---|---|---|---|
+| Road link geometry | OS Open Roads | S1a / S2 | None — core data | All |
+| Road classification (motorway/A/B/minor) | OS Open Roads | S2 | None | Chengye, Wang, Michalaki, Al-Omari |
+| Form of way (slip road, roundabout, motorway) | OS Open Roads | S2 | Partial (not all distinctions visible) | Chengye (ramp detection) |
+| Annual observed traffic count (AADF) | DfT AADF (~8,000 sites) | S1a | **Major** — only ~0.4% of links have AADF; rest estimated | All exposure papers |
+| Motorway/A-road traffic profiles | WebTRIS (National Highways) | S1b | **Major** — not nationally complete | Chengye, Wang, Roll |
+| Injury collision records | STATS19 | S2 | Partial — PDO absent; contributory factors excluded | All |
+| Terrain / elevation / grade | OS Terrain 50 DEM (planned) | S2 (candidate) | Low-medium — derivable, not validated | Huda, Wang, Chengye |
+| Curvature from geometry | Derivable from OS Open Roads polyline | S2 (candidate) | Medium — US thresholds not transferable directly | Huda, Chengye, Wang |
+| IMD / deprivation | ONS English IMD | S2 (candidate) | Low | Roll (jobs access proxy) |
+| Census / demographic | ONS Census 2021 | S2 (candidate) | Low | Gilardi (commuter flow), Al-Omari |
+| Lane count | OSM `lanes` tag (sparse) | S2 (candidate) | **Major** for minor roads; medium for motorways | Chengye, Michalaki |
+| Shoulder width | Not available nationally | — | **Unavailable** | Huda, Chengye |
+| Driveway/access density | Not available at national scale | — | **Unavailable** | Huda, Al-Omari |
+| Side slope / cross-section | Not available at national scale | — | **Unavailable** | Huda |
+| Fixed object density | Not available at national scale | — | **Unavailable** | Huda |
+| Turning movement volumes | Not available in open UK data | — | **Unavailable** | Poch 1996 |
+| Signal phasing / control type | Not available nationally | — | **Unavailable** | Poch 1996, Roll |
+| Pedestrian volume (AADPT) | Not available nationally | — | **Unavailable** | Roll |
+| Commercial probe AADT (INRIX) | Commercial product only | — | **Unavailable (open stack)** | Roll |
+| RAMM / DOT road inventory | Not equivalent to UK open data | — | **Unavailable** | Huda, Chengye (NZ), Roll |
+
+---
+
+## Implications for Open Road Risk
+
+The gap analysis above supports the following documentation positions:
+
+1. **Exposure uncertainty is a first-class limitation.** Most literature papers
+   have observed AADT. Open Road Risk estimates AADT for ~96% of links. This
+   uncertainty is not propagated into Stage 2 rankings and should be documented
+   explicitly, with Huda 2024's finding (geometry dominates on low-AADT links)
+   as partial mitigation for the lowest-volume rural tier.
+
+2. **Geometry features are derivable but need UK calibration.** Curvature and
+   grade are in principle derivable from OS Open Roads + OS Terrain 50. However,
+   the US-derived CART thresholds (Huda: 9°, 28° curvature; 4% grade) are
+   Oregon-specific. UK thresholds should be derived from Open Road Risk's own
+   EB-ranked link data before these features are added to production.
+
+3. **Lane width, shoulder width, and access density are not available.** These
+   are the most commonly cited geometric predictors in the LVR and motorway
+   literature. They cannot be included without a different data source (e.g.,
+   OS MasterMap or Highways England for major roads — out of current scope).
+
+4. **UK geography is not UK data availability.** The two UK-context papers that
+   appear most applicable — Gao 2024 (London boroughs) and Balawi & Tenekeci
+   2024 (London A-roads) — both fail to transfer because they lack exposure,
+   use wrong or composite response variables, or aggregate across spatial units
+   that conflict with link-level modelling.
+
+5. **The closest valid UK analogue is Gilardi et al. 2022** (Leeds OS segments,
+   log-offset form, balanced accuracy for sparse crash data). Its limitations
+   are scale (Leeds only) and exposure quality (commuter flow, not AADF-
+   calibrated AADT), not fundamental structural incompatibility.
+
+---
+
+## References
+
+| ID | Citation |
+|---|---|
+| LIT-002 | Aguero-Valverde, J. & Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. *TRB 87th Annual Meeting.* |
+| LIT-003 | Al-Omari, M.M.A. (2021). Crash analysis and development of safety performance functions for Florida roads. *Thesis, University of Central Florida.* |
+| LIT-009 | Chengye, P. & Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. *EASTS Proceedings.* |
+| LIT-034 | Gao, X., Jiang, X., Zhuang, D., Chen, H., Wang, S., Law, S. & Haworth, J. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. |
+| LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *JRSS-A.* — reconciliation pending; do not cite Table 2 coefficient signs without PDF check. |
+| LIT-015 | Hauer, E., Harwood, D.W., Council, F.M. & Griffith, M.S. (2001). Estimating safety by the empirical Bayes method: a tutorial. *TRR.* |
+| LIT-016 / LIT-042 | Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. *Future Transportation.* [DOI:10.3390/futuretransp4010013](https://doi.org/10.3390/futuretransp4010013) — use combined record LIT-042. |
+| LIT-017 / LIT-043 | Jayasinghe, A., Sano, K., Abenayake, C. & Mahanama, P.K.S. (2019). A novel approach to model traffic on road segments of large-scale urban road networks. *MethodsX.* — use combined record LIT-043. |
+| LIT-019 | Lord, D. & Mannering, F. (2010). The statistical analysis of crash-frequency data. *Transportation Research Part A.* [DOI:10.1016/j.tra.2010.02.001](https://doi.org/10.1016/j.tra.2010.02.001) |
+| LIT-033 | Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. & Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches. |
+| LIT-022 | Michalaki, P., Quddus, M.A., Pitfield, D. & Huetson, A. (2015). Exploring the factors affecting motorway accident severity in England. *Journal of Safety Research.* |
+| LIT-026 / LIT-044 | Poch, M. & Mannering, F. (1996). Negative binomial analysis of intersection-accident frequencies. *Journal of Transportation Engineering.* — use combined record LIT-044. |
+| LIT-027 / LIT-039 | Quddus, M.A., Wang, C. & Ison, S.G. (2010). Road traffic congestion and crash severity. *Journal of Transportation Engineering.* DOI: 10.1061/(ASCE)TE.1943-5436.0000044 — reconciliation complete; use combined record. |
+| LIT-028 / LIT-045 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* — use combined record LIT-045. |
+| LIT-029 | Wang, C., Quddus, M.A. & Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway. *Accident Analysis & Prevention.* |
+| LIT-035 | Balawi, M. & Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. *Heliyon.* [DOI:10.1016/j.heliyon.2024.e25710](https://doi.org/10.1016/j.heliyon.2024.e25710) |
+| LIT-031/041 | Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in road safety. — reconciliation pending; year and DOI not confirmed from PDF; do not cite numerical values from reviewed studies without checking primary sources. |

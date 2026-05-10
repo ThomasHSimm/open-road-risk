@@ -17,8 +17,12 @@ ordinary R² doesn't apply to count models, what published benchmarks look
 like, and how Bayesian and machine-learning approaches compare on this kind
 of data.
 
-The intent is descriptive, not positional. The page documents what the
-literature says, not how this project's results sit within it.
+The intent is descriptive, not promotional. This page documents how the
+project defines its metrics and modelling conventions, and how those choices
+relate to common road-safety modelling practice.
+
+For the structured source matrix behind future literature pages and
+repo-action triage, see the [Literature Evidence Register](literature-evidence-register.qmd).
 
 ## Why standard R² doesn't apply
 
@@ -147,6 +151,39 @@ diagnostics, with continuity corrections for discrete outcomes, are
 standard. These are unavailable for non-Bayesian models and represent a
 genuine methodological advantage of the Bayesian approach.
 
+For zero-heavy crash data, posterior predictive checks should include the
+number or proportion of zero-count units. Pew et al. (2020), for example,
+compare the proportion of simulated datasets with more zeros than observed.
+That diagnostic is useful because a model can have acceptable average error
+while still failing to reproduce the observed mass at zero.
+
+### Ranking, hotspot, and uncertainty metrics
+
+For a risk-ranking product, average error metrics are not sufficient. A
+model can achieve a low RMSE by predicting near-zero everywhere while still
+missing the highest-priority locations. Ranking-oriented metrics therefore
+belong beside count-regression metrics:
+
+- **Hit rate at k / AccHR@k**: among the top *k* percent of predicted
+  high-risk roads, what share correspond to observed crash roads or
+  observed high-risk outcomes? Gao et al. (2024) report AccHR@20 for
+  daily road-level crash prediction. The exact threshold should be chosen
+  for the decision context rather than copied uncritically.
+- **Top-decile or top-percentile lift**: the observed crash count or rate
+  in the top predicted risk band divided by the network average. This is
+  interpretable for prioritisation, but it should be reported with
+  exposure and uncertainty caveats.
+- **PICP** (prediction interval coverage probability): the observed share
+  of outcomes falling inside predictive intervals. This is only available
+  when the model produces intervals or distributions.
+- **MPIW** (mean prediction interval width): the average width of
+  predictive intervals. It should be interpreted together with PICP,
+  because narrow intervals are only useful if coverage remains adequate.
+
+These metrics evaluate ranking usefulness and uncertainty calibration, not
+causal validity. They also depend heavily on the spatial and temporal
+split used to create the test set.
+
 ## What counts as a typical result
 
 The crash modelling literature reports a wide range of pseudo-R² values
@@ -266,6 +303,25 @@ Recent examples include Aguero-Valverde & Jovanis (2008), Boulieri et al.
 et al. (2011), and Ziakopoulos & Yannis (2020) reviews give a broader
 overview of the methodological developments.
 
+### Zero-heavy and distributional count models
+
+Crash counts often have more zeros and heavier tails than a plain Poisson
+model can reproduce. Negative binomial models address overdispersion.
+Zero-inflated Poisson or zero-inflated negative binomial models add a
+separate zero-generating component. Tweedie and zero-inflated Tweedie
+models are sometimes used where the target is a non-negative continuous
+or severity-weighted risk score rather than a simple integer count.
+
+The important reporting discipline is to separate the distributional
+question from the exposure question. A zero-inflated or Tweedie model that
+does not include traffic exposure is not evidence against exposure
+normalisation. It is evidence about a possible response distribution for
+zero-heavy outcomes. Pew et al. (2020) are useful for zero-calibration and
+temporally held-out count diagnostics at intersections; Gao et al. (2024)
+are useful for ranking and probabilistic metrics, but their model omits
+traffic exposure and uses a daily severity-weighted target rather than an
+annual exposure-adjusted link count.
+
 ### Machine learning approaches
 
 Tree-based methods (random forests, gradient boosting) and neural networks
@@ -299,6 +355,15 @@ Limitations:
 - Spatial structure is not naturally represented; including spatial
   features (location, network position) helps but doesn't borrow strength
   the way CAR priors do.
+
+Graph neural networks are a specialised machine-learning branch that
+represent the road network explicitly. Gao et al. (2024) show the value of
+distribution-aware graph models for daily urban road-level prediction, but
+their scale is thousands of London roads, not millions of national links,
+and their validation keeps the same roads across train and test. For Open
+Road Risk, the near-term transferable part is the evaluation vocabulary
+such as AccHR@k, PICP, MPIW, and zero-rate diagnostics, not the full GNN
+architecture.
 
 ### Spatial point process methods
 
@@ -354,6 +419,49 @@ report cross-validated or holdout metrics. A direct comparison of "0.35
 pseudo-R²" between an in-sample Bayesian model and an out-of-sample ML
 model isn't meaningful without adjustment.
 
+### Random, grouped, temporal, and spatial splits
+
+Grouped-by-link validation prevents the same road link appearing in both
+train and test across repeated years. It is not the same as spatial
+validation. Nearby links in the same corridor can still share unobserved
+conditions, so grouped validation can remain optimistic for spatial
+generalisation.
+
+Mahoney et al. (2023) are not a road-safety paper, but their simulation
+evidence is directly relevant to validation design: non-spatial V-fold
+cross-validation can substantially underestimate prediction error when
+outcomes are spatially autocorrelated. Spatial clustering or blocked
+holdouts with exclusion buffers are better diagnostics, but their
+parameters need to be chosen with the road network and outcome sparsity in
+mind.
+
+Temporal holdouts answer a different question: whether the model predicts
+future years or periods for locations already represented in training.
+Pew et al. (2020) use a one-year temporal holdout for Utah intersections.
+Chengye & Ranjitkar (2013) use a later-year motorway holdout. These are
+useful complements to grouped or spatial validation, not replacements for
+them.
+
+### Derived targets vs observed future outcomes
+
+Some studies validate against a derived safety target rather than against
+future observed crashes. Huda & Al-Kaisy (2024), for example, fit simple
+models to reproduce empirical-Bayes expected crashes on low-volume Oregon
+roads. High adjusted R² values in that setting show that the simplified
+model reproduces the derived EB target; they do not constitute external
+validation of future crash prediction or hotspot ranking.
+
+### Time-series metrics without exposure
+
+Corridor-level ARIMA or SARIMAX metrics should not be compared with
+link-year risk metrics unless the response variable and exposure frame are
+compatible. Balawi & Tenekeci (2024) report time-series metrics for London
+A-road accident-related data, but the extraction flags serious issues:
+the modelled target is vehicle involvement rather than a link-level injury
+collision count, traffic exposure is absent, and some predictions are
+negative for a count-like outcome. Those metrics should not be used as
+benchmarks for Open Road Risk.
+
 ### Different binarisation thresholds
 
 When confusion-matrix metrics are reported, the threshold used to convert
@@ -370,6 +478,10 @@ frequency with spatial models. *Transportation Research Record*, 2061(1),
 Baddeley, A., Nair, G., Rakshit, S., McSwiggan, G. & Davies, T.M. (2021).
 Analysing point patterns on networks — a review. *Spatial Statistics*,
 42, 100435.
+
+Balawi, M. & Tenekeci, G. (2024). Time series traffic collision analysis
+of London hotspots: Patterns, predictions and prevention strategies.
+*Heliyon*, 10(4), e25710.
 
 Boulieri, A., Liverani, S., de Hoogh, K. & Blangiardo, M. (2017). A
 space-time multivariate Bayesian model to analyse road traffic accidents
@@ -393,14 +505,29 @@ hierarchical analysis of car crashes data considering a spatial network
 lattice. *Journal of the Royal Statistical Society: Series A*, 185(3),
 1150–1177.
 
+Gao, X., Jiang, X., Zhuang, D., Chen, H., Wang, S., Law, S. & Haworth, J.
+(2024). Uncertainty-aware probabilistic graph neural networks for
+road-level traffic crash prediction. arXiv:2309.05072v4.
+
+Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads
+using risk factors. *Future Transportation*, 4(1), 13.
+
 Lord, D. & Mannering, F. (2010). The statistical analysis of
 crash-frequency data: a review and assessment of methodological
 alternatives. *Transportation Research Part A: Policy and Practice*, 44,
 291–305.
 
+Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. & Beier,
+C.M. (2023). Assessing the performance of spatial cross-validation
+approaches for models of spatially structured data. arXiv:2303.07334v1.
+
 McFadden, D. (1973). Conditional logit analysis of qualitative choice
 behavior. In P. Zarembka (ed.) *Frontiers in Econometrics*, 105–142.
 Academic Press.
+
+Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for
+considering zero-inflated models in crash frequency analysis.
+*Transportation Research Interdisciplinary Perspectives*, 8, 100249.
 
 Poch, M. & Mannering, F. (1996). Negative binomial analysis of
 intersection-accident frequencies. *Journal of Transportation

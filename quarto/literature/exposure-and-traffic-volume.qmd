@@ -1,0 +1,274 @@
+---
+title: "Exposure and Traffic Volume"
+subtitle: "How the literature handles traffic exposure, and what Open Road Risk can and cannot do"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+Exposure normalisation is the central design decision in crash-frequency modelling. A model
+that counts collisions without accounting for traffic volume cannot distinguish a genuinely
+dangerous road from a heavily used one. What follows synthesises the exposure treatment
+from eleven reviewed papers and maps their approaches against Open Road Risk's data stack.
+
+---
+
+## What exposure normalisation means
+
+The canonical form for a road segment crash model places traffic exposure as a log-offset in
+the Poisson log-linear predictor:
+
+$$\log(\mu_i) = \log(E_i) + \beta_0 + \sum_k \beta_k X_{ik}$$
+
+where $E_i = \text{AADT}_i \times L_i \times T$ is the vehicle-kilometres (or vehicle-days)
+of travel on segment $i$ over period $T$. The offset is not a coefficient to be estimated — it
+is a constraint that forces the model to predict a crash *rate* rather than a raw count.
+Without it, a model cannot separate roads that have more crashes because they carry more
+traffic from roads that have more crashes because they are inherently more dangerous.
+
+Open Road Risk's Stage 2 uses `log(AADT × link_length_km × 365 / 1e6)` as its exposure
+offset, which is structurally equivalent to the VMT-style offset used in Hauer et al. (2001)
+and directly analogous to the `log(length × traffic_flow)` offset used by Gilardi et al. (2022)
+on OS road segments in Leeds. Both papers confirm this is the correct mathematical structure
+for a UK segment-level crash model.
+
+---
+
+## The AADT elasticity question
+
+The log-offset approach implicitly assumes that crash frequency scales proportionally with
+traffic volume — that doubling AADT doubles expected crashes, all else equal (elasticity = 1.0).
+This assumption is testable and is not universally supported.
+
+Aguero-Valverde and Jovanis (2008) fit Bayesian hierarchical models to rural Pennsylvania
+road segments with AADT as a free covariate (not constrained within an offset). Their
+estimated AADT coefficient ranges from 0.628 to 0.714 depending on model specification —
+well below 1.0. The paper interprets the drop from 0.714 (heterogeneity-only model) to 0.664
+(spatial model) as evidence that ignoring spatial correlation biases the AADT coefficient
+upward via model misspecification.
+
+Wang et al. (2009) obtain AADT elasticities of 1.2–1.9 on the M25 motorway, above the
+proportional assumption. They note explicitly that their elasticity is "a little high compared
+with some of the previous studies which reported that the elasticity ranges from 0.6–0.7"
+(p. 10). Pan et al. (2017) report near-unity NB coefficients on log(AADT × length) for most
+North American highway types, which is consistent with the offset assumption.
+
+The evidence points in the same direction across these papers: AADT elasticity is road-type
+dependent and differs from the 1.0 constraint imposed by the combined offset. Motorways may
+have super-proportional elasticity; rural two-lane roads sub-proportional. Al-Omari (2021)
+finds sub-linear AADT coefficients (0.39–0.63) for dense urban road classes in Florida —
+well below the fixed-offset assumption.
+
+::: {.callout-note}
+The fixed-offset assumption (AADT and length elasticity = 1.0) is supported on average but
+has not been tested diagnostically in Open Road Risk. A straightforward diagnostic is to
+fit the Stage 2 GLM with `log(AADT)` and `log(length)` as separate free covariates and
+compare the estimated elasticities against 1.0. If they are materially below 1.0 for some
+road classes, the offset may be overweighting exposure for high-AADT links and distorting
+the risk percentile ranking for those classes.
+:::
+
+---
+
+## Open Road Risk's exposure data stack
+
+The single largest gap between Open Road Risk and most papers in the literature is that Open
+Road Risk does not observe AADT — it estimates it.
+
+Approximately 0.4% of OS Open Roads links have a directly counted DfT AADF observation.
+The remaining ~96% of links receive an AADT estimate from the Stage 1a machine-learning
+model, trained on the counted subset using road/network/context features. This introduces
+estimation uncertainty that most comparison papers never face: they work with either complete
+sensor networks (Wang 2009 on the M25, using UKHA hourly counts for all 70 segments), or
+nationally complete probe-based data (Roll et al. 2026, which uses INRIX commercial speed
+data for a second estimation tier in Oregon).
+
+The table below summarises how the reviewed papers obtain their traffic exposure.
+
+| Paper | Traffic data source | Coverage | Missing data handling |
+|---|---|---|---|
+| Gilardi et al. 2022 | 2011 Census commuting OD flows, routed via shortest path | All major-road segments (derived) | No gaps — Census routing covers everything; but proxy is weak |
+| Aguero-Valverde & Jovanis 2008 | Pennsylvania RMS (state road management) | All 865 rural two-lane segments | Not discussed; full coverage assumed |
+| Wang et al. 2009 | UKHA hourly counts | All 70 M25 segments (near-complete) | Two segments excluded due to missing data |
+| Hauer et al. 2001 | AADT assumed observed per year | Illustrative tutorial examples | Not addressed; full coverage assumed |
+| Jayasinghe et al. 2019 | JICA survey counts (five cities) | Sparse sample, ~40–1500 count sites | Core problem — motivates centrality-based estimation |
+| Roll et al. 2026 | HPMS observed → INRIX probe → random forest data fusion | Statewide urban intersections | Three-tier hierarchy fills gaps at each level |
+| Pew et al. 2020 | UDOT entering vehicles per day | All 1,738 Utah intersections | Not discussed; full coverage assumed |
+| Gao et al. 2024 | None | Not used | N/A — no traffic exposure in model |
+| Open Road Risk | DfT AADF (~8,000 sites, ~0.4% of links) → Stage 1a ML estimate | All ~2.17M links (estimated) | Stage 1a model fills the gap; uncertainty not propagated into Stage 2 |
+
+The contrast with Gao et al. (2024) is a useful negative example. That paper uses
+OS-style road links in London with STATS19 crash data — superficially close to Open Road
+Risk — but includes no traffic exposure whatsoever. Its model cannot distinguish a
+high-traffic road from a high-risk road. The severity-weighted crash score it predicts is a
+raw exposure-unadjusted count, not a rate. This is the failure mode that Open Road Risk's
+offset design is explicitly intended to avoid.
+
+---
+
+## Estimated AADT as exposure: what the literature says
+
+Jayasinghe et al. (2019) provide the closest direct reference for estimating AADT from
+network centrality in a sparse-count setting. Their betweenness centrality and closeness
+centrality model achieves random-holdout R² of 0.92–0.96 across five developing-country
+cities, but with critical weaknesses: very poor RMSE for low-AADT links (193% in Colombo,
+412% in Phnom Penh for segments with AADT below 1000), and no spatial holdout — nearby
+segments share centrality structure and may inflate validation metrics.
+
+The low-AADT failure is directly relevant to Open Road Risk, which has a long tail of minor
+rural and unclassified roads where AADF count coverage is near zero and Stage 1a predictions
+are least reliable. Huda and Al-Kaisy (2024) provide a partial mitigation: they show that
+for low-volume roads (≤1000 vpd), removing AADT from the model reduces R² by only 0.009.
+Geometry features — curvature and grade — dominate at that end of the traffic-volume
+distribution. This does not remove the uncertainty problem but suggests that exposure
+estimation error on low-AADT links may matter less to the final risk ranking than it would
+for high-volume roads.
+
+Roll et al. (2026) demonstrate the three-tier data-fusion hierarchy that is conceptually the
+right architecture for exposure uncertainty: use observed counts first, fill with probe-based
+AADT second, fill with ML estimation third. Open Road Risk's Stage 1a implements the third
+tier (ML estimation from network features) but has limited access to a second tier — WebTRIS
+provides time profiles for National Highways routes rather than AADT counts for individual
+links, and commercial probe data (INRIX, as used by Roll) is outside the open-data stack.
+
+An important finding from Roll et al. (2026) on model selection: despite testing negative
+binomial, Poisson, XGBoost, and neural network approaches for pedestrian volume estimation,
+random forest was selected not because it had the best cross-validated error metric but
+because it was the only model that passed an application sanity check — XGBoost produced
+negative volume predictions, and the negative binomial produced implausibly extreme maxima
+in the statewide prediction. Open Road Risk should apply equivalent sanity checks to Stage 1a
+full-network predictions (distribution of predicted AADT by road class and rural/urban
+classification) rather than relying on CV metrics alone.
+
+::: {.callout-warning}
+Exposure uncertainty is a first-class limitation of Open Road Risk that is not present in
+most comparison papers. The current Stage 2 model treats estimated AADT as observed,
+with no propagation of Stage 1a prediction uncertainty into the Stage 2 crash rate estimate
+or the risk percentile. This means that the risk percentile for a low-volume rural link
+combines uncertain exposure with sparse collision counts — two sources of instability that
+are compounded rather than separated. The Huda and Al-Kaisy (2024) finding (geometry
+dominates at low AADT) is partial mitigation, not a solution.
+:::
+
+---
+
+## The Empirical Bayes connection
+
+Hauer et al. (2001) provide the canonical mathematical connection between the exposure
+model (SPF) and the EB shrinkage step. The EB weight formula requires:
+
+$$w = \frac{1}{1 + \eta/\phi}$$
+
+where $\eta = \mu \times L \times Y$ is the SPF-predicted expected count over the observation
+period (incorporating AADT, length, and years) and $\phi$ is the overdispersion parameter
+per unit length estimated from negative binomial regression. When AADT is estimated rather
+than observed, $\eta$ carries estimation uncertainty — but the EB procedure at least ensures
+that for links with very uncertain AADT (typically low-volume rural roads), the EB estimate
+shrinks heavily toward the SPF mean rather than being dominated by the raw observed count.
+For a link with near-zero expected crashes ($\eta$ small), $w \to 1$ and the EB estimate is
+almost entirely determined by the prior.
+
+This means that exposure uncertainty on minor roads, while real, is partially absorbed by the
+EB shrinkage mechanism: a link whose AADT is poorly estimated will have a poorly estimated
+$\eta$, but the EB estimator will respond by weighting the SPF prior heavily — which is the
+correct conservative response in the absence of reliable evidence.
+
+The full EB procedure (Hauer et al. 2001, equation 7) accommodates year-specific AADT
+changes by summing $\mu_\text{year}$ across years. Open Road Risk's Stage 1a produces a
+year-specific AADT estimate per link per year, which directly supports this extension.
+
+---
+
+## What does not transfer: exposure approaches that require unavailable data
+
+Several exposure approaches in the literature are blocked by the UK open-data constraint.
+
+The M25 paper (Wang et al. 2009) uses UKHA hourly counts for all 70 motorway segments —
+structurally similar to AADF but complete and observed. The methodological structure
+(AADT as covariate, not offset) is informative but the data source is not replicable
+nationally. WebTRIS provides time profiles for National Highways motorways and A-roads
+but does not provide the observed per-segment AADT that this paper relies on.
+
+Roll et al. (2026) use INRIX commercial probe-based AADT as the second tier of their
+data-fusion hierarchy. INRIX is a proprietary product and is not in Open Road Risk's stack.
+The AADT data-fusion concept transfers; the specific data source does not.
+
+Gilardi et al. (2022) use 2011 Census commuting origin-destination flows, routed via
+shortest path, as their traffic proxy. This is open data and correctly handles the sparse-count
+problem — but it captures commuting trips only, is a decade out of date relative to the
+2011–2018 crash data, and misses freight, leisure, and all non-commute traffic.
+Open Road Risk's Stage 1a AADF-calibrated AADT is a substantially better proxy.
+
+Gao et al. (2024) use no traffic data at all. This is documented here as a cautionary
+contrast rather than a model to follow.
+
+| Exposure approach | Papers | Transfer to Open Road Risk | Reason |
+|---|---|---|---|
+| Log-offset of length × AADT | Gilardi 2022; Hauer 2001; Open Road Risk (current) | Already implemented | Mathematical structure identical |
+| AADT as free covariate (elasticity estimated) | Aguero-Valverde 2008; Wang 2009 | Diagnostic only | Useful to test offset elasticity assumption; not a production replacement |
+| Complete observed sensor AADT | Wang 2009; Aguero-Valverde 2008; Pew 2020 | Not available nationally | DfT AADF covers ~0.4% of links; Stage 1a fills the gap |
+| INRIX probe-based AADT | Roll 2026 (tier 2) | Not available (commercial) | No open equivalent; WebTRIS provides time profiles, not link-level AADT |
+| Census commuting OD routing | Gilardi 2022 | Superseded by Stage 1a | Open Road Risk already has a better proxy |
+| No traffic exposure | Gao 2024; Balawi & Tenekeci 2024 | Should not transfer | Negative example only |
+
+---
+
+## Stage 1a validation: what the literature suggests
+
+Two papers speak directly to how Stage 1a AADT estimation should be validated and what its
+failure modes are.
+
+Jayasinghe et al. (2019) show that a learning-curve diagnostic — measuring validation error
+as a function of the number of calibration count points — is a simple, useful way to
+understand how performance degrades with sparse coverage. Around 40 calibration observations
+produced RMSE below 30% in their five case cities. Open Road Risk has approximately 8,000
+DfT AADF count points, which is dense by comparison, but the points are highly skewed toward
+major roads. The learning curve for minor road AADT estimation would look quite different
+if assessed separately.
+
+Roll et al. (2026) show that CV metrics alone are insufficient: application sanity checks
+(checking the full-network prediction distribution by road class and AADT band) detected
+implausible outputs in two of the four models tested, failures that the CV metrics did not
+reveal. Open Road Risk should compare the distribution of Stage 1a predicted AADT by road
+class and rural/urban classification against observed AADF values and known traffic-volume
+relationships.
+
+Both papers confirm that low-AADT links are the hardest to estimate well. Jayasinghe et al.
+(2019) report RMSE of 193–412% in the lowest AADT category. Huda and Al-Kaisy (2024)
+find that AADT explains almost nothing in the crash-risk model for links with fewer than
+1000 vehicles per day — geometry dominates at that end. This does not mean Stage 1a
+performance on low-volume links is unimportant, but it contextualises what is at stake:
+for minor rural roads, exposure uncertainty matters less to the final risk ranking than
+the quality of the geometric and network features.
+
+---
+
+## Open Road Risk alignment
+
+| Requirement | Literature recommendation | Current pipeline | Gap |
+|---|---|---|---|
+| Exposure structure | Log-offset of AADT × length; elasticity testable as a diagnostic | Fixed offset (`log(AADT × link_length_km × 365 / 1e6)`) | Elasticity not yet tested as free covariate; sub-linear risk on urban classes possible |
+| Traffic data source | Observed or estimated AADT; Census proxies weaker | Stage 1a ML estimate from AADF + features | Coverage limitation for minor roads; uncertainty not propagated into Stage 2 |
+| Exposure uncertainty | Acknowledge and document; EB shrinkage partially absorbs it for sparse links | EB shrinkage exists as diagnostic variant; uncertainty not propagated | Stage 2 treats estimated AADT as if observed; no uncertainty interval on risk percentile |
+| AADT elasticity | Test whether elasticity differs from 1.0 by road class | Not yet tested | Free-coefficient diagnostic not yet run |
+| Validation of exposure model | Spatial/grouped holdout; learning-curve diagnostic; application sanity checks | CV metrics available but sanity checks not formalised | Low-AADT subgroup error not separately reported |
+| No-exposure contrast | Document papers that omit exposure as cautionary examples | Not yet documented | Add Gao 2024 and Balawi & Tenekeci 2024 as cautionary contrasts |
+
+---
+
+## References
+
+| ID | Citation |
+|---|---|
+| LIT-001/002 | Aguero-Valverde, J. & Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. *TRB Annual Meeting; Transportation Research Record 2061, 55–63.* |
+| LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *Journal of the Royal Statistical Society Series A, 185(3), 1150–1177.* DOI: 10.1111/rssa.12823 |
+| LIT-015 | Hauer, E., Harwood, D.W., Council, F.M. & Griffith, M.S. (2001). Estimating safety by the empirical Bayes method: a tutorial. *National SPF Summit, Chicago.* |
+| LIT-016/042 | Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. *Future Transportation, 4(1).* DOI: 10.3390/futuretransp4010013 |
+| LIT-017/043 | Jayasinghe, A., Sano, K., Abenayake, C. & Mahanama, P.K.S. (2019). A novel approach to model traffic on road segments of large-scale urban road networks. *MethodsX.* DOI: 10.1016/j.mex.2019.04.024 |
+| LIT-025/037 | Pan, G., Fu, L. & Thakali, L. (2017). Development of a global road safety performance function using deep neural networks. *International Journal of Transportation Science and Technology, 6(3), 159–173.* DOI: 10.1016/j.ijtst.2017.07.004 |
+| LIT-032 | Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. *Transportation Research Interdisciplinary Perspectives, 8, 100249.* DOI: 10.1016/j.trip.2020.100249 |
+| LIT-028/045 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* |
+| LIT-029 | Wang, C., Quddus, M.A. & Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway in England. *Accident Analysis & Prevention.* |
+| LIT-034 | Gao, X. et al. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. *arXiv:2309.05072v4.* |
+| LIT-035 | Balawi, M. & Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. *Heliyon.* DOI: 10.1016/j.heliyon.2024.e25710 |

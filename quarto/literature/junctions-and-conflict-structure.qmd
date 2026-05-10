@@ -1,0 +1,257 @@
+---
+title: "Junctions and Conflict Structure"
+subtitle: "Why junction risk requires different units, data, and exposure structures from the current link-year model"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+Open Road Risk models crash frequency at the road link level. This is a practical and
+defensible design choice at national scale with open data, but it creates a known structural
+gap: the mechanisms that drive crash risk at junctions are fundamentally different from
+those that drive risk on mid-link road sections, and most of those mechanisms are not
+captured by link-level features or a link-level AADT exposure offset.
+
+This page documents what the reviewed literature says about junction risk, identifies which
+junction-related ideas are implementable with UK open data, and establishes what should be
+documented as a known limitation of the current pipeline.
+
+---
+
+## Why junctions are different
+
+Road crashes concentrate at junctions. Multiple streams of traffic interact at a single
+point; conflicts arise from turning movements, opposing through traffic, pedestrian crossings,
+and sight-line restrictions that have no counterpart on a uninterrupted mid-link section. The
+spatial unit and the exposure structure both need to change to model this correctly.
+
+Poch and Mannering (1996) make this explicit. Fitting negative binomial models to 63
+signalised intersections in Bellevue, Washington — 1,385 intersection approach-year
+observations — they find that the strongest predictors of total accident frequency are
+**total opposing approach volume** (elasticity 2.95) and **left-turn volume** (elasticity
+2.28). These are movement-specific traffic volumes, not segment AADT. A 1% increase in
+total opposing approach volume is associated with approximately 3% more accidents; the
+equivalent elasticity on link-level AADT in segment models is typically 0.6–1.0. Junction
+conflict exposure scales super-linearly with the volume of opposing and turning movements
+in ways that a simple link AADT cannot capture.
+
+Poch and Mannering (1996) also estimate separate models for rear-end, angle, and
+approach-turn accidents. Each accident type has a different predictor set. Rear-end
+accidents respond to lane configuration and sight-distance restrictions; angle accidents
+respond to signal phase configuration and opposing volumes; approach-turn accidents depend
+heavily on protected versus permitted left-turn movements. A single total-crashes count
+model on a road link conflates all of these mechanisms into one coefficient on one exposure
+variable.
+
+Ziakopoulos and Yannis (2020) review the broader spatial road safety literature and
+document a finding from joint segment-intersection models: **spatial correlations between
+intersections and their connected segments are consistently more significant than those
+between intersections alone or between segments alone**. The mechanism proposed is common
+unobserved factors — approach speed, signal timing, road surface condition — that are shared
+between an intersection and the immediately adjacent road sections. This means that even
+in a link-level model, links adjacent to junctions will have correlated residuals that are
+driven by the junction's unmodelled risk, not by the link itself.
+
+---
+
+## What junction risk depends on: the data picture
+
+The table below maps the key junction-risk mechanisms identified across the reviewed papers
+to their data availability in the UK open-data stack.
+
+| Mechanism | Paper evidence | Required data | UK open-data availability |
+|---|---|---|---|
+| Opposing approach volume | Poch & Mannering 1996 — elasticity 2.95 | Per-approach AADT at intersection | **Not available nationally.** DfT AADF counts per link; no turning-movement counts. |
+| Left-turn and right-turn volume | Poch & Mannering 1996 — elasticities 2.28 / 0.92 | Directional turning counts | **Not available nationally.** |
+| Signal phasing (2-phase vs 8-phase; protected left turn) | Poch & Mannering 1996 — significant predictors | Signal control inventory with phase detail | **Not available.** OSM records signal presence but not phase/control type. |
+| Signalised intersection density (per km) | Al-Omari 2021 — most consistently significant predictor across all 8 Florida road classes; Wang 2015 — +37% per signal/km | Count of signalised junctions per segment length | **Partially available.** OSM `highway=traffic_signals` provides signal locations; coverage is uneven nationally but better in urban areas. Junction count derivable from OS Open Roads topology. |
+| Access point density (per km) | Al-Omari 2021 — consistently significant; Wang 2015 — +11% per access/km | Count of access points (driveways, side roads) per segment length | **Partially available.** Minor road connections to a link derivable from OS Open Roads network topology. True driveway accesses are not in OS Open Roads. |
+| Sight-distance restriction | Poch & Mannering 1996 — significant positive predictor | Site survey / design plan data | **Not available nationally.** Curvature and grade proxies are imperfect substitutes. |
+| Road network pattern (grid vs tree structure) | Wang 2015 — lollipop networks ~100% more crashes than grid | Network topology / betweenness centrality | **Derivable** from OS Open Roads using betweenness centrality. Already present as a candidate feature. |
+| Junction leg count / complexity | Roll 2026; Ziakopoulos 2020 | Node degree from road network graph | **Derivable** from OS Open Roads topology. |
+| Traffic control type (signal / roundabout / priority) | Ziakopoulos 2020; Roll 2026 | Junction control classification | **Partially available** from OSM junction tags; form of way in OS Open Roads captures roundabouts. |
+| Pedestrian crossing presence | Roll 2026 — marked vs unmarked crossing as model stratifier | Crossing inventory | **Partially available** from OSM; coverage sparse and inconsistent nationally. |
+
+The gap is stark. The data that drive junction-specific crash risk — turning movement volumes,
+signal phasing, sight-distance surveys, approach-level geometry — are not available in any
+UK national open-data source. They require either proprietary traffic engineering data
+(Highways England network management systems) or intersection-level field surveys neither of
+which is in scope for Open Road Risk.
+
+---
+
+## What is derivable: proxy features
+
+Three categories of junction-related proxy features are derivable from OS Open Roads and
+OSM at national scale, albeit imperfectly.
+
+### Junction density along a link
+
+Al-Omari (2021) finds that signalised intersection density (SID) is the most consistently
+significant predictor across all eight Florida road context classes, surviving all model
+variants after controlling for AADT, road geometry, and other features. The mechanism is
+clear: more junctions per kilometre means more conflict opportunities per vehicle-kilometre
+of travel. This feature conceptually transfers, even if the Florida FDOT classification
+system does not.
+
+From OS Open Roads, junction count per link length is directly computable: count all nodes
+with degree ≥ 3 within a corridor around each link, divide by link length. A signalised
+variant is possible from OSM traffic signal locations, with the caveat that OSM signal
+coverage is incomplete and geographically uneven in the UK.
+
+::: {.callout-warning}
+Speed limit has a **negative** coefficient in Al-Omari (2021) across all road classes —
+higher speed limits are associated with fewer crashes per segment after controlling for AADT.
+This is a well-documented confound: high speed limits occur on roads with fewer access
+points and intersections (motorways, rural A-roads), so the coefficient proxies for low
+junction density rather than genuinely protective speed. Open Road Risk's OSM speed limit
+feature should be interpreted as a road-type proxy, not a direct safety predictor.
+This applies equally to any raw negative speed limit coefficient in the Stage 2 GLM.
+:::
+
+### Network topology: betweenness centrality
+
+Wang et al. (2015) study Shanghai suburban arterials at TAZ level and find that
+road-network topology matters for crash frequency. Links embedded in tree-structure
+(lollipop) networks, which force all local traffic onto a single arterial with no parallel
+collector routes, have roughly twice the crash frequency of equivalent links in grid
+networks. The mechanism is captured by betweenness centrality: a link that lies on nearly
+every shortest path through its neighbourhood carries more exposure than its AADT alone
+reflects, because it serves as the only conduit for a catchment area.
+
+Betweenness centrality is already a candidate feature in Open Road Risk Stage 1a and Stage 2.
+Wang et al. (2015) provide conceptual support for it as a junction-conflict proxy beyond
+its use as an AADT estimator. However, note that Gilardi et al. (2022) find betweenness
+centrality is not significant in their Leeds network-lattice model after controlling for
+road type and exposure — suggesting it may be absorbed by other features in a well-specified
+model. Its contribution deserves a diagnostic test rather than assumption.
+
+The Wang 2015 results should be treated cautiously for other reasons: they are from a
+single-year in-sample TAZ-level model in Shanghai with no holdout validation. The directional
+findings (junction density and network tree structure increase crash frequency) are consistent
+with physical expectations and the broader literature, but the coefficient magnitudes are not
+transferable.
+
+### Junction-proximity as a binary or continuous feature
+
+Baddeley et al. (2021) observe from network point-process theory that crashes concentrate at
+network vertices (junctions), and that standard continuous-network models must be modified
+to handle this — essentially because junctions create discrete spatial concentrations of
+crash risk that cannot be represented by a smooth intensity function along link edges.
+
+For Open Road Risk's link-level model, the practical analogue is a junction-proximity
+feature: the distance from a link's midpoint to the nearest OS Open Roads junction node
+(degree ≥ 3), or equivalently a binary flag for links that are themselves junction connectors
+(slip roads, roundabout circulating carriageways). Links adjacent to junctions absorb some
+of the crash risk from the junction itself. A distance-to-nearest-junction feature could
+help the model distinguish genuinely high-risk mid-link sections from links that appear
+risky because they are close to a junction.
+
+---
+
+## The exposure problem at junctions
+
+Open Road Risk uses `log(AADT × link_length_km × 365 / 1e6)` as its exposure offset. At a
+mid-link road section, this is a reasonable approximation: the expected number of crashes is
+roughly proportional to the number of vehicle-kilometres of travel on that section.
+
+At a junction, this breaks down in two ways.
+
+First, the relevant exposure is not vehicle-kilometres on the approach link but the product
+of conflicting traffic volumes. A T-junction with 1,000 vehicles per day on the major road
+and 100 on the minor road has a conflict exposure that depends on both volumes simultaneously.
+The link-level offset captures only the major-road AADT and misses the minor-road conflict
+contribution entirely.
+
+Second, junctions are points, not lengths. The AADT × length offset normalises by segment
+length — a longer link accumulates more vehicle-kilometres of exposure. At a junction,
+length is not the relevant denominator; the conflict happens at a single location. A very
+short junction connector link will have a very small AADT × length exposure and therefore
+appear to have an anomalously high crash rate per vehicle-kilometre, not because it is
+especially dangerous but because the exposure denominator is wrong for a point-like conflict
+location.
+
+Hauer et al. (2001) make this explicit in the EB tutorial: intersections are treated as
+separate entities with different SPF forms (accidents per year, not accidents per km-year),
+and the overdispersion parameter φ is estimated per intersection-type, not per-unit-length.
+The link-year model cannot directly handle this — but it does imply that the highest-ranked
+links in the current risk percentile may include many junction-connector links whose apparent
+high risk is partly an artefact of the length-denominator mismatch.
+
+---
+
+## Scale and feasibility constraints
+
+Roll et al. (2026) develop a pedestrian SPF for Oregon urban intersections. The
+data engineering alone — classifying 64,000 intersections by leg count, control type, and
+marked-crossing presence; contracting complex divided-road intersections to single nodes;
+integrating signal inventories from five data sources; estimating pedestrian AADPT via a
+random-forest data-fusion model — required a substantial research effort for a single US
+state. Replicating this for the full national OS Open Roads network would be a major
+undertaking well outside Open Road Risk's current scope.
+
+The Roll 2026 paper is most useful for two things. First, it confirms the general principle
+that junction risk needs different spatial units, different exposure variables, and different
+model structures from the current link-year model. Second, it provides a template for the
+data-engineering challenges involved if a separate junction layer is ever added: intersection
+contraction, control-type classification, and exposure estimation are each non-trivial steps.
+
+::: {.callout-note}
+Roll et al. (2026) also find that their final pedestrian SPFs use only vehicle AADT and
+pedestrian AADPT as predictors — the complex contextual feature set added little beyond
+exposure. This is consistent with Al-Omari (2021)'s finding of no significant difference
+between simple and full SPF in-sample performance. For Open Road Risk, this supports
+running an exposure-only baseline comparison before investing in complex junction feature
+engineering.
+:::
+
+---
+
+## Open Road Risk alignment
+
+| Junction issue | Literature evidence | Current pipeline | Gap / recommended action |
+|---|---|---|---|
+| Turning/opposing volumes | Poch & Mannering 1996 — elasticity 2.95–2.28 | Not available; AADT only | Document as a fundamental limitation of link-level exposure. |
+| Signal phase / control type | Poch & Mannering 1996 | Not available | Document; OSM signal presence is the maximum achievable. |
+| Signalised junction density | Al-Omari 2021 — most significant predictor; Wang 2015 | Not currently in pipeline | **Candidate feature**: count junctions (degree ≥ 3) per link length from OS Open Roads; optionally signalised variant from OSM. |
+| Access point density | Al-Omari 2021 — consistently significant | Not currently in pipeline | **Candidate feature** (partial): minor-road connections per km derivable from OS Open Roads topology; true driveway accesses not available. |
+| Network tree structure / betweenness | Wang 2015 | Betweenness centrality already in pipeline as Stage 1a / Stage 2 candidate | Diagnostic test of whether betweenness adds value over road type + AADT in Stage 2 GLM. |
+| Junction proximity | Baddeley 2021; Ziakopoulos 2020 — segment-intersection correlation | Not currently in pipeline | **Candidate feature**: distance from link midpoint to nearest OS Open Roads junction node. |
+| Exposure denominator mismatch at junctions | Hauer 2001 — intersections need different SPF form | Link-level offset treats all links identically | Document; add flag for junction-connector links; consider sensitivity analysis removing or up-weighting junction links. |
+| Speed limit as junction-density confound | Al-Omari 2021 — negative coefficient is confound, not causal | OSM speed limit in pipeline | **Documentation note**: negative speed-limit coefficient proxies for low junction density; do not interpret causally. |
+| Pedestrian/cyclist junction risk | Roll 2026 | Not modelled | Future work: separate junction layer with pedestrian exposure if data becomes available. |
+
+---
+
+## What not to do
+
+Two failure modes are worth calling out explicitly.
+
+**Do not import coefficient values from these papers.** Poch and Mannering's elasticities
+are from 63 selected operationally deficient intersections in 1990s Bellevue. Al-Omari's
+SID coefficients are from Florida suburban roads. Wang's signal-density coefficient is from
+Shanghai TAZ-level data with no holdout validation. The directions of these effects are
+plausible and transfer as qualitative evidence; the magnitudes do not.
+
+**Do not add junction-proximity features without a diagnostic test first.** Junction
+density and betweenness centrality are correlated with road classification and AADT. In
+Gilardi et al. (2022), betweenness centrality is not significant after road type and
+exposure are included. Any junction feature added to Stage 2 should be tested for
+collinearity with existing features (road classification, AADT, link length) before
+inclusion, and evaluated on a held-out validation set rather than in-sample fit alone.
+
+---
+
+## References
+
+| ID | Citation |
+|---|---|
+| LIT-003 | Al-Omari, M.M.A. (2021). Crash analysis and development of safety performance functions for Florida roads in the framework of the context classification system. *MSc thesis, University of Central Florida.* Available: stars.library.ucf.edu/etd2020/633 |
+| LIT-004 | Baddeley, A., Nair, G., Rakshit, S., McSwiggan, G. & Davies, T.M. (2021). Analysing point patterns on networks — a review. *Spatial Statistics, 42, 100435.* DOI: 10.1016/j.spasta.2020.100435 |
+| LIT-015 | Hauer, E., Harwood, D.W., Council, F.M. & Griffith, M.S. (2001). Estimating safety by the empirical Bayes method: a tutorial. *National SPF Summit, Chicago.* |
+| LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *JRSS-A, 185(3), 1150–1177.* DOI: 10.1111/rssa.12823 |
+| LIT-044 | Poch, M. & Mannering, F. (1996). Negative binomial analysis of intersection-accident frequencies. *Journal of Transportation Engineering, 122(2), 105–113.* |
+| LIT-028/045 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* |
+| LIT-030 | Wang, X., Yuan, J., Schultz, G.G. & Meng, W. (2015). Investigating safety impacts of roadway network features of suburban arterials in Shanghai, China. *TRB Annual Meeting.* |
+| LIT-031/041 | Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in road safety. *[Year and DOI not confirmed — verify before formal citation; active reconciliation pending.]* |
