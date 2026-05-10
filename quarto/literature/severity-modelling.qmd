@@ -1,0 +1,261 @@
+---
+title: "Severity Modelling"
+subtitle: "Why severity is a separate modelling target from collision frequency, and what the literature says about each"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+Open Road Risk's Stage 2 outcome is the count of injury collisions per link-year, regardless
+of severity. All police-reported injury crashes — slight, serious, and fatal — are pooled
+into a single integer count and modelled against an exposure offset. This is a pragmatic
+choice at national scale with sparse data, but it comes with a known limitation: the
+mechanisms that cause a collision to be fatal or serious are not the same as those that
+cause a collision to occur in the first place, and conflating the two can misidentify which
+roads are highest-priority for intervention.
+
+This page documents what the reviewed literature says about severity as a distinct modelling
+target, where the boundaries between frequency and severity lie, and what the leakage
+implications are for the current pipeline.
+
+---
+
+## Frequency and severity are different estimands
+
+The distinction runs through every paper in this section. A crash-frequency model asks:
+given this road's features and traffic exposure, how many injury collisions per year are
+expected? A severity model asks: given that a collision has occurred, how serious is it
+likely to be?
+
+Quddus, Wang and Ison (2010) make this explicit. Their paper estimates an ordered response
+model for M25 crash injury severity (slight / serious / fatal), using individual STATS19
+crash records matched to 15-minute UKHA traffic data. They are explicit that their model
+"makes no attempt to estimate the actual probability of a specific accident occurring" —
+it conditions on a crash having happened and then models the severity outcome. The exposure
+variable (traffic flow) enters as a predictor of conditional severity, not as a rate
+denominator.
+
+This has a concrete consequence for feature interpretation. In the Quddus et al. model,
+higher traffic flow is associated with *less severe* outcomes (more crashes, but lower mean
+severity per crash) — the opposite direction from what a frequency model would suggest.
+If these two effects were conflated in a single model, the sign and magnitude of the flow
+coefficient would be uninterpretable.
+
+Michalaki et al. (2015) model motorway severity (hard shoulder vs. main carriageway,
+2005–2011) and arrive at the same conclusion structurally. Their model uses post-crash
+STATS19 variables — contributory factors, number of vehicles, single-vehicle flag — as
+severity predictors. These are valid in a conditional severity model. They would constitute
+post-event data leakage in a collision frequency or risk ranking model.
+
+Ma et al. (2019) distinguish the two estimands explicitly in their conclusions: "Fatality
+rates represent the rates of fatal accidents over all accidents, while accident rates mean
+the proportion of accidents over traffic volume. These are two different problems."
+
+::: {.callout-warning}
+**Leakage boundary.** The following STATS19 variables are valid for explanatory severity
+analysis (conditional on a crash), but must not enter Open Road Risk Stage 2 as predictors,
+because they are observed only after the crash occurs:
+
+- Number of vehicles involved
+- Number of casualties
+- Single-vehicle crash flag
+- Contributory factor codes (police officer's opinion of cause)
+- Crash type / manoeuvre codes
+- Road surface condition at crash time
+- Lighting condition at crash time (observed at crash, not from infrastructure data)
+- Pedestrian / motorcycle involvement flag (at crash level)
+
+These variables describe the accident. They cannot be known before the accident. Using them
+in a frequency or risk-ranking model creates a model that appears strong in-sample but has
+no prospective predictive validity.
+:::
+
+---
+
+## What the literature says about severity mechanisms
+
+### Traffic flow and severity
+
+Quddus et al. (2010) find that higher traffic flow on the M25 is associated with lower
+conditional crash severity across all model specifications (PC-GOLOGIT, HCM, GOLOGIT).
+The marginal effect of log traffic flow reduces serious injury probability by 0.034 and
+fatal probability by 0.006 per unit, while increasing slight injury probability by 0.040.
+The mechanism is plausible: high-flow conditions impose lower free-flow speeds through
+congestion, reducing crash energy.
+
+The congestion index (total delay) was statistically insignificant for severity across all
+model specifications and both congestion measures tested. The paper concludes there is no
+evidence that M25 congestion affects crash severity in this dataset. This null result is
+specific to the M25 motorway, and should not be generalised to all road types — but it does
+caution against prioritising congestion as a Stage 2 feature on the basis of motorway
+evidence alone.
+
+Michalaki et al. (2015) find that non-peak (quiet) traffic hours are associated with higher
+severity on motorways. The mechanism is the same as Quddus et al. in reverse: free-flow
+conditions in quiet periods allow higher impact speeds, increasing injury severity per
+collision. This finding also validates the relevance of Stage 1b WebTRIS time profiles
+as a severity-context feature — not as a frequency predictor, but as evidence that the
+peak/off-peak fraction of traffic matters for the severity composition of collisions.
+
+### HGV involvement and severity
+
+Michalaki et al. (2015) find that HGV involvement strongly increases crash severity on
+motorways, with a coefficient of 0.336 for main carriageway and 0.757 for hard shoulder
+crashes. The hard shoulder result is notably larger — a collision involving an HGV on the
+hard shoulder has a fatal probability approximately 7.3 percentage points higher than
+without HGV involvement. HGV proportion from AADF is already a candidate Stage 2 feature
+in Open Road Risk; this paper provides direct severity evidence supporting its inclusion,
+while noting that HGV *proportion* on a link (derivable from AADF) is not the same as
+HGV *involvement in a specific crash* (a post-event STATS19 variable).
+
+Ma et al. (2019) find motorcycle and pedestrian involvement are the second and third
+strongest conditional fatality predictors in their Los Angeles dataset. Fatality rates
+are approximately 3.5× higher for motorcycle-involved crashes and 7× higher for
+pedestrian-involved crashes relative to baseline. These are again crash-level variables
+and cannot be used in a prospective frequency model, but they support the rationale for
+separate vulnerable-road-user analysis.
+
+### Hard shoulder vs. main carriageway
+
+Michalaki et al. (2015) provide a concrete example of how severity structure differs
+within a single road class. Hard shoulder crashes represent approximately 1.6% of M25
+injury collisions but have a fatal share of 8.4% compared to 1.8% on the main carriageway
+— roughly five times higher. The factors driving this difference include HGV involvement,
+driver fatigue, and absence of daylight, all of which are more prevalent on the hard
+shoulder.
+
+For Open Road Risk, this reinforces the general principle that facility type matters for
+severity composition. A link-year model pooling all motorway crashes will systematically
+underestimate severity on links with high hard-shoulder crash exposure.
+
+### Lighting
+
+Ma et al. (2019) find lighting condition is a top-8 fatality predictor in their XGBoost
+classifier. Crashes in dark conditions without functioning street lights have fatality
+rates approximately 3× those of daytime crashes. OSM lighting data is already a candidate
+feature in Open Road Risk with noted sparse coverage; this finding supports prioritising
+its inclusion where coverage allows, while treating it as a road-environment descriptor
+rather than a crash-time observation.
+
+---
+
+## When severity levels should be modelled jointly
+
+Boulieri et al. (2016) fit a Bayesian multivariate model to ward-level England STATS19 data
+(2005–2013), modelling slight and severe/fatal crash counts jointly under a correlated
+MCAR prior structure. They find:
+
+- The multivariate model (MBYM) has a DIC approximately 135,000 units lower than independent
+  univariate models — a very large improvement — driven by the spatial cross-severity
+  correlation (ρ_total ≈ 0.74).
+- Approximately 60–65% of spatial variability in crash rates is spatially structured rather
+  than unstructured heterogeneity, even after controlling for traffic-volume exposure.
+- Bayesian spatial smoothing substantially reorders hotspot rankings for high-severity
+  (rare) outcomes — 0.26% of top-100 areas shifted by more than 15 rank positions — but
+  has little effect on the more common slight injury rankings.
+- Severe and slight crashes follow different temporal trends: near-linear decline for slight
+  injuries, but a flatter trend for severe/fatal after 2010.
+
+The practical implication for Open Road Risk is not to replicate the full MBYM at 2.17M
+links — the paper's OpenBUGS models ran for 20–27 hours at 7,932 wards, and MCMC at link
+scale is computationally infeasible. The implication is that severity levels are correlated
+but distinct, and that **hotspot rankings based on rare (KSI) counts alone are substantially
+changed by smoothing**. A crude KSI rate ranking will be particularly unstable and should
+not be used without some form of shrinkage or smoothing. The EB shrinkage diagnostic variant
+already in Open Road Risk addresses this problem for total collisions; extending it to the
+KSI sub-band is a logical next step.
+
+Gilardi et al. (2022) reach a compatible finding on OS road segments in Leeds: the
+spatial correlation between severe and slight crash random effects is ρ_φ ≈ 0.83–0.90 and
+ρ_θ ≈ 0.40, suggesting that the spatial patterns of the two severity levels are strongly
+co-located but not identical. Their multivariate model substantially improves estimation
+of severe crash rates (balanced accuracy 0.675 for severe vs. 0.631 without cross-severity
+correlation) by borrowing strength from the more common slight crash pattern.
+
+Both papers support the same directional conclusion: modelling slight and severe/KSI
+separately without accounting for their correlation loses information, and small-count
+severity bands (KSI, fatal) need either multi-level borrowing of strength or EB shrinkage
+to produce stable rankings.
+
+::: {.callout-note}
+Gao et al. (2024) use a severity-weighted composite response variable
+`y = Σ(collision_count × severity_weight)` with weights 1/2/3 for minor/serious/fatal.
+This approach conflates frequency and severity into a single score. It is documented here
+as a design choice to avoid: the composite score cannot separate exposure-driven collision
+frequency from severity-driven injury burden, and the numeric weights (1/2/3) are arbitrary
+rather than estimated. Open Road Risk's current approach — modelling total injury frequency,
+with severity as a future separate layer — is more principled than this composite.
+:::
+
+---
+
+## Ordered response models for severity
+
+When a severity model is eventually added to Open Road Risk, the ordered structure of the
+outcome (slight < serious < fatal) is a methodological constraint on model choice.
+
+Both Quddus et al. (2010) and Michalaki et al. (2015) use ordered logit as the starting
+point and then find that the proportional-odds assumption is violated — different variables
+have different effects at different severity thresholds. Both papers use partially
+constrained generalized ordered logit (PC-GOLOGIT), which relaxes the proportional-odds
+constraint for the variables that violate it while retaining it for the rest.
+
+The practical lesson: do not default to simple ordered logit without testing the Brant
+test for proportional odds. If violated, PC-GOLOGIT is the appropriate response.
+Quddus et al. also find that random effects at the intersection/group level were not
+significant in this motorway case study (ICC too low to justify multilevel structure) —
+spatial clustering of severity, at least at county level, is weak once motorway-type is
+controlled.
+
+---
+
+## Post-event variables: a catalogue for Open Road Risk
+
+The table below compiles the post-event variables that appear across these papers. All
+are valid in conditional severity models; none should enter Stage 2 as production features.
+
+| Variable | Paper | Role in severity model | Leakage risk for Stage 2 |
+|---|---|---|---|
+| Contributory factor codes | Michalaki 2015; Quddus 2010 | Strong severity predictors; police judgement on cause | High — recorded post-crash; subjective |
+| Single-vehicle crash flag | Quddus 2010; Ma 2019 | Positive fatality predictor | High — post-event by definition |
+| Number of vehicles / parties | Quddus 2010; Ma 2019 | Associated with severity | High — crash property |
+| Number of casualties | Quddus 2010 | Heteroskedasticity source | High — outcome-adjacent |
+| Road surface condition at crash | Quddus 2010; Michalaki 2015 | Wet surface → lower severity (speed effect) | High — observed at crash time |
+| Lighting condition at crash time | Quddus 2010; Michalaki 2015; Ma 2019 | Darkness → higher severity | Medium — can be partially pre-event (OSM infrastructure lighting) or post-event (crash-time condition) |
+| Crash type / manoeuvre | Ma 2019 | Rear-end vs. angle vs. head-on patterns | High — describes crash geometry |
+| Pedestrian / motorcycle involvement | Ma 2019; Michalaki 2015 | Strong fatality predictors | High — crash property |
+| ETOH / alcohol flag | Ma 2019 | Strongest fatality predictor in LA dataset | High — STATS19 police assessment at crash |
+
+**Note on lighting:** OSM `lit=yes/no` is a road-infrastructure attribute that is known
+before any crash and is not post-event. STATS19 lighting condition at crash time (`Light
+Conditions` field) is an observation at the crash moment and is post-event. These are
+different variables and should not be conflated.
+
+---
+
+## Open Road Risk alignment
+
+| Severity question | Literature evidence | Current pipeline | Gap / recommended action |
+|---|---|---|---|
+| Should frequency and severity be separate models? | Quddus 2010; Michalaki 2015; Ma 2019 — all explicit that these are different estimands | Single count model (all injury combined) | Document as known design choice; plan severity layer as future work |
+| Should slight and KSI be modelled jointly? | Boulieri 2016 (ρ ≈ 0.74 correlation); Gilardi 2022 (ρ_φ ≈ 0.83–0.90) — joint modelling substantially improves KSI estimation | Not currently modelled separately | Extend EB shrinkage to KSI sub-band; flag as future joint model candidate |
+| Is raw KSI ranking reliable? | Boulieri 2016 — smoothing reorders high-severity rankings substantially | EB shrinkage for total counts; no severity-split | Run crude vs. smoothed ranking comparison for KSI links |
+| Are post-event variables being excluded? | Michalaki 2015; Quddus 2010; Ma 2019 — leakage risk explicit | Repo dossier excludes collision-derived variables | Document the full leakage catalogue explicitly; link to these papers |
+| Is severity-weighted composite score appropriate? | Gao 2024 composite is undocumented weights; conflates frequency and severity | Not used | Document Gao 2024 composite as a design approach to avoid |
+| Is ordered logit sufficient for severity model? | Quddus 2010; Michalaki 2015 — proportional odds violated; PC-GOLOGIT preferred | No severity model yet | When severity model is added, test Brant test before using simple ordered logit |
+| HGV proportion as feature | Michalaki 2015 — strong severity predictor | Candidate feature (AADF HGV proportion) | Validate HGV proportion; note it is a road-level proxy, not crash-level variable |
+| Congestion as Stage 2 feature | Quddus 2010 — congestion index insignificant for M25 severity | Not currently in production | Document null result as caution; do not prioritise congestion features from this evidence |
+
+---
+
+## References
+
+| ID | Citation |
+|---|---|
+| LIT-005 | Boulieri, A., Liverani, S., de Hoogh, K. & Blangiardo, M. (2016). A space-time multivariate Bayesian model to analyse road traffic accidents by severity. *Journal of the Royal Statistical Society Series A, 179(2), 535–553.* |
+| LIT-034 | Gao, X. et al. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. *arXiv:2309.05072v4.* |
+| LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *JRSS-A, 185(3), 1150–1177.* DOI: 10.1111/rssa.12823 |
+| LIT-020 | Ma, J. et al. (2019). Analyzing the leading causes of traffic fatalities using XGBoost and grid-based analysis. *IEEE Access, 7, 148057–148071.* DOI: 10.1109/ACCESS.2019.2946401 |
+| LIT-022/023 | Michalaki, P., Quddus, M.A., Pitfield, D. & Huetson, A. (2015). Exploring the factors affecting motorway accident severity in England using the generalised ordered logistic regression model. *Journal of Safety Research, 55, 89–96.* DOI: 10.1016/j.jsr.2015.09.004 |
+| LIT-027/039 | Quddus, M.A., Wang, C. & Ison, S.G. (2010). Road traffic congestion and crash severity: an econometric analysis using ordered response models. *Journal of Transportation Engineering, 136(5), 424–435.* DOI: 10.1061/(ASCE)TE.1943-5436.0000044 |

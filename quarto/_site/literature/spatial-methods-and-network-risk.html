@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+
+<title>Spatial Methods and Network Risk – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta property="og:title" content="Spatial Methods and Network Risk – Open Road Risk">
+<meta property="og:description" content="Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Spatial Methods and Network Risk – Open Road Risk">
+<meta name="twitter:description" content="Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../background/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Literature</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/crash-frequency-models.html">
+ <span class="dropdown-text">Crash frequency models</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/exposure-and-traffic-volume.html">
+ <span class="dropdown-text">Exposure and traffic volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/spatial-methods-and-network-risk.html">
+ <span class="dropdown-text">Spatial methods and network risk</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/junctions-and-conflict-structure.html">
+ <span class="dropdown-text">Junctions and conflict structure</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/severity-modelling.html">
+ <span class="dropdown-text">Severity modelling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/validation-and-metrics.html">
+ <span class="dropdown-text">Validation and metrics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
+ <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outputs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outputs">    
+        <li>
+    <a class="dropdown-item" href="../outputs/top-risk-map.html">
+ <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#spatial-autocorrelation-in-crash-models" id="toc-spatial-autocorrelation-in-crash-models" class="nav-link active" data-scroll-target="#spatial-autocorrelation-in-crash-models">Spatial autocorrelation in crash models</a>
+  <ul class="collapse">
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link" data-scroll-target="#the-problem">The problem</a></li>
+  <li><a href="#what-this-means-for-open-road-risk" id="toc-what-this-means-for-open-road-risk" class="nav-link" data-scroll-target="#what-this-means-for-open-road-risk">What this means for Open Road Risk</a></li>
+  </ul></li>
+  <li><a href="#cross-validation-design" id="toc-cross-validation-design" class="nav-link" data-scroll-target="#cross-validation-design">Cross-validation design</a>
+  <ul class="collapse">
+  <li><a href="#why-the-current-split-is-not-a-spatial-cv" id="toc-why-the-current-split-is-not-a-spatial-cv" class="nav-link" data-scroll-target="#why-the-current-split-is-not-a-spatial-cv">Why the current split is not a spatial CV</a></li>
+  <li><a href="#practical-spatial-cv-options-for-open-road-risk" id="toc-practical-spatial-cv-options-for-open-road-risk" class="nav-link" data-scroll-target="#practical-spatial-cv-options-for-open-road-risk">Practical spatial CV options for Open Road Risk</a></li>
+  </ul></li>
+  <li><a href="#point-processes-on-networks-a-cautionary-framing" id="toc-point-processes-on-networks-a-cautionary-framing" class="nav-link" data-scroll-target="#point-processes-on-networks-a-cautionary-framing">Point processes on networks: a cautionary framing</a>
+  <ul class="collapse">
+  <li><a href="#what-the-point-process-critique-says" id="toc-what-the-point-process-critique-says" class="nav-link" data-scroll-target="#what-the-point-process-critique-says">What the point-process critique says</a></li>
+  <li><a href="#what-the-point-process-literature-does-not-establish" id="toc-what-the-point-process-literature-does-not-establish" class="nav-link" data-scroll-target="#what-the-point-process-literature-does-not-establish">What the point-process literature does not establish</a></li>
+  <li><a href="#practical-implications" id="toc-practical-implications" class="nav-link" data-scroll-target="#practical-implications">Practical implications</a></li>
+  </ul></li>
+  <li><a href="#maup-spatial-unit-sensitivity-and-hotspot-interpretation" id="toc-maup-spatial-unit-sensitivity-and-hotspot-interpretation" class="nav-link" data-scroll-target="#maup-spatial-unit-sensitivity-and-hotspot-interpretation">MAUP, spatial unit sensitivity, and hotspot interpretation</a>
+  <ul class="collapse">
+  <li><a href="#spatial-unit-choice-as-a-modelling-decision" id="toc-spatial-unit-choice-as-a-modelling-decision" class="nav-link" data-scroll-target="#spatial-unit-choice-as-a-modelling-decision">Spatial unit choice as a modelling decision</a></li>
+  <li><a href="#hotspot-sensitivity" id="toc-hotspot-sensitivity" class="nav-link" data-scroll-target="#hotspot-sensitivity">Hotspot sensitivity</a></li>
+  </ul></li>
+  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Spatial Methods and Network Risk</h1>
+<p class="subtitle lead">Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This page documents the evidence base for how space is handled — and how it should be handled — in Open Road Risk. It covers four connected topics: spatial autocorrelation in crash count models, cross-validation design when data are spatially structured, the distinction between link-level aggregation and continuous point-process analysis, and the sensitivity of risk maps to spatial unit choice.</p>
+<p>The conclusions are mostly diagnostic. No currently reviewed paper justifies a production architecture change at 2.17M links. What the literature collectively establishes is that the current pipeline has known spatial limitations that should be documented, measured, and where feasible, tested.</p>
+<hr>
+<section id="spatial-autocorrelation-in-crash-models" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-autocorrelation-in-crash-models">Spatial autocorrelation in crash models</h2>
+<section id="the-problem" class="level3">
+<h3 class="anchored" data-anchor-id="the-problem">The problem</h3>
+<p>Open Road Risk’s Stage 2 Poisson GLM and XGBoost models treat road link-years as conditionally independent observations given the feature set. This is a modelling convenience, not a property of the data. Adjacent road links share unmeasured risk factors — local road condition, policing intensity, terrain patterns, weather exposure, corridor speed culture — that are not fully captured by any feature set derived from open data. When the residuals of a count model are spatially autocorrelated, several downstream consequences follow:</p>
+<ul>
+<li>Coefficient standard errors are underestimated. The model treats spatially correlated residuals as independent information, inflating the apparent precision of coefficient estimates.</li>
+<li>The estimated coefficient magnitudes may shift when spatial correlation is introduced. Aguero-Valverde and Jovanis (2008) found that the AADT coefficient in their model dropped from 0.714 in a heterogeneity-only specification to 0.664 when spatial CAR effects were added — a change they attributed to unmodelled spatial correlation partially biasing the AADT estimate upward.</li>
+<li>High-residual corridors may reflect unmeasured spatial factors rather than genuinely anomalous risk, making raw GLM residual mapping a misleading basis for intervention targeting.</li>
+</ul>
+<p>Ziakopoulos and Yannis (2020) review the road safety literature and find that CAR (conditional autoregressive) spatial priors consistently improve model fit over non-spatial baselines by pooling information from neighbouring locations. The effective range of spatial correlation varies; one US rural road case study estimated it at approximately 168m, which is shorter than many OS Open Roads links but longer than the spacing between adjacent links in an urban network. The magnitude and range for Open Road Risk’s mixed national network has not been measured.</p>
+<p>Gilardi et al.&nbsp;(2022) fit a Bayesian INLA model with PMCAR priors to 3,661 OS road segments in Leeds and find that including spatial correlation alongside unstructured heterogeneity gives a DIC improvement of approximately 360 units over a non-spatial baseline. Approximately 83–90% of the spatially structured random effect variance is shared between severity levels, suggesting that the spatial pattern of slight and severe crashes is highly co-located. Both these papers’ spatial models are in-sample diagnostics — no holdout validation was run — but the spatial structure is large and consistent enough to be methodologically relevant.</p>
+</section>
+<section id="what-this-means-for-open-road-risk" class="level3">
+<h3 class="anchored" data-anchor-id="what-this-means-for-open-road-risk">What this means for Open Road Risk</h3>
+<p>The practical implication is not to immediately refit the Stage 2 model with CAR spatial effects. At 2.17M links, a full Bayesian MCMC with CAR priors is computationally infeasible as a production model. Gilardi et al.&nbsp;took 30–45 minutes per model for 3,661 segments on a dedicated 32GB server; national scale would require orders of magnitude more compute and more complex approximations. Even the faster INLA approach does not scale trivially to 2.1M links.</p>
+<p>The practical implication is to diagnose the problem. Moran’s I — the standard spatial autocorrelation statistic — is computationally feasible on a sample of links using a sparse first-order adjacency matrix derived from OS Open Roads network topology. If Stage 2 Poisson GLM residuals show significant spatial autocorrelation, this quantifies the limitation concretely. If they do not, the concern is less urgent.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Moran’s I diagnostic on Stage 2 GLM residuals using a spatially stratified sample of 10,000–50,000 links is a low-effort, high-information action. Run it on a single road type first (rural two-lane links are the closest analogue to the Aguero-Valverde case study). First-order adjacency from OS Open Roads topology is the appropriate neighbour definition; Aguero-Valverde and Jovanis (2008) found that adding second and third-order neighbours did not improve model fit in their case study.</p>
+</div>
+</div>
+<p>A complementary action is to map Stage 2 GLM residuals geographically on a pilot area and look for persistent high-residual corridors. This requires no statistical machinery beyond a choropleth map of residuals on OS Open Roads geometry. Aguero-Valverde and Jovanis (2008) found that segments with significant spatial correlation terms in their CAR model formed contiguous corridors that could be used to group links for safety programming.</p>
+<hr>
+</section>
+</section>
+<section id="cross-validation-design" class="level2">
+<h2 class="anchored" data-anchor-id="cross-validation-design">Cross-validation design</h2>
+<section id="why-the-current-split-is-not-a-spatial-cv" class="level3">
+<h3 class="anchored" data-anchor-id="why-the-current-split-is-not-a-spatial-cv">Why the current split is not a spatial CV</h3>
+<p>Open Road Risk Stage 2 uses a grouped-by-road-link split: all years for a given link are assigned to either the training set or the test set, preventing the same link from appearing in both. This controls for within-link temporal leakage — it prevents the model from memorising the crash history of a specific link across years. It does not enforce any spatial separation between links in the training and test sets. Two adjacent links on the same road corridor, one in training and one in test, will share spatial autocorrelation in both their crash counts and their feature values.</p>
+<p>Mahoney et al.&nbsp;(2023) provide the most quantitative evidence on this problem. Using a simulation study with 100 independent 50×50 grid landscapes and a random forest model on spatially structured continuous outcome data, they compare five CV methods against a known true out-of-sample RMSE. The results are stark:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>CV method</th>
+<th>% of runs within target RMSE range</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Resubstitution (no CV)</td>
+<td>0.0%</td>
+</tr>
+<tr class="even">
+<td>V-fold (random)</td>
+<td>2.0%</td>
+</tr>
+<tr class="odd">
+<td>BLO3 (buffered leave-one-obs-out)</td>
+<td>7.0% at best</td>
+</tr>
+<tr class="even">
+<td>Spatial blocking (best params)</td>
+<td>61.0%</td>
+</tr>
+<tr class="odd">
+<td>Spatial clustering — k-means (best params)</td>
+<td>60.0%</td>
+</tr>
+<tr class="even">
+<td>LODO (leave-one-disc-out, best params)</td>
+<td>60.0%</td>
+</tr>
+</tbody>
+</table>
+<p>Random V-fold CV produced estimates within the target range only 2% of the time — it is reliably optimistic when residuals are spatially autocorrelated. The best spatial methods (clustering and LODO) achieved around 60% at their optimal parameterisation, and spatial clustering was the most robust across different parameterisations.</p>
+<p>The paper’s central recommendation is that the optimal spatial separation between training and test sets should match or exceed the autocorrelation range of the outcome variable. In the simulation, the mean autocorrelation range was approximately 24–25% of grid length; best CV results used separations of 25–41% of grid length. For Open Road Risk, the equivalent guidance is to estimate the autocorrelation range from Stage 2 GLM residuals using an empirical variogram, then use that range to parameterise any spatial CV.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Mahoney et al.&nbsp;(2023) simulation uses a continuous Gaussian outcome on a regular grid. Open Road Risk’s collision outcome is a zero-heavy integer count on an irregular road network. The specific buffer-size percentages (25–41%) are simulation-specific and should not be applied directly. The qualitative finding — that V-fold is severely optimistic and spatial clustering is substantially better — is robust and transfers.</p>
+<p>An additional concern for Open Road Risk: the paper explicitly notes it did not investigate imbalanced outcomes. With ~98–99% zero link-years, spatial CV folds drawn from low-collision rural areas may contain too few positive examples to meaningfully evaluate discriminative performance. Each spatial fold should be checked to ensure it contains a minimum usable number of non-zero link-years before the CV is run.</p>
+</div>
+</div>
+</section>
+<section id="practical-spatial-cv-options-for-open-road-risk" class="level3">
+<h3 class="anchored" data-anchor-id="practical-spatial-cv-options-for-open-road-risk">Practical spatial CV options for Open Road Risk</h3>
+<p>Three options are in increasing order of implementation effort.</p>
+<p><strong>Variogram diagnostic first.</strong> Estimate the empirical variogram of Stage 2 GLM residuals on a spatially stratified sample of ~10,000–50,000 links. This costs little compute and reveals whether spatial autocorrelation in the residuals is materially strong. If the variogram flattens within a few hundred metres, the current grouped split’s spatial optimism is likely small. If it extends to kilometres, the concern is larger.</p>
+<p><strong>Police force holdout as a practical approximation.</strong> Open Road Risk covers approximately 13–16 police force areas. Holding out one force area at a time and evaluating Stage 2 XGBoost performance on the held-out area enforces real geographic separation with no methodological complexity beyond restructuring the fold assignment. Mahoney et al.&nbsp;(2023) suggest that roughly 5–10 spatial clusters is near-optimal; 13–16 forces is in the right range. The result will almost certainly be worse than the current grouped-link CV — this is the honest finding, not a problem to suppress.</p>
+<p><strong>k-means spatial clustering CV.</strong> Assign links to ~10 k-means clusters based on coordinates, fit with a spatial exclusion buffer, and use clusters as CV folds. This is more principled than police force holdout because the clusters can be parameterised to approximately match the variogram range. It is also more complex to implement correctly at 2.17M links, particularly for checking that each fold contains enough positive collision link-years.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The immediate low-effort action is the documentation fix: record in the Stage 2 validation documentation that the current grouped-by-road-link split is a temporal grouped CV and does not enforce spatial separation between neighbouring links. This is not a criticism of the split — it correctly handles the repeated-measures leakage problem — but the distinction matters for interpreting the performance metrics.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="point-processes-on-networks-a-cautionary-framing" class="level2">
+<h2 class="anchored" data-anchor-id="point-processes-on-networks-a-cautionary-framing">Point processes on networks: a cautionary framing</h2>
+<p>Three of the papers in the spatial literature set — Baddeley et al.&nbsp;(2021), Cronie et al. (2019), and Eckardt and Moradi (2024) — belong to the network point-process literature. They model crash events as exact spatial coordinates on a continuous road network rather than as integer counts aggregated to link-year cells. Understanding what this literature says and does not say is important for interpreting Open Road Risk’s aggregate approach.</p>
+<section id="what-the-point-process-critique-says" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-point-process-critique-says">What the point-process critique says</h3>
+<p>Baddeley et al.&nbsp;(2021) provide a comprehensive review of network point-process methods and include an explicit methodological critique of the link-aggregation approach. The core argument: aggregating exact crash coordinates into discrete link counts introduces aggregation bias (the ecological fallacy / MAUP), and the true spatial clustering of crashes along a network is partially obscured by link boundaries. A highly localised cluster of crashes at a specific bend or entry point will be diluted across the full link length if the link is long.</p>
+<p>A further, more technical warning from Baddeley et al.&nbsp;(2021): evaluating spatial clustering using Euclidean distances (planar KDE, standard Moran’s I with straight-line distances) on road networks produces mathematically invalid results. A completely random point pattern on a network will appear to exhibit positive spatial clustering if assessed using Euclidean pair-distances, simply because pairs of road events that are close in network distance tend to also be close in Euclidean distance. This creates “false alarms” — apparent clustering where none exists. Network-aware statistics (heat kernel KDE, network K-functions with geometric correction) are required for valid spatial clustering assessment on a road network.</p>
+<p>Cronie et al.&nbsp;(2019) extend this to inhomogeneous higher-order summary statistics — geometrically corrected network J-functions — and demonstrate their use on 249 traffic accident locations in Houston. Eckardt and Moradi (2024) discuss marked point-process extensions where collision events carry attributes (severity, type) and ask whether those marks are spatially dependent on the network beyond first-order intensity variation.</p>
+</section>
+<section id="what-the-point-process-literature-does-not-establish" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-point-process-literature-does-not-establish">What the point-process literature does not establish</h3>
+<p>None of these papers show that the link-level count model is wrong or should be replaced. Their practical scale — 249 events on 253 line segments (Cronie 2019), city-block analyses (Baddeley 2021) — is not comparable to 21.7 million link-years. The network heat-kernel KDE approach involves solving the heat equation on the road graph, which is computationally intensive even at city scale. Full-network network point-process diagnostics at 2.17M links have not been demonstrated and would require significant computational investment to attempt.</p>
+<p>None of these papers use AADT or traffic exposure. The intensity function that underlies their analyses is estimated from the spatial density of crash events on the network, not from traffic volume. This is a meaningful distinction: a highly trafficked road will have high crash point intensity simply because it carries more exposure, regardless of whether it is inherently more dangerous per vehicle-kilometre. Point-process intensity and exposure-normalised crash rate are related but not equivalent quantities.</p>
+<p>The Baddeley et al.&nbsp;(2021) paper explicitly notes that the zero-inflation problem — a central concern for the link-year count model — does not arise in point-process modelling, because there is no aggregation step that creates zero-count bins. It also notes, however, that this may be partly because the link-year zero-heavy structure is a consequence of binning rather than a property of the data: sparse crashes on a long link segment at annual resolution will produce a zero-count bin whether or not there is a real absence of risk.</p>
+</section>
+<section id="practical-implications" class="level3">
+<h3 class="anchored" data-anchor-id="practical-implications">Practical implications</h3>
+<p>The actionable implications from these three papers are limited and exploratory:</p>
+<ol type="1">
+<li><p><strong>Do not use planar 2D KDE or straight-line Moran’s I for spatial clustering assessment of crash event locations.</strong> If crash points are being mapped or clustered for any purpose, network-distance or network-topology-aware methods are required to avoid spurious clustering signals. This is a visualisation and diagnostic constraint, not a production model concern.</p></li>
+<li><p><strong>A small-area network point-process diagnostic is feasible.</strong> Running an inhomogeneous network J-function on snapped crash points for one urban area (e.g.&nbsp;a single police force sub-area, using spatstat or equivalent Python tooling on OS Open Roads) would provide evidence on whether there is residual spatial clustering beyond what the link-level model captures. This is an exploratory pilot, not a production validation step.</p></li>
+<li><p><strong>Junction proximity matters.</strong> Baddeley et al.&nbsp;(2021) note that crashes concentrate at network vertices (junctions) and that standard continuous network models must be modified to handle this correctly. This is consistent with the Ziakopoulos and Yannis (2020) review finding that junction-segment spatial correlations are the strongest spatial dependencies in road safety data. Both sources support adding a junction-proximity feature (distance from link midpoint to nearest junction node) as a Stage 2 candidate feature.</p></li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="maup-spatial-unit-sensitivity-and-hotspot-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="maup-spatial-unit-sensitivity-and-hotspot-interpretation">MAUP, spatial unit sensitivity, and hotspot interpretation</h2>
+<section id="spatial-unit-choice-as-a-modelling-decision" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-unit-choice-as-a-modelling-decision">Spatial unit choice as a modelling decision</h3>
+<p>Ziakopoulos and Yannis (2020) review a broad international literature on spatial road safety approaches and document a consistent finding: changing the spatial unit of analysis — from road segment to intersection, from OS link to fixed 100m lixel, from link to corridor, from segment to TAZ — changes parameter estimates, model assessment metrics, and hotspot maps. This is the modifiable areal unit problem (MAUP) applied to road network data.</p>
+<p>For Open Road Risk, the OS Open Roads link is the adopted spatial unit. This is a defensible choice — the links are meaningful network objects with physical interpretation, and Gilardi et al.&nbsp;(2022) show that network-lattice MAUP effects are less severe than administrative-zone MAUP effects, because road segments have a physical meaning that arbitrary polygon boundaries lack. Their MAUP sensitivity test (contracting 3,661 Leeds segments to ~2,700 by removing redundant vertices) found that fixed-effect directions and significance were robust, though spatial hyperparameters showed some sensitivity.</p>
+<p>The implication is not that the OS Open Roads link is a poor choice, but that the risk percentile produced by the pipeline is one view of risk at one spatial resolution. Very short links in urban areas may merge or dilute localised crash clusters; very long links in rural areas may aggregate genuinely heterogeneous sub-segments. Both effects are real. Documenting this is more honest than treating the ranking as resolution-independent.</p>
+</section>
+<section id="hotspot-sensitivity" class="level3">
+<h3 class="anchored" data-anchor-id="hotspot-sensitivity">Hotspot sensitivity</h3>
+<p>The review finding from Ziakopoulos and Yannis (2020) on hotspot sensitivity is worth quoting directly: the paper states that hotspot locations are sensitive to which variables are included, which road-user types are considered, and which time periods are examined, and that it is reasonable to conclude that many of the choices made in an analysis radically change the hotspot map. This is not a failure of Open Road Risk specifically; it is a general property of spatially aggregated risk ranking.</p>
+<p>The practical documentation implication is to present the production risk percentile as an exploratory, exposure-adjusted, all-injury-collision risk indicator for a given feature configuration and time period — not as a definitive identification of inherently dangerous roads independent of model choices.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>On citing Ziakopoulos and Yannis (2020) specifically:</strong> The two extractions of this paper (LIT-031 and LIT-041) agree on all high-level findings above, but some specific study-level numerical values (the ~168m spatial effective range, the ~80% random-forest hotspot classification accuracy) come from individual studies cited by the review, not from the review paper’s own analysis. These values require verification against the original primary papers before use in any formal citation. The publication year and DOI are also not confirmed from the PDF text. Do not cite exact numbers from this review without checking the primary source; use it for methodological framing only until the reconciliation is complete.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="open-road-risk-alignment" class="level2">
+<h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Spatial concern</th>
+<th>Literature evidence</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Spatial autocorrelation in crash residuals</td>
+<td>Aguero-Valverde &amp; Jovanis 2008; Gilardi 2022; Ziakopoulos 2020 — consistent across case studies and review</td>
+<td>Not modelled</td>
+<td>Document as known limitation; run Moran’s I on GLM residuals (sampled)</td>
+</tr>
+<tr class="even">
+<td>Cross-validation spatial optimism</td>
+<td>Mahoney 2023 — V-fold is ~2% reliable; spatial CV achieves ~60%</td>
+<td>Grouped-by-link temporal split — controls same-link leakage, not spatial autocorrelation</td>
+<td>Document distinction; pilot police-force holdout</td>
+</tr>
+<tr class="odd">
+<td>Spatial autocorrelation range</td>
+<td>Aguero-Valverde 2008 first-order adjacency is sufficient; Mahoney 2023 buffer ≈ autocorrelation range</td>
+<td>Unknown for Open Road Risk</td>
+<td>Variogram of Stage 2 residuals on sampled links</td>
+</tr>
+<tr class="even">
+<td>Planar KDE / Euclidean Moran’s I on crash points</td>
+<td>Baddeley 2021 — mathematically invalid on road networks</td>
+<td>Not currently used for production</td>
+<td>Avoid in any spatial visualisation or clustering of crash point locations</td>
+</tr>
+<tr class="odd">
+<td>MAUP / segmentation sensitivity</td>
+<td>Gilardi 2022 — network-lattice MAUP less severe than zone MAUP; Ziakopoulos 2020 — still significant in some studies</td>
+<td>OS Open Roads links used throughout</td>
+<td>Document; MAUP pilot on a small area is feasible if OS segmentation is changed</td>
+</tr>
+<tr class="even">
+<td>Junction-segment spatial correlation</td>
+<td>Ziakopoulos 2020 — strongest spatial dependencies in reviewed literature; Baddeley 2021 — crashes concentrate at vertices</td>
+<td>Junctions not distinguished in OS Open Roads links</td>
+<td>Add junction-proximity feature (candidate); document limitation</td>
+</tr>
+<tr class="odd">
+<td>Hotspot sensitivity to model choices</td>
+<td>Ziakopoulos 2020 — many choices change hotspot map</td>
+<td>Not documented</td>
+<td>Documentation note on risk percentile as one view</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Citation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LIT-001/002</td>
+<td>Aguero-Valverde, J. &amp; Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. <em>Transportation Research Record 2061, 55–63.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-004</td>
+<td>Baddeley, A., Nair, G., Rakshit, S., McSwiggan, G. &amp; Davies, T.M. (2021). Analysing point patterns on networks — a review. <em>Spatial Statistics, 42, 100435.</em> DOI: 10.1016/j.spasta.2020.100435</td>
+</tr>
+<tr class="odd">
+<td>LIT-010</td>
+<td>Cronie, O., Moradi, M. &amp; Mateu, J. (2019). Inhomogeneous higher-order summary statistics for linear network point processes. <em>arXiv:1910.03304v1.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-011</td>
+<td>Eckardt, M. &amp; Moradi, M. (2024). Rejoinder on ‘Marked spatial point processes: current state and extensions to point processes on linear networks’. <em>arXiv:2405.02343v1.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-012/013/014</td>
+<td>Gilardi, A., Mateu, J., Borgoni, R. &amp; Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. <em>Journal of the Royal Statistical Society Series A, 185(3), 1150–1177.</em> DOI: 10.1111/rssa.12823</td>
+</tr>
+<tr class="even">
+<td>LIT-033</td>
+<td>Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. &amp; Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches for models of spatially structured data. <em>arXiv:2303.07334v1.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-031/041</td>
+<td>Ziakopoulos, A. &amp; Yannis, G. (2020). A review of spatial approaches in road safety. <em>[Year and DOI not confirmed — verify before formal citation; active reconciliation pending: LIT-031 and LIT-041.]</em></td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/thomashsimm\.github\.io\/open-road-risk\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+
+<title>Severity Modelling – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta property="og:title" content="Severity Modelling – Open Road Risk">
+<meta property="og:description" content="Why severity is a separate modelling target from collision frequency, and what the literature says about each">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Severity Modelling – Open Road Risk">
+<meta name="twitter:description" content="Why severity is a separate modelling target from collision frequency, and what the literature says about each">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../background/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Literature</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/crash-frequency-models.html">
+ <span class="dropdown-text">Crash frequency models</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/exposure-and-traffic-volume.html">
+ <span class="dropdown-text">Exposure and traffic volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/spatial-methods-and-network-risk.html">
+ <span class="dropdown-text">Spatial methods and network risk</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/junctions-and-conflict-structure.html">
+ <span class="dropdown-text">Junctions and conflict structure</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/severity-modelling.html">
+ <span class="dropdown-text">Severity modelling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/validation-and-metrics.html">
+ <span class="dropdown-text">Validation and metrics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
+ <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outputs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outputs">    
+        <li>
+    <a class="dropdown-item" href="../outputs/top-risk-map.html">
+ <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#frequency-and-severity-are-different-estimands" id="toc-frequency-and-severity-are-different-estimands" class="nav-link active" data-scroll-target="#frequency-and-severity-are-different-estimands">Frequency and severity are different estimands</a></li>
+  <li><a href="#what-the-literature-says-about-severity-mechanisms" id="toc-what-the-literature-says-about-severity-mechanisms" class="nav-link" data-scroll-target="#what-the-literature-says-about-severity-mechanisms">What the literature says about severity mechanisms</a>
+  <ul class="collapse">
+  <li><a href="#traffic-flow-and-severity" id="toc-traffic-flow-and-severity" class="nav-link" data-scroll-target="#traffic-flow-and-severity">Traffic flow and severity</a></li>
+  <li><a href="#hgv-involvement-and-severity" id="toc-hgv-involvement-and-severity" class="nav-link" data-scroll-target="#hgv-involvement-and-severity">HGV involvement and severity</a></li>
+  <li><a href="#hard-shoulder-vs.-main-carriageway" id="toc-hard-shoulder-vs.-main-carriageway" class="nav-link" data-scroll-target="#hard-shoulder-vs.-main-carriageway">Hard shoulder vs.&nbsp;main carriageway</a></li>
+  <li><a href="#lighting" id="toc-lighting" class="nav-link" data-scroll-target="#lighting">Lighting</a></li>
+  </ul></li>
+  <li><a href="#when-severity-levels-should-be-modelled-jointly" id="toc-when-severity-levels-should-be-modelled-jointly" class="nav-link" data-scroll-target="#when-severity-levels-should-be-modelled-jointly">When severity levels should be modelled jointly</a></li>
+  <li><a href="#ordered-response-models-for-severity" id="toc-ordered-response-models-for-severity" class="nav-link" data-scroll-target="#ordered-response-models-for-severity">Ordered response models for severity</a></li>
+  <li><a href="#post-event-variables-a-catalogue-for-open-road-risk" id="toc-post-event-variables-a-catalogue-for-open-road-risk" class="nav-link" data-scroll-target="#post-event-variables-a-catalogue-for-open-road-risk">Post-event variables: a catalogue for Open Road Risk</a></li>
+  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Severity Modelling</h1>
+<p class="subtitle lead">Why severity is a separate modelling target from collision frequency, and what the literature says about each</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Open Road Risk’s Stage 2 outcome is the count of injury collisions per link-year, regardless of severity. All police-reported injury crashes — slight, serious, and fatal — are pooled into a single integer count and modelled against an exposure offset. This is a pragmatic choice at national scale with sparse data, but it comes with a known limitation: the mechanisms that cause a collision to be fatal or serious are not the same as those that cause a collision to occur in the first place, and conflating the two can misidentify which roads are highest-priority for intervention.</p>
+<p>This page documents what the reviewed literature says about severity as a distinct modelling target, where the boundaries between frequency and severity lie, and what the leakage implications are for the current pipeline.</p>
+<hr>
+<section id="frequency-and-severity-are-different-estimands" class="level2">
+<h2 class="anchored" data-anchor-id="frequency-and-severity-are-different-estimands">Frequency and severity are different estimands</h2>
+<p>The distinction runs through every paper in this section. A crash-frequency model asks: given this road’s features and traffic exposure, how many injury collisions per year are expected? A severity model asks: given that a collision has occurred, how serious is it likely to be?</p>
+<p>Quddus, Wang and Ison (2010) make this explicit. Their paper estimates an ordered response model for M25 crash injury severity (slight / serious / fatal), using individual STATS19 crash records matched to 15-minute UKHA traffic data. They are explicit that their model “makes no attempt to estimate the actual probability of a specific accident occurring” — it conditions on a crash having happened and then models the severity outcome. The exposure variable (traffic flow) enters as a predictor of conditional severity, not as a rate denominator.</p>
+<p>This has a concrete consequence for feature interpretation. In the Quddus et al.&nbsp;model, higher traffic flow is associated with <em>less severe</em> outcomes (more crashes, but lower mean severity per crash) — the opposite direction from what a frequency model would suggest. If these two effects were conflated in a single model, the sign and magnitude of the flow coefficient would be uninterpretable.</p>
+<p>Michalaki et al.&nbsp;(2015) model motorway severity (hard shoulder vs.&nbsp;main carriageway, 2005–2011) and arrive at the same conclusion structurally. Their model uses post-crash STATS19 variables — contributory factors, number of vehicles, single-vehicle flag — as severity predictors. These are valid in a conditional severity model. They would constitute post-event data leakage in a collision frequency or risk ranking model.</p>
+<p>Ma et al.&nbsp;(2019) distinguish the two estimands explicitly in their conclusions: “Fatality rates represent the rates of fatal accidents over all accidents, while accident rates mean the proportion of accidents over traffic volume. These are two different problems.”</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Leakage boundary.</strong> The following STATS19 variables are valid for explanatory severity analysis (conditional on a crash), but must not enter Open Road Risk Stage 2 as predictors, because they are observed only after the crash occurs:</p>
+<ul>
+<li>Number of vehicles involved</li>
+<li>Number of casualties</li>
+<li>Single-vehicle crash flag</li>
+<li>Contributory factor codes (police officer’s opinion of cause)</li>
+<li>Crash type / manoeuvre codes</li>
+<li>Road surface condition at crash time</li>
+<li>Lighting condition at crash time (observed at crash, not from infrastructure data)</li>
+<li>Pedestrian / motorcycle involvement flag (at crash level)</li>
+</ul>
+<p>These variables describe the accident. They cannot be known before the accident. Using them in a frequency or risk-ranking model creates a model that appears strong in-sample but has no prospective predictive validity.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="what-the-literature-says-about-severity-mechanisms" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-literature-says-about-severity-mechanisms">What the literature says about severity mechanisms</h2>
+<section id="traffic-flow-and-severity" class="level3">
+<h3 class="anchored" data-anchor-id="traffic-flow-and-severity">Traffic flow and severity</h3>
+<p>Quddus et al.&nbsp;(2010) find that higher traffic flow on the M25 is associated with lower conditional crash severity across all model specifications (PC-GOLOGIT, HCM, GOLOGIT). The marginal effect of log traffic flow reduces serious injury probability by 0.034 and fatal probability by 0.006 per unit, while increasing slight injury probability by 0.040. The mechanism is plausible: high-flow conditions impose lower free-flow speeds through congestion, reducing crash energy.</p>
+<p>The congestion index (total delay) was statistically insignificant for severity across all model specifications and both congestion measures tested. The paper concludes there is no evidence that M25 congestion affects crash severity in this dataset. This null result is specific to the M25 motorway, and should not be generalised to all road types — but it does caution against prioritising congestion as a Stage 2 feature on the basis of motorway evidence alone.</p>
+<p>Michalaki et al.&nbsp;(2015) find that non-peak (quiet) traffic hours are associated with higher severity on motorways. The mechanism is the same as Quddus et al.&nbsp;in reverse: free-flow conditions in quiet periods allow higher impact speeds, increasing injury severity per collision. This finding also validates the relevance of Stage 1b WebTRIS time profiles as a severity-context feature — not as a frequency predictor, but as evidence that the peak/off-peak fraction of traffic matters for the severity composition of collisions.</p>
+</section>
+<section id="hgv-involvement-and-severity" class="level3">
+<h3 class="anchored" data-anchor-id="hgv-involvement-and-severity">HGV involvement and severity</h3>
+<p>Michalaki et al.&nbsp;(2015) find that HGV involvement strongly increases crash severity on motorways, with a coefficient of 0.336 for main carriageway and 0.757 for hard shoulder crashes. The hard shoulder result is notably larger — a collision involving an HGV on the hard shoulder has a fatal probability approximately 7.3 percentage points higher than without HGV involvement. HGV proportion from AADF is already a candidate Stage 2 feature in Open Road Risk; this paper provides direct severity evidence supporting its inclusion, while noting that HGV <em>proportion</em> on a link (derivable from AADF) is not the same as HGV <em>involvement in a specific crash</em> (a post-event STATS19 variable).</p>
+<p>Ma et al.&nbsp;(2019) find motorcycle and pedestrian involvement are the second and third strongest conditional fatality predictors in their Los Angeles dataset. Fatality rates are approximately 3.5× higher for motorcycle-involved crashes and 7× higher for pedestrian-involved crashes relative to baseline. These are again crash-level variables and cannot be used in a prospective frequency model, but they support the rationale for separate vulnerable-road-user analysis.</p>
+</section>
+<section id="hard-shoulder-vs.-main-carriageway" class="level3">
+<h3 class="anchored" data-anchor-id="hard-shoulder-vs.-main-carriageway">Hard shoulder vs.&nbsp;main carriageway</h3>
+<p>Michalaki et al.&nbsp;(2015) provide a concrete example of how severity structure differs within a single road class. Hard shoulder crashes represent approximately 1.6% of M25 injury collisions but have a fatal share of 8.4% compared to 1.8% on the main carriageway — roughly five times higher. The factors driving this difference include HGV involvement, driver fatigue, and absence of daylight, all of which are more prevalent on the hard shoulder.</p>
+<p>For Open Road Risk, this reinforces the general principle that facility type matters for severity composition. A link-year model pooling all motorway crashes will systematically underestimate severity on links with high hard-shoulder crash exposure.</p>
+</section>
+<section id="lighting" class="level3">
+<h3 class="anchored" data-anchor-id="lighting">Lighting</h3>
+<p>Ma et al.&nbsp;(2019) find lighting condition is a top-8 fatality predictor in their XGBoost classifier. Crashes in dark conditions without functioning street lights have fatality rates approximately 3× those of daytime crashes. OSM lighting data is already a candidate feature in Open Road Risk with noted sparse coverage; this finding supports prioritising its inclusion where coverage allows, while treating it as a road-environment descriptor rather than a crash-time observation.</p>
+<hr>
+</section>
+</section>
+<section id="when-severity-levels-should-be-modelled-jointly" class="level2">
+<h2 class="anchored" data-anchor-id="when-severity-levels-should-be-modelled-jointly">When severity levels should be modelled jointly</h2>
+<p>Boulieri et al.&nbsp;(2016) fit a Bayesian multivariate model to ward-level England STATS19 data (2005–2013), modelling slight and severe/fatal crash counts jointly under a correlated MCAR prior structure. They find:</p>
+<ul>
+<li>The multivariate model (MBYM) has a DIC approximately 135,000 units lower than independent univariate models — a very large improvement — driven by the spatial cross-severity correlation (ρ_total ≈ 0.74).</li>
+<li>Approximately 60–65% of spatial variability in crash rates is spatially structured rather than unstructured heterogeneity, even after controlling for traffic-volume exposure.</li>
+<li>Bayesian spatial smoothing substantially reorders hotspot rankings for high-severity (rare) outcomes — 0.26% of top-100 areas shifted by more than 15 rank positions — but has little effect on the more common slight injury rankings.</li>
+<li>Severe and slight crashes follow different temporal trends: near-linear decline for slight injuries, but a flatter trend for severe/fatal after 2010.</li>
+</ul>
+<p>The practical implication for Open Road Risk is not to replicate the full MBYM at 2.17M links — the paper’s OpenBUGS models ran for 20–27 hours at 7,932 wards, and MCMC at link scale is computationally infeasible. The implication is that severity levels are correlated but distinct, and that <strong>hotspot rankings based on rare (KSI) counts alone are substantially changed by smoothing</strong>. A crude KSI rate ranking will be particularly unstable and should not be used without some form of shrinkage or smoothing. The EB shrinkage diagnostic variant already in Open Road Risk addresses this problem for total collisions; extending it to the KSI sub-band is a logical next step.</p>
+<p>Gilardi et al.&nbsp;(2022) reach a compatible finding on OS road segments in Leeds: the spatial correlation between severe and slight crash random effects is ρ_φ ≈ 0.83–0.90 and ρ_θ ≈ 0.40, suggesting that the spatial patterns of the two severity levels are strongly co-located but not identical. Their multivariate model substantially improves estimation of severe crash rates (balanced accuracy 0.675 for severe vs.&nbsp;0.631 without cross-severity correlation) by borrowing strength from the more common slight crash pattern.</p>
+<p>Both papers support the same directional conclusion: modelling slight and severe/KSI separately without accounting for their correlation loses information, and small-count severity bands (KSI, fatal) need either multi-level borrowing of strength or EB shrinkage to produce stable rankings.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Gao et al.&nbsp;(2024) use a severity-weighted composite response variable <code>y = Σ(collision_count × severity_weight)</code> with weights 1/2/3 for minor/serious/fatal. This approach conflates frequency and severity into a single score. It is documented here as a design choice to avoid: the composite score cannot separate exposure-driven collision frequency from severity-driven injury burden, and the numeric weights (1/2/3) are arbitrary rather than estimated. Open Road Risk’s current approach — modelling total injury frequency, with severity as a future separate layer — is more principled than this composite.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="ordered-response-models-for-severity" class="level2">
+<h2 class="anchored" data-anchor-id="ordered-response-models-for-severity">Ordered response models for severity</h2>
+<p>When a severity model is eventually added to Open Road Risk, the ordered structure of the outcome (slight &lt; serious &lt; fatal) is a methodological constraint on model choice.</p>
+<p>Both Quddus et al.&nbsp;(2010) and Michalaki et al.&nbsp;(2015) use ordered logit as the starting point and then find that the proportional-odds assumption is violated — different variables have different effects at different severity thresholds. Both papers use partially constrained generalized ordered logit (PC-GOLOGIT), which relaxes the proportional-odds constraint for the variables that violate it while retaining it for the rest.</p>
+<p>The practical lesson: do not default to simple ordered logit without testing the Brant test for proportional odds. If violated, PC-GOLOGIT is the appropriate response. Quddus et al.&nbsp;also find that random effects at the intersection/group level were not significant in this motorway case study (ICC too low to justify multilevel structure) — spatial clustering of severity, at least at county level, is weak once motorway-type is controlled.</p>
+<hr>
+</section>
+<section id="post-event-variables-a-catalogue-for-open-road-risk" class="level2">
+<h2 class="anchored" data-anchor-id="post-event-variables-a-catalogue-for-open-road-risk">Post-event variables: a catalogue for Open Road Risk</h2>
+<p>The table below compiles the post-event variables that appear across these papers. All are valid in conditional severity models; none should enter Stage 2 as production features.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Paper</th>
+<th>Role in severity model</th>
+<th>Leakage risk for Stage 2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Contributory factor codes</td>
+<td>Michalaki 2015; Quddus 2010</td>
+<td>Strong severity predictors; police judgement on cause</td>
+<td>High — recorded post-crash; subjective</td>
+</tr>
+<tr class="even">
+<td>Single-vehicle crash flag</td>
+<td>Quddus 2010; Ma 2019</td>
+<td>Positive fatality predictor</td>
+<td>High — post-event by definition</td>
+</tr>
+<tr class="odd">
+<td>Number of vehicles / parties</td>
+<td>Quddus 2010; Ma 2019</td>
+<td>Associated with severity</td>
+<td>High — crash property</td>
+</tr>
+<tr class="even">
+<td>Number of casualties</td>
+<td>Quddus 2010</td>
+<td>Heteroskedasticity source</td>
+<td>High — outcome-adjacent</td>
+</tr>
+<tr class="odd">
+<td>Road surface condition at crash</td>
+<td>Quddus 2010; Michalaki 2015</td>
+<td>Wet surface → lower severity (speed effect)</td>
+<td>High — observed at crash time</td>
+</tr>
+<tr class="even">
+<td>Lighting condition at crash time</td>
+<td>Quddus 2010; Michalaki 2015; Ma 2019</td>
+<td>Darkness → higher severity</td>
+<td>Medium — can be partially pre-event (OSM infrastructure lighting) or post-event (crash-time condition)</td>
+</tr>
+<tr class="odd">
+<td>Crash type / manoeuvre</td>
+<td>Ma 2019</td>
+<td>Rear-end vs.&nbsp;angle vs.&nbsp;head-on patterns</td>
+<td>High — describes crash geometry</td>
+</tr>
+<tr class="even">
+<td>Pedestrian / motorcycle involvement</td>
+<td>Ma 2019; Michalaki 2015</td>
+<td>Strong fatality predictors</td>
+<td>High — crash property</td>
+</tr>
+<tr class="odd">
+<td>ETOH / alcohol flag</td>
+<td>Ma 2019</td>
+<td>Strongest fatality predictor in LA dataset</td>
+<td>High — STATS19 police assessment at crash</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note on lighting:</strong> OSM <code>lit=yes/no</code> is a road-infrastructure attribute that is known before any crash and is not post-event. STATS19 lighting condition at crash time (<code>Light Conditions</code> field) is an observation at the crash moment and is post-event. These are different variables and should not be conflated.</p>
+<hr>
+</section>
+<section id="open-road-risk-alignment" class="level2">
+<h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Severity question</th>
+<th>Literature evidence</th>
+<th>Current pipeline</th>
+<th>Gap / recommended action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Should frequency and severity be separate models?</td>
+<td>Quddus 2010; Michalaki 2015; Ma 2019 — all explicit that these are different estimands</td>
+<td>Single count model (all injury combined)</td>
+<td>Document as known design choice; plan severity layer as future work</td>
+</tr>
+<tr class="even">
+<td>Should slight and KSI be modelled jointly?</td>
+<td>Boulieri 2016 (ρ ≈ 0.74 correlation); Gilardi 2022 (ρ_φ ≈ 0.83–0.90) — joint modelling substantially improves KSI estimation</td>
+<td>Not currently modelled separately</td>
+<td>Extend EB shrinkage to KSI sub-band; flag as future joint model candidate</td>
+</tr>
+<tr class="odd">
+<td>Is raw KSI ranking reliable?</td>
+<td>Boulieri 2016 — smoothing reorders high-severity rankings substantially</td>
+<td>EB shrinkage for total counts; no severity-split</td>
+<td>Run crude vs.&nbsp;smoothed ranking comparison for KSI links</td>
+</tr>
+<tr class="even">
+<td>Are post-event variables being excluded?</td>
+<td>Michalaki 2015; Quddus 2010; Ma 2019 — leakage risk explicit</td>
+<td>Repo dossier excludes collision-derived variables</td>
+<td>Document the full leakage catalogue explicitly; link to these papers</td>
+</tr>
+<tr class="odd">
+<td>Is severity-weighted composite score appropriate?</td>
+<td>Gao 2024 composite is undocumented weights; conflates frequency and severity</td>
+<td>Not used</td>
+<td>Document Gao 2024 composite as a design approach to avoid</td>
+</tr>
+<tr class="even">
+<td>Is ordered logit sufficient for severity model?</td>
+<td>Quddus 2010; Michalaki 2015 — proportional odds violated; PC-GOLOGIT preferred</td>
+<td>No severity model yet</td>
+<td>When severity model is added, test Brant test before using simple ordered logit</td>
+</tr>
+<tr class="odd">
+<td>HGV proportion as feature</td>
+<td>Michalaki 2015 — strong severity predictor</td>
+<td>Candidate feature (AADF HGV proportion)</td>
+<td>Validate HGV proportion; note it is a road-level proxy, not crash-level variable</td>
+</tr>
+<tr class="even">
+<td>Congestion as Stage 2 feature</td>
+<td>Quddus 2010 — congestion index insignificant for M25 severity</td>
+<td>Not currently in production</td>
+<td>Document null result as caution; do not prioritise congestion features from this evidence</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Citation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LIT-005</td>
+<td>Boulieri, A., Liverani, S., de Hoogh, K. &amp; Blangiardo, M. (2016). A space-time multivariate Bayesian model to analyse road traffic accidents by severity. <em>Journal of the Royal Statistical Society Series A, 179(2), 535–553.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-034</td>
+<td>Gao, X. et al.&nbsp;(2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. <em>arXiv:2309.05072v4.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-012/013/014</td>
+<td>Gilardi, A., Mateu, J., Borgoni, R. &amp; Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. <em>JRSS-A, 185(3), 1150–1177.</em> DOI: 10.1111/rssa.12823</td>
+</tr>
+<tr class="even">
+<td>LIT-020</td>
+<td>Ma, J. et al.&nbsp;(2019). Analyzing the leading causes of traffic fatalities using XGBoost and grid-based analysis. <em>IEEE Access, 7, 148057–148071.</em> DOI: 10.1109/ACCESS.2019.2946401</td>
+</tr>
+<tr class="odd">
+<td>LIT-022/023</td>
+<td>Michalaki, P., Quddus, M.A., Pitfield, D. &amp; Huetson, A. (2015). Exploring the factors affecting motorway accident severity in England using the generalised ordered logistic regression model. <em>Journal of Safety Research, 55, 89–96.</em> DOI: 10.1016/j.jsr.2015.09.004</td>
+</tr>
+<tr class="even">
+<td>LIT-027/039</td>
+<td>Quddus, M.A., Wang, C. &amp; Ison, S.G. (2010). Road traffic congestion and crash severity: an econometric analysis using ordered response models. <em>Journal of Transportation Engineering, 136(5), 424–435.</em> DOI: 10.1061/(ASCE)TE.1943-5436.0000044</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/thomashsimm\.github\.io\/open-road-risk\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+
+<title>Exposure and Traffic Volume – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Exposure and Traffic Volume – Open Road Risk">
+<meta property="og:description" content="How the literature handles traffic exposure, and what Open Road Risk can and cannot do">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Exposure and Traffic Volume – Open Road Risk">
+<meta name="twitter:description" content="How the literature handles traffic exposure, and what Open Road Risk can and cannot do">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../background/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Literature</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/crash-frequency-models.html">
+ <span class="dropdown-text">Crash frequency models</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/exposure-and-traffic-volume.html">
+ <span class="dropdown-text">Exposure and traffic volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/spatial-methods-and-network-risk.html">
+ <span class="dropdown-text">Spatial methods and network risk</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/junctions-and-conflict-structure.html">
+ <span class="dropdown-text">Junctions and conflict structure</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/severity-modelling.html">
+ <span class="dropdown-text">Severity modelling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/validation-and-metrics.html">
+ <span class="dropdown-text">Validation and metrics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
+ <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outputs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outputs">    
+        <li>
+    <a class="dropdown-item" href="../outputs/top-risk-map.html">
+ <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-exposure-normalisation-means" id="toc-what-exposure-normalisation-means" class="nav-link active" data-scroll-target="#what-exposure-normalisation-means">What exposure normalisation means</a></li>
+  <li><a href="#the-aadt-elasticity-question" id="toc-the-aadt-elasticity-question" class="nav-link" data-scroll-target="#the-aadt-elasticity-question">The AADT elasticity question</a></li>
+  <li><a href="#open-road-risks-exposure-data-stack" id="toc-open-road-risks-exposure-data-stack" class="nav-link" data-scroll-target="#open-road-risks-exposure-data-stack">Open Road Risk’s exposure data stack</a></li>
+  <li><a href="#estimated-aadt-as-exposure-what-the-literature-says" id="toc-estimated-aadt-as-exposure-what-the-literature-says" class="nav-link" data-scroll-target="#estimated-aadt-as-exposure-what-the-literature-says">Estimated AADT as exposure: what the literature says</a></li>
+  <li><a href="#the-empirical-bayes-connection" id="toc-the-empirical-bayes-connection" class="nav-link" data-scroll-target="#the-empirical-bayes-connection">The Empirical Bayes connection</a></li>
+  <li><a href="#what-does-not-transfer-exposure-approaches-that-require-unavailable-data" id="toc-what-does-not-transfer-exposure-approaches-that-require-unavailable-data" class="nav-link" data-scroll-target="#what-does-not-transfer-exposure-approaches-that-require-unavailable-data">What does not transfer: exposure approaches that require unavailable data</a></li>
+  <li><a href="#stage-1a-validation-what-the-literature-suggests" id="toc-stage-1a-validation-what-the-literature-suggests" class="nav-link" data-scroll-target="#stage-1a-validation-what-the-literature-suggests">Stage 1a validation: what the literature suggests</a></li>
+  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Exposure and Traffic Volume</h1>
+<p class="subtitle lead">How the literature handles traffic exposure, and what Open Road Risk can and cannot do</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Exposure normalisation is the central design decision in crash-frequency modelling. A model that counts collisions without accounting for traffic volume cannot distinguish a genuinely dangerous road from a heavily used one. What follows synthesises the exposure treatment from eleven reviewed papers and maps their approaches against Open Road Risk’s data stack.</p>
+<hr>
+<section id="what-exposure-normalisation-means" class="level2">
+<h2 class="anchored" data-anchor-id="what-exposure-normalisation-means">What exposure normalisation means</h2>
+<p>The canonical form for a road segment crash model places traffic exposure as a log-offset in the Poisson log-linear predictor:</p>
+<p><span class="math display">\[\log(\mu_i) = \log(E_i) + \beta_0 + \sum_k \beta_k X_{ik}\]</span></p>
+<p>where <span class="math inline">\(E_i = \text{AADT}_i \times L_i \times T\)</span> is the vehicle-kilometres (or vehicle-days) of travel on segment <span class="math inline">\(i\)</span> over period <span class="math inline">\(T\)</span>. The offset is not a coefficient to be estimated — it is a constraint that forces the model to predict a crash <em>rate</em> rather than a raw count. Without it, a model cannot separate roads that have more crashes because they carry more traffic from roads that have more crashes because they are inherently more dangerous.</p>
+<p>Open Road Risk’s Stage 2 uses <code>log(AADT × link_length_km × 365 / 1e6)</code> as its exposure offset, which is structurally equivalent to the VMT-style offset used in Hauer et al.&nbsp;(2001) and directly analogous to the <code>log(length × traffic_flow)</code> offset used by Gilardi et al.&nbsp;(2022) on OS road segments in Leeds. Both papers confirm this is the correct mathematical structure for a UK segment-level crash model.</p>
+<hr>
+</section>
+<section id="the-aadt-elasticity-question" class="level2">
+<h2 class="anchored" data-anchor-id="the-aadt-elasticity-question">The AADT elasticity question</h2>
+<p>The log-offset approach implicitly assumes that crash frequency scales proportionally with traffic volume — that doubling AADT doubles expected crashes, all else equal (elasticity = 1.0). This assumption is testable and is not universally supported.</p>
+<p>Aguero-Valverde and Jovanis (2008) fit Bayesian hierarchical models to rural Pennsylvania road segments with AADT as a free covariate (not constrained within an offset). Their estimated AADT coefficient ranges from 0.628 to 0.714 depending on model specification — well below 1.0. The paper interprets the drop from 0.714 (heterogeneity-only model) to 0.664 (spatial model) as evidence that ignoring spatial correlation biases the AADT coefficient upward via model misspecification.</p>
+<p>Wang et al.&nbsp;(2009) obtain AADT elasticities of 1.2–1.9 on the M25 motorway, above the proportional assumption. They note explicitly that their elasticity is “a little high compared with some of the previous studies which reported that the elasticity ranges from 0.6–0.7” (p.&nbsp;10). Pan et al.&nbsp;(2017) report near-unity NB coefficients on log(AADT × length) for most North American highway types, which is consistent with the offset assumption.</p>
+<p>The evidence points in the same direction across these papers: AADT elasticity is road-type dependent and differs from the 1.0 constraint imposed by the combined offset. Motorways may have super-proportional elasticity; rural two-lane roads sub-proportional. Al-Omari (2021) finds sub-linear AADT coefficients (0.39–0.63) for dense urban road classes in Florida — well below the fixed-offset assumption.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The fixed-offset assumption (AADT and length elasticity = 1.0) is supported on average but has not been tested diagnostically in Open Road Risk. A straightforward diagnostic is to fit the Stage 2 GLM with <code>log(AADT)</code> and <code>log(length)</code> as separate free covariates and compare the estimated elasticities against 1.0. If they are materially below 1.0 for some road classes, the offset may be overweighting exposure for high-AADT links and distorting the risk percentile ranking for those classes.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="open-road-risks-exposure-data-stack" class="level2">
+<h2 class="anchored" data-anchor-id="open-road-risks-exposure-data-stack">Open Road Risk’s exposure data stack</h2>
+<p>The single largest gap between Open Road Risk and most papers in the literature is that Open Road Risk does not observe AADT — it estimates it.</p>
+<p>Approximately 0.4% of OS Open Roads links have a directly counted DfT AADF observation. The remaining ~96% of links receive an AADT estimate from the Stage 1a machine-learning model, trained on the counted subset using road/network/context features. This introduces estimation uncertainty that most comparison papers never face: they work with either complete sensor networks (Wang 2009 on the M25, using UKHA hourly counts for all 70 segments), or nationally complete probe-based data (Roll et al.&nbsp;2026, which uses INRIX commercial speed data for a second estimation tier in Oregon).</p>
+<p>The table below summarises how the reviewed papers obtain their traffic exposure.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Paper</th>
+<th>Traffic data source</th>
+<th>Coverage</th>
+<th>Missing data handling</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gilardi et al.&nbsp;2022</td>
+<td>2011 Census commuting OD flows, routed via shortest path</td>
+<td>All major-road segments (derived)</td>
+<td>No gaps — Census routing covers everything; but proxy is weak</td>
+</tr>
+<tr class="even">
+<td>Aguero-Valverde &amp; Jovanis 2008</td>
+<td>Pennsylvania RMS (state road management)</td>
+<td>All 865 rural two-lane segments</td>
+<td>Not discussed; full coverage assumed</td>
+</tr>
+<tr class="odd">
+<td>Wang et al.&nbsp;2009</td>
+<td>UKHA hourly counts</td>
+<td>All 70 M25 segments (near-complete)</td>
+<td>Two segments excluded due to missing data</td>
+</tr>
+<tr class="even">
+<td>Hauer et al.&nbsp;2001</td>
+<td>AADT assumed observed per year</td>
+<td>Illustrative tutorial examples</td>
+<td>Not addressed; full coverage assumed</td>
+</tr>
+<tr class="odd">
+<td>Jayasinghe et al.&nbsp;2019</td>
+<td>JICA survey counts (five cities)</td>
+<td>Sparse sample, ~40–1500 count sites</td>
+<td>Core problem — motivates centrality-based estimation</td>
+</tr>
+<tr class="even">
+<td>Roll et al.&nbsp;2026</td>
+<td>HPMS observed → INRIX probe → random forest data fusion</td>
+<td>Statewide urban intersections</td>
+<td>Three-tier hierarchy fills gaps at each level</td>
+</tr>
+<tr class="odd">
+<td>Pew et al.&nbsp;2020</td>
+<td>UDOT entering vehicles per day</td>
+<td>All 1,738 Utah intersections</td>
+<td>Not discussed; full coverage assumed</td>
+</tr>
+<tr class="even">
+<td>Gao et al.&nbsp;2024</td>
+<td>None</td>
+<td>Not used</td>
+<td>N/A — no traffic exposure in model</td>
+</tr>
+<tr class="odd">
+<td>Open Road Risk</td>
+<td>DfT AADF (~8,000 sites, ~0.4% of links) → Stage 1a ML estimate</td>
+<td>All ~2.17M links (estimated)</td>
+<td>Stage 1a model fills the gap; uncertainty not propagated into Stage 2</td>
+</tr>
+</tbody>
+</table>
+<p>The contrast with Gao et al.&nbsp;(2024) is a useful negative example. That paper uses OS-style road links in London with STATS19 crash data — superficially close to Open Road Risk — but includes no traffic exposure whatsoever. Its model cannot distinguish a high-traffic road from a high-risk road. The severity-weighted crash score it predicts is a raw exposure-unadjusted count, not a rate. This is the failure mode that Open Road Risk’s offset design is explicitly intended to avoid.</p>
+<hr>
+</section>
+<section id="estimated-aadt-as-exposure-what-the-literature-says" class="level2">
+<h2 class="anchored" data-anchor-id="estimated-aadt-as-exposure-what-the-literature-says">Estimated AADT as exposure: what the literature says</h2>
+<p>Jayasinghe et al.&nbsp;(2019) provide the closest direct reference for estimating AADT from network centrality in a sparse-count setting. Their betweenness centrality and closeness centrality model achieves random-holdout R² of 0.92–0.96 across five developing-country cities, but with critical weaknesses: very poor RMSE for low-AADT links (193% in Colombo, 412% in Phnom Penh for segments with AADT below 1000), and no spatial holdout — nearby segments share centrality structure and may inflate validation metrics.</p>
+<p>The low-AADT failure is directly relevant to Open Road Risk, which has a long tail of minor rural and unclassified roads where AADF count coverage is near zero and Stage 1a predictions are least reliable. Huda and Al-Kaisy (2024) provide a partial mitigation: they show that for low-volume roads (≤1000 vpd), removing AADT from the model reduces R² by only 0.009. Geometry features — curvature and grade — dominate at that end of the traffic-volume distribution. This does not remove the uncertainty problem but suggests that exposure estimation error on low-AADT links may matter less to the final risk ranking than it would for high-volume roads.</p>
+<p>Roll et al.&nbsp;(2026) demonstrate the three-tier data-fusion hierarchy that is conceptually the right architecture for exposure uncertainty: use observed counts first, fill with probe-based AADT second, fill with ML estimation third. Open Road Risk’s Stage 1a implements the third tier (ML estimation from network features) but has limited access to a second tier — WebTRIS provides time profiles for National Highways routes rather than AADT counts for individual links, and commercial probe data (INRIX, as used by Roll) is outside the open-data stack.</p>
+<p>An important finding from Roll et al.&nbsp;(2026) on model selection: despite testing negative binomial, Poisson, XGBoost, and neural network approaches for pedestrian volume estimation, random forest was selected not because it had the best cross-validated error metric but because it was the only model that passed an application sanity check — XGBoost produced negative volume predictions, and the negative binomial produced implausibly extreme maxima in the statewide prediction. Open Road Risk should apply equivalent sanity checks to Stage 1a full-network predictions (distribution of predicted AADT by road class and rural/urban classification) rather than relying on CV metrics alone.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exposure uncertainty is a first-class limitation of Open Road Risk that is not present in most comparison papers. The current Stage 2 model treats estimated AADT as observed, with no propagation of Stage 1a prediction uncertainty into the Stage 2 crash rate estimate or the risk percentile. This means that the risk percentile for a low-volume rural link combines uncertain exposure with sparse collision counts — two sources of instability that are compounded rather than separated. The Huda and Al-Kaisy (2024) finding (geometry dominates at low AADT) is partial mitigation, not a solution.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="the-empirical-bayes-connection" class="level2">
+<h2 class="anchored" data-anchor-id="the-empirical-bayes-connection">The Empirical Bayes connection</h2>
+<p>Hauer et al.&nbsp;(2001) provide the canonical mathematical connection between the exposure model (SPF) and the EB shrinkage step. The EB weight formula requires:</p>
+<p><span class="math display">\[w = \frac{1}{1 + \eta/\phi}\]</span></p>
+<p>where <span class="math inline">\(\eta = \mu \times L \times Y\)</span> is the SPF-predicted expected count over the observation period (incorporating AADT, length, and years) and <span class="math inline">\(\phi\)</span> is the overdispersion parameter per unit length estimated from negative binomial regression. When AADT is estimated rather than observed, <span class="math inline">\(\eta\)</span> carries estimation uncertainty — but the EB procedure at least ensures that for links with very uncertain AADT (typically low-volume rural roads), the EB estimate shrinks heavily toward the SPF mean rather than being dominated by the raw observed count. For a link with near-zero expected crashes (<span class="math inline">\(\eta\)</span> small), <span class="math inline">\(w \to 1\)</span> and the EB estimate is almost entirely determined by the prior.</p>
+<p>This means that exposure uncertainty on minor roads, while real, is partially absorbed by the EB shrinkage mechanism: a link whose AADT is poorly estimated will have a poorly estimated <span class="math inline">\(\eta\)</span>, but the EB estimator will respond by weighting the SPF prior heavily — which is the correct conservative response in the absence of reliable evidence.</p>
+<p>The full EB procedure (Hauer et al.&nbsp;2001, equation 7) accommodates year-specific AADT changes by summing <span class="math inline">\(\mu_\text{year}\)</span> across years. Open Road Risk’s Stage 1a produces a year-specific AADT estimate per link per year, which directly supports this extension.</p>
+<hr>
+</section>
+<section id="what-does-not-transfer-exposure-approaches-that-require-unavailable-data" class="level2">
+<h2 class="anchored" data-anchor-id="what-does-not-transfer-exposure-approaches-that-require-unavailable-data">What does not transfer: exposure approaches that require unavailable data</h2>
+<p>Several exposure approaches in the literature are blocked by the UK open-data constraint.</p>
+<p>The M25 paper (Wang et al.&nbsp;2009) uses UKHA hourly counts for all 70 motorway segments — structurally similar to AADF but complete and observed. The methodological structure (AADT as covariate, not offset) is informative but the data source is not replicable nationally. WebTRIS provides time profiles for National Highways motorways and A-roads but does not provide the observed per-segment AADT that this paper relies on.</p>
+<p>Roll et al.&nbsp;(2026) use INRIX commercial probe-based AADT as the second tier of their data-fusion hierarchy. INRIX is a proprietary product and is not in Open Road Risk’s stack. The AADT data-fusion concept transfers; the specific data source does not.</p>
+<p>Gilardi et al.&nbsp;(2022) use 2011 Census commuting origin-destination flows, routed via shortest path, as their traffic proxy. This is open data and correctly handles the sparse-count problem — but it captures commuting trips only, is a decade out of date relative to the 2011–2018 crash data, and misses freight, leisure, and all non-commute traffic. Open Road Risk’s Stage 1a AADF-calibrated AADT is a substantially better proxy.</p>
+<p>Gao et al.&nbsp;(2024) use no traffic data at all. This is documented here as a cautionary contrast rather than a model to follow.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Exposure approach</th>
+<th>Papers</th>
+<th>Transfer to Open Road Risk</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Log-offset of length × AADT</td>
+<td>Gilardi 2022; Hauer 2001; Open Road Risk (current)</td>
+<td>Already implemented</td>
+<td>Mathematical structure identical</td>
+</tr>
+<tr class="even">
+<td>AADT as free covariate (elasticity estimated)</td>
+<td>Aguero-Valverde 2008; Wang 2009</td>
+<td>Diagnostic only</td>
+<td>Useful to test offset elasticity assumption; not a production replacement</td>
+</tr>
+<tr class="odd">
+<td>Complete observed sensor AADT</td>
+<td>Wang 2009; Aguero-Valverde 2008; Pew 2020</td>
+<td>Not available nationally</td>
+<td>DfT AADF covers ~0.4% of links; Stage 1a fills the gap</td>
+</tr>
+<tr class="even">
+<td>INRIX probe-based AADT</td>
+<td>Roll 2026 (tier 2)</td>
+<td>Not available (commercial)</td>
+<td>No open equivalent; WebTRIS provides time profiles, not link-level AADT</td>
+</tr>
+<tr class="odd">
+<td>Census commuting OD routing</td>
+<td>Gilardi 2022</td>
+<td>Superseded by Stage 1a</td>
+<td>Open Road Risk already has a better proxy</td>
+</tr>
+<tr class="even">
+<td>No traffic exposure</td>
+<td>Gao 2024; Balawi &amp; Tenekeci 2024</td>
+<td>Should not transfer</td>
+<td>Negative example only</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="stage-1a-validation-what-the-literature-suggests" class="level2">
+<h2 class="anchored" data-anchor-id="stage-1a-validation-what-the-literature-suggests">Stage 1a validation: what the literature suggests</h2>
+<p>Two papers speak directly to how Stage 1a AADT estimation should be validated and what its failure modes are.</p>
+<p>Jayasinghe et al.&nbsp;(2019) show that a learning-curve diagnostic — measuring validation error as a function of the number of calibration count points — is a simple, useful way to understand how performance degrades with sparse coverage. Around 40 calibration observations produced RMSE below 30% in their five case cities. Open Road Risk has approximately 8,000 DfT AADF count points, which is dense by comparison, but the points are highly skewed toward major roads. The learning curve for minor road AADT estimation would look quite different if assessed separately.</p>
+<p>Roll et al.&nbsp;(2026) show that CV metrics alone are insufficient: application sanity checks (checking the full-network prediction distribution by road class and AADT band) detected implausible outputs in two of the four models tested, failures that the CV metrics did not reveal. Open Road Risk should compare the distribution of Stage 1a predicted AADT by road class and rural/urban classification against observed AADF values and known traffic-volume relationships.</p>
+<p>Both papers confirm that low-AADT links are the hardest to estimate well. Jayasinghe et al. (2019) report RMSE of 193–412% in the lowest AADT category. Huda and Al-Kaisy (2024) find that AADT explains almost nothing in the crash-risk model for links with fewer than 1000 vehicles per day — geometry dominates at that end. This does not mean Stage 1a performance on low-volume links is unimportant, but it contextualises what is at stake: for minor rural roads, exposure uncertainty matters less to the final risk ranking than the quality of the geometric and network features.</p>
+<hr>
+</section>
+<section id="open-road-risk-alignment" class="level2">
+<h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature recommendation</th>
+<th>Current pipeline</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Exposure structure</td>
+<td>Log-offset of AADT × length; elasticity testable as a diagnostic</td>
+<td>Fixed offset (<code>log(AADT × link_length_km × 365 / 1e6)</code>)</td>
+<td>Elasticity not yet tested as free covariate; sub-linear risk on urban classes possible</td>
+</tr>
+<tr class="even">
+<td>Traffic data source</td>
+<td>Observed or estimated AADT; Census proxies weaker</td>
+<td>Stage 1a ML estimate from AADF + features</td>
+<td>Coverage limitation for minor roads; uncertainty not propagated into Stage 2</td>
+</tr>
+<tr class="odd">
+<td>Exposure uncertainty</td>
+<td>Acknowledge and document; EB shrinkage partially absorbs it for sparse links</td>
+<td>EB shrinkage exists as diagnostic variant; uncertainty not propagated</td>
+<td>Stage 2 treats estimated AADT as if observed; no uncertainty interval on risk percentile</td>
+</tr>
+<tr class="even">
+<td>AADT elasticity</td>
+<td>Test whether elasticity differs from 1.0 by road class</td>
+<td>Not yet tested</td>
+<td>Free-coefficient diagnostic not yet run</td>
+</tr>
+<tr class="odd">
+<td>Validation of exposure model</td>
+<td>Spatial/grouped holdout; learning-curve diagnostic; application sanity checks</td>
+<td>CV metrics available but sanity checks not formalised</td>
+<td>Low-AADT subgroup error not separately reported</td>
+</tr>
+<tr class="even">
+<td>No-exposure contrast</td>
+<td>Document papers that omit exposure as cautionary examples</td>
+<td>Not yet documented</td>
+<td>Add Gao 2024 and Balawi &amp; Tenekeci 2024 as cautionary contrasts</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Citation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LIT-001/002</td>
+<td>Aguero-Valverde, J. &amp; Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. <em>TRB Annual Meeting; Transportation Research Record 2061, 55–63.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-012/013/014</td>
+<td>Gilardi, A., Mateu, J., Borgoni, R. &amp; Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. <em>Journal of the Royal Statistical Society Series A, 185(3), 1150–1177.</em> DOI: 10.1111/rssa.12823</td>
+</tr>
+<tr class="odd">
+<td>LIT-015</td>
+<td>Hauer, E., Harwood, D.W., Council, F.M. &amp; Griffith, M.S. (2001). Estimating safety by the empirical Bayes method: a tutorial. <em>National SPF Summit, Chicago.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-016/042</td>
+<td>Huda, K.T. &amp; Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. <em>Future Transportation, 4(1).</em> DOI: 10.3390/futuretransp4010013</td>
+</tr>
+<tr class="odd">
+<td>LIT-017/043</td>
+<td>Jayasinghe, A., Sano, K., Abenayake, C. &amp; Mahanama, P.K.S. (2019). A novel approach to model traffic on road segments of large-scale urban road networks. <em>MethodsX.</em> DOI: 10.1016/j.mex.2019.04.024</td>
+</tr>
+<tr class="even">
+<td>LIT-025/037</td>
+<td>Pan, G., Fu, L. &amp; Thakali, L. (2017). Development of a global road safety performance function using deep neural networks. <em>International Journal of Transportation Science and Technology, 6(3), 159–173.</em> DOI: 10.1016/j.ijtst.2017.07.004</td>
+</tr>
+<tr class="odd">
+<td>LIT-032</td>
+<td>Pew, T., Warr, R.L., Schultz, G.G. &amp; Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. <em>Transportation Research Interdisciplinary Perspectives, 8, 100249.</em> DOI: 10.1016/j.trip.2020.100249</td>
+</tr>
+<tr class="even">
+<td>LIT-028/045</td>
+<td>Roll, J., Anderson, J. &amp; McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. <em>FHWA-OR-RD-26-06.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-029</td>
+<td>Wang, C., Quddus, M.A.&nbsp;&amp; Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway in England. <em>Accident Analysis &amp; Prevention.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-034</td>
+<td>Gao, X. et al.&nbsp;(2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. <em>arXiv:2309.05072v4.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-035</td>
+<td>Balawi, M. &amp; Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. <em>Heliyon.</em> DOI: 10.1016/j.heliyon.2024.e25710</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/thomashsimm\.github\.io\/open-road-risk\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

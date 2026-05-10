@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+
+<title>Validation and Metrics – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Validation and Metrics – Open Road Risk">
+<meta property="og:description" content="Methodology basis for Open Road Risk validation design">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Validation and Metrics – Open Road Risk">
+<meta name="twitter:description" content="Methodology basis for Open Road Risk validation design">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../background/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Literature</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/crash-frequency-models.html">
+ <span class="dropdown-text">Crash frequency models</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/exposure-and-traffic-volume.html">
+ <span class="dropdown-text">Exposure and traffic volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/spatial-methods-and-network-risk.html">
+ <span class="dropdown-text">Spatial methods and network risk</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/junctions-and-conflict-structure.html">
+ <span class="dropdown-text">Junctions and conflict structure</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/severity-modelling.html">
+ <span class="dropdown-text">Severity modelling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/validation-and-metrics.html">
+ <span class="dropdown-text">Validation and metrics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
+ <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outputs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outputs">    
+        <li>
+    <a class="dropdown-item" href="../outputs/top-risk-map.html">
+ <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#metric-taxonomy" id="toc-metric-taxonomy" class="nav-link active" data-scroll-target="#metric-taxonomy">Metric taxonomy</a></li>
+  <li><a href="#classification-and-binary-ranking-metrics" id="toc-classification-and-binary-ranking-metrics" class="nav-link" data-scroll-target="#classification-and-binary-ranking-metrics">Classification and binary ranking metrics</a>
+  <ul class="collapse">
+  <li><a href="#balanced-accuracy" id="toc-balanced-accuracy" class="nav-link" data-scroll-target="#balanced-accuracy">Balanced accuracy</a></li>
+  <li><a href="#acchrk-accuracy-hit-rate-at-top-k" id="toc-acchrk-accuracy-hit-rate-at-top-k" class="nav-link" data-scroll-target="#acchrk-accuracy-hit-rate-at-top-k">AccHR@k — accuracy hit rate at top-k%</a></li>
+  </ul></li>
+  <li><a href="#count-model-fit-metrics" id="toc-count-model-fit-metrics" class="nav-link" data-scroll-target="#count-model-fit-metrics">Count model fit metrics</a>
+  <ul class="collapse">
+  <li><a href="#pseudo-r²-mcfaddens-ρ²" id="toc-pseudo-r²-mcfaddens-ρ²" class="nav-link" data-scroll-target="#pseudo-r²-mcfaddens-ρ²">Pseudo-R² (McFadden’s ρ²)</a></li>
+  <li><a href="#inflated-r²-from-regressing-on-eb-outputs" id="toc-inflated-r²-from-regressing-on-eb-outputs" class="nav-link" data-scroll-target="#inflated-r²-from-regressing-on-eb-outputs">Inflated R² from regressing on EB outputs</a></li>
+  <li><a href="#cure-plots" id="toc-cure-plots" class="nav-link" data-scroll-target="#cure-plots">CURE plots</a></li>
+  </ul></li>
+  <li><a href="#cross-validation-design" id="toc-cross-validation-design" class="nav-link" data-scroll-target="#cross-validation-design">Cross-validation design</a>
+  <ul class="collapse">
+  <li><a href="#why-v-fold-cv-is-severely-optimistic-for-spatial-crash-data" id="toc-why-v-fold-cv-is-severely-optimistic-for-spatial-crash-data" class="nav-link" data-scroll-target="#why-v-fold-cv-is-severely-optimistic-for-spatial-crash-data">Why V-fold CV is severely optimistic for spatial crash data</a></li>
+  </ul></li>
+  <li><a href="#posterior-predictive-zero-check" id="toc-posterior-predictive-zero-check" class="nav-link" data-scroll-target="#posterior-predictive-zero-check">Posterior predictive zero check</a></li>
+  <li><a href="#open-road-risk-validation-map" id="toc-open-road-risk-validation-map" class="nav-link" data-scroll-target="#open-road-risk-validation-map">Open Road Risk validation map</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Validation and Metrics</h1>
+<p class="subtitle lead">Methodology basis for Open Road Risk validation design</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This page documents the methodological basis for the validation design and metrics used in Open Road Risk. Each metric tests a different property of the model, and confusing in-sample fit statistics with predictive validation is a persistent risk in crash-frequency literature. The page collects evidence from nine paper extractions and maps findings to the current pipeline’s validation choices.</p>
+<hr>
+<section id="metric-taxonomy" class="level2">
+<h2 class="anchored" data-anchor-id="metric-taxonomy">Metric taxonomy</h2>
+<p>Not all reported model-quality statistics are equivalent. The table below classifies the metrics used or referenced in this project.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>What it tests</th>
+<th>In/out of sample</th>
+<th>Main limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pseudo-R² (ρ²)</td>
+<td>In-sample likelihood improvement over intercept-only</td>
+<td><strong>In-sample</strong></td>
+<td>Sensitive to mean count; low values are expected and not diagnostic of failure</td>
+</tr>
+<tr class="even">
+<td>AIC / BIC / DIC / WAIC</td>
+<td>Model comparison, penalised likelihood</td>
+<td><strong>In-sample</strong></td>
+<td>Cannot substitute for held-out test; Gilardi 2022 explicitly uses DIC/WAIC as model-comparison tools, not predictive validation</td>
+</tr>
+<tr class="odd">
+<td>MAD / MSPE on temporal holdout</td>
+<td>Predictive accuracy on held-out years (same links)</td>
+<td><strong>Temporal holdout</strong></td>
+<td>Tests temporal generalisation only; same road segments in train and test</td>
+</tr>
+<tr class="even">
+<td>V-fold cross-validation RMSE</td>
+<td>Resampled estimate of predictive error</td>
+<td><strong>Spatially leaky</strong></td>
+<td>Mahoney 2023: V-fold CV is severely optimistic; only 2% within target RMSE range at best parameter settings</td>
+</tr>
+<tr class="odd">
+<td>Spatially blocked CV RMSE</td>
+<td>Predictive error with spatial autocorrelation controlled</td>
+<td><strong>Spatial holdout</strong></td>
+<td>Requires choice of exclusion buffer; Mahoney 2023: clustering CV achieves 37–60% within target range</td>
+</tr>
+<tr class="even">
+<td>Balanced accuracy</td>
+<td>Classification quality under severe class imbalance</td>
+<td><strong>Holdout or posterior</strong></td>
+<td>Must pool confusion matrices across folds, not average fold metrics; Brodersen 2010</td>
+</tr>
+<tr class="odd">
+<td>AccHR@k</td>
+<td>Ranking usefulness: top-k% predicted links vs actual crash locations</td>
+<td><strong>Out-of-sample</strong></td>
+<td>Depends on k choice; no exposure normalisation in Gao 2024’s implementation</td>
+</tr>
+<tr class="even">
+<td>CURE plot</td>
+<td>Model misspecification at specific covariate ranges</td>
+<td><strong>In-sample diagnostic</strong></td>
+<td>Does not test generalisation; flags systematic bias by AADT or length band</td>
+</tr>
+<tr class="odd">
+<td>Posterior predictive zero check</td>
+<td>Zero-inflation calibration</td>
+<td><strong>In-sample diagnostic</strong></td>
+<td>Pew 2020 procedure; p ≈ 0.50 indicates calibration; p ≫ 0.50 indicates excess predicted zeros</td>
+</tr>
+<tr class="even">
+<td>MPIW / PICP</td>
+<td>Prediction interval width and coverage</td>
+<td><strong>Out-of-sample</strong></td>
+<td>Gao 2024; requires probabilistic model</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>In-sample is not validation.</strong> Pseudo-R², AIC, DIC, and WAIC measure how well a model fits the data it was trained on. Only MAD/MSPE on temporal holdouts, spatially blocked cross-validation, and external test sets measure predictive generalisation. Lord &amp; Mannering (2010) explicitly warn that superior in-sample fit does not imply practical predictive capability.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="classification-and-binary-ranking-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="classification-and-binary-ranking-metrics">Classification and binary ranking metrics</h2>
+<section id="balanced-accuracy" class="level3">
+<h3 class="anchored" data-anchor-id="balanced-accuracy">Balanced accuracy</h3>
+<p>Standard accuracy is uninformative when ~98–99% of link-years have zero observed crashes. A model predicting zero for every link-year achieves 98%+ accuracy without capturing any true positive signals.</p>
+<p><strong>Brodersen, Ong, Stephan &amp; Buhmann (2010)</strong> define balanced accuracy as:</p>
+<p><span class="math display">\[\text{BA} = \frac{1}{2}\left(\frac{TP}{TP + FN} + \frac{TN}{TN + FP}\right) = \frac{\text{TPR} + \text{TNR}}{2}\]</span></p>
+<p>Key implementation requirements from Brodersen 2010:</p>
+<ul>
+<li><strong>Pool confusion matrices across folds</strong>, then compute a single balanced accuracy from the pooled matrix. Averaging fold-level balanced accuracies instead introduces bias proportional to fold-size imbalance.</li>
+<li>The Bayesian posterior distribution of balanced accuracy given the data (Beta distribution from the pooled TP, FP, TN, FN counts) provides an uncertainty interval rather than a point estimate.</li>
+<li>For the Open Road Risk binary classifier (top-k% predicted links as “high risk”), balanced accuracy can be computed at any threshold and is meaningfully higher than standard accuracy only when both TPR and TNR are reasonable.</li>
+</ul>
+<p><strong>Gilardi, Caimo &amp; Ghosh (2022)</strong> apply balanced accuracy in a spatial network context on OS Open Roads segments in Leeds. Their implementation uses 5,000 posterior predictive Monte Carlo simulations to derive a balanced accuracy distribution rather than a single point estimate. Key notes for Open Road Risk:</p>
+<ul>
+<li>DIC and WAIC are used as in-sample model-comparison tools, not as predictive validation — the paper does not report external holdout performance.</li>
+<li>MAUP sensitivity analysis (contracting OS segments to longer links) shows that model conclusions are robust to network aggregation, which provides some confidence that OS Open Roads link-level results are not artefacts of segment definition.</li>
+<li>The paper uses UK OS road segments, making it one of the closest structural analogues to Open Road Risk in the literature.</li>
+</ul>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Gilardi 2022 Table 2 sign direction for Primary Roads</strong> has not been manually verified against the source PDF at this level of extraction confidence. Do not cite specific coefficient signs from that table without checking the original.</p>
+</div>
+</div>
+</section>
+<section id="acchrk-accuracy-hit-rate-at-top-k" class="level3">
+<h3 class="anchored" data-anchor-id="acchrk-accuracy-hit-rate-at-top-k">AccHR@k — accuracy hit rate at top-k%</h3>
+<p><strong>Gao, Zhang, Ma, Yang &amp; Ma (2024)</strong> introduce AccHR@k as a ranking quality metric for road risk prediction:</p>
+<p><span class="math display">\[\text{AccHR@}k = \frac{|\text{predicted top-}k\% \cap \text{actual crash roads}|}{|\text{predicted top-}k\%|}\]</span></p>
+<p>In words: among the top-<span class="math inline">\(k\)</span>% of roads ranked by predicted risk, what fraction actually experienced crashes in the evaluation period?</p>
+<p>The metric is complementary to balanced accuracy. Balanced accuracy evaluates overall TPR/TNR at a chosen threshold; AccHR@k directly measures whether the model’s high-risk predictions are useful for network screening.</p>
+<p>Gao et al.’s reported AccHR@k values (Table 4, single-year London data) should be treated as indicative rather than directly comparable to Open Road Risk, for three reasons:</p>
+<ol type="1">
+<li><strong>No exposure offset</strong>: the Gao 2024 model uses a severity-weighted composite response without normalising by AADT or link length. Open Road Risk models exposure-adjusted crash frequency.</li>
+<li><strong>Within-year temporal split only</strong>: train/validation/test split is 8:2:2 within a single year (2019). No spatial holdout. AccHR@k may be optimistic due to spatial autocorrelation between nearby training and test links.</li>
+<li><strong>Single-year London data</strong>: may not generalise across Open Road Risk’s multi-year, multi-region scope.</li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exact Table 4 values from Gao 2024 require manual verification against the source PDF before being cited numerically. Use the framework (proportion of top-k% predicted roads with actual crashes) rather than the specific numbers.</p>
+</div>
+</div>
+<p><strong>MPIW and PICP</strong> (Gao 2024) are probabilistic uncertainty metrics:</p>
+<ul>
+<li><strong>MPIW</strong> (mean prediction interval width): average width of the 90% or 95% prediction interval across test roads. Lower is better, conditional on adequate coverage.</li>
+<li><strong>PICP</strong> (prediction interval coverage probability): proportion of test observations falling within the stated interval. Should match nominal coverage (e.g., 0.90 for a 90% PI).</li>
+</ul>
+<p>Open Road Risk does not currently produce prediction intervals; these metrics are relevant if a probabilistic output layer is added.</p>
+<hr>
+</section>
+</section>
+<section id="count-model-fit-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="count-model-fit-metrics">Count model fit metrics</h2>
+<section id="pseudo-r²-mcfaddens-ρ²" class="level3">
+<h3 class="anchored" data-anchor-id="pseudo-r²-mcfaddens-ρ²">Pseudo-R² (McFadden’s ρ²)</h3>
+<p>Pseudo-R² for count regression models is defined as:</p>
+<p><span class="math display">\[\rho^2 = 1 - \frac{\ell(\hat\beta)}{\ell(\hat\beta_0)}\]</span></p>
+<p>where <span class="math inline">\(\ell(\hat\beta)\)</span> is the log-likelihood of the fitted model and <span class="math inline">\(\ell(\hat\beta_0)\)</span> is the log-likelihood of the intercept-only model.</p>
+<p><strong>Chengye &amp; Ranjitkar (2013)</strong> report ρ² values of 0.088–0.194 across negative binomial sub-models for an Auckland motorway (overall model 0.119). These are in-sample values on a dataset with a mean of 8.77 crashes per segment per year — a far higher mean count than Open Road Risk’s link-year data (~0.01–0.02 crashes per link-year). Because pseudo-R² depends on the mean count, these values are not directly comparable to Open Road Risk’s ρ².</p>
+<p>Key caveats from Chengye 2013:</p>
+<ul>
+<li>Chengye &amp; Ranjitkar use an <strong>80% confidence level</strong> for variable selection (not the standard 95%). This threshold retains more variables and inflates reported pseudo-R² relative to a stricter selection rule. Open Road Risk should use 95% or cross-validated importance for feature selection.</li>
+<li>Pseudo-R² is an <strong>in-sample diagnostic only</strong>. The paper also reports MAD and MSPE on a 2-year temporal holdout (2009–2010), which is the primary validation. Ramp-type sub-models achieve MSPE 27.87 vs 36.60 for the overall model — a ~24% reduction from facility-family splitting.</li>
+</ul>
+<p><strong>Lord &amp; Mannering (2010)</strong> review explicitly warns that “superior in-sample model fit does not necessarily imply practical predictive capability or transferability.” Low pseudo-R² (e.g., 0.05–0.15) is typical for crash-frequency count models and does not indicate model failure; the relevant question is whether predictive performance on held-out data is acceptable.</p>
+</section>
+<section id="inflated-r²-from-regressing-on-eb-outputs" class="level3">
+<h3 class="anchored" data-anchor-id="inflated-r²-from-regressing-on-eb-outputs">Inflated R² from regressing on EB outputs</h3>
+<p><strong>Huda &amp; Al-Kaisy (2024)</strong> fit OLS regression to log-transformed Empirical Bayes expected crash counts, achieving adjusted R² of 0.91–0.92. These values are <strong>not comparable</strong> to pseudo-R² from Open Road Risk’s Poisson GLM or XGBoost R² on raw crash counts, for two reasons (see combined record LIT-042 for the canonical citation):</p>
+<ol type="1">
+<li>The response variable (EB expected crashes) is already a smoothed model output, not a zero-heavy integer count. Regressing on a model output reduces variance and inflates R² artificially.</li>
+<li>A random 80/20 train/test split (not spatial) allows spatially adjacent 0.05-mile sections from the same road corridor to appear in both sets, creating spatial leakage.</li>
+</ol>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Do not benchmark Open Road Risk’s R² or pseudo-R² against Huda &amp; Al-Kaisy (2024) R² values. They measure fundamentally different quantities.</p>
+</div>
+</div>
+</section>
+<section id="cure-plots" class="level3">
+<h3 class="anchored" data-anchor-id="cure-plots">CURE plots</h3>
+<p><strong>Roll, Anderson &amp; McNeil (2026)</strong> use cumulative residual (CURE) plots as a standard in-sample fit diagnostic for safety performance functions (see combined record LIT-045 for the canonical citation). A CURE plot shows the cumulative sum of residuals (observed minus predicted) against an ordered covariate (typically AADT or link length), with ±2 standard deviation bands:</p>
+<ul>
+<li>If the cumulative residual stays within the confidence band, the model is adequately calibrated across the covariate range.</li>
+<li>Systematic exceedances indicate model misspecification at specific volume or length ranges (e.g., the model systematically under-predicts for very high-AADT links).</li>
+</ul>
+<p>CURE plots are an <strong>in-sample diagnostic</strong>, not a measure of predictive generalisation. Roll et al.&nbsp;use CURE plots throughout Section 4 of the Oregon pedestrian SPF report as the primary model-fit assessment tool; no external holdout is reported for the SPF models (only the AADPT exposure model is cross-validated).</p>
+<p>For Open Road Risk at 2.1M observations, individual-link CURE plots would be unreadable; AADT-quantile bins (e.g., 50-unit quantile bins) are required to produce an interpretable plot.</p>
+<p><strong>Exposure-only baseline (Roll 2026):</strong> The report found no substantial improvement in expected crash frequency prediction from adding built-environment features over a simple exposure-only model (vehicle AADT + pedestrian AADPT). This provides a precedent for running an exposure-only NB/Poisson baseline in Open Road Risk’s Stage 2 and documenting whether the full feature model materially outperforms it.</p>
+<hr>
+</section>
+</section>
+<section id="cross-validation-design" class="level2">
+<h2 class="anchored" data-anchor-id="cross-validation-design">Cross-validation design</h2>
+<section id="why-v-fold-cv-is-severely-optimistic-for-spatial-crash-data" class="level3">
+<h3 class="anchored" data-anchor-id="why-v-fold-cv-is-severely-optimistic-for-spatial-crash-data">Why V-fold CV is severely optimistic for spatial crash data</h3>
+<p><strong>Mahoney, Pugh &amp; Medrano-Gracia (2023)</strong> provide the most quantitative evidence in this literature set on how CV method choice affects reported performance. Their key finding:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>CV method</th>
+<th>% parameter combinations within target RMSE range</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>V-fold (random)</td>
+<td>~2%</td>
+<td>Highly optimistic; spatial autocorrelation inflates apparent performance</td>
+</tr>
+<tr class="even">
+<td>Spatial clustering (best params)</td>
+<td>~60%</td>
+<td>Optimal exclusion buffer matches residual autocorrelation range</td>
+</tr>
+<tr class="odd">
+<td>Spatial clustering (mean params)</td>
+<td>~37%</td>
+<td>Reasonable middle estimate</td>
+</tr>
+<tr class="even">
+<td>Block-LOO 3 (BLO3, large buffers)</td>
+<td>&lt; V-fold in some settings</td>
+<td>Over-exclusion causes pessimistic underfit</td>
+</tr>
+</tbody>
+</table>
+<p>The core mechanism: when nearby road segments appear in both training and test folds (as in V-fold CV), spatial autocorrelation in crash counts means the training data effectively previews the test distribution. Reported RMSE is lower than true out-of-sample error.</p>
+<p><strong>Exclusion buffer selection:</strong> The optimal buffer matches the autocorrelation range of the outcome residuals (~24–41% of the spatial domain extent in Mahoney’s experiments). Too small → leakage. Too large (BLO3) → too little training data remaining, causing pessimistic underfit.</p>
+<p><strong>Police force holdout as a practical approximation:</strong> Mahoney et al.&nbsp;suggest using administrative spatial units (e.g., police force areas or local authority boundaries) as a practical grouped spatial holdout when the residual autocorrelation range is not known in advance.</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Mahoney 2023 uses a regular spatial grid</strong>, not a road network, and a single crash type in a limited geographic area. The exact CV performance percentages (2%, 37%, 60%) are not directly transferable to Open Road Risk’s OS Open Roads link structure. The directional finding — that V-fold is severely optimistic and spatial clustering is substantially better — is robust and transferable.</p>
+</div>
+</div>
+<p><strong>Current Open Road Risk CV design:</strong> The pipeline uses a grouped link split (held-out links, not held-out years), which controls for within-link temporal autocorrelation but not for spatial autocorrelation across neighbouring links. A spatial clustering split with an exclusion buffer based on residual autocorrelation range would more closely match Mahoney’s best-performing approach.</p>
+<hr>
+</section>
+</section>
+<section id="posterior-predictive-zero-check" class="level2">
+<h2 class="anchored" data-anchor-id="posterior-predictive-zero-check">Posterior predictive zero check</h2>
+<p><strong>Pew, Dixon &amp; Banerjee (2020)</strong> describe a procedure for diagnosing whether a fitted count model is well-calibrated with respect to the proportion of zero-crash observations. The check is:</p>
+<ol type="1">
+<li>Fit the model and obtain predicted mean counts λ̂ᵢ for each observation.</li>
+<li>Draw S = 1,000 (or more) replicated datasets. In each draw <span class="math inline">\(s\)</span>, simulate <span class="math inline">\(\tilde{y}_{is} \sim \text{Poisson}(\hat\lambda_i)\)</span> for all <span class="math inline">\(i\)</span>.</li>
+<li>For each draw, count the number of zeros: <span class="math inline">\(Z_s = \sum_i \mathbf{1}[\tilde{y}_{is} = 0]\)</span>.</li>
+<li>Record the observed zero count: <span class="math inline">\(Z_\text{obs} = \sum_i \mathbf{1}[y_i = 0]\)</span>.</li>
+<li>Compute the posterior predictive p-value: <span class="math inline">\(p = P(Z_s &gt; Z_\text{obs})\)</span>.</li>
+</ol>
+<p><strong>Interpretation:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>p-value range</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>≈ 0.50</td>
+<td>Well-calibrated; model generates zeros at the observed rate</td>
+</tr>
+<tr class="even">
+<td>≫ 0.50 (e.g., &gt; 0.90)</td>
+<td>Model over-generates zeros; predicted λ̂ values too small; likely underdispersion or too many near-zero predictions</td>
+</tr>
+<tr class="odd">
+<td>≪ 0.50 (e.g., &lt; 0.10)</td>
+<td>Model under-generates zeros; predicted λ̂ values too large; possible unmodelled zero-inflation</td>
+</tr>
+</tbody>
+</table>
+<p>The check is <strong>in-sample</strong> — it uses the fitted λ̂ values, not a holdout. Its value is diagnostic: if <span class="math inline">\(p \approx 0.50\)</span>, zero-inflation is not a modelling concern; if <span class="math inline">\(p \ll 0.50\)</span>, a ZIP or ZINB model should be evaluated.</p>
+<p><strong>Pew 2020 finding on zero-inflation (π ≈ 0):</strong> When a ZINB model was fitted to Utah intersection crash data, the zero-inflation parameter π converged to approximately zero. The overdispersion parameter (NB dispersion φ = 17.04) drove the improvement over Poisson, not structural zero-inflation. The authors interpret this as evidence that the zeros in their dataset are adequately explained by the Poisson/NB mean structure rather than requiring a separate zero-generating process.</p>
+<p>For Open Road Risk (≈98% link-year zeros), the analogous check has not yet been run. If <span class="math inline">\(p \ll 0.50\)</span> for the Stage 2 Poisson GLM, a NB model with overdispersion or a two-stage hurdle structure should be considered.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Pew 2020 π ≈ 0 result is reported in the paper’s appendix. Verify the exact appendix section and table number before citing this value in methods documentation.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="open-road-risk-validation-map" class="level2">
+<h2 class="anchored" data-anchor-id="open-road-risk-validation-map">Open Road Risk validation map</h2>
+<p>The table below records which validation methods are currently implemented in the Open Road Risk pipeline, which are planned, and where literature gaps exist.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Validation method</th>
+<th>Status</th>
+<th>Notes / literature basis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Grouped link cross-validation (held-out links)</td>
+<td><strong>Implemented</strong></td>
+<td>Controls within-link temporal leakage; does not control spatial autocorrelation between neighbours</td>
+</tr>
+<tr class="even">
+<td>Temporal holdout (held-out years, same links)</td>
+<td>Not yet implemented</td>
+<td>Chengye 2013 provides a template (MAD/MSPE on 2-year holdout); straightforward to add</td>
+</tr>
+<tr class="odd">
+<td>Spatially blocked CV (exclusion buffer)</td>
+<td>Not yet implemented</td>
+<td>Mahoney 2023: recommended approach; requires residual autocorrelation range estimate</td>
+</tr>
+<tr class="even">
+<td>Police force area holdout</td>
+<td>Not yet implemented</td>
+<td>Mahoney 2023 practical approximation for spatial holdout</td>
+</tr>
+<tr class="odd">
+<td>Balanced accuracy (TPR/TNR)</td>
+<td>Not yet implemented</td>
+<td>Brodersen 2010; Gilardi 2022; pool confusion matrices, do not average fold metrics</td>
+</tr>
+<tr class="even">
+<td>AccHR@k ranking quality</td>
+<td>Not yet implemented</td>
+<td>Gao 2024; proportion of top-k% predicted links with actual crashes</td>
+</tr>
+<tr class="odd">
+<td>Pseudo-R² (ρ²)</td>
+<td>Reported</td>
+<td>In-sample only; treat as model-comparison diagnostic, not predictive performance</td>
+</tr>
+<tr class="even">
+<td>CURE plots</td>
+<td>Not yet implemented</td>
+<td>Roll 2026; cumulative residuals vs AADT and link length; requires AADT-quantile binning at 2.1M scale</td>
+</tr>
+<tr class="odd">
+<td>Posterior predictive zero check</td>
+<td>Not yet implemented</td>
+<td>Pew 2020; run after Stage 2 Poisson GLM fit; diagnostic for zero-inflation</td>
+</tr>
+<tr class="even">
+<td>Exposure-only baseline comparison</td>
+<td>Not yet implemented</td>
+<td>Roll 2026 Appendix A design; compare full feature model to exposure-only NB/Poisson</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Citation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LIT-011</td>
+<td>Brodersen, K.H., Ong, C.S., Stephan, K.E. &amp; Buhmann, J.M. (2010). The balanced accuracy and its posterior distribution. <em>ICPR 2010.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-017</td>
+<td>Gilardi, A., Caimo, A. &amp; Ghosh, S. (2022). Network lattice models for road collision analyses. <em>SSRN preprint.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-009</td>
+<td>Chengye, P. &amp; Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. <em>EASTS Proceedings.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-028</td>
+<td>Roll, J., Anderson, J. &amp; McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. <em>FHWA-OR-RD-26-06.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-005</td>
+<td>Lord, D. &amp; Mannering, F. (2010). The statistical analysis of crash-frequency data: a review and assessment of methodological alternatives. <em>Transportation Research Part A.</em> <a href="https://doi.org/10.1016/j.tra.2010.02.001">DOI:10.1016/j.tra.2010.02.001</a></td>
+</tr>
+<tr class="even">
+<td>LIT-016 / LIT-042</td>
+<td>Huda, K.T. &amp; Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. <em>Future Transportation.</em> <a href="https://doi.org/10.3390/futuretransp4010013">DOI:10.3390/futuretransp4010013</a> — use combined record LIT-042.</td>
+</tr>
+<tr class="odd">
+<td>LIT-027</td>
+<td>Mahoney, K., Pugh, D. &amp; Medrano-Gracia, P. (2023). Spatial cross-validation methods for crash frequency prediction models.</td>
+</tr>
+<tr class="even">
+<td>LIT-019</td>
+<td>Pew, C., Dixon, K. &amp; Banerjee, N. (2020). Zero-inflated crash frequency models.</td>
+</tr>
+<tr class="odd">
+<td>LIT-029</td>
+<td>Gao, C., Zhang, Y., Ma, X., Yang, D. &amp; Ma, J. (2024). Spatiotemporal zero-inflated truncated distribution with graph neural networks for road risk prediction.</td>
+</tr>
+<tr class="even">
+<td>LIT-028 / LIT-045</td>
+<td>Roll, J., Anderson, J. &amp; McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. <em>FHWA-OR-RD-26-06.</em> — use combined record LIT-045.</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/thomashsimm\.github\.io\/open-road-risk\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

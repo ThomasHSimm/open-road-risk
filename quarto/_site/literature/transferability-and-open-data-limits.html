@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+
+<title>Transferability and Open Data Limits – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<meta property="og:title" content="Transferability and Open Data Limits – Open Road Risk">
+<meta property="og:description" content="What the international literature can and cannot contribute to Open Road Risk">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Transferability and Open Data Limits – Open Road Risk">
+<meta name="twitter:description" content="What the international literature can and cannot contribute to Open Road Risk">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Background</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
+        <li>
+    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
+ <span class="dropdown-text">Metrics and methodology</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../background/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Literature</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/crash-frequency-models.html">
+ <span class="dropdown-text">Crash frequency models</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/exposure-and-traffic-volume.html">
+ <span class="dropdown-text">Exposure and traffic volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/spatial-methods-and-network-risk.html">
+ <span class="dropdown-text">Spatial methods and network risk</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/junctions-and-conflict-structure.html">
+ <span class="dropdown-text">Junctions and conflict structure</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/severity-modelling.html">
+ <span class="dropdown-text">Severity modelling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/validation-and-metrics.html">
+ <span class="dropdown-text">Validation and metrics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
+ <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outputs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outputs">    
+        <li>
+    <a class="dropdown-item" href="../outputs/top-risk-map.html">
+ <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-open-road-risk-data-stack" id="toc-the-open-road-risk-data-stack" class="nav-link active" data-scroll-target="#the-open-road-risk-data-stack">The Open Road Risk data stack</a></li>
+  <li><a href="#per-paper-transferability" id="toc-per-paper-transferability" class="nav-link" data-scroll-target="#per-paper-transferability">Per-paper transferability</a>
+  <ul class="collapse">
+  <li><a href="#fully-or-largely-transferable" id="toc-fully-or-largely-transferable" class="nav-link" data-scroll-target="#fully-or-largely-transferable">Fully or largely transferable</a></li>
+  <li><a href="#partially-transferable-uk-recalibration-required" id="toc-partially-transferable-uk-recalibration-required" class="nav-link" data-scroll-target="#partially-transferable-uk-recalibration-required">Partially transferable — UK recalibration required</a></li>
+  <li><a href="#uk-geography-papers-with-low-transferability-negative-transfer-examples" id="toc-uk-geography-papers-with-low-transferability-negative-transfer-examples" class="nav-link" data-scroll-target="#uk-geography-papers-with-low-transferability-negative-transfer-examples">UK-geography papers with low transferability (negative-transfer examples)</a></li>
+  </ul></li>
+  <li><a href="#data-availability-matrix" id="toc-data-availability-matrix" class="nav-link" data-scroll-target="#data-availability-matrix">Data-availability matrix</a></li>
+  <li><a href="#implications-for-open-road-risk" id="toc-implications-for-open-road-risk" class="nav-link" data-scroll-target="#implications-for-open-road-risk">Implications for Open Road Risk</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Transferability and Open Data Limits</h1>
+<p class="subtitle lead">What the international literature can and cannot contribute to Open Road Risk</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Open Road Risk uses only publicly available UK data. The crash-frequency and network-safety literature is predominantly built on US state DOT inventories, New Zealand motorway sensor networks, or proprietary UK data sources that are not freely accessible at national scale. Useful methodological ideas must be separated from data requirements that cannot be met in this pipeline.</p>
+<p>This page documents — per paper and per data domain — what transfers, what partially transfers with UK recalibration, and what is blocked by missing data or incompatible scale.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>UK geography ≠ UK data availability.</strong> Several papers in this literature set use London or England data (Gilardi 2022: Leeds OS segments; Wang 2009, Michalaki 2015: M25; Gao 2024: London boroughs; Balawi &amp; Tenekeci 2024: London A-roads). None of these are interchangeable with Open Road Risk’s data stack. UK-geography papers may still require commercial sensors, STATS19 post-event attributes, private intersection inventories, or corridor-level aggregation that conflicts with a link-year national model.</p>
+</div>
+</div>
+<hr>
+<section id="the-open-road-risk-data-stack" class="level2">
+<h2 class="anchored" data-anchor-id="the-open-road-risk-data-stack">The Open Road Risk data stack</h2>
+<p>What is freely available at national England scale, and what is not.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Data domain</th>
+<th>Available (open)</th>
+<th>Not available / not open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Road network geometry</td>
+<td>OS Open Roads: link geometry, road name, road classification, form of way</td>
+<td>Lane count (sparse in OSM, absent in OS Open Roads); shoulder width; median type/width; lane marking</td>
+</tr>
+<tr class="even">
+<td>Traffic volume (AADT)</td>
+<td>DfT AADF count points (~8,000 sites)</td>
+<td>Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density</td>
+</tr>
+<tr class="odd">
+<td>Traffic profiles</td>
+<td>WebTRIS sensor data (National Highways motorways/A-roads)</td>
+<td>Push-button pedestrian actuations; turning-movement counts; corridor-level time series without exposure</td>
+</tr>
+<tr class="even">
+<td>Collision records</td>
+<td>STATS19 injury collisions: location, severity, date, road class</td>
+<td>PDO collisions; contributory factors (not available in Stage 2 feature set); post-event crash attributes</td>
+</tr>
+<tr class="odd">
+<td>Road geometry/context</td>
+<td>OS Terrain 50 DEM (grade derivable); OS Open Roads topology</td>
+<td>Degree of horizontal curvature (derivable from polyline geometry but not a RAMM/DOT-style inventory); driveway/access density; side slope; fixed objects</td>
+</tr>
+<tr class="even">
+<td>Junction context</td>
+<td>OS Open Roads node topology; OSM junction tags</td>
+<td>Turning volumes per approach; signal timing; pedestrian crossing presence/type</td>
+</tr>
+<tr class="odd">
+<td>Socioeconomic context</td>
+<td>IMD (English indices); Census (ONS)</td>
+<td>School proximity counts (at national scale); pedestrian demand models</td>
+</tr>
+<tr class="even">
+<td>Administrative boundaries</td>
+<td>Police force areas; local authorities; OS Boundary-Line</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>The single largest gap relative to the US/NZ literature is <strong>complete observed traffic counts</strong>. US studies (Chengye 2013 on Auckland, Huda 2024 on Oregon, Roll 2026 on Oregon, Wang 2009 on M25) either have full sensor coverage or proprietary probe data (INRIX). Open Road Risk estimates AADT for ~96% of links via Stage 1a machine learning; this introduces uncertainty that most comparison papers never face.</p>
+<hr>
+</section>
+<section id="per-paper-transferability" class="level2">
+<h2 class="anchored" data-anchor-id="per-paper-transferability">Per-paper transferability</h2>
+<section id="fully-or-largely-transferable" class="level3">
+<h3 class="anchored" data-anchor-id="fully-or-largely-transferable">Fully or largely transferable</h3>
+<section id="gilardi-caimo-ghosh-2022-leeds-network-lattice" class="level4">
+<h4 class="anchored" data-anchor-id="gilardi-caimo-ghosh-2022-leeds-network-lattice">Gilardi, Caimo &amp; Ghosh 2022 — Leeds network lattice</h4>
+<p>The most structurally similar paper. Uses OS road segments, UK crash data, and a log-offset on segment length × estimated traffic flow. Three things transfer directly:</p>
+<ul>
+<li>The <strong>log-offset form</strong> (length × estimated flow) is mathematically identical to Open Road Risk’s exposure term.</li>
+<li><strong>Balanced accuracy</strong> via posterior predictive simulation for sparse zero/non- zero crash counts is directly applicable.</li>
+<li>The <strong>MAUP sensitivity analysis</strong> (contracting OS segments to longer links) shows results are robust to network aggregation, which provides confidence in using OS Open Roads as-is.</li>
+</ul>
+<p>Limitation: The paper’s traffic exposure is Census-routed commuter flow — weaker than Open Road Risk’s AADF-calibrated AADT. The INLA Bayesian spatial model is not feasible at 2.1M links.</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Three independent extractions exist (LIT-012, LIT-013, LIT-014). Active reconciliation is pending for Table 2 coefficient signs and the Primary Roads interpretation. Do not cite specific coefficient directions from Table 2 without checking the original PDF. Use these extractions for high-level structural conclusions only until the reconciliation is complete.</p>
+</div>
+</div>
+</section>
+<section id="hauer-harwood-council-griffith-2001-eb-tutorial" class="level4">
+<h4 class="anchored" data-anchor-id="hauer-harwood-council-griffith-2001-eb-tutorial">Hauer, Harwood, Council &amp; Griffith 2001 — EB tutorial</h4>
+<p>The EB shrinkage formula, the role of the overdispersion parameter, and the regression-to-mean warning all transfer directly regardless of geography. The tutorial uses generic road entities (segments, intersections); no US-specific data source is needed.</p>
+</section>
+<section id="lord-mannering-2010-crash-frequency-methodology-review" class="level4">
+<h4 class="anchored" data-anchor-id="lord-mannering-2010-crash-frequency-methodology-review">Lord &amp; Mannering 2010 — crash-frequency methodology review</h4>
+<p>The methodological checklist (overdispersion, low mean, zero-heavy counts, omitted variables, functional form, spatial/temporal correlation) transfers completely. It is a review, not an empirical study, so geography is irrelevant.</p>
+</section>
+<section id="brodersen-et-al.-2010-balanced-accuracy" class="level4">
+<h4 class="anchored" data-anchor-id="brodersen-et-al.-2010-balanced-accuracy">Brodersen et al.&nbsp;2010 — balanced accuracy</h4>
+<p>A general classification methodology paper. Transfers with no modification.</p>
+</section>
+<section id="mahoney-et-al.-2023-spatial-cv" class="level4">
+<h4 class="anchored" data-anchor-id="mahoney-et-al.-2023-spatial-cv">Mahoney et al.&nbsp;2023 — spatial CV</h4>
+<p>A simulation study on spatially autocorrelated data. Not road-safety specific. The directional finding (V-fold CV is severely optimistic; spatial clustering CV with buffer ≈ autocorrelation range is substantially better) transfers fully. The exact buffer percentages (24–41% of grid length) are simulation-specific and must be recalibrated from Open Road Risk’s own residual variogram.</p>
+</section>
+<section id="jayasinghe-et-al.-2019-centrality-based-aadt-estimation" class="level4">
+<h4 class="anchored" data-anchor-id="jayasinghe-et-al.-2019-centrality-based-aadt-estimation">Jayasinghe et al.&nbsp;2019 — centrality-based AADT estimation</h4>
+<p>The centrality-feature approach to AADT estimation (betweenness centrality, degree centrality, connected segment volumes) transfers directly to Stage 1a. Open Road Risk already uses centrality as a Stage 1a feature. The finding that random forest outperforms OLS for AADT estimation is consistent with Stage 1a. <strong>Use combined record LIT-043 for citation.</strong></p>
+<p><strong>What does not transfer:</strong> The paper uses developing-country city road networks (Sri Lanka, Japan, Bangladesh) with commercial AADT counts as labels. Random-split CV reported; spatial leakage likely. Exact RMSE values from Table 4 are not directly comparable to Stage 1a performance.</p>
+<hr>
+</section>
+</section>
+<section id="partially-transferable-uk-recalibration-required" class="level3">
+<h3 class="anchored" data-anchor-id="partially-transferable-uk-recalibration-required">Partially transferable — UK recalibration required</h3>
+<section id="chengye-ranjitkar-2013-auckland-motorway-nb-regression" class="level4">
+<h4 class="anchored" data-anchor-id="chengye-ranjitkar-2013-auckland-motorway-nb-regression">Chengye &amp; Ranjitkar 2013 — Auckland motorway NB regression</h4>
+<p><strong>Transfers:</strong> Temporal holdout design (train 2004–2008, test 2009–2010). MAD and MSPE as holdout metrics. The direction of ramp/facility-family effects (splitting by ramp type reduces MSPE ~24%). EB shrinkage diagnostic for motorway sub-families.</p>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li><strong>AADT per lane</strong> requires lane counts. Lane count is sparsely available in OSM and absent from OS Open Roads. For the motorway subset, OSM coverage is better, but not complete.</li>
+<li><strong>Ramp AADT</strong> is not available in any UK open data source. A ramp-presence binary (from OS Open Roads form-of-way) is derivable but not ramp volume.</li>
+<li><strong>80% variable selection threshold</strong>: Chengye &amp; Ranjitkar use an 80% confidence level for variable inclusion, not the standard 95%. This inflates reported pseudo-R² and retains noise variables. Open Road Risk should use 95% or cross-validated importance.</li>
+<li>New Zealand motorway geometry and traffic conditions differ from UK; coefficient values should not be imported directly.</li>
+</ul>
+</section>
+<section id="wang-quddus-ison-2009-m25-spatial-crash-model" class="level4">
+<h4 class="anchored" data-anchor-id="wang-quddus-ison-2009-m25-spatial-crash-model">Wang, Quddus &amp; Ison 2009 — M25 spatial crash model</h4>
+<p><strong>Transfers:</strong> The M25 is a UK motorway; the junction-to-junction segment structure is analogous to OS Open Roads link topology. Motorway AADT elasticity direction (positive, likely near 1.0) transfers. Grade effect direction (positive for uphill sections) is consistent with Huda 2024 and general physics. Congestion null result for crash frequency (controlling for AADT, congestion proxies add little) is a useful documentation note for Stage 2.</p>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li>The M25 paper uses <strong>UK Highways Agency (UKHA) sensor data</strong> providing full AADT coverage for every motorway segment. This is not available for Open Road Risk’s full national network; only National Highways routes have WebTRIS coverage, and WebTRIS provides time profiles not raw AADT counts.</li>
+<li>The paper’s CAR spatial model and full Bayesian estimation are not feasible at 2.1M links.</li>
+<li>Coefficient values are motorway-specific; rural A-road or minor road behaviour will differ.</li>
+</ul>
+</section>
+<section id="michalaki-quddus-pitfield-huetson-2015-m25-accident-severity" class="level4">
+<h4 class="anchored" data-anchor-id="michalaki-quddus-pitfield-huetson-2015-m25-accident-severity">Michalaki, Quddus, Pitfield &amp; Huetson 2015 — M25 accident severity</h4>
+<p><strong>Transfers:</strong> The methodological principle that frequency and severity are different modelling targets with different predictors. The hard-shoulder / main-carriageway distinction is STATS19-derivable.</p>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li>The paper models <strong>conditional severity</strong> (given a crash, what is the severity?), not crash frequency. Post-event STATS19 attributes (number of vehicles, casualties, road surface condition at time of crash) cannot be used as prospective Stage 2 predictors without introducing data leakage.</li>
+<li>Hard-shoulder coding changes with smart motorway rollout; STATS19 encodes this differently across years.</li>
+</ul>
+</section>
+<section id="al-omari-2021-florida-context-classification-spf" class="level4">
+<h4 class="anchored" data-anchor-id="al-omari-2021-florida-context-classification-spf">Al-Omari 2021 — Florida context classification SPF</h4>
+<p><strong>Transfers:</strong> The concept of context-class / facility-family stratification (separate NB models per road context rather than a single global model). Urban sub-linear AADT exposure relationships as a diagnostic to test in Open Road Risk. Junction density and access-point density as candidate segment features.</p>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li>Florida FDOT road inventory (lane width, shoulder width, access point count, speed limit by class) has no equivalent in UK open data at national scale.</li>
+<li>Florida’s context classification system differs from UK road classification. Category boundaries need UK recalibration.</li>
+<li>Thesis with no holdout validation; coefficient values should not be transferred numerically.</li>
+</ul>
+</section>
+<section id="pew-warr-schultz-heaton-2020-zero-inflated-crash-models" class="level4">
+<h4 class="anchored" data-anchor-id="pew-warr-schultz-heaton-2020-zero-inflated-crash-models">Pew, Warr, Schultz &amp; Heaton 2020 — zero-inflated crash models</h4>
+<p><strong>Transfers:</strong> The posterior predictive zero check procedure. The overdispersion parameter φ as the primary diagnostic. The finding that π ≈ 0 (NB, not ZINB, should be the priority diagnostic) — applicable to Open Road Risk’s Poisson GLM on link-year data.</p>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li>Utah <strong>signalised intersection</strong> crash counts (mean ~3–10 crashes/year per intersection) are much higher than Open Road Risk’s link-year rate (~0.01–0.02 crashes/link-year). Zero-inflation structure may differ.</li>
+<li>No exposure offset in Pew et al.&nbsp;— they use a standardised entering-vehicle covariate, not a log-offset. This does not challenge Open Road Risk’s offset design; it is simply a different exposure treatment.</li>
+<li>JAGS MCMC at intersection scale is not scalable to 2.1M link-years.</li>
+</ul>
+</section>
+<section id="roll-anderson-mcneil-2026-oregon-pedestrian-spf" class="level4">
+<h4 class="anchored" data-anchor-id="roll-anderson-mcneil-2026-oregon-pedestrian-spf">Roll, Anderson &amp; McNeil 2026 — Oregon pedestrian SPF</h4>
+<p><strong>Use combined record LIT-045 for citation.</strong></p>
+<p><strong>Transfers:</strong> CURE plots as in-sample model-fit diagnostics. The exposure-only baseline approach (compare full feature model vs log(AADT)-only baseline). The three-tier AADT estimation hierarchy (observed → probe → ML data fusion) as a conceptual analogue to Stage 1a.</p>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li>The SPF itself is <strong>pedestrian crash frequency at urban intersections</strong>. Completely different target, unit, and exposure from Open Road Risk.</li>
+<li>Pedestrian AADPT (annual average daily pedestrian traffic) has no UK national open-data equivalent.</li>
+<li><strong>INRIX probe-based AADT</strong> is used as the second tier of the three-tier hierarchy. INRIX is a commercial product not in Open Road Risk’s stack. WebTRIS provides motorway time profiles, not nationally complete probe AADT.</li>
+<li>Push-button pedestrian actuation counts are from US traffic signal controller data; no equivalent source in UK open data.</li>
+<li>Oregon-specific AADT data fusion model coefficients (school proximity, median income, urban area classification) are US-specific; direct import is not appropriate.</li>
+</ul>
+</section>
+<section id="huda-al-kaisy-2024-low-volume-road-network-screening" class="level4">
+<h4 class="anchored" data-anchor-id="huda-al-kaisy-2024-low-volume-road-network-screening">Huda &amp; Al-Kaisy 2024 — low-volume road network screening</h4>
+<p><strong>Use combined record LIT-042 for citation.</strong></p>
+<p><strong>Transfers:</strong></p>
+<ul>
+<li>The finding that <strong>AADT contributes minimally to risk ranking</strong> on low- volume links (≤1000 vpd; R² drop of only 0.009 when AADT is removed). Directly relevant to Open Road Risk’s rural minor-road links where Stage 1a AADT estimates are most uncertain.</li>
+<li><strong>Curvature</strong> as the dominant geometric predictor (CART: sharp curves have 13× higher EB crash density than straight segments). Curvature is derivable from OS Open Roads polyline geometry.</li>
+<li><strong>Grade</strong> (4% threshold) as a binary predictor; positive direction consistent with two independent datasets (this paper + Wang 2009).</li>
+<li><strong>CART-based threshold derivation</strong> as a method for setting category boundaries from data rather than importing US-specific cut-offs.</li>
+<li>EB-based ranking as more reliable than raw count ranking on low-volume links.</li>
+</ul>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li><strong>Lane width</strong> (&lt; 11 ft / ≥ 11 ft): not available in OS Open Roads; sparse in OSM; requires road inventory inspection data.</li>
+<li><strong>Shoulder width</strong> (&lt; 1.8 ft / ≥ 1.8 ft): not in any UK national open dataset.</li>
+<li><strong>Driveway/access density</strong>: the paper suggests derivation from Google Maps aerial imagery. Not available at 2.1M link scale in UK open data.</li>
+<li><strong>Side slope classification</strong>: derived from video log inspection. No UK open-data equivalent.</li>
+<li><strong>Fixed object density</strong>: from video logs. No open-data equivalent.</li>
+<li><strong>CART thresholds</strong> (9°, 28° curvature; 4% grade; 1.8 ft shoulder) are calibrated to Oregon low-volume rural roads. UK-specific thresholds should be derived from Open Road Risk’s own data using CART on EB-ranked link-year outcomes.</li>
+<li><strong>OLS on log(EB expected crashes)</strong> should not be used as a modelling approach for Open Road Risk. The response variable is a smooth model output, not raw crash counts, which inflates R² artificially (0.91–0.92 vs typical pseudo-R² of 0.05–0.20 for raw count models). The R² values are not comparable.</li>
+</ul>
+</section>
+<section id="poch-mannering-1996-intersection-approach-nb-regression" class="level4">
+<h4 class="anchored" data-anchor-id="poch-mannering-1996-intersection-approach-nb-regression">Poch &amp; Mannering 1996 — intersection approach NB regression</h4>
+<p><strong>Use combined record LIT-044 for citation.</strong></p>
+<p><strong>Transfers:</strong> The conceptual point that junction approach mechanisms (turning volumes, conflict angles, signal phasing) differ structurally from mid-link crash risk. Relevant to documentation of what OS Open Roads link modelling misses.</p>
+<p><strong>Does not transfer:</strong></p>
+<ul>
+<li><strong>Turning movement volumes</strong> per intersection approach are not available in UK open data.</li>
+<li><strong>Signal phasing</strong> data is not nationally available from open sources.</li>
+<li>US intersection database geometry differs from OS Open Roads node topology.</li>
+<li>Coefficient values from 1996 US intersections are not transferable.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="uk-geography-papers-with-low-transferability-negative-transfer-examples" class="level3">
+<h3 class="anchored" data-anchor-id="uk-geography-papers-with-low-transferability-negative-transfer-examples">UK-geography papers with low transferability (negative-transfer examples)</h3>
+<p>These papers use UK or London data. They appear relevant at first glance; they are included here to document specifically why they do not transfer to Open Road Risk’s pipeline.</p>
+<section id="gao-et-al.-2024-probabilistic-gnn-for-london-road-risk" class="level4">
+<h4 class="anchored" data-anchor-id="gao-et-al.-2024-probabilistic-gnn-for-london-road-risk">Gao et al.&nbsp;2024 — probabilistic GNN for London road risk</h4>
+<p>Uses London urban road segments (Lambeth, Tower Hamlets, Westminster) from OS-style link geometry. Despite the UK geography and road-segment unit, this paper does not transfer to Open Road Risk for the following reasons:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Issue</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>No exposure offset</strong></td>
+<td>No AADT, no vehicle km travelled. The model cannot distinguish high-risk from high-traffic links. This is the single most important structural gap.</td>
+</tr>
+<tr class="even">
+<td><strong>Severity-weighted composite response</strong></td>
+<td>Response variable = Σ (collision count × severity weight 1/2/3). Not equivalent to raw injury count or exposure-adjusted frequency.</td>
+</tr>
+<tr class="odd">
+<td><strong>Daily temporal resolution</strong></td>
+<td>Daily counts per road segment in a single year (2019). Aggregation to annual link-year counts, which Open Road Risk uses, changes the zero-inflation structure and predictive problem completely.</td>
+</tr>
+<tr class="even">
+<td><strong>Within-year temporal split only</strong></td>
+<td>8:2:2 split within 2019. No cross-year test. No spatial holdout. Same roads appear in training and test. Weaker than Open Road Risk’s grouped link CV.</td>
+</tr>
+<tr class="odd">
+<td><strong>GNN architecture</strong></td>
+<td>GRU temporal encoder + GAT spatial encoder at borough scale (~4,700–5,700 nodes). Computationally infeasible at Open Road Risk’s 2.1M link scale.</td>
+</tr>
+<tr class="even">
+<td><strong>Three-borough scope</strong></td>
+<td>Three London boroughs (highly urbanised). Generalisation to Open Road Risk’s national rural/urban mixed scope is not tested.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What does transfer:</strong> AccHR@k (accuracy hit rate at top-k% predicted roads) as a ranking evaluation metric. MPIW/PICP as probabilistic uncertainty metrics for future probabilistic outputs.</p>
+</section>
+<section id="balawi-tenekeci-2024-arimasarimax-on-london-a-road-corridors" class="level4">
+<h4 class="anchored" data-anchor-id="balawi-tenekeci-2024-arimasarimax-on-london-a-road-corridors">Balawi &amp; Tenekeci 2024 — ARIMA/SARIMAX on London A-road corridors</h4>
+<p>Uses STATS19 data from four London A-road corridors (A1, A3, A4, A6). Despite using open UK data, this paper should not be cited as methodological support for any Open Road Risk decision, for the following reasons:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Issue</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Wrong response variable</strong></td>
+<td>Models “number of vehicles involved in accidents” (a per-collision property), not accident frequency. ARIMA on this quantity does not predict how many accidents occur on a road.</td>
+</tr>
+<tr class="even">
+<td><strong>No exposure</strong></td>
+<td>No AADT, no normalisation. The paper acknowledges this as a limitation but does not resolve it.</td>
+</tr>
+<tr class="odd">
+<td><strong>SARIMAX produces negative counts</strong></td>
+<td>Table 7 test predictions include negative values (e.g., −15.107), which is a fundamental model specification error for a count variable.</td>
+</tr>
+<tr class="even">
+<td><strong>Implausible R² values</strong></td>
+<td>Table 3 reports R²=0.82 for Latitude, Day of Week, and Year as predictors of “number of vehicles.” These values are not credible as simple pairwise correlations; no derivation is given.</td>
+</tr>
+<tr class="odd">
+<td><strong>Corridor-level aggregate</strong></td>
+<td>All accidents on all four A-roads aggregated into a single daily time series. No segment-level structure.</td>
+</tr>
+<tr class="even">
+<td><strong>Single-month holdout</strong></td>
+<td>Despite describing an 80/20 train/test split, the reported test data covers December 2019 only.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nothing transfers</strong> from this paper to Open Road Risk. It is documented here to flag that UK-geography papers require the same scrutiny as international studies.</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="data-availability-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="data-availability-matrix">Data-availability matrix</h2>
+<p>The table below maps each key feature or data element from the literature to its availability in the UK open data stack used by Open Road Risk.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature / data element</th>
+<th>UK open source</th>
+<th>Stage available</th>
+<th>Gap severity</th>
+<th>Papers requiring it</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Road link geometry</td>
+<td>OS Open Roads</td>
+<td>S1a / S2</td>
+<td>None — core data</td>
+<td>All</td>
+</tr>
+<tr class="even">
+<td>Road classification (motorway/A/B/minor)</td>
+<td>OS Open Roads</td>
+<td>S2</td>
+<td>None</td>
+<td>Chengye, Wang, Michalaki, Al-Omari</td>
+</tr>
+<tr class="odd">
+<td>Form of way (slip road, roundabout, motorway)</td>
+<td>OS Open Roads</td>
+<td>S2</td>
+<td>Partial (not all distinctions visible)</td>
+<td>Chengye (ramp detection)</td>
+</tr>
+<tr class="even">
+<td>Annual observed traffic count (AADF)</td>
+<td>DfT AADF (~8,000 sites)</td>
+<td>S1a</td>
+<td><strong>Major</strong> — only ~0.4% of links have AADF; rest estimated</td>
+<td>All exposure papers</td>
+</tr>
+<tr class="odd">
+<td>Motorway/A-road traffic profiles</td>
+<td>WebTRIS (National Highways)</td>
+<td>S1b</td>
+<td><strong>Major</strong> — not nationally complete</td>
+<td>Chengye, Wang, Roll</td>
+</tr>
+<tr class="even">
+<td>Injury collision records</td>
+<td>STATS19</td>
+<td>S2</td>
+<td>Partial — PDO absent; contributory factors excluded</td>
+<td>All</td>
+</tr>
+<tr class="odd">
+<td>Terrain / elevation / grade</td>
+<td>OS Terrain 50 DEM (planned)</td>
+<td>S2 (candidate)</td>
+<td>Low-medium — derivable, not validated</td>
+<td>Huda, Wang, Chengye</td>
+</tr>
+<tr class="even">
+<td>Curvature from geometry</td>
+<td>Derivable from OS Open Roads polyline</td>
+<td>S2 (candidate)</td>
+<td>Medium — US thresholds not transferable directly</td>
+<td>Huda, Chengye, Wang</td>
+</tr>
+<tr class="odd">
+<td>IMD / deprivation</td>
+<td>ONS English IMD</td>
+<td>S2 (candidate)</td>
+<td>Low</td>
+<td>Roll (jobs access proxy)</td>
+</tr>
+<tr class="even">
+<td>Census / demographic</td>
+<td>ONS Census 2021</td>
+<td>S2 (candidate)</td>
+<td>Low</td>
+<td>Gilardi (commuter flow), Al-Omari</td>
+</tr>
+<tr class="odd">
+<td>Lane count</td>
+<td>OSM <code>lanes</code> tag (sparse)</td>
+<td>S2 (candidate)</td>
+<td><strong>Major</strong> for minor roads; medium for motorways</td>
+<td>Chengye, Michalaki</td>
+</tr>
+<tr class="even">
+<td>Shoulder width</td>
+<td>Not available nationally</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Huda, Chengye</td>
+</tr>
+<tr class="odd">
+<td>Driveway/access density</td>
+<td>Not available at national scale</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Huda, Al-Omari</td>
+</tr>
+<tr class="even">
+<td>Side slope / cross-section</td>
+<td>Not available at national scale</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Huda</td>
+</tr>
+<tr class="odd">
+<td>Fixed object density</td>
+<td>Not available at national scale</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Huda</td>
+</tr>
+<tr class="even">
+<td>Turning movement volumes</td>
+<td>Not available in open UK data</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Poch 1996</td>
+</tr>
+<tr class="odd">
+<td>Signal phasing / control type</td>
+<td>Not available nationally</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Poch 1996, Roll</td>
+</tr>
+<tr class="even">
+<td>Pedestrian volume (AADPT)</td>
+<td>Not available nationally</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Roll</td>
+</tr>
+<tr class="odd">
+<td>Commercial probe AADT (INRIX)</td>
+<td>Commercial product only</td>
+<td>—</td>
+<td><strong>Unavailable (open stack)</strong></td>
+<td>Roll</td>
+</tr>
+<tr class="even">
+<td>RAMM / DOT road inventory</td>
+<td>Not equivalent to UK open data</td>
+<td>—</td>
+<td><strong>Unavailable</strong></td>
+<td>Huda, Chengye (NZ), Roll</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="implications-for-open-road-risk" class="level2">
+<h2 class="anchored" data-anchor-id="implications-for-open-road-risk">Implications for Open Road Risk</h2>
+<p>The gap analysis above supports the following documentation positions:</p>
+<ol type="1">
+<li><p><strong>Exposure uncertainty is a first-class limitation.</strong> Most literature papers have observed AADT. Open Road Risk estimates AADT for ~96% of links. This uncertainty is not propagated into Stage 2 rankings and should be documented explicitly, with Huda 2024’s finding (geometry dominates on low-AADT links) as partial mitigation for the lowest-volume rural tier.</p></li>
+<li><p><strong>Geometry features are derivable but need UK calibration.</strong> Curvature and grade are in principle derivable from OS Open Roads + OS Terrain 50. However, the US-derived CART thresholds (Huda: 9°, 28° curvature; 4% grade) are Oregon-specific. UK thresholds should be derived from Open Road Risk’s own EB-ranked link data before these features are added to production.</p></li>
+<li><p><strong>Lane width, shoulder width, and access density are not available.</strong> These are the most commonly cited geometric predictors in the LVR and motorway literature. They cannot be included without a different data source (e.g., OS MasterMap or Highways England for major roads — out of current scope).</p></li>
+<li><p><strong>UK geography is not UK data availability.</strong> The two UK-context papers that appear most applicable — Gao 2024 (London boroughs) and Balawi &amp; Tenekeci 2024 (London A-roads) — both fail to transfer because they lack exposure, use wrong or composite response variables, or aggregate across spatial units that conflict with link-level modelling.</p></li>
+<li><p><strong>The closest valid UK analogue is Gilardi et al.&nbsp;2022</strong> (Leeds OS segments, log-offset form, balanced accuracy for sparse crash data). Its limitations are scale (Leeds only) and exposure quality (commuter flow, not AADF- calibrated AADT), not fundamental structural incompatibility.</p></li>
+</ol>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Citation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LIT-002</td>
+<td>Aguero-Valverde, J. &amp; Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. <em>TRB 87th Annual Meeting.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-003</td>
+<td>Al-Omari, M.M.A. (2021). Crash analysis and development of safety performance functions for Florida roads. <em>Thesis, University of Central Florida.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-009</td>
+<td>Chengye, P. &amp; Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. <em>EASTS Proceedings.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-034</td>
+<td>Gao, X., Jiang, X., Zhuang, D., Chen, H., Wang, S., Law, S. &amp; Haworth, J. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction.</td>
+</tr>
+<tr class="odd">
+<td>LIT-012/013/014</td>
+<td>Gilardi, A., Mateu, J., Borgoni, R. &amp; Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. <em>JRSS-A.</em> — reconciliation pending; do not cite Table 2 coefficient signs without PDF check.</td>
+</tr>
+<tr class="even">
+<td>LIT-015</td>
+<td>Hauer, E., Harwood, D.W., Council, F.M. &amp; Griffith, M.S. (2001). Estimating safety by the empirical Bayes method: a tutorial. <em>TRR.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-016 / LIT-042</td>
+<td>Huda, K.T. &amp; Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. <em>Future Transportation.</em> <a href="https://doi.org/10.3390/futuretransp4010013">DOI:10.3390/futuretransp4010013</a> — use combined record LIT-042.</td>
+</tr>
+<tr class="even">
+<td>LIT-017 / LIT-043</td>
+<td>Jayasinghe, A., Sano, K., Abenayake, C. &amp; Mahanama, P.K.S. (2019). A novel approach to model traffic on road segments of large-scale urban road networks. <em>MethodsX.</em> — use combined record LIT-043.</td>
+</tr>
+<tr class="odd">
+<td>LIT-019</td>
+<td>Lord, D. &amp; Mannering, F. (2010). The statistical analysis of crash-frequency data. <em>Transportation Research Part A.</em> <a href="https://doi.org/10.1016/j.tra.2010.02.001">DOI:10.1016/j.tra.2010.02.001</a></td>
+</tr>
+<tr class="even">
+<td>LIT-033</td>
+<td>Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. &amp; Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches.</td>
+</tr>
+<tr class="odd">
+<td>LIT-022</td>
+<td>Michalaki, P., Quddus, M.A., Pitfield, D. &amp; Huetson, A. (2015). Exploring the factors affecting motorway accident severity in England. <em>Journal of Safety Research.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-026 / LIT-044</td>
+<td>Poch, M. &amp; Mannering, F. (1996). Negative binomial analysis of intersection-accident frequencies. <em>Journal of Transportation Engineering.</em> — use combined record LIT-044.</td>
+</tr>
+<tr class="odd">
+<td>LIT-027 / LIT-039</td>
+<td>Quddus, M.A., Wang, C. &amp; Ison, S.G. (2010). Road traffic congestion and crash severity. <em>Journal of Transportation Engineering.</em> DOI: 10.1061/(ASCE)TE.1943-5436.0000044 — reconciliation complete; use combined record.</td>
+</tr>
+<tr class="even">
+<td>LIT-028 / LIT-045</td>
+<td>Roll, J., Anderson, J. &amp; McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. <em>FHWA-OR-RD-26-06.</em> — use combined record LIT-045.</td>
+</tr>
+<tr class="odd">
+<td>LIT-029</td>
+<td>Wang, C., Quddus, M.A.&nbsp;&amp; Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway. <em>Accident Analysis &amp; Prevention.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-035</td>
+<td>Balawi, M. &amp; Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. <em>Heliyon.</em> <a href="https://doi.org/10.1016/j.heliyon.2024.e25710">DOI:10.1016/j.heliyon.2024.e25710</a></td>
+</tr>
+<tr class="odd">
+<td>LIT-031/041</td>
+<td>Ziakopoulos, A. &amp; Yannis, G. (2020). A review of spatial approaches in road safety. — reconciliation pending; year and DOI not confirmed from PDF; do not cite numerical values from reviewed studies without checking primary sources.</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/thomashsimm\.github\.io\/open-road-risk\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

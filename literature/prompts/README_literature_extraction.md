@@ -65,8 +65,9 @@ Use the cross-audit prompt in:
 
 Inputs:
 - paper PDF,
-- original main extraction prompt or project context,
 - one extraction produced by another AI.
+
+The project context is embedded in `literature_extraction_additional_prompts.md`. You do not need to attach the main extraction prompt separately.
 
 Outputs:
 - `audit_ai1_on_ai2.md`
@@ -85,17 +86,27 @@ Use the reconciliation prompt in:
 
 `literature_extraction_additional_prompts.md`
 
+This prompt has two modes.
+
+**Mode A — Two extractions:** produces a new `final.md` by combining both extractions. Audit notes are optional; if present, attach them. If not, the AI works directly from the PDF and the two extractions.
+
 Inputs:
 - paper PDF,
-- independent extractions,
-- audit notes.
+- both independent extractions,
+- audit notes (if available).
 
-Output:
-- `final.md`
+Output: `final.md`
 
-Rules:
+**Mode B — One extraction:** edits the single extraction in place and returns a corrected version. Use this when a second independent extraction is not available.
+
+Inputs:
+- paper PDF,
+- the single extraction.
+
+Output: `extraction-edited.md` (same schema, corrected)
+
+Rules for both modes:
 - the paper PDF is the source of truth,
-- if outputs disagree, prefer the version best supported by evidence,
 - if support is unclear, write `Not stated`,
 - do not include a claim just because multiple AIs included it.
 
@@ -216,19 +227,21 @@ Rules:
 - use the paper PDF as the source of truth during reconciliation,
 - if the two passes disagree and the paper does not clearly resolve it, write `Not stated`.
 
-### Option B — One AI, One Extraction Plus Audit
+### Option B — One AI, One Extraction Plus Edit
 
-For lower-priority papers, use:
+For lower-priority papers, use the single-extraction mode directly.
+
+Use **Mode B** of the reconciliation prompt in `literature_extraction_additional_prompts.md`:
 
 ```text
 Paper PDF + main extraction prompt
 → extraction.md
 
 Fresh chat:
-  Paper PDF + extraction.md + lightweight sanity check prompt
-  → audit.md
+  Paper PDF + extraction.md + reconciliation prompt (Mode B)
+  → extraction-edited.md
 
-Manual fixes
+Manual fixes if needed
 → final.md
 ```
 

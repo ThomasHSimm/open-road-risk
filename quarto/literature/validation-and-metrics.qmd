@@ -1,0 +1,355 @@
+---
+title: "Validation and Metrics"
+subtitle: "Methodology basis for Open Road Risk validation design"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+This page documents the methodological basis for the validation design and
+metrics used in Open Road Risk. Each metric tests a different property of the
+model, and confusing in-sample fit statistics with predictive validation is a
+persistent risk in crash-frequency literature. The page collects evidence from
+nine paper extractions and maps findings to the current pipeline's validation
+choices.
+
+---
+
+## Metric taxonomy
+
+Not all reported model-quality statistics are equivalent. The table below
+classifies the metrics used or referenced in this project.
+
+| Metric | What it tests | In/out of sample | Main limitation |
+|---|---|---|---|
+| Pseudo-R² (ρ²) | In-sample likelihood improvement over intercept-only | **In-sample** | Sensitive to mean count; low values are expected and not diagnostic of failure |
+| AIC / BIC / DIC / WAIC | Model comparison, penalised likelihood | **In-sample** | Cannot substitute for held-out test; Gilardi 2022 explicitly uses DIC/WAIC as model-comparison tools, not predictive validation |
+| MAD / MSPE on temporal holdout | Predictive accuracy on held-out years (same links) | **Temporal holdout** | Tests temporal generalisation only; same road segments in train and test |
+| V-fold cross-validation RMSE | Resampled estimate of predictive error | **Spatially leaky** | Mahoney 2023: V-fold CV is severely optimistic; only 2% within target RMSE range at best parameter settings |
+| Spatially blocked CV RMSE | Predictive error with spatial autocorrelation controlled | **Spatial holdout** | Requires choice of exclusion buffer; Mahoney 2023: clustering CV achieves 37–60% within target range |
+| Balanced accuracy | Classification quality under severe class imbalance | **Holdout or posterior** | Must pool confusion matrices across folds, not average fold metrics; Brodersen 2010 |
+| AccHR@k | Ranking usefulness: top-k% predicted links vs actual crash locations | **Out-of-sample** | Depends on k choice; no exposure normalisation in Gao 2024's implementation |
+| CURE plot | Model misspecification at specific covariate ranges | **In-sample diagnostic** | Does not test generalisation; flags systematic bias by AADT or length band |
+| Posterior predictive zero check | Zero-inflation calibration | **In-sample diagnostic** | Pew 2020 procedure; p ≈ 0.50 indicates calibration; p ≫ 0.50 indicates excess predicted zeros |
+| MPIW / PICP | Prediction interval width and coverage | **Out-of-sample** | Gao 2024; requires probabilistic model |
+
+::: {.callout-important}
+**In-sample is not validation.** Pseudo-R², AIC, DIC, and WAIC measure how well
+a model fits the data it was trained on. Only MAD/MSPE on temporal holdouts,
+spatially blocked cross-validation, and external test sets measure predictive
+generalisation. Lord & Mannering (2010) explicitly warn that superior in-sample
+fit does not imply practical predictive capability.
+:::
+
+---
+
+## Classification and binary ranking metrics
+
+### Balanced accuracy
+
+Standard accuracy is uninformative when ~98–99% of link-years have zero
+observed crashes. A model predicting zero for every link-year achieves 98%+
+accuracy without capturing any true positive signals.
+
+**Brodersen, Ong, Stephan & Buhmann (2010)** define balanced accuracy as:
+
+$$\text{BA} = \frac{1}{2}\left(\frac{TP}{TP + FN} + \frac{TN}{TN + FP}\right) = \frac{\text{TPR} + \text{TNR}}{2}$$
+
+Key implementation requirements from Brodersen 2010:
+
+- **Pool confusion matrices across folds**, then compute a single balanced
+  accuracy from the pooled matrix. Averaging fold-level balanced accuracies
+  instead introduces bias proportional to fold-size imbalance.
+- The Bayesian posterior distribution of balanced accuracy given the data
+  (Beta distribution from the pooled TP, FP, TN, FN counts) provides an
+  uncertainty interval rather than a point estimate.
+- For the Open Road Risk binary classifier (top-k% predicted links as
+  "high risk"), balanced accuracy can be computed at any threshold and is
+  meaningfully higher than standard accuracy only when both TPR and TNR
+  are reasonable.
+
+**Gilardi, Caimo & Ghosh (2022)** apply balanced accuracy in a spatial
+network context on OS Open Roads segments in Leeds. Their implementation
+uses 5,000 posterior predictive Monte Carlo simulations to derive a balanced
+accuracy distribution rather than a single point estimate. Key notes for Open
+Road Risk:
+
+- DIC and WAIC are used as in-sample model-comparison tools, not as
+  predictive validation — the paper does not report external holdout
+  performance.
+- MAUP sensitivity analysis (contracting OS segments to longer links) shows
+  that model conclusions are robust to network aggregation, which provides
+  some confidence that OS Open Roads link-level results are not artefacts of
+  segment definition.
+- The paper uses UK OS road segments, making it one of the closest
+  structural analogues to Open Road Risk in the literature.
+
+::: {.callout-caution}
+**Gilardi 2022 Table 2 sign direction for Primary Roads** has not been manually
+verified against the source PDF at this level of extraction confidence. Do not
+cite specific coefficient signs from that table without checking the original.
+:::
+
+### AccHR@k — accuracy hit rate at top-k%
+
+**Gao, Zhang, Ma, Yang & Ma (2024)** introduce AccHR@k as a ranking quality
+metric for road risk prediction:
+
+$$\text{AccHR@}k = \frac{|\text{predicted top-}k\% \cap \text{actual crash roads}|}{|\text{predicted top-}k\%|}$$
+
+In words: among the top-$k$% of roads ranked by predicted risk, what fraction
+actually experienced crashes in the evaluation period?
+
+The metric is complementary to balanced accuracy. Balanced accuracy evaluates
+overall TPR/TNR at a chosen threshold; AccHR@k directly measures whether the
+model's high-risk predictions are useful for network screening.
+
+Gao et al.'s reported AccHR@k values (Table 4, single-year London data)
+should be treated as indicative rather than directly comparable to Open Road
+Risk, for three reasons:
+
+1. **No exposure offset**: the Gao 2024 model uses a severity-weighted
+   composite response without normalising by AADT or link length. Open Road
+   Risk models exposure-adjusted crash frequency.
+2. **Within-year temporal split only**: train/validation/test split is 8:2:2
+   within a single year (2019). No spatial holdout. AccHR@k may be optimistic
+   due to spatial autocorrelation between nearby training and test links.
+3. **Single-year London data**: may not generalise across Open Road Risk's
+   multi-year, multi-region scope.
+
+::: {.callout-note}
+Exact Table 4 values from Gao 2024 require manual verification against the
+source PDF before being cited numerically. Use the framework (proportion of
+top-k% predicted roads with actual crashes) rather than the specific numbers.
+:::
+
+**MPIW and PICP** (Gao 2024) are probabilistic uncertainty metrics:
+
+- **MPIW** (mean prediction interval width): average width of the 90% or 95%
+  prediction interval across test roads. Lower is better, conditional on
+  adequate coverage.
+- **PICP** (prediction interval coverage probability): proportion of test
+  observations falling within the stated interval. Should match nominal
+  coverage (e.g., 0.90 for a 90% PI).
+
+Open Road Risk does not currently produce prediction intervals; these metrics
+are relevant if a probabilistic output layer is added.
+
+---
+
+## Count model fit metrics
+
+### Pseudo-R² (McFadden's ρ²)
+
+Pseudo-R² for count regression models is defined as:
+
+$$\rho^2 = 1 - \frac{\ell(\hat\beta)}{\ell(\hat\beta_0)}$$
+
+where $\ell(\hat\beta)$ is the log-likelihood of the fitted model and
+$\ell(\hat\beta_0)$ is the log-likelihood of the intercept-only model.
+
+**Chengye & Ranjitkar (2013)** report ρ² values of 0.088–0.194 across
+negative binomial sub-models for an Auckland motorway (overall model 0.119).
+These are in-sample values on a dataset with a mean of 8.77 crashes per
+segment per year — a far higher mean count than Open Road Risk's link-year
+data (~0.01–0.02 crashes per link-year). Because pseudo-R² depends on the
+mean count, these values are not directly comparable to Open Road Risk's ρ².
+
+Key caveats from Chengye 2013:
+
+- Chengye & Ranjitkar use an **80% confidence level** for variable selection
+  (not the standard 95%). This threshold retains more variables and inflates
+  reported pseudo-R² relative to a stricter selection rule. Open Road Risk
+  should use 95% or cross-validated importance for feature selection.
+- Pseudo-R² is an **in-sample diagnostic only**. The paper also reports MAD
+  and MSPE on a 2-year temporal holdout (2009–2010), which is the primary
+  validation. Ramp-type sub-models achieve MSPE 27.87 vs 36.60 for the
+  overall model — a ~24% reduction from facility-family splitting.
+
+**Lord & Mannering (2010)** review explicitly warns that "superior in-sample
+model fit does not necessarily imply practical predictive capability or
+transferability." Low pseudo-R² (e.g., 0.05–0.15) is typical for
+crash-frequency count models and does not indicate model failure; the relevant
+question is whether predictive performance on held-out data is acceptable.
+
+### Inflated R² from regressing on EB outputs
+
+**Huda & Al-Kaisy (2024)** fit OLS regression to log-transformed Empirical
+Bayes expected crash counts, achieving adjusted R² of 0.91–0.92. These values
+are **not comparable** to pseudo-R² from Open Road Risk's Poisson GLM or
+XGBoost R² on raw crash counts, for two reasons (see combined record LIT-042
+for the canonical citation):
+
+1. The response variable (EB expected crashes) is already a smoothed model
+   output, not a zero-heavy integer count. Regressing on a model output
+   reduces variance and inflates R² artificially.
+2. A random 80/20 train/test split (not spatial) allows spatially adjacent
+   0.05-mile sections from the same road corridor to appear in both sets,
+   creating spatial leakage.
+
+::: {.callout-important}
+Do not benchmark Open Road Risk's R² or pseudo-R² against Huda & Al-Kaisy
+(2024) R² values. They measure fundamentally different quantities.
+:::
+
+### CURE plots
+
+**Roll, Anderson & McNeil (2026)** use cumulative residual (CURE) plots as a
+standard in-sample fit diagnostic for safety performance functions (see combined
+record LIT-045 for the canonical citation). A CURE
+plot shows the cumulative sum of residuals (observed minus predicted) against
+an ordered covariate (typically AADT or link length), with ±2 standard
+deviation bands:
+
+- If the cumulative residual stays within the confidence band, the model is
+  adequately calibrated across the covariate range.
+- Systematic exceedances indicate model misspecification at specific volume
+  or length ranges (e.g., the model systematically under-predicts for very
+  high-AADT links).
+
+CURE plots are an **in-sample diagnostic**, not a measure of predictive
+generalisation. Roll et al. use CURE plots throughout Section 4 of the Oregon
+pedestrian SPF report as the primary model-fit assessment tool; no external
+holdout is reported for the SPF models (only the AADPT exposure model is
+cross-validated).
+
+For Open Road Risk at 2.1M observations, individual-link CURE plots would be
+unreadable; AADT-quantile bins (e.g., 50-unit quantile bins) are required to
+produce an interpretable plot.
+
+**Exposure-only baseline (Roll 2026):** The report found no substantial
+improvement in expected crash frequency prediction from adding built-environment
+features over a simple exposure-only model (vehicle AADT + pedestrian AADPT).
+This provides a precedent for running an exposure-only NB/Poisson baseline in
+Open Road Risk's Stage 2 and documenting whether the full feature model
+materially outperforms it.
+
+---
+
+## Cross-validation design
+
+### Why V-fold CV is severely optimistic for spatial crash data
+
+**Mahoney, Pugh & Medrano-Gracia (2023)** provide the most quantitative
+evidence in this literature set on how CV method choice affects reported
+performance. Their key finding:
+
+| CV method | % parameter combinations within target RMSE range | Notes |
+|---|---|---|
+| V-fold (random) | ~2% | Highly optimistic; spatial autocorrelation inflates apparent performance |
+| Spatial clustering (best params) | ~60% | Optimal exclusion buffer matches residual autocorrelation range |
+| Spatial clustering (mean params) | ~37% | Reasonable middle estimate |
+| Block-LOO 3 (BLO3, large buffers) | < V-fold in some settings | Over-exclusion causes pessimistic underfit |
+
+The core mechanism: when nearby road segments appear in both training and test
+folds (as in V-fold CV), spatial autocorrelation in crash counts means the
+training data effectively previews the test distribution. Reported RMSE is
+lower than true out-of-sample error.
+
+**Exclusion buffer selection:** The optimal buffer matches the autocorrelation
+range of the outcome residuals (~24–41% of the spatial domain extent in
+Mahoney's experiments). Too small → leakage. Too large (BLO3) → too little
+training data remaining, causing pessimistic underfit.
+
+**Police force holdout as a practical approximation:** Mahoney et al. suggest
+using administrative spatial units (e.g., police force areas or local authority
+boundaries) as a practical grouped spatial holdout when the residual
+autocorrelation range is not known in advance.
+
+::: {.callout-caution}
+**Mahoney 2023 uses a regular spatial grid**, not a road network, and a single
+crash type in a limited geographic area. The exact CV performance percentages
+(2%, 37%, 60%) are not directly transferable to Open Road Risk's OS Open Roads
+link structure. The directional finding — that V-fold is severely optimistic
+and spatial clustering is substantially better — is robust and transferable.
+:::
+
+**Current Open Road Risk CV design:** The pipeline uses a grouped link split
+(held-out links, not held-out years), which controls for within-link temporal
+autocorrelation but not for spatial autocorrelation across neighbouring links.
+A spatial clustering split with an exclusion buffer based on residual
+autocorrelation range would more closely match Mahoney's best-performing
+approach.
+
+---
+
+## Posterior predictive zero check
+
+**Pew, Dixon & Banerjee (2020)** describe a procedure for diagnosing whether
+a fitted count model is well-calibrated with respect to the proportion of
+zero-crash observations. The check is:
+
+1. Fit the model and obtain predicted mean counts λ̂ᵢ for each observation.
+2. Draw S = 1,000 (or more) replicated datasets. In each draw $s$, simulate
+   $\tilde{y}_{is} \sim \text{Poisson}(\hat\lambda_i)$ for all $i$.
+3. For each draw, count the number of zeros: $Z_s = \sum_i \mathbf{1}[\tilde{y}_{is} = 0]$.
+4. Record the observed zero count: $Z_\text{obs} = \sum_i \mathbf{1}[y_i = 0]$.
+5. Compute the posterior predictive p-value: $p = P(Z_s > Z_\text{obs})$.
+
+**Interpretation:**
+
+| p-value range | Interpretation |
+|---|---|
+| ≈ 0.50 | Well-calibrated; model generates zeros at the observed rate |
+| ≫ 0.50 (e.g., > 0.90) | Model over-generates zeros; predicted λ̂ values too small; likely underdispersion or too many near-zero predictions |
+| ≪ 0.50 (e.g., < 0.10) | Model under-generates zeros; predicted λ̂ values too large; possible unmodelled zero-inflation |
+
+The check is **in-sample** — it uses the fitted λ̂ values, not a holdout. Its
+value is diagnostic: if $p \approx 0.50$, zero-inflation is not a modelling
+concern; if $p \ll 0.50$, a ZIP or ZINB model should be evaluated.
+
+**Pew 2020 finding on zero-inflation (π ≈ 0):** When a ZINB model was fitted
+to Utah intersection crash data, the zero-inflation parameter π converged to
+approximately zero. The overdispersion parameter (NB dispersion φ = 17.04)
+drove the improvement over Poisson, not structural zero-inflation. The authors
+interpret this as evidence that the zeros in their dataset are adequately
+explained by the Poisson/NB mean structure rather than requiring a separate
+zero-generating process.
+
+For Open Road Risk (≈98% link-year zeros), the analogous check has not yet
+been run. If $p \ll 0.50$ for the Stage 2 Poisson GLM, a NB model with
+overdispersion or a two-stage hurdle structure should be considered.
+
+::: {.callout-note}
+The Pew 2020 π ≈ 0 result is reported in the paper's appendix. Verify the
+exact appendix section and table number before citing this value in methods
+documentation.
+:::
+
+---
+
+## Open Road Risk validation map
+
+The table below records which validation methods are currently implemented in
+the Open Road Risk pipeline, which are planned, and where literature gaps exist.
+
+| Validation method | Status | Notes / literature basis |
+|---|---|---|
+| Grouped link cross-validation (held-out links) | **Implemented** | Controls within-link temporal leakage; does not control spatial autocorrelation between neighbours |
+| Temporal holdout (held-out years, same links) | Not yet implemented | Chengye 2013 provides a template (MAD/MSPE on 2-year holdout); straightforward to add |
+| Spatially blocked CV (exclusion buffer) | Not yet implemented | Mahoney 2023: recommended approach; requires residual autocorrelation range estimate |
+| Police force area holdout | Not yet implemented | Mahoney 2023 practical approximation for spatial holdout |
+| Balanced accuracy (TPR/TNR) | Not yet implemented | Brodersen 2010; Gilardi 2022; pool confusion matrices, do not average fold metrics |
+| AccHR@k ranking quality | Not yet implemented | Gao 2024; proportion of top-k% predicted links with actual crashes |
+| Pseudo-R² (ρ²) | Reported | In-sample only; treat as model-comparison diagnostic, not predictive performance |
+| CURE plots | Not yet implemented | Roll 2026; cumulative residuals vs AADT and link length; requires AADT-quantile binning at 2.1M scale |
+| Posterior predictive zero check | Not yet implemented | Pew 2020; run after Stage 2 Poisson GLM fit; diagnostic for zero-inflation |
+| Exposure-only baseline comparison | Not yet implemented | Roll 2026 Appendix A design; compare full feature model to exposure-only NB/Poisson |
+
+---
+
+## References
+
+| ID | Citation |
+|---|---|
+| LIT-011 | Brodersen, K.H., Ong, C.S., Stephan, K.E. & Buhmann, J.M. (2010). The balanced accuracy and its posterior distribution. *ICPR 2010.* |
+| LIT-017 | Gilardi, A., Caimo, A. & Ghosh, S. (2022). Network lattice models for road collision analyses. *SSRN preprint.* |
+| LIT-009 | Chengye, P. & Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. *EASTS Proceedings.* |
+| LIT-028 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* |
+| LIT-005 | Lord, D. & Mannering, F. (2010). The statistical analysis of crash-frequency data: a review and assessment of methodological alternatives. *Transportation Research Part A.* [DOI:10.1016/j.tra.2010.02.001](https://doi.org/10.1016/j.tra.2010.02.001) |
+| LIT-016 / LIT-042 | Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. *Future Transportation.* [DOI:10.3390/futuretransp4010013](https://doi.org/10.3390/futuretransp4010013) — use combined record LIT-042. |
+| LIT-027 | Mahoney, K., Pugh, D. & Medrano-Gracia, P. (2023). Spatial cross-validation methods for crash frequency prediction models. |
+| LIT-019 | Pew, C., Dixon, K. & Banerjee, N. (2020). Zero-inflated crash frequency models. |
+| LIT-029 | Gao, C., Zhang, Y., Ma, X., Yang, D. & Ma, J. (2024). Spatiotemporal zero-inflated truncated distribution with graph neural networks for road risk prediction. |
+| LIT-028 / LIT-045 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* — use combined record LIT-045. |

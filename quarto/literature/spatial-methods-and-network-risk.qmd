@@ -1,0 +1,338 @@
+---
+title: "Spatial Methods and Network Risk"
+subtitle: "Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+This page documents the evidence base for how space is handled — and how it should be
+handled — in Open Road Risk. It covers four connected topics: spatial autocorrelation in
+crash count models, cross-validation design when data are spatially structured, the
+distinction between link-level aggregation and continuous point-process analysis, and the
+sensitivity of risk maps to spatial unit choice.
+
+The conclusions are mostly diagnostic. No currently reviewed paper justifies a production
+architecture change at 2.17M links. What the literature collectively establishes is that
+the current pipeline has known spatial limitations that should be documented, measured, and
+where feasible, tested.
+
+---
+
+## Spatial autocorrelation in crash models
+
+### The problem
+
+Open Road Risk's Stage 2 Poisson GLM and XGBoost models treat road link-years as
+conditionally independent observations given the feature set. This is a modelling
+convenience, not a property of the data. Adjacent road links share unmeasured risk factors
+— local road condition, policing intensity, terrain patterns, weather exposure, corridor
+speed culture — that are not fully captured by any feature set derived from open data.
+When the residuals of a count model are spatially autocorrelated, several downstream
+consequences follow:
+
+- Coefficient standard errors are underestimated. The model treats spatially correlated
+  residuals as independent information, inflating the apparent precision of coefficient
+  estimates.
+- The estimated coefficient magnitudes may shift when spatial correlation is introduced.
+  Aguero-Valverde and Jovanis (2008) found that the AADT coefficient in their model dropped
+  from 0.714 in a heterogeneity-only specification to 0.664 when spatial CAR effects were
+  added — a change they attributed to unmodelled spatial correlation partially biasing the
+  AADT estimate upward.
+- High-residual corridors may reflect unmeasured spatial factors rather than genuinely
+  anomalous risk, making raw GLM residual mapping a misleading basis for intervention
+  targeting.
+
+Ziakopoulos and Yannis (2020) review the road safety literature and find that CAR (conditional
+autoregressive) spatial priors consistently improve model fit over non-spatial baselines by
+pooling information from neighbouring locations. The effective range of spatial correlation
+varies; one US rural road case study estimated it at approximately 168m, which is shorter
+than many OS Open Roads links but longer than the spacing between adjacent links in an
+urban network. The magnitude and range for Open Road Risk's mixed national network has not
+been measured.
+
+Gilardi et al. (2022) fit a Bayesian INLA model with PMCAR priors to 3,661 OS road segments
+in Leeds and find that including spatial correlation alongside unstructured heterogeneity
+gives a DIC improvement of approximately 360 units over a non-spatial baseline. Approximately
+83–90% of the spatially structured random effect variance is shared between severity levels,
+suggesting that the spatial pattern of slight and severe crashes is highly co-located. Both
+these papers' spatial models are in-sample diagnostics — no holdout validation was run — but
+the spatial structure is large and consistent enough to be methodologically relevant.
+
+### What this means for Open Road Risk
+
+The practical implication is not to immediately refit the Stage 2 model with CAR spatial
+effects. At 2.17M links, a full Bayesian MCMC with CAR priors is computationally infeasible
+as a production model. Gilardi et al. took 30–45 minutes per model for 3,661 segments on a
+dedicated 32GB server; national scale would require orders of magnitude more compute and
+more complex approximations. Even the faster INLA approach does not scale trivially to 2.1M
+links.
+
+The practical implication is to diagnose the problem. Moran's I — the standard spatial
+autocorrelation statistic — is computationally feasible on a sample of links using a sparse
+first-order adjacency matrix derived from OS Open Roads network topology. If Stage 2 Poisson
+GLM residuals show significant spatial autocorrelation, this quantifies the limitation
+concretely. If they do not, the concern is less urgent.
+
+::: {.callout-note}
+A Moran's I diagnostic on Stage 2 GLM residuals using a spatially stratified sample of
+10,000–50,000 links is a low-effort, high-information action. Run it on a single road type
+first (rural two-lane links are the closest analogue to the Aguero-Valverde case study).
+First-order adjacency from OS Open Roads topology is the appropriate neighbour definition;
+Aguero-Valverde and Jovanis (2008) found that adding second and third-order neighbours did
+not improve model fit in their case study.
+:::
+
+A complementary action is to map Stage 2 GLM residuals geographically on a pilot area and
+look for persistent high-residual corridors. This requires no statistical machinery beyond
+a choropleth map of residuals on OS Open Roads geometry. Aguero-Valverde and Jovanis (2008)
+found that segments with significant spatial correlation terms in their CAR model formed
+contiguous corridors that could be used to group links for safety programming.
+
+---
+
+## Cross-validation design
+
+### Why the current split is not a spatial CV
+
+Open Road Risk Stage 2 uses a grouped-by-road-link split: all years for a given link are
+assigned to either the training set or the test set, preventing the same link from appearing
+in both. This controls for within-link temporal leakage — it prevents the model from
+memorising the crash history of a specific link across years. It does not enforce any spatial
+separation between links in the training and test sets. Two adjacent links on the same road
+corridor, one in training and one in test, will share spatial autocorrelation in both their
+crash counts and their feature values.
+
+Mahoney et al. (2023) provide the most quantitative evidence on this problem. Using a
+simulation study with 100 independent 50×50 grid landscapes and a random forest model on
+spatially structured continuous outcome data, they compare five CV methods against a known
+true out-of-sample RMSE. The results are stark:
+
+| CV method | % of runs within target RMSE range |
+|---|---|
+| Resubstitution (no CV) | 0.0% |
+| V-fold (random) | 2.0% |
+| BLO3 (buffered leave-one-obs-out) | 7.0% at best |
+| Spatial blocking (best params) | 61.0% |
+| Spatial clustering — k-means (best params) | 60.0% |
+| LODO (leave-one-disc-out, best params) | 60.0% |
+
+Random V-fold CV produced estimates within the target range only 2% of the time — it is
+reliably optimistic when residuals are spatially autocorrelated. The best spatial methods
+(clustering and LODO) achieved around 60% at their optimal parameterisation, and spatial
+clustering was the most robust across different parameterisations.
+
+The paper's central recommendation is that the optimal spatial separation between training
+and test sets should match or exceed the autocorrelation range of the outcome variable. In
+the simulation, the mean autocorrelation range was approximately 24–25% of grid length;
+best CV results used separations of 25–41% of grid length. For Open Road Risk, the
+equivalent guidance is to estimate the autocorrelation range from Stage 2 GLM residuals
+using an empirical variogram, then use that range to parameterise any spatial CV.
+
+::: {.callout-warning}
+The Mahoney et al. (2023) simulation uses a continuous Gaussian outcome on a regular grid.
+Open Road Risk's collision outcome is a zero-heavy integer count on an irregular road
+network. The specific buffer-size percentages (25–41%) are simulation-specific and should
+not be applied directly. The qualitative finding — that V-fold is severely optimistic and
+spatial clustering is substantially better — is robust and transfers.
+
+An additional concern for Open Road Risk: the paper explicitly notes it did not investigate
+imbalanced outcomes. With ~98–99% zero link-years, spatial CV folds drawn from low-collision
+rural areas may contain too few positive examples to meaningfully evaluate discriminative
+performance. Each spatial fold should be checked to ensure it contains a minimum usable
+number of non-zero link-years before the CV is run.
+:::
+
+### Practical spatial CV options for Open Road Risk
+
+Three options are in increasing order of implementation effort.
+
+**Variogram diagnostic first.** Estimate the empirical variogram of Stage 2 GLM residuals
+on a spatially stratified sample of ~10,000–50,000 links. This costs little compute and
+reveals whether spatial autocorrelation in the residuals is materially strong. If the
+variogram flattens within a few hundred metres, the current grouped split's spatial
+optimism is likely small. If it extends to kilometres, the concern is larger.
+
+**Police force holdout as a practical approximation.** Open Road Risk covers approximately
+13–16 police force areas. Holding out one force area at a time and evaluating Stage 2
+XGBoost performance on the held-out area enforces real geographic separation with no
+methodological complexity beyond restructuring the fold assignment. Mahoney et al. (2023)
+suggest that roughly 5–10 spatial clusters is near-optimal; 13–16 forces is in the right
+range. The result will almost certainly be worse than the current grouped-link CV — this
+is the honest finding, not a problem to suppress.
+
+**k-means spatial clustering CV.** Assign links to ~10 k-means clusters based on
+coordinates, fit with a spatial exclusion buffer, and use clusters as CV folds. This is
+more principled than police force holdout because the clusters can be parameterised to
+approximately match the variogram range. It is also more complex to implement correctly
+at 2.17M links, particularly for checking that each fold contains enough positive
+collision link-years.
+
+::: {.callout-note}
+The immediate low-effort action is the documentation fix: record in the Stage 2 validation
+documentation that the current grouped-by-road-link split is a temporal grouped CV and
+does not enforce spatial separation between neighbouring links. This is not a criticism of
+the split — it correctly handles the repeated-measures leakage problem — but the distinction
+matters for interpreting the performance metrics.
+:::
+
+---
+
+## Point processes on networks: a cautionary framing
+
+Three of the papers in the spatial literature set — Baddeley et al. (2021), Cronie et al.
+(2019), and Eckardt and Moradi (2024) — belong to the network point-process literature.
+They model crash events as exact spatial coordinates on a continuous road network rather
+than as integer counts aggregated to link-year cells. Understanding what this literature
+says and does not say is important for interpreting Open Road Risk's aggregate approach.
+
+### What the point-process critique says
+
+Baddeley et al. (2021) provide a comprehensive review of network point-process methods and
+include an explicit methodological critique of the link-aggregation approach. The core
+argument: aggregating exact crash coordinates into discrete link counts introduces aggregation
+bias (the ecological fallacy / MAUP), and the true spatial clustering of crashes along a
+network is partially obscured by link boundaries. A highly localised cluster of crashes at a
+specific bend or entry point will be diluted across the full link length if the link is long.
+
+A further, more technical warning from Baddeley et al. (2021): evaluating spatial clustering
+using Euclidean distances (planar KDE, standard Moran's I with straight-line distances) on
+road networks produces mathematically invalid results. A completely random point pattern on
+a network will appear to exhibit positive spatial clustering if assessed using Euclidean
+pair-distances, simply because pairs of road events that are close in network distance tend
+to also be close in Euclidean distance. This creates "false alarms" — apparent clustering
+where none exists. Network-aware statistics (heat kernel KDE, network K-functions with
+geometric correction) are required for valid spatial clustering assessment on a road network.
+
+Cronie et al. (2019) extend this to inhomogeneous higher-order summary statistics —
+geometrically corrected network J-functions — and demonstrate their use on 249 traffic
+accident locations in Houston. Eckardt and Moradi (2024) discuss marked point-process
+extensions where collision events carry attributes (severity, type) and ask whether those
+marks are spatially dependent on the network beyond first-order intensity variation.
+
+### What the point-process literature does not establish
+
+None of these papers show that the link-level count model is wrong or should be replaced.
+Their practical scale — 249 events on 253 line segments (Cronie 2019), city-block analyses
+(Baddeley 2021) — is not comparable to 21.7 million link-years. The network heat-kernel KDE
+approach involves solving the heat equation on the road graph, which is computationally
+intensive even at city scale. Full-network network point-process diagnostics at 2.17M links
+have not been demonstrated and would require significant computational investment to attempt.
+
+None of these papers use AADT or traffic exposure. The intensity function that underlies
+their analyses is estimated from the spatial density of crash events on the network, not from
+traffic volume. This is a meaningful distinction: a highly trafficked road will have high crash
+point intensity simply because it carries more exposure, regardless of whether it is inherently
+more dangerous per vehicle-kilometre. Point-process intensity and exposure-normalised crash
+rate are related but not equivalent quantities.
+
+The Baddeley et al. (2021) paper explicitly notes that the zero-inflation problem — a central
+concern for the link-year count model — does not arise in point-process modelling, because
+there is no aggregation step that creates zero-count bins. It also notes, however, that this
+may be partly because the link-year zero-heavy structure is a consequence of binning rather
+than a property of the data: sparse crashes on a long link segment at annual resolution will
+produce a zero-count bin whether or not there is a real absence of risk.
+
+### Practical implications
+
+The actionable implications from these three papers are limited and exploratory:
+
+1. **Do not use planar 2D KDE or straight-line Moran's I for spatial clustering assessment
+   of crash event locations.** If crash points are being mapped or clustered for any purpose,
+   network-distance or network-topology-aware methods are required to avoid spurious
+   clustering signals. This is a visualisation and diagnostic constraint, not a production
+   model concern.
+
+2. **A small-area network point-process diagnostic is feasible.** Running an inhomogeneous
+   network J-function on snapped crash points for one urban area (e.g. a single police force
+   sub-area, using spatstat or equivalent Python tooling on OS Open Roads) would provide
+   evidence on whether there is residual spatial clustering beyond what the link-level model
+   captures. This is an exploratory pilot, not a production validation step.
+
+3. **Junction proximity matters.** Baddeley et al. (2021) note that crashes concentrate at
+   network vertices (junctions) and that standard continuous network models must be modified
+   to handle this correctly. This is consistent with the Ziakopoulos and Yannis (2020) review
+   finding that junction-segment spatial correlations are the strongest spatial dependencies
+   in road safety data. Both sources support adding a junction-proximity feature (distance
+   from link midpoint to nearest junction node) as a Stage 2 candidate feature.
+
+---
+
+## MAUP, spatial unit sensitivity, and hotspot interpretation
+
+### Spatial unit choice as a modelling decision
+
+Ziakopoulos and Yannis (2020) review a broad international literature on spatial road safety
+approaches and document a consistent finding: changing the spatial unit of analysis — from
+road segment to intersection, from OS link to fixed 100m lixel, from link to corridor, from
+segment to TAZ — changes parameter estimates, model assessment metrics, and hotspot maps.
+This is the modifiable areal unit problem (MAUP) applied to road network data.
+
+For Open Road Risk, the OS Open Roads link is the adopted spatial unit. This is a defensible
+choice — the links are meaningful network objects with physical interpretation, and Gilardi
+et al. (2022) show that network-lattice MAUP effects are less severe than administrative-zone
+MAUP effects, because road segments have a physical meaning that arbitrary polygon boundaries
+lack. Their MAUP sensitivity test (contracting 3,661 Leeds segments to ~2,700 by removing
+redundant vertices) found that fixed-effect directions and significance were robust, though
+spatial hyperparameters showed some sensitivity.
+
+The implication is not that the OS Open Roads link is a poor choice, but that the risk
+percentile produced by the pipeline is one view of risk at one spatial resolution. Very short
+links in urban areas may merge or dilute localised crash clusters; very long links in rural
+areas may aggregate genuinely heterogeneous sub-segments. Both effects are real. Documenting
+this is more honest than treating the ranking as resolution-independent.
+
+### Hotspot sensitivity
+
+The review finding from Ziakopoulos and Yannis (2020) on hotspot sensitivity is worth quoting
+directly: the paper states that hotspot locations are sensitive to which variables are
+included, which road-user types are considered, and which time periods are examined, and that
+it is reasonable to conclude that many of the choices made in an analysis radically change
+the hotspot map. This is not a failure of Open Road Risk specifically; it is a general
+property of spatially aggregated risk ranking.
+
+The practical documentation implication is to present the production risk percentile as an
+exploratory, exposure-adjusted, all-injury-collision risk indicator for a given feature
+configuration and time period — not as a definitive identification of inherently dangerous
+roads independent of model choices.
+
+::: {.callout-warning}
+**On citing Ziakopoulos and Yannis (2020) specifically:** The two extractions of this paper
+(LIT-031 and LIT-041) agree on all high-level findings above, but some specific study-level
+numerical values (the ~168m spatial effective range, the ~80% random-forest hotspot
+classification accuracy) come from individual studies cited by the review, not from the
+review paper's own analysis. These values require verification against the original primary
+papers before use in any formal citation. The publication year and DOI are also not
+confirmed from the PDF text. Do not cite exact numbers from this review without checking
+the primary source; use it for methodological framing only until the reconciliation is
+complete.
+:::
+
+---
+
+## Open Road Risk alignment
+
+| Spatial concern | Literature evidence | Current pipeline | Gap / action |
+|---|---|---|---|
+| Spatial autocorrelation in crash residuals | Aguero-Valverde & Jovanis 2008; Gilardi 2022; Ziakopoulos 2020 — consistent across case studies and review | Not modelled | Document as known limitation; run Moran's I on GLM residuals (sampled) |
+| Cross-validation spatial optimism | Mahoney 2023 — V-fold is ~2% reliable; spatial CV achieves ~60% | Grouped-by-link temporal split — controls same-link leakage, not spatial autocorrelation | Document distinction; pilot police-force holdout |
+| Spatial autocorrelation range | Aguero-Valverde 2008 first-order adjacency is sufficient; Mahoney 2023 buffer ≈ autocorrelation range | Unknown for Open Road Risk | Variogram of Stage 2 residuals on sampled links |
+| Planar KDE / Euclidean Moran's I on crash points | Baddeley 2021 — mathematically invalid on road networks | Not currently used for production | Avoid in any spatial visualisation or clustering of crash point locations |
+| MAUP / segmentation sensitivity | Gilardi 2022 — network-lattice MAUP less severe than zone MAUP; Ziakopoulos 2020 — still significant in some studies | OS Open Roads links used throughout | Document; MAUP pilot on a small area is feasible if OS segmentation is changed |
+| Junction-segment spatial correlation | Ziakopoulos 2020 — strongest spatial dependencies in reviewed literature; Baddeley 2021 — crashes concentrate at vertices | Junctions not distinguished in OS Open Roads links | Add junction-proximity feature (candidate); document limitation |
+| Hotspot sensitivity to model choices | Ziakopoulos 2020 — many choices change hotspot map | Not documented | Documentation note on risk percentile as one view |
+
+---
+
+## References
+
+| ID | Citation |
+|---|---|
+| LIT-001/002 | Aguero-Valverde, J. & Jovanis, P.P. (2008). Analysis of road crash frequency with spatial models. *Transportation Research Record 2061, 55–63.* |
+| LIT-004 | Baddeley, A., Nair, G., Rakshit, S., McSwiggan, G. & Davies, T.M. (2021). Analysing point patterns on networks — a review. *Spatial Statistics, 42, 100435.* DOI: 10.1016/j.spasta.2020.100435 |
+| LIT-010 | Cronie, O., Moradi, M. & Mateu, J. (2019). Inhomogeneous higher-order summary statistics for linear network point processes. *arXiv:1910.03304v1.* |
+| LIT-011 | Eckardt, M. & Moradi, M. (2024). Rejoinder on 'Marked spatial point processes: current state and extensions to point processes on linear networks'. *arXiv:2405.02343v1.* |
+| LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *Journal of the Royal Statistical Society Series A, 185(3), 1150–1177.* DOI: 10.1111/rssa.12823 |
+| LIT-033 | Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. & Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches for models of spatially structured data. *arXiv:2303.07334v1.* |
+| LIT-031/041 | Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in road safety. *[Year and DOI not confirmed — verify before formal citation; active reconciliation pending: LIT-031 and LIT-041.]* |
