@@ -10,9 +10,9 @@ including the large share of roads without direct traffic counters.
 - **Time range:** 2015–2024
 - **Network size:** 2,167,557 OS Open Roads links; model stages expand this to link × year rows
 
-**Documentation site:** https://thomashsimm.github.io/open-road-risk/
+**Documentation site:** https://openroadrisk.org/
 
-This project was developed with substantial AI assistance under human direction and review. See the project pages for details on the [AI-assisted development methodology](https://thomashsimm.github.io/open-road-risk/project/ai-assisted-development.html).
+This project was developed with substantial AI assistance under human direction and review. See the project pages for details on the [AI-assisted development methodology](https://openroadrisk.org/project/ai-assisted-development.html).
 
 ---
 
