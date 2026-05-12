@@ -85,10 +85,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 
 <meta property="og:title" content="Spatial Methods and Network Risk – Open Road Risk">
-<meta property="og:description" content="Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context">
+<meta property="og:description" content="Evidence base for spatial autocorrelation in crash models, spatially blocked cross-validation design, network point-process diagnostics, and MAUP sensitivity for Open Road Risk.">
 <meta property="og:site_name" content="Open Road Risk">
 <meta name="twitter:title" content="Spatial Methods and Network Risk – Open Road Risk">
-<meta name="twitter:description" content="Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context">
+<meta name="twitter:description" content="Evidence base for spatial autocorrelation in crash models, spatially blocked cross-validation design, network point-process diagnostics, and MAUP sensitivity for Open Road Risk.">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -375,6 +375,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p class="subtitle lead">Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context</p>
 </div>
 
+<div>
+  <div class="description">
+    Evidence base for spatial autocorrelation in crash models, spatially blocked cross-validation design, network point-process diagnostics, and MAUP sensitivity for Open Road Risk.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta column-page-left">
@@ -404,6 +409,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </ul>
 <p>Ziakopoulos and Yannis (2020) review the road safety literature and find that CAR (conditional autoregressive) spatial priors consistently improve model fit over non-spatial baselines by pooling information from neighbouring locations. The effective range of spatial correlation varies; one US rural road case study estimated it at approximately 168m, which is shorter than many OS Open Roads links but longer than the spacing between adjacent links in an urban network. The magnitude and range for Open Road Risk’s mixed national network has not been measured.</p>
 <p>Gilardi et al.&nbsp;(2022) fit a Bayesian INLA model with PMCAR priors to 3,661 OS road segments in Leeds and find that including spatial correlation alongside unstructured heterogeneity gives a DIC improvement of approximately 360 units over a non-spatial baseline. Approximately 83–90% of the spatially structured random effect variance is shared between severity levels, suggesting that the spatial pattern of slight and severe crashes is highly co-located. Both these papers’ spatial models are in-sample diagnostics — no holdout validation was run — but the spatial structure is large and consistent enough to be methodologically relevant.</p>
+<p>Wang, Quddus and Ison (2009) provide a complementary finding from the M25 motorway (70 segments, Bayesian Poisson models). Their CAR spatial model finds statistically significant spatial autocorrelation (spatial correlation SD significant in both KSI and slight models), but the DIC differences between spatial and non-spatial specifications are very small (281–284 for KSI; 482–490 for slight across four model variants). Coefficient estimates are nearly identical between the spatial and non-spatial models. This is direct UK evidence that spatial autocorrelation is present in motorway crash data but does not materially bias coefficient estimates when controlling for AADT and geometry. It provides some justification for Open Road Risk’s non-spatial Poisson GLM approach at national scale — though the caveat is that this finding is from 70 motorway segments, not a mixed national network.</p>
 </section>
 <section id="what-this-means-for-open-road-risk" class="level3">
 <h3 class="anchored" data-anchor-id="what-this-means-for-open-road-risk">What this means for Open Road Risk</h3>
@@ -662,6 +668,10 @@ Warning
 <td>Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. &amp; Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches for models of spatially structured data. <em>arXiv:2303.07334v1.</em></td>
 </tr>
 <tr class="odd">
+<td>LIT-029</td>
+<td>Wang, C., Quddus, M.A.&nbsp;&amp; Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway in England. <em>Accident Analysis &amp; Prevention.</em></td>
+</tr>
+<tr class="even">
 <td>LIT-031/041</td>
 <td>Ziakopoulos, A. &amp; Yannis, G. (2020). A review of spatial approaches in road safety. <em>[Year and DOI not confirmed — verify before formal citation; active reconciliation pending: LIT-031 and LIT-041.]</em></td>
 </tr>

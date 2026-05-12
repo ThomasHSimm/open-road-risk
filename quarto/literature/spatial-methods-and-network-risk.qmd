@@ -1,5 +1,6 @@
 ---
 title: "Spatial Methods and Network Risk"
+description: "Evidence base for spatial autocorrelation in crash models, spatially blocked cross-validation design, network point-process diagnostics, and MAUP sensitivity for Open Road Risk."
 subtitle: "Spatial autocorrelation, cross-validation design, point processes, and MAUP in the Open Road Risk context"
 format:
   html:
@@ -59,6 +60,17 @@ gives a DIC improvement of approximately 360 units over a non-spatial baseline. 
 suggesting that the spatial pattern of slight and severe crashes is highly co-located. Both
 these papers' spatial models are in-sample diagnostics — no holdout validation was run — but
 the spatial structure is large and consistent enough to be methodologically relevant.
+
+Wang, Quddus and Ison (2009) provide a complementary finding from the M25 motorway (70
+segments, Bayesian Poisson models). Their CAR spatial model finds statistically significant
+spatial autocorrelation (spatial correlation SD significant in both KSI and slight models),
+but the DIC differences between spatial and non-spatial specifications are very small
+(281–284 for KSI; 482–490 for slight across four model variants). Coefficient estimates
+are nearly identical between the spatial and non-spatial models. This is direct UK evidence
+that spatial autocorrelation is present in motorway crash data but does not materially bias
+coefficient estimates when controlling for AADT and geometry. It provides some justification
+for Open Road Risk's non-spatial Poisson GLM approach at national scale — though the caveat
+is that this finding is from 70 motorway segments, not a mixed national network.
 
 ### What this means for Open Road Risk
 
@@ -335,4 +347,5 @@ complete.
 | LIT-011 | Eckardt, M. & Moradi, M. (2024). Rejoinder on 'Marked spatial point processes: current state and extensions to point processes on linear networks'. *arXiv:2405.02343v1.* |
 | LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *Journal of the Royal Statistical Society Series A, 185(3), 1150–1177.* DOI: 10.1111/rssa.12823 |
 | LIT-033 | Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. & Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches for models of spatially structured data. *arXiv:2303.07334v1.* |
+| LIT-029 | Wang, C., Quddus, M.A. & Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway in England. *Accident Analysis & Prevention.* |
 | LIT-031/041 | Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in road safety. *[Year and DOI not confirmed — verify before formal citation; active reconciliation pending: LIT-031 and LIT-041.]* |

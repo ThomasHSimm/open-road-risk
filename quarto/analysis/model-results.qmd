@@ -1,5 +1,6 @@
 ---
 title: "Stage 2: Collision Risk Model"
+description: "Analysis of Stage 2 collision risk model outputs, feature behaviour, metrics, ranking patterns, and diagnostic comparisons."
 format:
   html:
     toc: true
@@ -16,8 +17,11 @@ jupyter: python3
 
 ## Overview
 
-Stage 2 fits a Poisson collision model on all OS Open Roads links × AADF years
-using estimated AADT as the exposure offset. Two complementary models are used:
+Stage 2 fits a Poisson collision model on all
+[OS Open Roads network data](../data-sources/openroads.qmd) links × AADF years
+using estimated AADT as the exposure offset. This is the main
+[exposure-adjusted collision risk model](../methodology/modelling.qmd). Two
+complementary models are used:
 
 - **Poisson GLM** (statsmodels) — interpretable coefficients, fast inference
 - **XGBoost Poisson** — captures non-linear interactions, higher predictive power

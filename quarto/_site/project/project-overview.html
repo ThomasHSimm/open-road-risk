@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>Project overview – Open Road Risk</title>
+<title>Open Road Risk Project Overview – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -84,11 +84,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
-<meta property="og:title" content="Project overview – Open Road Risk">
-<meta property="og:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta property="og:title" content="Open Road Risk Project Overview – Open Road Risk">
+<meta property="og:description" content="Overview of the Open Road Risk repository, modelling stages, data sources, outputs, current scope, and known limitations.">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Project overview – Open Road Risk">
-<meta name="twitter:description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="twitter:title" content="Open Road Risk Project Overview – Open Road Risk">
+<meta name="twitter:description" content="Overview of the Open Road Risk repository, modelling stages, data sources, outputs, current scope, and known limitations.">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -356,9 +356,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Project overview</h1>
+<h1 class="title">Open Road Risk Project Overview</h1>
 </div>
 
+<div>
+  <div class="description">
+    Overview of the Open Road Risk repository, modelling stages, data sources, outputs, current scope, and known limitations.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta column-page-left">
@@ -434,19 +439,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <section id="what-the-pipeline-does" class="level2">
 <h2 class="anchored" data-anchor-id="what-the-pipeline-does">What the pipeline does</h2>
 <p>The project is organised in three main modelling stages:</p>
-<p><strong>Stage 1a — Traffic exposure estimation</strong> Traffic counts from AADF are used to train a model that estimates AADT for road links without direct counts.</p>
-<p><strong>Stage 1b — Time-zone profiles</strong> WebTRIS sensor data provides supporting information on within-day traffic structure and vehicle mix on major roads.</p>
-<p><strong>Stage 2 — Collision risk modelling</strong> Collision outcomes from STATS19 are modelled against exposure, road class, network structure, and contextual features to estimate relative road risk. The result is a network-wide risk layer that can be used to identify unusually risky links, compare corridors, and support downstream applications.</p>
+<p><strong>Stage 1a — Traffic exposure estimation</strong> Traffic counts from <a href="../data-sources/aadf.html">AADF traffic counts</a> are used to train a model that estimates AADT for road links without direct counts.</p>
+<p><strong>Stage 1b — Time-zone profiles</strong> <a href="../data-sources/webtris.html">WebTRIS sensor data</a> provides supporting information on within-day traffic structure and vehicle mix on major roads.</p>
+<p><strong>Stage 2 — Collision risk modelling</strong> Collision outcomes from <a href="../data-sources/stats19.html">STATS19 collision data</a> are modelled against exposure, road class, network structure, and contextual features to estimate relative road risk. The result is a network-wide risk layer that can be used to identify unusually risky links, compare corridors, and support downstream applications.</p>
 </section>
 <section id="data-sources" class="level2">
 <h2 class="anchored" data-anchor-id="data-sources">Data sources</h2>
 <p>This project currently draws on the following core sources:</p>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Dataset</th>
@@ -456,22 +456,22 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </thead>
 <tbody>
 <tr class="odd">
-<td>STATS19</td>
+<td><a href="../data-sources/stats19.html">STATS19</a></td>
 <td>Department for Transport</td>
 <td>reported road collisions and casualty context</td>
 </tr>
 <tr class="even">
-<td>AADF</td>
+<td><a href="../data-sources/aadf.html">AADF</a></td>
 <td>Department for Transport</td>
 <td>observed traffic counts at count points</td>
 </tr>
 <tr class="odd">
-<td>WebTRIS</td>
+<td><a href="../data-sources/webtris.html">WebTRIS</a></td>
 <td>National Highways</td>
 <td>measured traffic and vehicle-mix context on major roads</td>
 </tr>
 <tr class="even">
-<td>OS Open Roads</td>
+<td><a href="../data-sources/openroads.html">OS Open Roads</a></td>
 <td>Ordnance Survey</td>
 <td>road link geometry and classifications</td>
 </tr>
@@ -524,13 +524,13 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="site-guide">Site guide</h2>
 <p>The site is organised around the logic of the pipeline:</p>
 <ul>
-<li><strong>Data Sources</strong> — what each dataset contains and what it can and cannot tell us</li>
-<li><strong>Methodology</strong> — how sources are joined and transformed into modelling inputs</li>
-<li><strong>Analysis</strong> — model behaviour, outputs, and exploratory evaluation</li>
-<li><strong>Future Work</strong> — research questions and extensions the pipeline can support</li>
-<li><strong>API Reference</strong> — code structure and module-level documentation</li>
+<li><strong><a href="../data-sources/index.html">Data Sources</a></strong> — what each dataset contains and what it can and cannot tell us</li>
+<li><strong><a href="../methodology/methodology-index.html">Methodology</a></strong> — how sources are joined and transformed into modelling inputs</li>
+<li><strong><a href="../analysis/model-results.html">Analysis</a></strong> — model behaviour, outputs, and exploratory evaluation</li>
+<li><strong><a href="../future-work.html">Future Work</a></strong> — research questions and extensions the pipeline can support</li>
+<li><strong><a href="../api-reference/index.html">API Reference</a></strong> — code structure and module-level documentation</li>
 </ul>
-<p>A good place to start is with the source pages for STATS19, AADF, and WebTRIS, then move to the methodology pages on joining and feature engineering. For possible extensions, Future Work collects research questions that are not in the active backlog but are natural next uses of the same road-link, exposure, and collision-risk infrastructure.</p>
+<p>A good place to start is with the source pages for <a href="../data-sources/stats19.html">STATS19 collision data</a>, <a href="../data-sources/aadf.html">AADF traffic counts</a>, and <a href="../data-sources/webtris.html">WebTRIS sensor data</a>, then move to the methodology pages on <a href="../methodology/data-joining.html">joining road safety datasets</a> and <a href="../methodology/feature-engineering.html">feature engineering</a>. For possible extensions, <a href="../future-work.html">Future Work</a> collects research questions that are not in the active backlog but are natural next uses of the same road-link, exposure, and collision-risk infrastructure.</p>
 
 
 </section>
