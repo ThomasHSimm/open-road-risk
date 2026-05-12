@@ -1,0 +1,182 @@
+---
+title: "Literature–Pipeline Alignment"
+description: "Consolidated mapping of literature evidence to the current Open Road Risk pipeline: what is implemented, what is pending, and what the literature recommends for each stage."
+subtitle: "Where the evidence base meets the current pipeline"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+This page consolidates the pipeline-state implications from all seven literature review
+pages into one place. It is the page that changes when the pipeline changes. The individual
+literature pages document what papers found; this page documents where that evidence leaves
+the current implementation.
+
+The structure follows pipeline stages, with a section for cross-cutting concerns.
+
+---
+
+## How to read this page
+
+Each table has four columns:
+
+- **Requirement** — what the literature collectively recommends
+- **Literature basis** — which page(s) and paper(s) support the recommendation
+- **Current pipeline** — the actual current state
+- **Gap / action** — what remains to be done, with effort indication
+
+Actions are graded: **documentation note** (lowest disruption) → **diagnostic** →
+**small pilot** → **candidate feature** → **production change** (highest disruption).
+The literature rarely justifies production changes from a single paper; most
+recommendations are diagnostic first.
+
+---
+
+## Stage 1a — AADT Estimation
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| AADT coverage: observed counts as ground truth, ML fills the gap | [Exposure](exposure-and-traffic-volume.qmd): Roll 2026 three-tier hierarchy; Jayasinghe 2019 | DfT AADF (~0.4% of links) → Stage 1a ML estimate for all ~2.17M links | **Documentation**: document that ~96% of AADT is estimated, not observed |
+| Low-AADT links hardest to estimate; geometry dominates below 1000 vpd | [Exposure](exposure-and-traffic-volume.qmd): Jayasinghe 2019 (RMSE 193–412% for lowest AADT band); Huda 2024 (R² drop 0.009 when AADT removed at low-volume) | Stage 1a trained on AADF without low-AADT stratification | **Diagnostic**: report Stage 1a CV error separately by road class and AADT band |
+| Application sanity checks on full-network predictions | [Exposure](exposure-and-traffic-volume.qmd): Roll 2026 (XGBoost produced negative AADT; NB produced implausible maxima; CV metrics did not reveal this) | CV metrics reported; full-network distribution not checked by road class | **Diagnostic**: compare distribution of predicted AADT by road class and rural/urban against AADF observations |
+| Learning-curve diagnostic for sparse-count validation | [Exposure](exposure-and-traffic-volume.qmd): Jayasinghe 2019 (~40 calibration points → RMSE < 30%) | Not run | **Diagnostic** (low effort): plot Stage 1a CV error vs number of AADF sites in each road class |
+| Centrality features support AADT estimation | [Transferability](transferability-and-open-data-limits.qmd): Jayasinghe 2019; Gilardi 2022 | Betweenness centrality already in Stage 1a feature set | No gap — document as confirmed by literature |
+
+---
+
+## Stage 1b — Time-Zone Profiles
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| Temporal disaggregation improves crash model performance over AADT-only | [Exposure](exposure-and-traffic-volume.qmd): Dutta & Fontaine 2020 (20–38% MSPE improvement average-hourly vs AADT on Virginia freeways); Sung 2024; Mensah & Hauer 1998 (argument-averaging bias theory) | Stage 1b produces time-zone fractions per link; these are not currently used in Stage 2 | **Candidate feature**: join `core_overnight_ratio` from `timezone_profiles.parquet` to Stage 2 training data and test as a feature |
+| Average-hourly profiles outperform raw hourly (noise in raw data degrades performance) | [Exposure](exposure-and-traffic-volume.qmd): Dutta & Fontaine 2020 (23% of raw hourly observations failed quality checks) | Stage 1b already builds smoothed time-zone profiles rather than using raw hourly data | No gap — current approach is consistent with this finding; document |
+| Argument-averaging bias: AADT underestimates SPF by ~5–8% for typical β | [Exposure](exposure-and-traffic-volume.qmd): Mensah & Hauer 1998 correction factor w | Not quantified | **Diagnostic**: estimate correction factor w using free-elasticity diagnostic β and Stage 1b CV(q) per road class |
+| Function-averaging: combining daytime/nighttime in one SPF loses information | [Exposure](exposure-and-traffic-volume.qmd): Mensah & Hauer 1998; Qin 2006 | Single annual model; no time-of-day stratification | **Documentation**: note as known limitation; Stage 1b profiles are the infrastructure for future temporal conditioning |
+| Dutta improvement magnitude is upper bound for Open Road Risk | [Exposure](exposure-and-traffic-volume.qmd) | — | **Documentation**: note that estimated profiles (Stage 1b) will produce smaller gains than observed sensor profiles |
+
+---
+
+## Stage 2 — Collision Risk Model
+
+### Model family
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| Run posterior predictive zero check before deciding on model family | [Crash frequency](crash-frequency-models.qmd): Pew 2020 | Not yet run | **Diagnostic** (low effort): sample from fitted Poisson GLM; compare predicted zero rate to observed |
+| NB GLM is priority before ZINB; π ≈ 0 means overdispersion dominates | [Crash frequency](crash-frequency-models.qmd): Pew 2020 | Poisson GLM | **Diagnostic → candidate**: fit NB GLM; compare held-out pseudo-R² to Poisson baseline |
+| Equate random effect structures when comparing model families | [Crash frequency](crash-frequency-models.qmd): Pew 2020 | N/A | Apply when NB vs ZINB comparison is run |
+| Facility stratification: per-family models reduce overdispersion and enable per-family EB weights | [Crash frequency](crash-frequency-models.qmd): Chengye 2013 (MSPE −24% from ramp split); Al-Omari 2021 | Diagnostic v1 (`risk_scores_family.parquet`) exists | **Validation**: run grouped or temporal holdout on per-family models before production |
+| Single-vehicle and multi-vehicle crashes have opposing flow relationships; combining inflates function-averaging bias | [Crash frequency](crash-frequency-models.qmd): Qin 2006; Mensah & Hauer 1998 | Total injury collisions combined | **Documentation**: note as known limitation; SV/MV split diagnostic is a candidate action |
+
+### Exposure offset
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| Log-offset of AADT × length is supported for most road classes | [Exposure](exposure-and-traffic-volume.qmd): Gilardi 2022; Hauer 2001; National Highways 2022 | Fixed offset `log(AADT × link_length_km × 365 / 1e6)` | No gap — document as literature-supported |
+| Test AADT elasticity as free covariate; sub-linear likely for some classes | [Exposure](exposure-and-traffic-volume.qmd): Aguero-Valverde 2008 (0.63–0.71); Wang 2009 (1.2–1.9 motorway); Al-Omari 2021 (0.39–0.63 dense urban) | Elasticity constrained to 1.0 via offset | **Diagnostic**: fit Stage 2 GLM with `log(AADT)` and `log(length)` as free covariates; report estimated elasticities by road class |
+| Exposure uncertainty not propagated into Stage 2 rankings | [Exposure](exposure-and-traffic-volume.qmd): estimated vs observed AADT gap | Stage 2 treats estimated AADT as observed | **Documentation**: document as first-class limitation; EB shrinkage partially absorbs it for sparse links |
+| Gao 2024 no-exposure model is a cautionary negative example | [Exposure](exposure-and-traffic-volume.qmd); [Transferability](transferability-and-open-data-limits.qmd) | Exposure offset implemented | **Documentation**: cite as documented cautionary contrast |
+
+### Empirical Bayes shrinkage
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| Per-family overdispersion parameter φ from NB regression for EB weights | [Crash frequency](crash-frequency-models.qmd): Hauer 2001; Chengye 2013 | Global method-of-moments k | **Candidate**: per-family NB φ for v2 EB weights |
+| Full EB procedure: sum year-specific μ_t across years | [Crash frequency](crash-frequency-models.qmd): Hauer 2001 equation 7 | Year-specific AADT available | **Candidate**: implement full EB summing annual SPF predictions |
+| Crude KSI ranking unreliable without shrinkage | [Severity](severity-modelling.qmd): Boulieri 2016 (smoothing reorders high-severity rankings substantially) | EB shrinkage for total counts; no severity-split | **Pilot**: extend EB shrinkage to KSI sub-band |
+
+### Features
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| `core_overnight_ratio` from Stage 1b: ad-hoc diagnostic shows ~+0.004 R², correct sign | [Exposure](exposure-and-traffic-volume.qmd) | Not yet added to production | **Candidate feature**: add `core_overnight_ratio` join from `timezone_profiles.parquet`; confirm with 5-seed harness |
+| `late_evening_frac` shows unexpected sign; collinearity with road class suspected | [Exposure](exposure-and-traffic-volume.qmd) | Not in pipeline | Do not add until collinearity with road class is resolved |
+| Junction density (nodes degree ≥ 3 per km) is a consistently significant predictor | [Junctions](junctions-and-conflict-structure.qmd): Al-Omari 2021; Wang 2015 | Not currently in pipeline | **Candidate feature**: count junction nodes per link length from OS Open Roads topology |
+| Junction-proximity (distance to nearest junction node) | [Junctions](junctions-and-conflict-structure.qmd): Baddeley 2021; Ziakopoulos 2020 | Not in pipeline | **Candidate feature**: distance from link midpoint to nearest OS Open Roads junction node |
+| Betweenness centrality: test whether it adds value over road type + AADT | [Junctions](junctions-and-conflict-structure.qmd): Wang 2015 supports it; Gilardi 2022 finds it insignificant after road type controlled | Candidate feature | **Diagnostic**: collinearity check against road class and AADT before adding to production |
+| Speed limit is a road-type proxy, not a direct safety predictor | [Junctions](junctions-and-conflict-structure.qmd): Al-Omari 2021 negative coefficient is confound | OSM speed limit in pipeline | **Documentation**: note that negative speed-limit coefficient proxies for low junction density |
+| HGV proportion supports inclusion | [Severity](severity-modelling.qmd): Michalaki 2015 (strong severity predictor) | Candidate feature (AADF HGV proportion) | **Documentation**: confirm it is a road-level proxy, not crash-level variable |
+
+### Spatial structure
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| Spatial autocorrelation in residuals is present and biases coefficient SEs | [Spatial](spatial-methods-and-network-risk.qmd): Aguero-Valverde 2008; Gilardi 2022; Wang 2009 (UK motorways) | Not modelled | **Diagnostic**: Moran's I on Stage 2 GLM residuals (sampled 10k–50k links, first-order adjacency) |
+| CAR spatial model is computationally infeasible at 2.17M links | [Spatial](spatial-methods-and-network-risk.qmd) | Not attempted | **Documentation**: note as known limitation; Moran's I is the feasible alternative |
+| Geographic residual mapping to identify persistent high-residual corridors | [Spatial](spatial-methods-and-network-risk.qmd): Aguero-Valverde 2008 | Not yet done | **Diagnostic**: choropleth map of Stage 2 GLM residuals on OS Open Roads geometry for a pilot area |
+| Do not use planar KDE or Euclidean Moran's I on crash point locations | [Spatial](spatial-methods-and-network-risk.qmd): Baddeley 2021 | Not currently used | **Documentation**: note constraint for any future crash-point visualisation |
+| Junction-segment spatial correlations are the strongest spatial dependencies | [Spatial](spatial-methods-and-network-risk.qmd): Ziakopoulos 2020 | Not explicitly modelled | **Documentation / candidate feature**: junction-proximity feature addresses this indirectly |
+
+### Severity
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| Frequency and severity are different estimands; separate models warranted | [Severity](severity-modelling.qmd): Quddus 2010; Michalaki 2015; Ma 2019; Savolainen 2011 | Single count model (all injury combined) | **Documentation**: document as known design choice; plan severity layer as future work |
+| KSI and slight crashes have different predictor sets | [Severity](severity-modelling.qmd): Wang et al. 2011 (lanes significant for slight only; grade significant for both) | Not modelled separately | **Pilot**: separate KSI and slight diagnostic models |
+| Joint slight/KSI model substantially improves KSI estimation | [Severity](severity-modelling.qmd): Boulieri 2016 (ρ ≈ 0.74); Gilardi 2022 (ρ_φ ≈ 0.83–0.90) | Not implemented | **Future work**: joint Bayesian model after EB shrinkage pilot |
+| Severity-weighted composite (Gao 2024 weights 1/2/3) conflates frequency and severity | [Severity](severity-modelling.qmd) | Not used | **Documentation**: note as design approach to avoid |
+| STATS19 underreporting: slight injuries ~75% under-reported | [Severity](severity-modelling.qmd): Savolainen 2011 citing Elvik & Myssen 1999 | Inherits reporting limitation | **Documentation**: document as known limitation of the outcome variable |
+| Post-event STATS19 variables must not enter Stage 2 | [Severity](severity-modelling.qmd): full leakage catalogue | Collision-derived variables excluded per repo dossier | **Documentation**: link the full leakage catalogue explicitly |
+| Congestion index is insignificant for crash frequency (M25 null result) | [Severity](severity-modelling.qmd): Quddus 2010 | Not in production | **Documentation**: note null result as caution against prioritising congestion features |
+
+---
+
+## Validation
+
+| Requirement | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| Grouped-link CV controls within-link temporal leakage but not spatial autocorrelation | [Validation](validation-and-metrics.qmd) | Grouped-link CV implemented | **Documentation**: record distinction explicitly in validation documentation |
+| Temporal holdout (hold out 2023–2024; train on 2015–2022) | [Validation](validation-and-metrics.qmd): Quddus 2007; Chengye 2013 | Not yet implemented | **Diagnostic** (straightforward): add temporal holdout as a second validation split |
+| Spatial CV with exclusion buffer matching residual autocorrelation range | [Validation](validation-and-metrics.qmd): Mahoney 2023 (V-fold only 2% reliable; spatial CV ~60%) | Not implemented | **Diagnostic → pilot**: variogram first, then police-force holdout |
+| Police force area holdout as practical spatial CV approximation | [Spatial](spatial-methods-and-network-risk.qmd); [Validation](validation-and-metrics.qmd): Mahoney 2023 | Not implemented | **Pilot**: hold out one force area; evaluate Stage 2 performance |
+| Balanced accuracy (pool confusion matrices across folds, do not average) | [Validation](validation-and-metrics.qmd): Brodersen 2010; Gilardi 2022 | Not yet implemented | **Diagnostic**: implement after choosing classification threshold |
+| AccHR@k ranking quality metric | [Validation](validation-and-metrics.qmd): Gao 2024 | Not yet implemented | **Diagnostic**: compute for top-1% and top-5% predicted links |
+| CURE plots by AADT quantile and link-length quantile | [Validation](validation-and-metrics.qmd): Roll 2026; Dutta 2020 | Not yet implemented | **Diagnostic**: 50-quantile bins; in-sample only |
+| Posterior predictive zero check | [Validation](validation-and-metrics.qmd); [Crash frequency](crash-frequency-models.qmd): Pew 2020 | Not yet run | **Diagnostic** (low effort): should precede NB vs ZINB decision |
+| Exposure-only baseline comparison | [Validation](validation-and-metrics.qmd): Roll 2026 | Not yet run | **Diagnostic**: compare full feature model against exposure-only NB/Poisson |
+| Cluster-robust standard errors grouped by `link_id` | [Validation](validation-and-metrics.qmd): Quddus 2007; Savolainen 2011 | Not implemented | **Diagnostic → documentation**: compute ACF on high-crash links first; if lag-1 ACF > 0.15, add cluster SEs |
+| Serial correlation ACF diagnostic on high-crash links | [Validation](validation-and-metrics.qmd): Quddus 2007 | Not run | **Diagnostic** (low effort): sample 500–1000 highest-crash links |
+| Structural explanatory ceiling: road-environment models cannot explain behavioural factors | [Validation](validation-and-metrics.qmd): Roshandel 2015 (~93% of crash causation is behavioural) | Not documented | **Documentation**: contextualise held-out R² of ~0.32 as consistent with the ceiling |
+
+---
+
+## Data and Transferability
+
+| Issue | Literature basis | Current pipeline | Gap / action |
+|---|---|---|---|
+| UK geography ≠ UK data availability | [Transferability](transferability-and-open-data-limits.qmd) | — | **Documentation**: Gao 2024 and Balawi 2024 cited as cautionary negative-transfer examples |
+| Lane width, shoulder width, driveway density are unavailable nationally | [Transferability](transferability-and-open-data-limits.qmd): Huda 2024; Chengye 2013 | Not in pipeline | **Documentation**: note as unavailable; OS MasterMap or HE data would be out of scope |
+| CART threshold derivation should use UK data, not US thresholds | [Transferability](transferability-and-open-data-limits.qmd): Huda 2024 | US-derived thresholds not used | **Documentation**: if CART or tree-based thresholds are introduced, derive from Open Road Risk data |
+| STATS19 CF/RSF 2024 structural break | [Transferability](transferability-and-open-data-limits.qmd); [Severity](severity-modelling.qmd): DfT 2024/2025 guidance | Collision-derived fields excluded from Stage 2 | **Documentation**: note break and its implications for trend analysis |
+| MAUP: OS Open Roads link is a defensible unit; network-lattice MAUP less severe than zone MAUP | [Spatial](spatial-methods-and-network-risk.qmd): Gilardi 2022 MAUP sensitivity test | OS Open Roads links used throughout | **Documentation**: present risk percentile as one view at one spatial resolution |
+| Hotspot rankings sensitive to model choices, time periods, road-user types | [Spatial](spatial-methods-and-network-risk.qmd): Ziakopoulos 2020 | Not documented explicitly | **Documentation**: add caveat to production risk percentile description |
+
+---
+
+## Summary: Priority Actions
+
+The table below lists all actions in priority order, combining effort and information value.
+
+| Priority | Action | Type | Stage | Effort |
+|---|---|---|---|---|
+| 1 | Posterior predictive zero check on Stage 2 Poisson GLM | Diagnostic | S2 | Low |
+| 2 | Free-elasticity diagnostic: log(AADT) and log(length) as free covariates | Diagnostic | S2 | Low |
+| 3 | Temporal holdout: hold out 2023–2024; evaluate Stage 2 on unseen years | Diagnostic | S2 / validation | Low |
+| 4 | Moran's I on Stage 2 GLM residuals (sampled ~10k–50k links) | Diagnostic | S2 / spatial | Low |
+| 5 | Stage 1a CV error by road class and AADT band | Diagnostic | S1a | Low |
+| 6 | Stage 1a full-network sanity checks by road class | Diagnostic | S1a | Low |
+| 7 | ACF diagnostic on high-crash links; add cluster-robust SEs if ACF > 0.15 | Diagnostic | S2 | Low |
+| 8 | `core_overnight_ratio` feature addition: 5-seed harness confirmation | Candidate feature | S2 | Low–medium |
+| 9 | NB GLM diagnostic: compare held-out pseudo-R² to Poisson baseline | Diagnostic | S2 | Medium |
+| 10 | CURE plots by AADT quantile and link-length quantile | Diagnostic | S2 / validation | Medium |
+| 11 | Exposure-only baseline comparison | Diagnostic | S2 / validation | Medium |
+| 12 | Junction density feature (nodes degree ≥ 3 per km) | Candidate feature | S2 | Medium |
+| 13 | Junction-proximity distance feature | Candidate feature | S2 | Medium |
+| 14 | Police force holdout as practical spatial CV | Pilot | S2 / spatial | Medium |
+| 15 | EB shrinkage extended to KSI sub-band | Pilot | S2 / severity | Medium |
+| 16 | Per-family NB overdispersion parameter for EB weights | Candidate | S2 / EB | Medium |
+| 17 | Balanced accuracy and AccHR@k implementation | Diagnostic | Validation | Medium |
+| 18 | Argument-averaging correction factor w computation | Diagnostic | S2 / S1b | Medium |
+| 19 | Temporal holdout validation for per-family models | Validation | S2 | Medium |
+| 20 | Separate KSI and slight diagnostic models | Pilot | S2 / severity | High |

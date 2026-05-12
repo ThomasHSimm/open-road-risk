@@ -113,6 +113,7 @@ window.Quarto = {
 };
 </script>
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Crash Frequency Models: Poisson, NB, and Zero-Inflation – Open Road Risk">
 <meta property="og:description" content="Evidence base for count model family choice in Open Road Risk Stage 2: Poisson vs negative binomial, zero-inflation, overdispersion, serial correlation, and Empirical Bayes shrinkage.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -181,6 +182,14 @@ window.Quarto = {
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -378,7 +387,6 @@ window.Quarto = {
   <li><a href="#facility-stratification" id="toc-facility-stratification" class="nav-link" data-scroll-target="#facility-stratification">6. Facility Stratification</a></li>
   <li><a href="#why-dbnmse-is-not-appropriate" id="toc-why-dbnmse-is-not-appropriate" class="nav-link" data-scroll-target="#why-dbnmse-is-not-appropriate">7. Why DBN/MSE Is Not Appropriate</a></li>
   <li><a href="#model-family-comparison-table" id="toc-model-family-comparison-table" class="nav-link" data-scroll-target="#model-family-comparison-table">8. Model-Family Comparison Table</a></li>
-  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">9. Open Road Risk Alignment</a></li>
   <li><a href="#zero-calibration-diagnostic" id="toc-zero-calibration-diagnostic" class="nav-link" data-scroll-target="#zero-calibration-diagnostic">10. Zero-Calibration Diagnostic</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -636,75 +644,20 @@ Warning
 </tbody>
 </table>
 <hr>
-</section>
-<section id="open-road-risk-alignment" class="level2">
-<h2 class="anchored" data-anchor-id="open-road-risk-alignment">9. Open Road Risk Alignment</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Requirement</th>
-<th>Literature recommendation</th>
-<th>Current pipeline</th>
-<th>Gap</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Distributional family</td>
-<td>NB GLM before ZINB; run posterior predictive zero check first</td>
-<td>Poisson GLM</td>
-<td>NB GLM diagnostic pending</td>
-</tr>
-<tr class="even">
-<td>Exposure offset</td>
-<td>Fixed <span class="math inline">\(\log(\text{AADT} \times L \times 365)\)</span>; elasticity near 1.0 for most classes</td>
-<td>Fixed offset, elasticity = 1.0</td>
-<td>Free-coefficient diagnostic not yet run; sub-linear risk on urban classes</td>
-</tr>
-<tr class="odd">
-<td>EB shrinkage weight</td>
-<td>Per-family <span class="math inline">\(\hat{\phi}\)</span> from NB regression (Hauer et al.&nbsp;2001)</td>
-<td>Global MoM <span class="math inline">\(k\)</span></td>
-<td>Per-family NB <span class="math inline">\(\hat{\phi}\)</span> recommended for v2</td>
-</tr>
-<tr class="even">
-<td>Facility stratification</td>
-<td>Stratified models improve fit; holdout validation required before production</td>
-<td>Diagnostic v1 (<code>risk_scores_family.parquet</code>)</td>
-<td>Grouped/temporal holdout needed to confirm generalisation</td>
-</tr>
-<tr class="odd">
-<td>Spatial autocorrelation</td>
-<td>CAR infeasible at scale; Moran’s I on residuals is feasible diagnostic</td>
-<td>Not modelled</td>
-<td>Moran’s I on sampled links is candidate action</td>
-</tr>
-<tr class="even">
-<td>Zero calibration</td>
-<td>Posterior predictive zero check on fitted model</td>
-<td>Not yet run</td>
-<td>Low effort; should precede NB vs ZINB decision</td>
-</tr>
-<tr class="odd">
-<td>Model comparison design</td>
-<td>Equate random effect structures across families (Pew 2020)</td>
-<td>N/A</td>
-<td>Apply when NB vs Poisson vs ZINB comparison is run</td>
-</tr>
-<tr class="even">
-<td>Temporal validation</td>
-<td>Temporal holdout (MAD/MSPE) complements grouped-link CV</td>
-<td>Grouped-link CV only</td>
-<td>Temporal holdout is a candidate addition</td>
-</tr>
-</tbody>
-</table>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page.</p>
+</div>
+</div>
 <hr>
 </section>
 <section id="zero-calibration-diagnostic" class="level2">
@@ -763,15 +716,15 @@ Warning
 <td>Pew, T., Warr, R.L., Schultz, G.G. &amp; Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. <em>Transportation Research Interdisciplinary Perspectives</em>, 8, 100249. DOI: 10.1016/j.trip.2020.100249</td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-048</td>
 <td>Quddus, M.A.&nbsp;(2007). Time series count data models: an empirical application to traffic accidents. <em>Accident Analysis and Prevention.</em> hdl.handle.net/2134/5308</td>
 </tr>
 <tr class="odd">
-<td>LIT-PENDING</td>
+<td>LIT-049</td>
 <td>Mensah, A. &amp; Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. <em>Transportation Research Record 1635.</em></td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-050</td>
 <td>Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. &amp; Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. <em>Accident Analysis and Prevention, 38(6), 1071–1080.</em> DOI: 10.1016/j.aap.2006.04.012</td>
 </tr>
 </tbody>

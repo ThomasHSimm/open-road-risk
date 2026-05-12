@@ -84,6 +84,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Severity Modelling – Open Road Risk">
 <meta property="og:description" content="Why collision severity is a separate modelling target from frequency, what the literature says about each, and what post-event variables must be excluded from Open Road Risk Stage 2.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -152,6 +153,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -347,6 +356,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li><a href="#traffic-flow-and-severity" id="toc-traffic-flow-and-severity" class="nav-link" data-scroll-target="#traffic-flow-and-severity">Traffic flow and severity</a></li>
   <li><a href="#hgv-involvement-and-severity" id="toc-hgv-involvement-and-severity" class="nav-link" data-scroll-target="#hgv-involvement-and-severity">HGV involvement and severity</a></li>
   <li><a href="#hard-shoulder-vs.-main-carriageway" id="toc-hard-shoulder-vs.-main-carriageway" class="nav-link" data-scroll-target="#hard-shoulder-vs.-main-carriageway">Hard shoulder vs.&nbsp;main carriageway</a></li>
+  <li><a href="#casualties-per-collision" id="toc-casualties-per-collision" class="nav-link" data-scroll-target="#casualties-per-collision">Casualties per collision</a></li>
   <li><a href="#lighting" id="toc-lighting" class="nav-link" data-scroll-target="#lighting">Lighting</a></li>
   </ul></li>
   <li><a href="#when-severity-levels-should-be-modelled-jointly" id="toc-when-severity-levels-should-be-modelled-jointly" class="nav-link" data-scroll-target="#when-severity-levels-should-be-modelled-jointly">When severity levels should be modelled jointly</a></li>
@@ -355,7 +365,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#ksi-vs-slight-different-predictor-sets" id="toc-ksi-vs-slight-different-predictor-sets" class="nav-link" data-scroll-target="#ksi-vs-slight-different-predictor-sets">KSI vs slight: different predictor sets</a></li>
   </ul></li>
-  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -408,6 +417,7 @@ Note
 <p>The underreporting rates above (Elvik &amp; Myssen 1999) are from a European meta-analysis; UK-specific STATS19 reporting rates may differ and have evolved over time as insurance reporting requirements have changed. Verify against current DfT or TRL underreporting studies before using these figures in formal documentation.</p>
 </div>
 </div>
+<p>DfT’s 2024 reported-road-casualties annual report provides current UK context for this limitation. It states that non-fatal casualties, especially slight injuries, are substantially under-reported to police, and that adjusted serious/slight injury figures are needed because some police forces changed injury-severity reporting systems from 2016 onwards. Open Road Risk’s Stage 2 outcome uses police-reported injury collisions, so it inherits these reporting limitations even though it does not currently model severity separately.</p>
 <p>Savolainen et al.&nbsp;(2011) also confirm that joint frequency-severity models are feasible using the non-crash-specific data that Open Road Risk already has. Their footnote 1 states explicitly that joint models “can only use non-crash-specific data (roadway geometry, traffic volumes, etc.)” — which is exactly the feature set in Stage 2. If a severity dimension is ever added, the existing features are compatible with a joint approach without requiring per-crash data.</p>
 </section>
 <section id="frequency-and-severity-are-different-estimands" class="level2">
@@ -441,6 +451,7 @@ Warning
 <p>These variables describe the accident. They cannot be known before the accident. Using them in a frequency or risk-ranking model creates a model that appears strong in-sample but has no prospective predictive validity.</p>
 </div>
 </div>
+<p>DfT’s CF/RSF transition guidance strengthens the same boundary from a data-provenance perspective. Contributory factors and road safety factors are officer-recorded judgements assigned after a collision; they are not pre-collision road attributes. The 2024 transition from contributory factors to road safety factors also creates a structural break, with directly recorded RSFs not comparable to CF-converted records for trend analysis. If Open Road Risk ever uses these fields, they should remain diagnostic context only, not Stage 2 predictors.</p>
 <hr>
 </section>
 <section id="what-the-literature-says-about-severity-mechanisms" class="level2">
@@ -460,6 +471,10 @@ Warning
 <h3 class="anchored" data-anchor-id="hard-shoulder-vs.-main-carriageway">Hard shoulder vs.&nbsp;main carriageway</h3>
 <p>Michalaki et al.&nbsp;(2015) provide a concrete example of how severity structure differs within a single road class. Hard shoulder crashes represent approximately 1.6% of M25 injury collisions but have a fatal share of 8.4% compared to 1.8% on the main carriageway — roughly five times higher. The factors driving this difference include HGV involvement, driver fatigue, and absence of daylight, all of which are more prevalent on the hard shoulder.</p>
 <p>For Open Road Risk, this reinforces the general principle that facility type matters for severity composition. A link-year model pooling all motorway crashes will systematically underestimate severity on links with high hard-shoulder crash exposure.</p>
+</section>
+<section id="casualties-per-collision" class="level3">
+<h3 class="anchored" data-anchor-id="casualties-per-collision">Casualties per collision</h3>
+<p>National Highways (2022) separates collision-rate comparison from casualty-rate comparison. For casualties per collision, the proposed approach avoids assuming a simple Poisson or negative binomial distribution because standard parametric count distributions fitted poorly in their development work. This is relevant if Open Road Risk ever moves from collision frequency to casualty-weighted outcomes: casualty severity should be treated as an additional outcome layer or diagnostic, not folded into the current frequency target by assuming a standard count distribution at link-year scale.</p>
 </section>
 <section id="lighting" class="level3">
 <h3 class="anchored" data-anchor-id="lighting">Lighting</h3>
@@ -579,79 +594,24 @@ Note
 <p><strong>Note on lighting:</strong> OSM <code>lit=yes/no</code> is a road-infrastructure attribute that is known before any crash and is not post-event. STATS19 lighting condition at crash time (<code>Light Conditions</code> field) is an observation at the crash moment and is post-event. These are different variables and should not be conflated.</p>
 <section id="ksi-vs-slight-different-predictor-sets" class="level3">
 <h3 class="anchored" data-anchor-id="ksi-vs-slight-different-predictor-sets">KSI vs slight: different predictor sets</h3>
-<p>Wang, Quddus and Ison (2011) fit separate Bayesian Poisson models for KSI (fatal + serious combined) and slight injury crash counts on 70 M25 motorway segments. Their results show that the number of lanes is significant for slight injury crashes but not for KSI, while gradient is consistently significant for both. This provides direct empirical evidence that KSI and slight injury crashes have different predictor structures — fitting a single combined model conflates these into one coefficient set that may misrepresent both. For Open Road Risk, this supports the case for separate KSI and slight models as a diagnostic step, while noting that KSI counts at link-year level will be very sparse and require EB shrinkage or Bayesian smoothing before the rankings are reliable.</p>
+<p>Wang, Quddus and Ison (2011; LIT-059) fit separate Bayesian Poisson models for KSI (fatal + serious combined) and slight injury crash counts on 70 M25 motorway segments. Their results show that the number of lanes is significant for slight injury crashes but not for KSI, while gradient is consistently significant for both. This provides direct empirical evidence that KSI and slight injury crashes have different predictor structures — fitting a single combined model conflates these into one coefficient set that may misrepresent both. For Open Road Risk, this supports the case for separate KSI and slight models as a diagnostic step, while noting that KSI counts at link-year level will be very sparse and require EB shrinkage or Bayesian smoothing before the rankings are reliable.</p>
+<hr>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page.</p>
+</div>
+</div>
 <hr>
 </section>
-</section>
-<section id="open-road-risk-alignment" class="level2">
-<h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Severity question</th>
-<th>Literature evidence</th>
-<th>Current pipeline</th>
-<th>Gap / recommended action</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Should frequency and severity be separate models?</td>
-<td>Quddus 2010; Michalaki 2015; Ma 2019 — all explicit that these are different estimands</td>
-<td>Single count model (all injury combined)</td>
-<td>Document as known design choice; plan severity layer as future work</td>
-</tr>
-<tr class="even">
-<td>Should slight and KSI be modelled jointly?</td>
-<td>Boulieri 2016 (ρ ≈ 0.74 correlation); Gilardi 2022 (ρ_φ ≈ 0.83–0.90) — joint modelling substantially improves KSI estimation</td>
-<td>Not currently modelled separately</td>
-<td>Extend EB shrinkage to KSI sub-band; flag as future joint model candidate</td>
-</tr>
-<tr class="odd">
-<td>Is raw KSI ranking reliable?</td>
-<td>Boulieri 2016 — smoothing reorders high-severity rankings substantially</td>
-<td>EB shrinkage for total counts; no severity-split</td>
-<td>Run crude vs.&nbsp;smoothed ranking comparison for KSI links</td>
-</tr>
-<tr class="even">
-<td>Are post-event variables being excluded?</td>
-<td>Michalaki 2015; Quddus 2010; Ma 2019 — leakage risk explicit</td>
-<td>Repo dossier excludes collision-derived variables</td>
-<td>Document the full leakage catalogue explicitly; link to these papers</td>
-</tr>
-<tr class="odd">
-<td>Is severity-weighted composite score appropriate?</td>
-<td>Gao 2024 composite is undocumented weights; conflates frequency and severity</td>
-<td>Not used</td>
-<td>Document Gao 2024 composite as a design approach to avoid</td>
-</tr>
-<tr class="even">
-<td>Is ordered logit sufficient for severity model?</td>
-<td>Quddus 2010; Michalaki 2015 — proportional odds violated; PC-GOLOGIT preferred</td>
-<td>No severity model yet</td>
-<td>When severity model is added, test Brant test before using simple ordered logit</td>
-</tr>
-<tr class="odd">
-<td>HGV proportion as feature</td>
-<td>Michalaki 2015 — strong severity predictor</td>
-<td>Candidate feature (AADF HGV proportion)</td>
-<td>Validate HGV proportion; note it is a road-level proxy, not crash-level variable</td>
-</tr>
-<tr class="even">
-<td>Congestion as Stage 2 feature</td>
-<td>Quddus 2010 — congestion index insignificant for M25 severity</td>
-<td>Not currently in production</td>
-<td>Document null result as caution; do not prioritise congestion features from this evidence</td>
-</tr>
-</tbody>
-</table>
-<hr>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
@@ -692,11 +652,23 @@ Note
 <td>Quddus, M.A., Wang, C. &amp; Ison, S.G. (2010). Road traffic congestion and crash severity: an econometric analysis using ordered response models. <em>Journal of Transportation Engineering, 136(5), 424–435.</em> DOI: 10.1061/(ASCE)TE.1943-5436.0000044</td>
 </tr>
 <tr class="odd">
-<td>LIT-PENDING</td>
-<td>Savolainen, P.T., Mannering, F.L., Lord, D. &amp; Quddus, M.A.&nbsp;(2011). The statistical analysis of highway crash-injury severities: a review and assessment of methodological alternatives. <em>Accident Analysis and Prevention, 43(5), 1666–1676.</em> DOI: 10.1016/j.aap.2011.03.025</td>
+<td>LIT-058</td>
+<td>Department for Transport (2025). <em>Reported Road Casualties Great Britain, Annual Report: 2024.</em> Accredited Official Statistics.</td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-057</td>
+<td>Department for Transport (2025). <em>Guide to road safety and contributory factors for reported road casualties Great Britain.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-055</td>
+<td>National Highways (2022). Statistical methods for comparing road traffic collision and casualty rates: proposed approach. <em>National Highways PR81/22.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-053</td>
+<td>Savolainen, P.T., Mannering, F.L., Lord, D. &amp; Quddus, M.A.&nbsp;(2011). The statistical analysis of highway crash-injury severities: a review and assessment of methodological alternatives. <em>Accident Analysis and Prevention, 43(5), 1666–1676.</em> DOI: 10.1016/j.aap.2011.03.025</td>
+</tr>
+<tr class="odd">
+<td>LIT-059</td>
 <td>Wang, C., Quddus, M.A.&nbsp;&amp; Ison, S.G. (2011). Predicting accident frequency at their severity levels and its application in site ranking using a two-stage mixed multivariate model. <em>Accident Analysis and Prevention, 43(6), 1979–1990.</em> DOI: 10.1016/j.aap.2011.05.016</td>
 </tr>
 </tbody>

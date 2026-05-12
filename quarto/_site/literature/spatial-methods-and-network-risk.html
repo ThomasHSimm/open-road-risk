@@ -84,6 +84,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Spatial Methods and Network Risk – Open Road Risk">
 <meta property="og:description" content="Evidence base for spatial autocorrelation in crash models, spatially blocked cross-validation design, network point-process diagnostics, and MAUP sensitivity for Open Road Risk.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -152,6 +153,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -361,7 +370,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li><a href="#spatial-unit-choice-as-a-modelling-decision" id="toc-spatial-unit-choice-as-a-modelling-decision" class="nav-link" data-scroll-target="#spatial-unit-choice-as-a-modelling-decision">Spatial unit choice as a modelling decision</a></li>
   <li><a href="#hotspot-sensitivity" id="toc-hotspot-sensitivity" class="nav-link" data-scroll-target="#hotspot-sensitivity">Hotspot sensitivity</a></li>
   </ul></li>
-  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -563,71 +571,22 @@ Warning
 </div>
 </div>
 <hr>
-</section>
-</section>
-<section id="open-road-risk-alignment" class="level2">
-<h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Spatial concern</th>
-<th>Literature evidence</th>
-<th>Current pipeline</th>
-<th>Gap / action</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Spatial autocorrelation in crash residuals</td>
-<td>Aguero-Valverde &amp; Jovanis 2008; Gilardi 2022; Ziakopoulos 2020 — consistent across case studies and review</td>
-<td>Not modelled</td>
-<td>Document as known limitation; run Moran’s I on GLM residuals (sampled)</td>
-</tr>
-<tr class="even">
-<td>Cross-validation spatial optimism</td>
-<td>Mahoney 2023 — V-fold is ~2% reliable; spatial CV achieves ~60%</td>
-<td>Grouped-by-link temporal split — controls same-link leakage, not spatial autocorrelation</td>
-<td>Document distinction; pilot police-force holdout</td>
-</tr>
-<tr class="odd">
-<td>Spatial autocorrelation range</td>
-<td>Aguero-Valverde 2008 first-order adjacency is sufficient; Mahoney 2023 buffer ≈ autocorrelation range</td>
-<td>Unknown for Open Road Risk</td>
-<td>Variogram of Stage 2 residuals on sampled links</td>
-</tr>
-<tr class="even">
-<td>Planar KDE / Euclidean Moran’s I on crash points</td>
-<td>Baddeley 2021 — mathematically invalid on road networks</td>
-<td>Not currently used for production</td>
-<td>Avoid in any spatial visualisation or clustering of crash point locations</td>
-</tr>
-<tr class="odd">
-<td>MAUP / segmentation sensitivity</td>
-<td>Gilardi 2022 — network-lattice MAUP less severe than zone MAUP; Ziakopoulos 2020 — still significant in some studies</td>
-<td>OS Open Roads links used throughout</td>
-<td>Document; MAUP pilot on a small area is feasible if OS segmentation is changed</td>
-</tr>
-<tr class="even">
-<td>Junction-segment spatial correlation</td>
-<td>Ziakopoulos 2020 — strongest spatial dependencies in reviewed literature; Baddeley 2021 — crashes concentrate at vertices</td>
-<td>Junctions not distinguished in OS Open Roads links</td>
-<td>Add junction-proximity feature (candidate); document limitation</td>
-</tr>
-<tr class="odd">
-<td>Hotspot sensitivity to model choices</td>
-<td>Ziakopoulos 2020 — many choices change hotspot map</td>
-<td>Not documented</td>
-<td>Documentation note on risk percentile as one view</td>
-</tr>
-</tbody>
-</table>
 <hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page.</p>
+</div>
+</div>
+<hr>
+</section>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>

@@ -84,6 +84,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Junctions and Conflict Structure – Open Road Risk">
 <meta property="og:description" content="Literature notes on junction crash risk, conflict structure, exposure definitions, and limits of link-year road safety models.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -152,6 +153,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -350,7 +359,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#the-exposure-problem-at-junctions" id="toc-the-exposure-problem-at-junctions" class="nav-link" data-scroll-target="#the-exposure-problem-at-junctions">The exposure problem at junctions</a></li>
   <li><a href="#scale-and-feasibility-constraints" id="toc-scale-and-feasibility-constraints" class="nav-link" data-scroll-target="#scale-and-feasibility-constraints">Scale and feasibility constraints</a></li>
-  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
   <li><a href="#what-not-to-do" id="toc-what-not-to-do" class="nav-link" data-scroll-target="#what-not-to-do">What not to do</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -540,81 +548,20 @@ Note
 </div>
 </div>
 <hr>
-</section>
-<section id="open-road-risk-alignment" class="level2">
-<h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Junction issue</th>
-<th>Literature evidence</th>
-<th>Current pipeline</th>
-<th>Gap / recommended action</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Turning/opposing volumes</td>
-<td>Poch &amp; Mannering 1996 — elasticity 2.95–2.28</td>
-<td>Not available; AADT only</td>
-<td>Document as a fundamental limitation of link-level exposure.</td>
-</tr>
-<tr class="even">
-<td>Signal phase / control type</td>
-<td>Poch &amp; Mannering 1996</td>
-<td>Not available</td>
-<td>Document; OSM signal presence is the maximum achievable.</td>
-</tr>
-<tr class="odd">
-<td>Signalised junction density</td>
-<td>Al-Omari 2021 — most significant predictor; Wang 2015</td>
-<td>Not currently in pipeline</td>
-<td><strong>Candidate feature</strong>: count junctions (degree ≥ 3) per link length from OS Open Roads; optionally signalised variant from OSM.</td>
-</tr>
-<tr class="even">
-<td>Access point density</td>
-<td>Al-Omari 2021 — consistently significant</td>
-<td>Not currently in pipeline</td>
-<td><strong>Candidate feature</strong> (partial): minor-road connections per km derivable from OS Open Roads topology; true driveway accesses not available.</td>
-</tr>
-<tr class="odd">
-<td>Network tree structure / betweenness</td>
-<td>Wang 2015</td>
-<td>Betweenness centrality already in pipeline as Stage 1a / Stage 2 candidate</td>
-<td>Diagnostic test of whether betweenness adds value over road type + AADT in Stage 2 GLM.</td>
-</tr>
-<tr class="even">
-<td>Junction proximity</td>
-<td>Baddeley 2021; Ziakopoulos 2020 — segment-intersection correlation</td>
-<td>Not currently in pipeline</td>
-<td><strong>Candidate feature</strong>: distance from link midpoint to nearest OS Open Roads junction node.</td>
-</tr>
-<tr class="odd">
-<td>Exposure denominator mismatch at junctions</td>
-<td>Hauer 2001 — intersections need different SPF form</td>
-<td>Link-level offset treats all links identically</td>
-<td>Document; add flag for junction-connector links; consider sensitivity analysis removing or up-weighting junction links.</td>
-</tr>
-<tr class="even">
-<td>Speed limit as junction-density confound</td>
-<td>Al-Omari 2021 — negative coefficient is confound, not causal</td>
-<td>OSM speed limit in pipeline</td>
-<td><strong>Documentation note</strong>: negative speed-limit coefficient proxies for low junction density; do not interpret causally.</td>
-</tr>
-<tr class="odd">
-<td>Pedestrian/cyclist junction risk</td>
-<td>Roll 2026</td>
-<td>Not modelled</td>
-<td>Future work: separate junction layer with pedestrian exposure if data becomes available.</td>
-</tr>
-</tbody>
-</table>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page.</p>
+</div>
+</div>
 <hr>
 </section>
 <section id="what-not-to-do" class="level2">

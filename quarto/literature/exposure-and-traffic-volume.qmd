@@ -11,7 +11,8 @@ format:
 Exposure normalisation is the central design decision in crash-frequency modelling. A model
 that counts collisions without accounting for traffic volume cannot distinguish a genuinely
 dangerous road from a heavily used one. What follows synthesises the exposure treatment
-from eleven reviewed papers and maps their approaches against Open Road Risk's data stack.
+from reviewed papers and official-method sources, and maps their approaches against Open
+Road Risk's data stack.
 
 ---
 
@@ -33,6 +34,13 @@ offset, which is structurally equivalent to the VMT-style offset used in Hauer e
 and directly analogous to the `log(length × traffic_flow)` offset used by Gilardi et al. (2022)
 on OS road segments in Leeds. Both papers support this exposure-offset structure
 for a UK segment-level crash model.
+
+National Highways (2022) gives the same structure in official UK rate-comparison guidance:
+collision counts are treated as Poisson with vehicle miles as the exposure scale,
+$N_i \sim \text{Poisson}(\gamma_i v_i)$. This is mathematically equivalent to a Poisson GLM
+with `log(vehicle miles)` as an offset. The guidance assumes vehicle miles are known, so it
+supports the offset form but does not solve Open Road Risk's separate problem of estimated
+AADT uncertainty.
 
 ---
 
@@ -306,6 +314,7 @@ contrast rather than a model to follow.
 | Exposure approach | Papers | Transfer to Open Road Risk | Reason |
 |---|---|---|---|
 | Log-offset of length × AADT | Gilardi 2022; Hauer 2001; Open Road Risk (current) | Already implemented | Mathematical structure identical |
+| Poisson rate comparison with vehicle-miles exposure | National Highways 2022 | Documentation support | Same mathematical offset structure; assumes observed traffic rather than estimated AADT |
 | AADT as free covariate (elasticity estimated) | Aguero-Valverde 2008; Wang 2009 | Diagnostic only | Useful to test offset elasticity assumption; not a production replacement |
 | Complete observed sensor AADT | Wang 2009; Aguero-Valverde 2008; Pew 2020 | Not available nationally | DfT AADF covers ~0.4% of links; Stage 1a fills the gap |
 | INRIX probe-based AADT | Roll 2026 (tier 2) | Not available (commercial) | No open equivalent; WebTRIS provides time profiles, not link-level AADT |
@@ -344,18 +353,11 @@ the quality of the geometric and network features.
 
 ---
 
-## Open Road Risk alignment
+---
 
-| Requirement | Literature recommendation | Current pipeline | Gap |
-|---|---|---|---|
-| Exposure structure | Log-offset of AADT × length; elasticity testable as a diagnostic | Fixed offset (`log(AADT × link_length_km × 365 / 1e6)`) | Elasticity not yet tested as free covariate; sub-linear risk on urban classes possible |
-| Traffic data source | Observed or estimated AADT; Census proxies weaker | Stage 1a ML estimate from AADF + features | Coverage limitation for minor roads; uncertainty not propagated into Stage 2 |
-| Exposure uncertainty | Acknowledge and document; EB shrinkage partially absorbs it for sparse links | EB shrinkage exists as diagnostic variant; uncertainty not propagated | Stage 2 treats estimated AADT as if observed; no uncertainty interval on risk percentile |
-| AADT elasticity | Test whether elasticity differs from 1.0 by road class | Not yet tested | Free-coefficient diagnostic not yet run |
-| Validation of exposure model | Spatial/grouped holdout; learning-curve diagnostic; application sanity checks | CV metrics available but sanity checks not formalised | Low-AADT subgroup error not separately reported |
-| No-exposure contrast | Document papers that omit exposure as cautionary examples | Not yet documented | Add Gao 2024 and Balawi & Tenekeci 2024 as cautionary contrasts |
-| Temporal exposure conditioning | Use time-zone fractions to condition Stage 2; argument-averaging bias is moderate but real (Mensah & Hauer 1998) | Stage 1b profiles not in Stage 2 | `core_overnight_ratio` ad-hoc diagnostic run (~+0.004 R², stdout only, not a saved artifact); full temporal conditioning pending |
-| Single-vehicle vs multi-vehicle crash types | Qin 2006 — opposing flow relationships; combining in one model is function-averaging | Total injury collisions combined | Document as known limitation; SV/MV diagnostic is a candidate action |
+::: {.callout-note}
+For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the [Literature–Pipeline Alignment](literature-pipeline-alignment.qmd) page.
+:::
 
 ---
 
@@ -374,7 +376,8 @@ the quality of the geometric and network features.
 | LIT-029 | Wang, C., Quddus, M.A. & Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway in England. *Accident Analysis & Prevention.* |
 | LIT-034 | Gao, X. et al. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. *arXiv:2309.05072v4.* |
 | LIT-035 | Balawi, M. & Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. *Heliyon.* DOI: 10.1016/j.heliyon.2024.e25710 |
-| LIT-PENDING | Mensah, A. & Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. *Transportation Research Record 1635, Paper No. 98-0232.* |
-| LIT-PENDING | Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. & Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. *Accident Analysis and Prevention, 38(6), 1071–1080.* DOI: 10.1016/j.aap.2006.04.012 |
-| LIT-PENDING | Dutta, N. & Fontaine, M.D. (2020). Improving freeway crash prediction models using disaggregate flow state information. *VTRC 20-R15, Virginia DOT.* |
-| LIT-PENDING | Sung, Y., Kim, S., Park, J. & Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. *Journal of Advanced Transportation.* DOI: 10.1155/2024/7970454 |
+| LIT-049 | Mensah, A. & Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. *Transportation Research Record 1635, Paper No. 98-0232.* |
+| LIT-050 | Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. & Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. *Accident Analysis and Prevention, 38(6), 1071–1080.* DOI: 10.1016/j.aap.2006.04.012 |
+| LIT-051 | Dutta, N. & Fontaine, M.D. (2020). Improving freeway crash prediction models using disaggregate flow state information. *VTRC 20-R15, Virginia DOT.* |
+| LIT-055 | National Highways (2022). Statistical methods for comparing road traffic collision and casualty rates: proposed approach. *National Highways PR81/22.* |
+| LIT-052 | Sung, Y., Kim, S., Park, J. & Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. *Journal of Advanced Transportation.* DOI: 10.1155/2024/7970454 |

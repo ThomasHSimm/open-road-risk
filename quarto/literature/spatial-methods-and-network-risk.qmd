@@ -323,17 +323,11 @@ complete.
 
 ---
 
-## Open Road Risk alignment
+---
 
-| Spatial concern | Literature evidence | Current pipeline | Gap / action |
-|---|---|---|---|
-| Spatial autocorrelation in crash residuals | Aguero-Valverde & Jovanis 2008; Gilardi 2022; Ziakopoulos 2020 — consistent across case studies and review | Not modelled | Document as known limitation; run Moran's I on GLM residuals (sampled) |
-| Cross-validation spatial optimism | Mahoney 2023 — V-fold is ~2% reliable; spatial CV achieves ~60% | Grouped-by-link temporal split — controls same-link leakage, not spatial autocorrelation | Document distinction; pilot police-force holdout |
-| Spatial autocorrelation range | Aguero-Valverde 2008 first-order adjacency is sufficient; Mahoney 2023 buffer ≈ autocorrelation range | Unknown for Open Road Risk | Variogram of Stage 2 residuals on sampled links |
-| Planar KDE / Euclidean Moran's I on crash points | Baddeley 2021 — mathematically invalid on road networks | Not currently used for production | Avoid in any spatial visualisation or clustering of crash point locations |
-| MAUP / segmentation sensitivity | Gilardi 2022 — network-lattice MAUP less severe than zone MAUP; Ziakopoulos 2020 — still significant in some studies | OS Open Roads links used throughout | Document; MAUP pilot on a small area is feasible if OS segmentation is changed |
-| Junction-segment spatial correlation | Ziakopoulos 2020 — strongest spatial dependencies in reviewed literature; Baddeley 2021 — crashes concentrate at vertices | Junctions not distinguished in OS Open Roads links | Add junction-proximity feature (candidate); document limitation |
-| Hotspot sensitivity to model choices | Ziakopoulos 2020 — many choices change hotspot map | Not documented | Documentation note on risk percentile as one view |
+::: {.callout-note}
+For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the [Literature–Pipeline Alignment](literature-pipeline-alignment.qmd) page.
+:::
 
 ---
 

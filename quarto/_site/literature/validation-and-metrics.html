@@ -113,6 +113,7 @@ window.Quarto = {
 };
 </script>
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Validation and Metrics – Open Road Risk">
 <meta property="og:description" content="Methodological basis for Open Road Risk validation design: grouped CV, temporal holdout, spatial blocking, balanced accuracy, pseudo-R², CURE plots, and the structural explanatory ceiling of road-environment models.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -181,6 +182,14 @@ window.Quarto = {
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -391,7 +400,7 @@ window.Quarto = {
   <li><a href="#structural-explanatory-ceiling" id="toc-structural-explanatory-ceiling" class="nav-link" data-scroll-target="#structural-explanatory-ceiling">Structural explanatory ceiling</a></li>
   <li><a href="#random-split-weakness-a-documented-example" id="toc-random-split-weakness-a-documented-example" class="nav-link" data-scroll-target="#random-split-weakness-a-documented-example">Random split weakness: a documented example</a></li>
   <li><a href="#cure-plots-as-a-functional-form-diagnostic" id="toc-cure-plots-as-a-functional-form-diagnostic" class="nav-link" data-scroll-target="#cure-plots-as-a-functional-form-diagnostic">CURE plots as a functional-form diagnostic</a></li>
-  <li><a href="#open-road-risk-validation-map" id="toc-open-road-risk-validation-map" class="nav-link" data-scroll-target="#open-road-risk-validation-map">Open Road Risk validation map</a></li>
+  <li><a href="#low-count-rate-comparison" id="toc-low-count-rate-comparison" class="nav-link" data-scroll-target="#low-count-rate-comparison">Low-count rate comparison</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -819,85 +828,26 @@ Note
 <p>Roll et al.&nbsp;(2026) use the same diagnostic — CURE plots are standard SPF practice in the US Highway Safety Manual context.</p>
 <hr>
 </section>
-<section id="open-road-risk-validation-map" class="level2">
-<h2 class="anchored" data-anchor-id="open-road-risk-validation-map">Open Road Risk validation map</h2>
-<p>The table below records which validation methods are currently implemented in the Open Road Risk pipeline, which are planned, and where literature gaps exist.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Validation method</th>
-<th>Status</th>
-<th>Notes / literature basis</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Grouped link cross-validation (held-out links)</td>
-<td><strong>Implemented</strong></td>
-<td>Controls within-link temporal leakage; does not control spatial autocorrelation between neighbours</td>
-</tr>
-<tr class="even">
-<td>Temporal holdout (held-out years, same links)</td>
-<td>Not yet implemented</td>
-<td>Quddus 2007; Chengye 2013 template (MAD/MSPE on 2-year holdout); straightforward to add</td>
-</tr>
-<tr class="odd">
-<td>Spatially blocked CV (exclusion buffer)</td>
-<td>Not yet implemented</td>
-<td>Mahoney 2023: recommended approach; requires residual autocorrelation range estimate</td>
-</tr>
-<tr class="even">
-<td>Police force area holdout</td>
-<td>Not yet implemented</td>
-<td>Mahoney 2023 practical approximation for spatial holdout</td>
-</tr>
-<tr class="odd">
-<td>Balanced accuracy (TPR/TNR)</td>
-<td>Not yet implemented</td>
-<td>Brodersen 2010; Gilardi 2022; pool confusion matrices, do not average fold metrics</td>
-</tr>
-<tr class="even">
-<td>AccHR@k ranking quality</td>
-<td>Not yet implemented</td>
-<td>Gao 2024; proportion of top-k% predicted links with actual crashes</td>
-</tr>
-<tr class="odd">
-<td>Pseudo-R² (ρ²)</td>
-<td>Reported</td>
-<td>In-sample only; treat as model-comparison diagnostic, not predictive performance</td>
-</tr>
-<tr class="even">
-<td>CURE plots</td>
-<td>Not yet implemented</td>
-<td>Roll 2026; Dutta 2020; cumulative residuals vs AADT and link length; requires AADT-quantile binning at 2.1M scale</td>
-</tr>
-<tr class="odd">
-<td>Posterior predictive zero check</td>
-<td>Not yet implemented</td>
-<td>Pew 2020; run after Stage 2 Poisson GLM fit; diagnostic for zero-inflation</td>
-</tr>
-<tr class="even">
-<td>Exposure-only baseline comparison</td>
-<td>Not yet implemented</td>
-<td>Roll 2026 Appendix A design; compare full feature model to exposure-only NB/Poisson</td>
-</tr>
-<tr class="odd">
-<td>Cluster-robust standard errors</td>
-<td>Not yet implemented</td>
-<td>Quddus 2007; Savolainen 2011; group by <code>link_id</code>; corrects within-link serial correlation inflation of t-statistics</td>
-</tr>
-<tr class="even">
-<td>Serial correlation ACF diagnostic</td>
-<td>Not yet implemented</td>
-<td>Quddus 2007; compute lag-1 ACF on a sample of high-crash links; informs whether cluster SEs are needed</td>
-</tr>
-</tbody>
-</table>
+<section id="low-count-rate-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="low-count-rate-comparison">Low-count rate comparison</h2>
+<p>National Highways (2022) proposes formal tests and confidence intervals for comparing collision and casualty rates between roads, road types, or time periods. The core collision model is a Poisson rate model with vehicle miles as exposure, so it is consistent with the Open Road Risk offset structure. Its main validation relevance is not a new predictive metric, but a caution about inference in sparse settings: asymptotic Z-test p-values can be misleading when traffic volumes or collision counts are low.</p>
+<p>For Open Road Risk, this supports treating any link-level “significance” flag cautiously, especially on low-AADT links with zero or one observed collision. The National Highways Monte-Carlo likelihood-ratio test is more appropriate for pairwise aggregate comparisons than for production-scale ranking across 2.1 million links. It is therefore best treated as methodological support for diagnostic rate comparisons, not as a replacement for grouped holdout validation.</p>
+<p>The same document explicitly warns that traffic estimates may be inaccurate and recommends sensitivity analysis around the traffic denominator. That maps directly to Open Road Risk’s Stage 1a uncertainty problem: varying AADT estimates by plausible percentages and checking whether risk percentiles or rate comparisons change direction would be a useful diagnostic, but not formal uncertainty propagation.</p>
+<hr>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page.</p>
+</div>
+</div>
 <hr>
 </section>
 <section id="references" class="level2">
@@ -951,23 +901,27 @@ Note
 <td>Gao, X. et al.&nbsp;(2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction.</td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-048</td>
 <td>Quddus, M.A.&nbsp;(2007). Time series count data models: an empirical application to traffic accidents. <em>Accident Analysis and Prevention.</em> hdl.handle.net/2134/5308</td>
 </tr>
 <tr class="odd">
-<td>LIT-PENDING</td>
+<td>LIT-053</td>
 <td>Savolainen, P.T., Mannering, F.L., Lord, D. &amp; Quddus, M.A.&nbsp;(2011). The statistical analysis of highway crash-injury severities. <em>Accident Analysis and Prevention, 43(5), 1666–1676.</em> DOI: 10.1016/j.aap.2011.03.025</td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-054</td>
 <td>Roshandel, S., Zheng, Z. &amp; Washington, S. (2015). Impact of real-time traffic characteristics on freeway crash occurrence: systematic review and meta-analysis. <em>Accident Analysis and Prevention.</em></td>
 </tr>
 <tr class="odd">
-<td>LIT-PENDING</td>
+<td>LIT-051</td>
 <td>Dutta, N. &amp; Fontaine, M.D.&nbsp;(2020). Improving freeway crash prediction models using disaggregate flow state information. <em>VTRC 20-R15, Virginia DOT.</em></td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-055</td>
+<td>National Highways (2022). Statistical methods for comparing road traffic collision and casualty rates: proposed approach. <em>National Highways PR81/22.</em></td>
+</tr>
+<tr class="odd">
+<td>LIT-052</td>
 <td>Sung, Y., Kim, S., Park, J. &amp; Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. <em>Journal of Advanced Transportation.</em> DOI: 10.1155/2024/7970454</td>
 </tr>
 </tbody>

@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>OSM Feature Coverage Diagnostic – Open Road Risk</title>
+<title>Literature–Pipeline Alignment – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -85,11 +85,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="OSM Feature Coverage Diagnostic – Open Road Risk">
-<meta property="og:description" content="Diagnostic analysis of OpenStreetMap road attribute coverage, including speed limits, lanes, lighting, and surface features.">
+<meta property="og:title" content="Literature–Pipeline Alignment – Open Road Risk">
+<meta property="og:description" content="Consolidated mapping of literature evidence to the current Open Road Risk pipeline: what is implemented, what is pending, and what the literature recommends for each stage.">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="OSM Feature Coverage Diagnostic – Open Road Risk">
-<meta name="twitter:description" content="Diagnostic analysis of OpenStreetMap road attribute coverage, including speed limits, lanes, lighting, and surface features.">
+<meta name="twitter:title" content="Literature–Pipeline Alignment – Open Road Risk">
+<meta name="twitter:description" content="Consolidated mapping of literature evidence to the current Open Road Risk pipeline: what is implemented, what is pending, and what the literature recommends for each stage.">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -349,20 +349,21 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overall-coverage" id="toc-overall-coverage" class="nav-link active" data-scroll-target="#overall-coverage"><span class="header-section-number">1</span> Overall coverage</a></li>
-  <li><a href="#coverage-by-road-class" id="toc-coverage-by-road-class" class="nav-link" data-scroll-target="#coverage-by-road-class"><span class="header-section-number">2</span> Coverage by road class (%)</a></li>
-  <li><a href="#coverage-by-latitude-band" id="toc-coverage-by-latitude-band" class="nav-link" data-scroll-target="#coverage-by-latitude-band"><span class="header-section-number">3</span> Coverage by latitude band (%)</a></li>
-  <li><a href="#value-distributions-populated-rows-only" id="toc-value-distributions-populated-rows-only" class="nav-link" data-scroll-target="#value-distributions-populated-rows-only"><span class="header-section-number">4</span> Value distributions (populated rows only)</a>
+  <li><a href="#how-to-read-this-page" id="toc-how-to-read-this-page" class="nav-link active" data-scroll-target="#how-to-read-this-page">How to read this page</a></li>
+  <li><a href="#stage-1a-aadt-estimation" id="toc-stage-1a-aadt-estimation" class="nav-link" data-scroll-target="#stage-1a-aadt-estimation">Stage 1a — AADT Estimation</a></li>
+  <li><a href="#stage-1b-time-zone-profiles" id="toc-stage-1b-time-zone-profiles" class="nav-link" data-scroll-target="#stage-1b-time-zone-profiles">Stage 1b — Time-Zone Profiles</a></li>
+  <li><a href="#stage-2-collision-risk-model" id="toc-stage-2-collision-risk-model" class="nav-link" data-scroll-target="#stage-2-collision-risk-model">Stage 2 — Collision Risk Model</a>
   <ul class="collapse">
-  <li><a href="#speed_limit_mph" id="toc-speed_limit_mph" class="nav-link" data-scroll-target="#speed_limit_mph"><span class="header-section-number">4.1</span> speed_limit_mph</a></li>
-  <li><a href="#lanes" id="toc-lanes" class="nav-link" data-scroll-target="#lanes"><span class="header-section-number">4.2</span> lanes</a></li>
+  <li><a href="#model-family" id="toc-model-family" class="nav-link" data-scroll-target="#model-family">Model family</a></li>
+  <li><a href="#exposure-offset" id="toc-exposure-offset" class="nav-link" data-scroll-target="#exposure-offset">Exposure offset</a></li>
+  <li><a href="#empirical-bayes-shrinkage" id="toc-empirical-bayes-shrinkage" class="nav-link" data-scroll-target="#empirical-bayes-shrinkage">Empirical Bayes shrinkage</a></li>
+  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a></li>
+  <li><a href="#spatial-structure" id="toc-spatial-structure" class="nav-link" data-scroll-target="#spatial-structure">Spatial structure</a></li>
+  <li><a href="#severity" id="toc-severity" class="nav-link" data-scroll-target="#severity">Severity</a></li>
   </ul></li>
-  <li><a href="#highlights" id="toc-highlights" class="nav-link" data-scroll-target="#highlights"><span class="header-section-number">5</span> Highlights</a>
-  <ul class="collapse">
-  <li><a href="#columns-with-80-coverage-by-road-class-usable-without-imputation" id="toc-columns-with-80-coverage-by-road-class-usable-without-imputation" class="nav-link" data-scroll-target="#columns-with-80-coverage-by-road-class-usable-without-imputation"><span class="header-section-number">5.1</span> Columns with &gt;80% coverage by road class (usable without imputation)</a></li>
-  <li><a href="#columns-with-20-coverage-by-road-class-imputation-would-invent-most-values" id="toc-columns-with-20-coverage-by-road-class-imputation-would-invent-most-values" class="nav-link" data-scroll-target="#columns-with-20-coverage-by-road-class-imputation-would-invent-most-values"><span class="header-section-number">5.2</span> Columns with &lt;20% coverage by road class (imputation would invent most values)</a></li>
-  <li><a href="#decision-guidance" id="toc-decision-guidance" class="nav-link" data-scroll-target="#decision-guidance"><span class="header-section-number">5.3</span> Decision guidance</a></li>
-  </ul></li>
+  <li><a href="#validation" id="toc-validation" class="nav-link" data-scroll-target="#validation">Validation</a></li>
+  <li><a href="#data-and-transferability" id="toc-data-and-transferability" class="nav-link" data-scroll-target="#data-and-transferability">Data and Transferability</a></li>
+  <li><a href="#summary-priority-actions" id="toc-summary-priority-actions" class="nav-link" data-scroll-target="#summary-priority-actions">Summary: Priority Actions</a></li>
   </ul>
 </nav>
     </div>
@@ -371,12 +372,13 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">OSM Feature Coverage Diagnostic</h1>
+<h1 class="title">Literature–Pipeline Alignment</h1>
+<p class="subtitle lead">Where the evidence base meets the current pipeline</p>
 </div>
 
 <div>
   <div class="description">
-    Diagnostic analysis of OpenStreetMap road attribute coverage, including speed limits, lanes, lighting, and surface features.
+    Consolidated mapping of literature evidence to the current Open Road Risk pipeline: what is implemented, what is pending, and what the literature recommends for each stage.
   </div>
 </div>
 
@@ -393,497 +395,698 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<section id="overall-coverage" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="overall-coverage"><span class="header-section-number">1</span> Overall coverage</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th style="text-align: left;">column</th>
-<th style="text-align: right;">n_links</th>
-<th style="text-align: right;">n_filled</th>
-<th style="text-align: right;">pct_coverage</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">is_unpaved</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">350597</td>
-<td style="text-align: right;">16.2</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">lanes</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">158217</td>
-<td style="text-align: right;">7.3</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">201442</td>
-<td style="text-align: right;">9.3</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">speed_limit_mph</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">1223142</td>
-<td style="text-align: right;">56.4</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="coverage-by-road-class" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="coverage-by-road-class"><span class="header-section-number">2</span> Coverage by road class (%)</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 14%">
-<col style="width: 10%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 21%">
-<col style="width: 13%">
-<col style="width: 15%">
-<col style="width: 9%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">column</th>
-<th style="text-align: right;">Motorway</th>
-<th style="text-align: right;">A Road</th>
-<th style="text-align: right;">B Road</th>
-<th style="text-align: right;">Classified Unnumbered</th>
-<th style="text-align: right;">Unclassified</th>
-<th style="text-align: right;">Not Classified</th>
-<th style="text-align: right;">Unknown</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">is_unpaved</td>
-<td style="text-align: right;">36.2</td>
-<td style="text-align: right;">27.4</td>
-<td style="text-align: right;">24.9</td>
-<td style="text-align: right;">20.2</td>
-<td style="text-align: right;">16.7</td>
-<td style="text-align: right;">12.5</td>
-<td style="text-align: right;">9.2</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">lanes</td>
-<td style="text-align: right;">40.3</td>
-<td style="text-align: right;">34.7</td>
-<td style="text-align: right;">21.9</td>
-<td style="text-align: right;">13.2</td>
-<td style="text-align: right;">4.4</td>
-<td style="text-align: right;">1.9</td>
-<td style="text-align: right;">1.5</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">38</td>
-<td style="text-align: right;">25</td>
-<td style="text-align: right;">16.4</td>
-<td style="text-align: right;">10.8</td>
-<td style="text-align: right;">10.1</td>
-<td style="text-align: right;">3.6</td>
-<td style="text-align: right;">2.3</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">speed_limit_mph</td>
-<td style="text-align: right;">46.1</td>
-<td style="text-align: right;">55.3</td>
-<td style="text-align: right;">52.4</td>
-<td style="text-align: right;">53.9</td>
-<td style="text-align: right;">59.4</td>
-<td style="text-align: right;">57.4</td>
-<td style="text-align: right;">51.1</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="coverage-by-latitude-band" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="coverage-by-latitude-band"><span class="header-section-number">3</span> Coverage by latitude band (%)</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 23%">
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 15%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">column</th>
-<th style="text-align: right;">51–52°N</th>
-<th style="text-align: right;">52–53°N</th>
-<th style="text-align: right;">53–54°N</th>
-<th style="text-align: right;">54–55°N</th>
-<th style="text-align: right;">55–56°N</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">is_unpaved</td>
-<td style="text-align: right;">2.7</td>
-<td style="text-align: right;">22.4</td>
-<td style="text-align: right;">13.7</td>
-<td style="text-align: right;">17.2</td>
-<td style="text-align: right;">8.9</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">lanes</td>
-<td style="text-align: right;">1.2</td>
-<td style="text-align: right;">10.2</td>
-<td style="text-align: right;">5.6</td>
-<td style="text-align: right;">9.2</td>
-<td style="text-align: right;">4.3</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">1.2</td>
-<td style="text-align: right;">11.3</td>
-<td style="text-align: right;">8.2</td>
-<td style="text-align: right;">12.1</td>
-<td style="text-align: right;">8.5</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">speed_limit_mph</td>
-<td style="text-align: right;">10.8</td>
-<td style="text-align: right;">75</td>
-<td style="text-align: right;">47.8</td>
-<td style="text-align: right;">66</td>
-<td style="text-align: right;">36.2</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="value-distributions-populated-rows-only" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="value-distributions-populated-rows-only"><span class="header-section-number">4</span> Value distributions (populated rows only)</h2>
-<section id="speed_limit_mph" class="level3" data-number="4.1">
-<h3 data-number="4.1" class="anchored" data-anchor-id="speed_limit_mph"><span class="header-section-number">4.1</span> speed_limit_mph</h3>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 26%">
-<col style="width: 13%">
-<col style="width: 16%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 11%">
-<col style="width: 8%">
-<col style="width: 8%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">road_class</th>
-<th style="text-align: right;">n_filled</th>
-<th style="text-align: right;">n_distinct</th>
-<th style="text-align: right;">min</th>
-<th style="text-align: right;">q25</th>
-<th style="text-align: right;">median</th>
-<th style="text-align: right;">q75</th>
-<th style="text-align: right;">max</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Motorway</td>
-<td style="text-align: right;">1882</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">15</td>
-<td style="text-align: right;">70</td>
-<td style="text-align: right;">70</td>
-<td style="text-align: right;">70</td>
-<td style="text-align: right;">70</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">A Road</td>
-<td style="text-align: right;">86016</td>
-<td style="text-align: right;">65</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">36</td>
-<td style="text-align: right;">50</td>
-<td style="text-align: right;">115</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">B Road</td>
-<td style="text-align: right;">46830</td>
-<td style="text-align: right;">58</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">40</td>
-<td style="text-align: right;">125</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Classified Unnumbered</td>
-<td style="text-align: right;">102922</td>
-<td style="text-align: right;">61</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">33</td>
-<td style="text-align: right;">40</td>
-<td style="text-align: right;">195</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unclassified</td>
-<td style="text-align: right;">630118</td>
-<td style="text-align: right;">74</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">220</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Not Classified</td>
-<td style="text-align: right;">129078</td>
-<td style="text-align: right;">62</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">25</td>
-<td style="text-align: right;">29</td>
-<td style="text-align: right;">224</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unknown</td>
-<td style="text-align: right;">226296</td>
-<td style="text-align: right;">76</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: right;">224</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="lanes" class="level3" data-number="4.2">
-<h3 data-number="4.2" class="anchored" data-anchor-id="lanes"><span class="header-section-number">4.2</span> lanes</h3>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 26%">
-<col style="width: 13%">
-<col style="width: 16%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 11%">
-<col style="width: 8%">
-<col style="width: 8%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">road_class</th>
-<th style="text-align: right;">n_filled</th>
-<th style="text-align: right;">n_distinct</th>
-<th style="text-align: right;">min</th>
-<th style="text-align: right;">q25</th>
-<th style="text-align: right;">median</th>
-<th style="text-align: right;">q75</th>
-<th style="text-align: right;">max</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Motorway</td>
-<td style="text-align: right;">1644</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">10</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">A Road</td>
-<td style="text-align: right;">53962</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">8</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">B Road</td>
-<td style="text-align: right;">19547</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">7</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Classified Unnumbered</td>
-<td style="text-align: right;">25119</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">5</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unclassified</td>
-<td style="text-align: right;">47151</td>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">20</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Not Classified</td>
-<td style="text-align: right;">4347</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">5</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unknown</td>
-<td style="text-align: right;">6447</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">6</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="highlights" class="level2" data-number="5">
-<h2 data-number="5" class="anchored" data-anchor-id="highlights"><span class="header-section-number">5</span> Highlights</h2>
-<section id="columns-with-80-coverage-by-road-class-usable-without-imputation" class="level3" data-number="5.1">
-<h3 data-number="5.1" class="anchored" data-anchor-id="columns-with-80-coverage-by-road-class-usable-without-imputation"><span class="header-section-number">5.1</span> Columns with &gt;80% coverage by road class (usable without imputation)</h3>
-<p><em>No column × road-class combination reaches 80% coverage.</em></p>
-</section>
-<section id="columns-with-20-coverage-by-road-class-imputation-would-invent-most-values" class="level3" data-number="5.2">
-<h3 data-number="5.2" class="anchored" data-anchor-id="columns-with-20-coverage-by-road-class-imputation-would-invent-most-values"><span class="header-section-number">5.2</span> Columns with &lt;20% coverage by road class (imputation would invent most values)</h3>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 31%">
-<col style="width: 16%">
-<col style="width: 21%">
-<col style="width: 14%">
-<col style="width: 16%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">road_class</th>
-<th style="text-align: left;">column</th>
-<th style="text-align: right;">pct_coverage</th>
-<th style="text-align: right;">n_links</th>
-<th style="text-align: right;">n_filled</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Unknown</td>
-<td style="text-align: left;">lanes</td>
-<td style="text-align: right;">1.5</td>
-<td style="text-align: right;">442836</td>
-<td style="text-align: right;">6447</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Not Classified</td>
-<td style="text-align: left;">lanes</td>
-<td style="text-align: right;">1.9</td>
-<td style="text-align: right;">224878</td>
-<td style="text-align: right;">4347</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unknown</td>
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">2.3</td>
-<td style="text-align: right;">442836</td>
-<td style="text-align: right;">10265</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Not Classified</td>
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">3.6</td>
-<td style="text-align: right;">224878</td>
-<td style="text-align: right;">8139</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unclassified</td>
-<td style="text-align: left;">lanes</td>
-<td style="text-align: right;">4.4</td>
-<td style="text-align: right;">1060014</td>
-<td style="text-align: right;">47151</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Unknown</td>
-<td style="text-align: left;">is_unpaved</td>
-<td style="text-align: right;">9.2</td>
-<td style="text-align: right;">442836</td>
-<td style="text-align: right;">40849</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Unclassified</td>
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">10.1</td>
-<td style="text-align: right;">1060014</td>
-<td style="text-align: right;">107342</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Classified Unnumbered</td>
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">10.8</td>
-<td style="text-align: right;">190921</td>
-<td style="text-align: right;">20620</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Not Classified</td>
-<td style="text-align: left;">is_unpaved</td>
-<td style="text-align: right;">12.5</td>
-<td style="text-align: right;">224878</td>
-<td style="text-align: right;">28159</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Classified Unnumbered</td>
-<td style="text-align: left;">lanes</td>
-<td style="text-align: right;">13.2</td>
-<td style="text-align: right;">190921</td>
-<td style="text-align: right;">25119</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">B Road</td>
-<td style="text-align: left;">lit</td>
-<td style="text-align: right;">16.4</td>
-<td style="text-align: right;">89286</td>
-<td style="text-align: right;">14618</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Unclassified</td>
-<td style="text-align: left;">is_unpaved</td>
-<td style="text-align: right;">16.7</td>
-<td style="text-align: right;">1060014</td>
-<td style="text-align: right;">176644</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="decision-guidance" class="level3" data-number="5.3">
-<h3 data-number="5.3" class="anchored" data-anchor-id="decision-guidance"><span class="header-section-number">5.3</span> Decision guidance</h3>
-<p>For each column × road-class, coverage determines the right modelling strategy:</p>
+<p>This page consolidates the pipeline-state implications from all seven literature review pages into one place. It is the page that changes when the pipeline changes. The individual literature pages document what papers found; this page documents where that evidence leaves the current implementation.</p>
+<p>The structure follows pipeline stages, with a section for cross-cutting concerns.</p>
+<hr>
+<section id="how-to-read-this-page" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-read-this-page">How to read this page</h2>
+<p>Each table has four columns:</p>
 <ul>
-<li><strong>≥80%</strong>: Include as-is; drop the small fraction of missing rows.</li>
-<li><strong>20–80%</strong>: Median-impute and add an <code>{col}_imputed</code> binary flag; coefficient reflects the imputed value and should be interpreted with caution.</li>
-<li><strong>&lt;20%</strong>: The imputed value is invented for &gt;80% of rows. The coefficient will primarily reflect the imputation default, not genuine signal. Consider excluding from the model or using road-class median as a proxy only if the proxy is defensible.</li>
+<li><strong>Requirement</strong> — what the literature collectively recommends</li>
+<li><strong>Literature basis</strong> — which page(s) and paper(s) support the recommendation</li>
+<li><strong>Current pipeline</strong> — the actual current state</li>
+<li><strong>Gap / action</strong> — what remains to be done, with effort indication</li>
 </ul>
-<p>Note: coverage on major roads (Motorway, A Road) is typically higher because OSM contributors prioritise high-traffic routes. If those columns are included in a model trained on all road classes, the signal comes almost entirely from major roads and the imputed values for minor roads are close to noise.</p>
-
-
+<p>Actions are graded: <strong>documentation note</strong> (lowest disruption) → <strong>diagnostic</strong> → <strong>small pilot</strong> → <strong>candidate feature</strong> → <strong>production change</strong> (highest disruption). The literature rarely justifies production changes from a single paper; most recommendations are diagnostic first.</p>
+<hr>
 </section>
+<section id="stage-1a-aadt-estimation" class="level2">
+<h2 class="anchored" data-anchor-id="stage-1a-aadt-estimation">Stage 1a — AADT Estimation</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AADT coverage: observed counts as ground truth, ML fills the gap</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Roll 2026 three-tier hierarchy; Jayasinghe 2019</td>
+<td>DfT AADF (~0.4% of links) → Stage 1a ML estimate for all ~2.17M links</td>
+<td><strong>Documentation</strong>: document that ~96% of AADT is estimated, not observed</td>
+</tr>
+<tr class="even">
+<td>Low-AADT links hardest to estimate; geometry dominates below 1000 vpd</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Jayasinghe 2019 (RMSE 193–412% for lowest AADT band); Huda 2024 (R² drop 0.009 when AADT removed at low-volume)</td>
+<td>Stage 1a trained on AADF without low-AADT stratification</td>
+<td><strong>Diagnostic</strong>: report Stage 1a CV error separately by road class and AADT band</td>
+</tr>
+<tr class="odd">
+<td>Application sanity checks on full-network predictions</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Roll 2026 (XGBoost produced negative AADT; NB produced implausible maxima; CV metrics did not reveal this)</td>
+<td>CV metrics reported; full-network distribution not checked by road class</td>
+<td><strong>Diagnostic</strong>: compare distribution of predicted AADT by road class and rural/urban against AADF observations</td>
+</tr>
+<tr class="even">
+<td>Learning-curve diagnostic for sparse-count validation</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Jayasinghe 2019 (~40 calibration points → RMSE &lt; 30%)</td>
+<td>Not run</td>
+<td><strong>Diagnostic</strong> (low effort): plot Stage 1a CV error vs number of AADF sites in each road class</td>
+</tr>
+<tr class="odd">
+<td>Centrality features support AADT estimation</td>
+<td><a href="../literature/transferability-and-open-data-limits.html">Transferability</a>: Jayasinghe 2019; Gilardi 2022</td>
+<td>Betweenness centrality already in Stage 1a feature set</td>
+<td>No gap — document as confirmed by literature</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="stage-1b-time-zone-profiles" class="level2">
+<h2 class="anchored" data-anchor-id="stage-1b-time-zone-profiles">Stage 1b — Time-Zone Profiles</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Temporal disaggregation improves crash model performance over AADT-only</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Dutta &amp; Fontaine 2020 (20–38% MSPE improvement average-hourly vs AADT on Virginia freeways); Sung 2024; Mensah &amp; Hauer 1998 (argument-averaging bias theory)</td>
+<td>Stage 1b produces time-zone fractions per link; these are not currently used in Stage 2</td>
+<td><strong>Candidate feature</strong>: join <code>core_overnight_ratio</code> from <code>timezone_profiles.parquet</code> to Stage 2 training data and test as a feature</td>
+</tr>
+<tr class="even">
+<td>Average-hourly profiles outperform raw hourly (noise in raw data degrades performance)</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Dutta &amp; Fontaine 2020 (23% of raw hourly observations failed quality checks)</td>
+<td>Stage 1b already builds smoothed time-zone profiles rather than using raw hourly data</td>
+<td>No gap — current approach is consistent with this finding; document</td>
+</tr>
+<tr class="odd">
+<td>Argument-averaging bias: AADT underestimates SPF by ~5–8% for typical β</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Mensah &amp; Hauer 1998 correction factor w</td>
+<td>Not quantified</td>
+<td><strong>Diagnostic</strong>: estimate correction factor w using free-elasticity diagnostic β and Stage 1b CV(q) per road class</td>
+</tr>
+<tr class="even">
+<td>Function-averaging: combining daytime/nighttime in one SPF loses information</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Mensah &amp; Hauer 1998; Qin 2006</td>
+<td>Single annual model; no time-of-day stratification</td>
+<td><strong>Documentation</strong>: note as known limitation; Stage 1b profiles are the infrastructure for future temporal conditioning</td>
+</tr>
+<tr class="odd">
+<td>Dutta improvement magnitude is upper bound for Open Road Risk</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a></td>
+<td>—</td>
+<td><strong>Documentation</strong>: note that estimated profiles (Stage 1b) will produce smaller gains than observed sensor profiles</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="stage-2-collision-risk-model" class="level2">
+<h2 class="anchored" data-anchor-id="stage-2-collision-risk-model">Stage 2 — Collision Risk Model</h2>
+<section id="model-family" class="level3">
+<h3 class="anchored" data-anchor-id="model-family">Model family</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Run posterior predictive zero check before deciding on model family</td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency</a>: Pew 2020</td>
+<td>Not yet run</td>
+<td><strong>Diagnostic</strong> (low effort): sample from fitted Poisson GLM; compare predicted zero rate to observed</td>
+</tr>
+<tr class="even">
+<td>NB GLM is priority before ZINB; π ≈ 0 means overdispersion dominates</td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency</a>: Pew 2020</td>
+<td>Poisson GLM</td>
+<td><strong>Diagnostic → candidate</strong>: fit NB GLM; compare held-out pseudo-R² to Poisson baseline</td>
+</tr>
+<tr class="odd">
+<td>Equate random effect structures when comparing model families</td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency</a>: Pew 2020</td>
+<td>N/A</td>
+<td>Apply when NB vs ZINB comparison is run</td>
+</tr>
+<tr class="even">
+<td>Facility stratification: per-family models reduce overdispersion and enable per-family EB weights</td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency</a>: Chengye 2013 (MSPE −24% from ramp split); Al-Omari 2021</td>
+<td>Diagnostic v1 (<code>risk_scores_family.parquet</code>) exists</td>
+<td><strong>Validation</strong>: run grouped or temporal holdout on per-family models before production</td>
+</tr>
+<tr class="odd">
+<td>Single-vehicle and multi-vehicle crashes have opposing flow relationships; combining inflates function-averaging bias</td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency</a>: Qin 2006; Mensah &amp; Hauer 1998</td>
+<td>Total injury collisions combined</td>
+<td><strong>Documentation</strong>: note as known limitation; SV/MV split diagnostic is a candidate action</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="exposure-offset" class="level3">
+<h3 class="anchored" data-anchor-id="exposure-offset">Exposure offset</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Log-offset of AADT × length is supported for most road classes</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Gilardi 2022; Hauer 2001; National Highways 2022</td>
+<td>Fixed offset <code>log(AADT × link_length_km × 365 / 1e6)</code></td>
+<td>No gap — document as literature-supported</td>
+</tr>
+<tr class="even">
+<td>Test AADT elasticity as free covariate; sub-linear likely for some classes</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: Aguero-Valverde 2008 (0.63–0.71); Wang 2009 (1.2–1.9 motorway); Al-Omari 2021 (0.39–0.63 dense urban)</td>
+<td>Elasticity constrained to 1.0 via offset</td>
+<td><strong>Diagnostic</strong>: fit Stage 2 GLM with <code>log(AADT)</code> and <code>log(length)</code> as free covariates; report estimated elasticities by road class</td>
+</tr>
+<tr class="odd">
+<td>Exposure uncertainty not propagated into Stage 2 rankings</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>: estimated vs observed AADT gap</td>
+<td>Stage 2 treats estimated AADT as observed</td>
+<td><strong>Documentation</strong>: document as first-class limitation; EB shrinkage partially absorbs it for sparse links</td>
+</tr>
+<tr class="even">
+<td>Gao 2024 no-exposure model is a cautionary negative example</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a>; <a href="../literature/transferability-and-open-data-limits.html">Transferability</a></td>
+<td>Exposure offset implemented</td>
+<td><strong>Documentation</strong>: cite as documented cautionary contrast</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="empirical-bayes-shrinkage" class="level3">
+<h3 class="anchored" data-anchor-id="empirical-bayes-shrinkage">Empirical Bayes shrinkage</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Per-family overdispersion parameter φ from NB regression for EB weights</td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency</a>: Hauer 2001; Chengye 2013</td>
+<td>Global method-of-moments k</td>
+<td><strong>Candidate</strong>: per-family NB φ for v2 EB weights</td>
+</tr>
+<tr class="even">
+<td>Full EB procedure: sum year-specific μ_t across years</td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency</a>: Hauer 2001 equation 7</td>
+<td>Year-specific AADT available</td>
+<td><strong>Candidate</strong>: implement full EB summing annual SPF predictions</td>
+</tr>
+<tr class="odd">
+<td>Crude KSI ranking unreliable without shrinkage</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: Boulieri 2016 (smoothing reorders high-severity rankings substantially)</td>
+<td>EB shrinkage for total counts; no severity-split</td>
+<td><strong>Pilot</strong>: extend EB shrinkage to KSI sub-band</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="features" class="level3">
+<h3 class="anchored" data-anchor-id="features">Features</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>core_overnight_ratio</code> from Stage 1b: ad-hoc diagnostic shows ~+0.004 R², correct sign</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a></td>
+<td>Not yet added to production</td>
+<td><strong>Candidate feature</strong>: add <code>core_overnight_ratio</code> join from <code>timezone_profiles.parquet</code>; confirm with 5-seed harness</td>
+</tr>
+<tr class="even">
+<td><code>late_evening_frac</code> shows unexpected sign; collinearity with road class suspected</td>
+<td><a href="../literature/exposure-and-traffic-volume.html">Exposure</a></td>
+<td>Not in pipeline</td>
+<td>Do not add until collinearity with road class is resolved</td>
+</tr>
+<tr class="odd">
+<td>Junction density (nodes degree ≥ 3 per km) is a consistently significant predictor</td>
+<td><a href="../literature/junctions-and-conflict-structure.html">Junctions</a>: Al-Omari 2021; Wang 2015</td>
+<td>Not currently in pipeline</td>
+<td><strong>Candidate feature</strong>: count junction nodes per link length from OS Open Roads topology</td>
+</tr>
+<tr class="even">
+<td>Junction-proximity (distance to nearest junction node)</td>
+<td><a href="../literature/junctions-and-conflict-structure.html">Junctions</a>: Baddeley 2021; Ziakopoulos 2020</td>
+<td>Not in pipeline</td>
+<td><strong>Candidate feature</strong>: distance from link midpoint to nearest OS Open Roads junction node</td>
+</tr>
+<tr class="odd">
+<td>Betweenness centrality: test whether it adds value over road type + AADT</td>
+<td><a href="../literature/junctions-and-conflict-structure.html">Junctions</a>: Wang 2015 supports it; Gilardi 2022 finds it insignificant after road type controlled</td>
+<td>Candidate feature</td>
+<td><strong>Diagnostic</strong>: collinearity check against road class and AADT before adding to production</td>
+</tr>
+<tr class="even">
+<td>Speed limit is a road-type proxy, not a direct safety predictor</td>
+<td><a href="../literature/junctions-and-conflict-structure.html">Junctions</a>: Al-Omari 2021 negative coefficient is confound</td>
+<td>OSM speed limit in pipeline</td>
+<td><strong>Documentation</strong>: note that negative speed-limit coefficient proxies for low junction density</td>
+</tr>
+<tr class="odd">
+<td>HGV proportion supports inclusion</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: Michalaki 2015 (strong severity predictor)</td>
+<td>Candidate feature (AADF HGV proportion)</td>
+<td><strong>Documentation</strong>: confirm it is a road-level proxy, not crash-level variable</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="spatial-structure" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-structure">Spatial structure</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Spatial autocorrelation in residuals is present and biases coefficient SEs</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a>: Aguero-Valverde 2008; Gilardi 2022; Wang 2009 (UK motorways)</td>
+<td>Not modelled</td>
+<td><strong>Diagnostic</strong>: Moran’s I on Stage 2 GLM residuals (sampled 10k–50k links, first-order adjacency)</td>
+</tr>
+<tr class="even">
+<td>CAR spatial model is computationally infeasible at 2.17M links</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a></td>
+<td>Not attempted</td>
+<td><strong>Documentation</strong>: note as known limitation; Moran’s I is the feasible alternative</td>
+</tr>
+<tr class="odd">
+<td>Geographic residual mapping to identify persistent high-residual corridors</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a>: Aguero-Valverde 2008</td>
+<td>Not yet done</td>
+<td><strong>Diagnostic</strong>: choropleth map of Stage 2 GLM residuals on OS Open Roads geometry for a pilot area</td>
+</tr>
+<tr class="even">
+<td>Do not use planar KDE or Euclidean Moran’s I on crash point locations</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a>: Baddeley 2021</td>
+<td>Not currently used</td>
+<td><strong>Documentation</strong>: note constraint for any future crash-point visualisation</td>
+</tr>
+<tr class="odd">
+<td>Junction-segment spatial correlations are the strongest spatial dependencies</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a>: Ziakopoulos 2020</td>
+<td>Not explicitly modelled</td>
+<td><strong>Documentation / candidate feature</strong>: junction-proximity feature addresses this indirectly</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="severity" class="level3">
+<h3 class="anchored" data-anchor-id="severity">Severity</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Frequency and severity are different estimands; separate models warranted</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: Quddus 2010; Michalaki 2015; Ma 2019; Savolainen 2011</td>
+<td>Single count model (all injury combined)</td>
+<td><strong>Documentation</strong>: document as known design choice; plan severity layer as future work</td>
+</tr>
+<tr class="even">
+<td>KSI and slight crashes have different predictor sets</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: Wang et al.&nbsp;2011 (lanes significant for slight only; grade significant for both)</td>
+<td>Not modelled separately</td>
+<td><strong>Pilot</strong>: separate KSI and slight diagnostic models</td>
+</tr>
+<tr class="odd">
+<td>Joint slight/KSI model substantially improves KSI estimation</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: Boulieri 2016 (ρ ≈ 0.74); Gilardi 2022 (ρ_φ ≈ 0.83–0.90)</td>
+<td>Not implemented</td>
+<td><strong>Future work</strong>: joint Bayesian model after EB shrinkage pilot</td>
+</tr>
+<tr class="even">
+<td>Severity-weighted composite (Gao 2024 weights 1/2/3) conflates frequency and severity</td>
+<td><a href="../literature/severity-modelling.html">Severity</a></td>
+<td>Not used</td>
+<td><strong>Documentation</strong>: note as design approach to avoid</td>
+</tr>
+<tr class="odd">
+<td>STATS19 underreporting: slight injuries ~75% under-reported</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: Savolainen 2011 citing Elvik &amp; Myssen 1999</td>
+<td>Inherits reporting limitation</td>
+<td><strong>Documentation</strong>: document as known limitation of the outcome variable</td>
+</tr>
+<tr class="even">
+<td>Post-event STATS19 variables must not enter Stage 2</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: full leakage catalogue</td>
+<td>Collision-derived variables excluded per repo dossier</td>
+<td><strong>Documentation</strong>: link the full leakage catalogue explicitly</td>
+</tr>
+<tr class="odd">
+<td>Congestion index is insignificant for crash frequency (M25 null result)</td>
+<td><a href="../literature/severity-modelling.html">Severity</a>: Quddus 2010</td>
+<td>Not in production</td>
+<td><strong>Documentation</strong>: note null result as caution against prioritising congestion features</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="validation" class="level2">
+<h2 class="anchored" data-anchor-id="validation">Validation</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Grouped-link CV controls within-link temporal leakage but not spatial autocorrelation</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a></td>
+<td>Grouped-link CV implemented</td>
+<td><strong>Documentation</strong>: record distinction explicitly in validation documentation</td>
+</tr>
+<tr class="even">
+<td>Temporal holdout (hold out 2023–2024; train on 2015–2022)</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Quddus 2007; Chengye 2013</td>
+<td>Not yet implemented</td>
+<td><strong>Diagnostic</strong> (straightforward): add temporal holdout as a second validation split</td>
+</tr>
+<tr class="odd">
+<td>Spatial CV with exclusion buffer matching residual autocorrelation range</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Mahoney 2023 (V-fold only 2% reliable; spatial CV ~60%)</td>
+<td>Not implemented</td>
+<td><strong>Diagnostic → pilot</strong>: variogram first, then police-force holdout</td>
+</tr>
+<tr class="even">
+<td>Police force area holdout as practical spatial CV approximation</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a>; <a href="../literature/validation-and-metrics.html">Validation</a>: Mahoney 2023</td>
+<td>Not implemented</td>
+<td><strong>Pilot</strong>: hold out one force area; evaluate Stage 2 performance</td>
+</tr>
+<tr class="odd">
+<td>Balanced accuracy (pool confusion matrices across folds, do not average)</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Brodersen 2010; Gilardi 2022</td>
+<td>Not yet implemented</td>
+<td><strong>Diagnostic</strong>: implement after choosing classification threshold</td>
+</tr>
+<tr class="even">
+<td>AccHR@k ranking quality metric</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Gao 2024</td>
+<td>Not yet implemented</td>
+<td><strong>Diagnostic</strong>: compute for top-1% and top-5% predicted links</td>
+</tr>
+<tr class="odd">
+<td>CURE plots by AADT quantile and link-length quantile</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Roll 2026; Dutta 2020</td>
+<td>Not yet implemented</td>
+<td><strong>Diagnostic</strong>: 50-quantile bins; in-sample only</td>
+</tr>
+<tr class="even">
+<td>Posterior predictive zero check</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>; <a href="../literature/crash-frequency-models.html">Crash frequency</a>: Pew 2020</td>
+<td>Not yet run</td>
+<td><strong>Diagnostic</strong> (low effort): should precede NB vs ZINB decision</td>
+</tr>
+<tr class="odd">
+<td>Exposure-only baseline comparison</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Roll 2026</td>
+<td>Not yet run</td>
+<td><strong>Diagnostic</strong>: compare full feature model against exposure-only NB/Poisson</td>
+</tr>
+<tr class="even">
+<td>Cluster-robust standard errors grouped by <code>link_id</code></td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Quddus 2007; Savolainen 2011</td>
+<td>Not implemented</td>
+<td><strong>Diagnostic → documentation</strong>: compute ACF on high-crash links first; if lag-1 ACF &gt; 0.15, add cluster SEs</td>
+</tr>
+<tr class="odd">
+<td>Serial correlation ACF diagnostic on high-crash links</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Quddus 2007</td>
+<td>Not run</td>
+<td><strong>Diagnostic</strong> (low effort): sample 500–1000 highest-crash links</td>
+</tr>
+<tr class="even">
+<td>Structural explanatory ceiling: road-environment models cannot explain behavioural factors</td>
+<td><a href="../literature/validation-and-metrics.html">Validation</a>: Roshandel 2015 (~93% of crash causation is behavioural)</td>
+<td>Not documented</td>
+<td><strong>Documentation</strong>: contextualise held-out R² of ~0.32 as consistent with the ceiling</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="data-and-transferability" class="level2">
+<h2 class="anchored" data-anchor-id="data-and-transferability">Data and Transferability</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Issue</th>
+<th>Literature basis</th>
+<th>Current pipeline</th>
+<th>Gap / action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>UK geography ≠ UK data availability</td>
+<td><a href="../literature/transferability-and-open-data-limits.html">Transferability</a></td>
+<td>—</td>
+<td><strong>Documentation</strong>: Gao 2024 and Balawi 2024 cited as cautionary negative-transfer examples</td>
+</tr>
+<tr class="even">
+<td>Lane width, shoulder width, driveway density are unavailable nationally</td>
+<td><a href="../literature/transferability-and-open-data-limits.html">Transferability</a>: Huda 2024; Chengye 2013</td>
+<td>Not in pipeline</td>
+<td><strong>Documentation</strong>: note as unavailable; OS MasterMap or HE data would be out of scope</td>
+</tr>
+<tr class="odd">
+<td>CART threshold derivation should use UK data, not US thresholds</td>
+<td><a href="../literature/transferability-and-open-data-limits.html">Transferability</a>: Huda 2024</td>
+<td>US-derived thresholds not used</td>
+<td><strong>Documentation</strong>: if CART or tree-based thresholds are introduced, derive from Open Road Risk data</td>
+</tr>
+<tr class="even">
+<td>STATS19 CF/RSF 2024 structural break</td>
+<td><a href="../literature/transferability-and-open-data-limits.html">Transferability</a>; <a href="../literature/severity-modelling.html">Severity</a>: DfT 2024/2025 guidance</td>
+<td>Collision-derived fields excluded from Stage 2</td>
+<td><strong>Documentation</strong>: note break and its implications for trend analysis</td>
+</tr>
+<tr class="odd">
+<td>MAUP: OS Open Roads link is a defensible unit; network-lattice MAUP less severe than zone MAUP</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a>: Gilardi 2022 MAUP sensitivity test</td>
+<td>OS Open Roads links used throughout</td>
+<td><strong>Documentation</strong>: present risk percentile as one view at one spatial resolution</td>
+</tr>
+<tr class="even">
+<td>Hotspot rankings sensitive to model choices, time periods, road-user types</td>
+<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial</a>: Ziakopoulos 2020</td>
+<td>Not documented explicitly</td>
+<td><strong>Documentation</strong>: add caveat to production risk percentile description</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="summary-priority-actions" class="level2">
+<h2 class="anchored" data-anchor-id="summary-priority-actions">Summary: Priority Actions</h2>
+<p>The table below lists all actions in priority order, combining effort and information value.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Priority</th>
+<th>Action</th>
+<th>Type</th>
+<th>Stage</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Posterior predictive zero check on Stage 2 Poisson GLM</td>
+<td>Diagnostic</td>
+<td>S2</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Free-elasticity diagnostic: log(AADT) and log(length) as free covariates</td>
+<td>Diagnostic</td>
+<td>S2</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Temporal holdout: hold out 2023–2024; evaluate Stage 2 on unseen years</td>
+<td>Diagnostic</td>
+<td>S2 / validation</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Moran’s I on Stage 2 GLM residuals (sampled ~10k–50k links)</td>
+<td>Diagnostic</td>
+<td>S2 / spatial</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Stage 1a CV error by road class and AADT band</td>
+<td>Diagnostic</td>
+<td>S1a</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Stage 1a full-network sanity checks by road class</td>
+<td>Diagnostic</td>
+<td>S1a</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>ACF diagnostic on high-crash links; add cluster-robust SEs if ACF &gt; 0.15</td>
+<td>Diagnostic</td>
+<td>S2</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td><code>core_overnight_ratio</code> feature addition: 5-seed harness confirmation</td>
+<td>Candidate feature</td>
+<td>S2</td>
+<td>Low–medium</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>NB GLM diagnostic: compare held-out pseudo-R² to Poisson baseline</td>
+<td>Diagnostic</td>
+<td>S2</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>CURE plots by AADT quantile and link-length quantile</td>
+<td>Diagnostic</td>
+<td>S2 / validation</td>
+<td>Medium</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Exposure-only baseline comparison</td>
+<td>Diagnostic</td>
+<td>S2 / validation</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Junction density feature (nodes degree ≥ 3 per km)</td>
+<td>Candidate feature</td>
+<td>S2</td>
+<td>Medium</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>Junction-proximity distance feature</td>
+<td>Candidate feature</td>
+<td>S2</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Police force holdout as practical spatial CV</td>
+<td>Pilot</td>
+<td>S2 / spatial</td>
+<td>Medium</td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td>EB shrinkage extended to KSI sub-band</td>
+<td>Pilot</td>
+<td>S2 / severity</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>Per-family NB overdispersion parameter for EB weights</td>
+<td>Candidate</td>
+<td>S2 / EB</td>
+<td>Medium</td>
+</tr>
+<tr class="odd">
+<td>17</td>
+<td>Balanced accuracy and AccHR@k implementation</td>
+<td>Diagnostic</td>
+<td>Validation</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>Argument-averaging correction factor w computation</td>
+<td>Diagnostic</td>
+<td>S2 / S1b</td>
+<td>Medium</td>
+</tr>
+<tr class="odd">
+<td>19</td>
+<td>Temporal holdout validation for per-family models</td>
+<td>Validation</td>
+<td>S2</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>20</td>
+<td>Separate KSI and slight diagnostic models</td>
+<td>Pilot</td>
+<td>S2 / severity</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+
+
 </section>
 
 </main> <!-- /main -->

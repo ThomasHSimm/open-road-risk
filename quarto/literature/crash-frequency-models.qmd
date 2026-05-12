@@ -309,18 +309,11 @@ limitation of the current pipeline.
 
 ---
 
-## 9. Open Road Risk Alignment
+---
 
-| Requirement | Literature recommendation | Current pipeline | Gap |
-|---|---|---|---|
-| Distributional family | NB GLM before ZINB; run posterior predictive zero check first | Poisson GLM | NB GLM diagnostic pending |
-| Exposure offset | Fixed $\log(\text{AADT} \times L \times 365)$; elasticity near 1.0 for most classes | Fixed offset, elasticity = 1.0 | Free-coefficient diagnostic not yet run; sub-linear risk on urban classes |
-| EB shrinkage weight | Per-family $\hat{\phi}$ from NB regression (Hauer et al. 2001) | Global MoM $k$ | Per-family NB $\hat{\phi}$ recommended for v2 |
-| Facility stratification | Stratified models improve fit; holdout validation required before production | Diagnostic v1 (`risk_scores_family.parquet`) | Grouped/temporal holdout needed to confirm generalisation |
-| Spatial autocorrelation | CAR infeasible at scale; Moran's I on residuals is feasible diagnostic | Not modelled | Moran's I on sampled links is candidate action |
-| Zero calibration | Posterior predictive zero check on fitted model | Not yet run | Low effort; should precede NB vs ZINB decision |
-| Model comparison design | Equate random effect structures across families (Pew 2020) | N/A | Apply when NB vs Poisson vs ZINB comparison is run |
-| Temporal validation | Temporal holdout (MAD/MSPE) complements grouped-link CV | Grouped-link CV only | Temporal holdout is a candidate addition |
+::: {.callout-note}
+For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the [Literature–Pipeline Alignment](literature-pipeline-alignment.qmd) page.
+:::
 
 ---
 
@@ -361,6 +354,6 @@ distribution. It should be run before making any decision about distributional f
 | LIT-025/037 | Pan, G., Fu, L. & Thakali, L. (2017). Development of a global road safety performance function using deep neural networks. *International Journal of Transportation Science and Technology*, 6(3), 159–173. DOI: 10.1016/j.ijtst.2017.07.004 |
 | LIT-003 | Al-Omari, M. (2021). Crash analysis and development of safety performance functions for Florida roads in the framework of the context classification system. *MSc thesis, University of Central Florida.* stars.library.ucf.edu/etd2020/633 |
 | LIT-032 | Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. *Transportation Research Interdisciplinary Perspectives*, 8, 100249. DOI: 10.1016/j.trip.2020.100249 |
-| LIT-PENDING | Quddus, M.A. (2007). Time series count data models: an empirical application to traffic accidents. *Accident Analysis and Prevention.* hdl.handle.net/2134/5308 |
-| LIT-PENDING | Mensah, A. & Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. *Transportation Research Record 1635.* |
-| LIT-PENDING | Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. & Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. *Accident Analysis and Prevention, 38(6), 1071–1080.* DOI: 10.1016/j.aap.2006.04.012 |
+| LIT-048 | Quddus, M.A. (2007). Time series count data models: an empirical application to traffic accidents. *Accident Analysis and Prevention.* hdl.handle.net/2134/5308 |
+| LIT-049 | Mensah, A. & Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. *Transportation Research Record 1635.* |
+| LIT-050 | Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. & Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. *Accident Analysis and Prevention, 38(6), 1071–1080.* DOI: 10.1016/j.aap.2006.04.012 |
