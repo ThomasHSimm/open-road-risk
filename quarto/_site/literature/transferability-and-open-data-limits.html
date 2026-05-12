@@ -84,6 +84,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Transferability and Open Data Limits – Open Road Risk">
 <meta property="og:description" content="Literature notes on which road safety methods and data requirements transfer to an open-data UK road risk pipeline.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -152,6 +153,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -348,7 +357,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li><a href="#uk-geography-papers-with-low-transferability-negative-transfer-examples" id="toc-uk-geography-papers-with-low-transferability-negative-transfer-examples" class="nav-link" data-scroll-target="#uk-geography-papers-with-low-transferability-negative-transfer-examples">UK-geography papers with low transferability (negative-transfer examples)</a></li>
   </ul></li>
   <li><a href="#data-availability-matrix" id="toc-data-availability-matrix" class="nav-link" data-scroll-target="#data-availability-matrix">Data-availability matrix</a></li>
-  <li><a href="#implications-for-open-road-risk" id="toc-implications-for-open-road-risk" class="nav-link" data-scroll-target="#implications-for-open-road-risk">Implications for Open Road Risk</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -431,8 +439,8 @@ Warning
 </tr>
 <tr class="even">
 <td>Collision records</td>
-<td>STATS19 injury collisions: location, severity, date, road class</td>
-<td>PDO collisions; contributory factors (not available in Stage 2 feature set); post-event crash attributes</td>
+<td>STATS19 injury collisions: location, severity, date, road class; record-level CF fields for pre-2024 context where recorded</td>
+<td>PDO collisions; record-level RSF fields in the standard open download; post-event crash attributes as Stage 2 predictors</td>
 </tr>
 <tr class="odd">
 <td>Road geometry/context</td>
@@ -457,6 +465,7 @@ Warning
 </tbody>
 </table>
 <p>The single largest gap relative to the US/NZ literature is <strong>complete observed traffic counts</strong>. US studies (Chengye 2013 on Auckland, Huda 2024 on Oregon, Roll 2026 on Oregon, Wang 2009 on M25) either have full sensor coverage or proprietary probe data (INRIX). Open Road Risk estimates AADT for ~96% of links via Stage 1a machine learning; this introduces uncertainty that most comparison papers never face.</p>
+<p>DfT’s 2025 CF/RSF guidance adds a separate collision-data limitation. Contributory factors (CFs) are available at record level in standard STATS19 downloads, but coverage is partial and varies by severity, road class, year, and police force. Road safety factors (RSFs) replace CFs from the 2024 transition period, but record-level RSFs are not available in the standard open download and the CF→RSF transition creates a structural break. These fields are therefore useful provenance/context for diagnostics, not stable production features for Stage 2.</p>
 <hr>
 </section>
 <section id="per-paper-transferability" class="level2">
@@ -866,17 +875,20 @@ Caution
 </tbody>
 </table>
 <hr>
-</section>
-<section id="implications-for-open-road-risk" class="level2">
-<h2 class="anchored" data-anchor-id="implications-for-open-road-risk">Implications for Open Road Risk</h2>
-<p>The gap analysis above supports the following documentation positions:</p>
-<ol type="1">
-<li><p><strong>Exposure uncertainty is a first-class limitation.</strong> Most literature papers have observed AADT. Open Road Risk estimates AADT for ~96% of links. This uncertainty is not propagated into Stage 2 rankings and should be documented explicitly, with Huda 2024’s finding (geometry dominates on low-AADT links) as partial mitigation for the lowest-volume rural tier.</p></li>
-<li><p><strong>Geometry features are derivable but need UK calibration.</strong> Curvature and grade are in principle derivable from OS Open Roads + OS Terrain 50. However, the US-derived CART thresholds (Huda: 9°, 28° curvature; 4% grade) are Oregon-specific. UK thresholds should be derived from Open Road Risk’s own EB-ranked link data before these features are added to production.</p></li>
-<li><p><strong>Lane width, shoulder width, and access density are not available.</strong> These are the most commonly cited geometric predictors in the LVR and motorway literature. They cannot be included without a different data source (e.g., OS MasterMap or Highways England for major roads — out of current scope).</p></li>
-<li><p><strong>UK geography is not UK data availability.</strong> The two UK-context papers that appear most applicable — Gao 2024 (London boroughs) and Balawi &amp; Tenekeci 2024 (London A-roads) — both fail to transfer because they lack exposure, use wrong or composite response variables, or aggregate across spatial units that conflict with link-level modelling.</p></li>
-<li><p><strong>The closest valid UK analogue is Gilardi et al.&nbsp;2022</strong> (Leeds OS segments, log-offset form, balanced accuracy for sparse crash data). Its limitations are scale (Leeds only) and exposure quality (commuter flow, not AADF- calibrated AADT), not fundamental structural incompatibility.</p></li>
-</ol>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a consolidated view of how these transferability findings map to the current pipeline state, open gaps, and recommended actions, see the <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page.</p>
+</div>
+</div>
 <hr>
 </section>
 <section id="references" class="level2">
@@ -956,6 +968,18 @@ Caution
 <tr class="odd">
 <td>LIT-031/041</td>
 <td>Ziakopoulos, A. &amp; Yannis, G. (2020). A review of spatial approaches in road safety. — reconciliation pending; year and DOI not confirmed from PDF; do not cite numerical values from reviewed studies without checking primary sources.</td>
+</tr>
+<tr class="even">
+<td>LIT-056</td>
+<td>Department for Transport (2024). <em>Road Safety Factors: Initial Analysis.</em> Official Statistics.</td>
+</tr>
+<tr class="odd">
+<td>LIT-057</td>
+<td>Department for Transport (2025). <em>Guide to road safety and contributory factors for reported road casualties Great Britain.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-058</td>
+<td>Department for Transport (2025). <em>Reported Road Casualties Great Britain, Annual Report: 2024.</em> Accredited Official Statistics.</td>
 </tr>
 </tbody>
 </table>

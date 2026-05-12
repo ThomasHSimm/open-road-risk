@@ -84,6 +84,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Literature Evidence Register – Open Road Risk">
 <meta property="og:description" content="Structured evidence register connecting road safety literature extracts to Open Road Risk documentation, diagnostics, and planning notes.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -152,6 +153,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -1846,6 +1855,354 @@ Note
 <td>Check original cited papers before using exact study-level model specifications, validation methods, or numerical claims</td>
 <td>Combined record from original PDF plus LIT-031 and LIT-041; use this for spatial-methods review citations.</td>
 </tr>
+<tr class="odd">
+<td>LIT-048</td>
+<td>paper-extraction-quddus-2007-inar-time-series-count.md</td>
+<td>AAP_2007_INAR_revised_Final.pdf</td>
+<td>Time Series Count Data Models: An Empirical Application to Traffic Accidents</td>
+<td>Mohammed A. Quddus</td>
+<td>2007</td>
+<td>time-series count modelling; intervention analysis</td>
+<td>Great Britain; London congestion charging zone</td>
+<td>national aggregate and urban area aggregate</td>
+<td>ARIMA/SARIMA; negative binomial; INAR(1) Poisson</td>
+<td>annual fatalities; monthly casualties</td>
+<td>VKT or total monthly accidents as control variables; not segment-level offset</td>
+<td>aggregate national or London CC zone time series</td>
+<td>annual and monthly</td>
+<td>temporal holdout</td>
+<td>Temporal holdout and serial-correlation diagnostics support adding year holdout and cluster/ACF checks</td>
+<td>high</td>
+<td>medium</td>
+<td>high</td>
+<td>high</td>
+<td>diagnostic-only</td>
+<td>not stated</td>
+<td>not stated</td>
+<td>high</td>
+<td>conditional</td>
+<td>Aggregate time series, not link-level SPF; check exact INAR estimates before formal numeric citation</td>
+<td>Supports validation-and-metrics and crash-frequency temporal-dependence notes.</td>
+</tr>
+<tr class="even">
+<td>LIT-049</td>
+<td>paper-extraction-mensah-hauer-1998-two-problems-averaging.md</td>
+<td>263HauerMensahTwoproblemsofaveraging___.pdf</td>
+<td>Two Problems of Averaging Arising in the Estimation of the Relationship Between Accidents and Traffic Flow</td>
+<td>Abraham Mensah; Ezra Hauer</td>
+<td>1998</td>
+<td>SPF theory; traffic-flow averaging bias</td>
+<td>illustrative; New York State rural road data used in example</td>
+<td>rural two-lane illustrative example</td>
+<td>theoretical SPF functions and averaging derivations</td>
+<td>expected accident frequency</td>
+<td>traffic flow q; AADT as averaged flow argument</td>
+<td>road section</td>
+<td>theoretical one-year observation context</td>
+<td>not applicable; theoretical paper</td>
+<td>Argument-averaging and function-averaging support WebTRIS/time-profile diagnostics and free-elasticity checks</td>
+<td>high</td>
+<td>high</td>
+<td>high</td>
+<td>medium</td>
+<td>diagnostic-only</td>
+<td>not stated</td>
+<td>not stated</td>
+<td>high</td>
+<td>conditional</td>
+<td>Theoretical paper; use for diagnostic rationale, not production temporal feature claim</td>
+<td>Supports exposure-and-traffic-volume and crash-frequency temporal-exposure caveats.</td>
+</tr>
+<tr class="odd">
+<td>LIT-050</td>
+<td>paper-extraction-qin-et-al-2006-bayesian-hourly-exposure.md</td>
+<td>AAP-2006-Hourlyexposure-1tfliyv_Bayesian_estimation_of_hourly_exposure_functions_by_crash_type_and_time_of_day.pdf</td>
+<td>Bayesian estimation of hourly exposure functions by crash type and time of day</td>
+<td>Xiao Qin; John N. Ivan; Nalini Ravishanker; Junfeng Liu; Donald Tepas</td>
+<td>2006</td>
+<td>hourly exposure / crash-type SPF</td>
+<td>USA; Michigan and Connecticut</td>
+<td>rural two-lane highways</td>
+<td>hierarchical Bayesian binary logistic regression</td>
+<td>hourly crash occurrence by crash type</td>
+<td>hourly directional volume and segment length; additive or multiplicative exposure functions</td>
+<td>road segment</td>
+<td>hourly observations across 1995-1997 and 1995-2000 datasets</td>
+<td>no heldout split; posterior estimation</td>
+<td>Flow-crash relationships differ by crash type and time-of-day, supporting temporal-profile and SV/MV diagnostic caveats</td>
+<td>high</td>
+<td>high</td>
+<td>high</td>
+<td>medium</td>
+<td>diagnostic-only</td>
+<td>not stated</td>
+<td>not stated</td>
+<td>high</td>
+<td>conditional</td>
+<td>Rural US two-lane scope and no holdout; do not transfer coefficients directly</td>
+<td>Supports exposure-and-traffic-volume and crash-frequency function-averaging notes.</td>
+</tr>
+<tr class="even">
+<td>LIT-051</td>
+<td>paper-extraction-dutta-2020-freeway-crash-prediction-disaggregate-flow.md</td>
+<td>dot_54482_DS1.pdf</td>
+<td>Improving Freeway Crash Prediction Models Using Disaggregate Flow State Information</td>
+<td>Nancy Dutta; Michael D. Fontaine</td>
+<td>2020</td>
+<td>freeway SPF; temporal flow disaggregation</td>
+<td>US; Virginia</td>
+<td>freeway; rural and urban</td>
+<td>negative binomial GLMs; ZINB tested; GLMMs</td>
+<td>crash frequency on freeway segments</td>
+<td>AADT baseline; average hourly, average 15-minute, and raw hourly volume alternatives; length offset</td>
+<td>directional basic freeway segment</td>
+<td>2011-2017</td>
+<td>random 70/30 train/test split</td>
+<td>Smoothed hourly flow can outperform AADT, while raw noisy hourly data can underperform; supports cautious WebTRIS temporal diagnostics</td>
+<td>high</td>
+<td>high</td>
+<td>high</td>
+<td>medium</td>
+<td>diagnostic-only</td>
+<td>not stated</td>
+<td>not stated</td>
+<td>high</td>
+<td>conditional</td>
+<td>Freeway sensor coverage and random split limit transfer; use improvements as upper-bound context</td>
+<td>Supports exposure temporal-conditioning and CURE validation notes.</td>
+</tr>
+<tr class="odd">
+<td>LIT-052</td>
+<td>paper-extraction-sung-et-al-2024-modified-temporal-spf.md</td>
+<td>Development_of_Modified_Temporal_Safety_Performanc.pdf</td>
+<td>Development of Modified Temporal Safety Performance Function Considering Various Time Flows</td>
+<td>Yeji Sung; Seunghwan Kim; Juneyoung Park; Ling Wang</td>
+<td>2024</td>
+<td>temporal SPF; machine-learning comparison</td>
+<td>South Korea</td>
+<td>motorway / national highway</td>
+<td>NB regression; RF; XGBoost; LightGBM; Dirichlet-weighted ensemble</td>
+<td>crash frequency by segment and aggregation period</td>
+<td>VDS traffic volume at annual/hourly/15-minute aggregation; segment length and lanes</td>
+<td>highway cone-zone segment</td>
+<td>2018-2022</td>
+<td>random 8:2 split; no spatial holdout</td>
+<td>Temporal flow disaggregation may improve SPF performance, but validation and sampling weaken direct transfer</td>
+<td>medium</td>
+<td>high</td>
+<td>high</td>
+<td>medium</td>
+<td>diagnostic-only</td>
+<td>not stated</td>
+<td>not stated</td>
+<td>high</td>
+<td>conditional</td>
+<td>Specific metrics have low transferability due random split and balanced sampling</td>
+<td>Supports temporal-exposure notes and validation caveats about random split optimism.</td>
+</tr>
+<tr class="even">
+<td>LIT-053</td>
+<td>paper-extraction-savolainen-et-al-2011-severity-modelling-review.md</td>
+<td>Savolainen-Mannering-AAP-2011.pdf</td>
+<td>The Statistical Analysis of Highway Crash-Injury Severities: A Review and Assessment of Methodological Alternatives</td>
+<td>Peter T. Savolainen; Fred L. Mannering; Dominique Lord; Mohammed A. Quddus</td>
+<td>2011</td>
+<td>severity modelling methodological review</td>
+<td>review; primarily US literature</td>
+<td>mixed</td>
+<td>review of ordered, multinomial, nested, mixed, and joint severity models</td>
+<td>crash-injury severity</td>
+<td>not applicable; severity models condition on crash occurrence</td>
+<td>individual crash / occupant</td>
+<td>mixed</td>
+<td>review; no primary validation</td>
+<td>Severity is a separate estimand; post-event variables and spatial/temporal correlation require careful interpretation</td>
+<td>high</td>
+<td>high</td>
+<td>high</td>
+<td>medium</td>
+<td>diagnostic-only</td>
+<td>not stated</td>
+<td>not stated</td>
+<td>high</td>
+<td>conditional</td>
+<td>Review paper; check primary papers for exact empirical claims</td>
+<td>Supports severity-modelling and validation serial-correlation cautions.</td>
+</tr>
+<tr class="odd">
+<td>LIT-054</td>
+<td>paper-extraction-roshandel-2015-realtime-traffic-freeway-crash.md</td>
+<td>ImpactofReal-timeTrafficCharacteristicsonFreewayCrashOccurrence-SystematicReviewandMeta-analysis.pdf</td>
+<td>Impact of Real-time Traffic Characteristics on Freeway Crash Occurrence: Systematic Review and Meta-analysis</td>
+<td>Saman Roshandel; Zuduo Zheng; Simon Washington</td>
+<td>circa 2015; not confirmed</td>
+<td>systematic review and meta-analysis; real-time crash prediction</td>
+<td>international review</td>
+<td>freeway</td>
+<td>review of logistic and machine-learning real-time crash prediction models</td>
+<td>binary crash occurrence</td>
+<td>traffic variables as predictors; no explicit exposure offset</td>
+<td>freeway segment</td>
+<td>varies across reviewed studies</td>
+<td>varies; many temporal/location splits</td>
+<td>Behavioural/unobserved factors limit road-environment prediction, supporting cautious decision-support framing</td>
+<td>medium</td>
+<td>high</td>
+<td>high</td>
+<td>low</td>
+<td>documentation-only</td>
+<td>not stated</td>
+<td>not stated</td>
+<td>high</td>
+<td>yes</td>
+<td>Publication year and journal details need confirmation before formal citation</td>
+<td>Supports structural explanatory ceiling note in validation page.</td>
+</tr>
+<tr class="even">
+<td>LIT-055</td>
+<td>paper-extraction-national-highways-2022-comparing-collision-casualty-rates.md</td>
+<td>statistical-methods-for-comparing-road-collision-and-casualty-rates-proposed-approach.pdf</td>
+<td>Statistical methods for comparing road traffic collision and casualty rates: proposed approach</td>
+<td>National Highways; individual authors not stated</td>
+<td>2022</td>
+<td>official methodology; rate comparison and hypothesis testing</td>
+<td>England; National Highways network context</td>
+<td>mixed; motorway focus in conclusions</td>
+<td>non-homogeneous Poisson process; compound Poisson; parametric bootstrap; Monte-Carlo likelihood-ratio test</td>
+<td>collision and casualty rates per vehicle mile</td>
+<td>vehicle miles as rate denominator / Poisson scale parameter; assumes observed traffic</td>
+<td>road, road type, or period aggregate</td>
+<td>aggregate collection period</td>
+<td>fictitious worked example only; no empirical validation</td>
+<td>UK official support for Poisson exposure-rate form, low-count inference caution, and traffic-denominator sensitivity</td>
+<td>high</td>
+<td>medium</td>
+<td>high</td>
+<td>medium</td>
+<td>diagnostic-only</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>conditional</td>
+<td>Proposed approach, not finalised empirical validation; check final status before implementing exact tests</td>
+<td>Supports exposure, validation, and severity/casualty-rate notes.</td>
+</tr>
+<tr class="odd">
+<td>LIT-056</td>
+<td>paper-extraction-dft-2024-rsf-initial-analysis.md</td>
+<td>Road_safety_factors_<em>initial_analysis</em>-_GOV_UK.pdf</td>
+<td>Road Safety Factors: Initial Analysis</td>
+<td>Department for Transport</td>
+<td>2024</td>
+<td>official statistics; CF to RSF transition analysis</td>
+<td>Great Britain</td>
+<td>mixed</td>
+<td>descriptive statistics and CF-to-RSF mapping analysis</td>
+<td>road safety factor distributions in fatal collisions</td>
+<td>not applicable</td>
+<td>collision-level factor categories; aggregate reporting</td>
+<td>2022 fatal collision mapping and late-2023 early RSF data</td>
+<td>official descriptive analysis; no predictive validation</td>
+<td>CF to RSF mapping is a structural reclassification, not a like-for-like time-series continuation</td>
+<td>medium</td>
+<td>medium</td>
+<td>high</td>
+<td>low</td>
+<td>documentation-only</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>conditional</td>
+<td>Full ODS mapping table not checked in extraction</td>
+<td>Supports transferability/open-data and severity leakage/provenance notes.</td>
+</tr>
+<tr class="even">
+<td>LIT-057</td>
+<td>paper-extraction-dft-2025-guide-cf-rsf-transition.md</td>
+<td>Guide_to_road_safety_and_contributory_factors_for_reported_road_casualties_Great_Britain_-_GOV_UK.pdf</td>
+<td>Guide to Road Safety and Contributory Factors for Reported Road Casualties Great Britain</td>
+<td>Department for Transport</td>
+<td>2025</td>
+<td>official guidance; STATS19 CF/RSF data quality</td>
+<td>Great Britain</td>
+<td>mixed</td>
+<td>methodological guidance and coverage tables</td>
+<td>contributory factor and road safety factor recording</td>
+<td>not applicable</td>
+<td>collision-level factor fields; aggregate tables</td>
+<td>2015-2024 coverage and transition status</td>
+<td>official guidance; no predictive validation</td>
+<td>CF/RSF fields are subjective, partially recorded, post-event, and structurally broken across 2024 transition</td>
+<td>high</td>
+<td>medium</td>
+<td>high</td>
+<td>low</td>
+<td>documentation-only</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>conditional</td>
+<td>Numeric force-code mapping should be verified against STATS19 lookup</td>
+<td>Canonical source for CF/RSF availability, coverage, and transition caveats.</td>
+</tr>
+<tr class="odd">
+<td>LIT-058</td>
+<td>paper-extraction-dft-2025-reported-road-casualties-gb-2024.md</td>
+<td>Reported_road_casualties_Great_Britain__annual_report__2024_-_GOV_UK.pdf</td>
+<td>Reported Road Casualties Great Britain, Annual Report: 2024</td>
+<td>Department for Transport</td>
+<td>2025</td>
+<td>official statistics; national casualty and exposure rates</td>
+<td>Great Britain</td>
+<td>mixed</td>
+<td>descriptive official statistics</td>
+<td>police-reported casualties and collisions by severity, road type, and user type</td>
+<td>national vehicle miles denominators for rates; not link-level AADT</td>
+<td>national and road-type aggregates</td>
+<td>2024 annual statistics</td>
+<td>descriptive statistics; no predictive validation</td>
+<td>Current UK under-reporting, severity-adjustment, road-type rate, and RSF transition context for documentation</td>
+<td>high</td>
+<td>medium</td>
+<td>high</td>
+<td>low</td>
+<td>documentation-only</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>conditional</td>
+<td>Use adjusted/unadjusted severity figures carefully when comparing to raw STATS19 pipeline outputs</td>
+<td>Supports severity limitations and national benchmark context.</td>
+</tr>
+<tr class="even">
+<td>LIT-059</td>
+<td>paper-extraction-wang-2011-two-stage-severity-ranking.md</td>
+<td>Predicting_accidents.pdf</td>
+<td>Predicting accident frequency at their severity levels and its application in site ranking using a two-stage mixed multivariate model</td>
+<td>Chao Wang; Mohammed A. Quddus; Stephen G. Ison</td>
+<td>2011</td>
+<td>prediction / hotspot detection / two-stage severity-frequency model</td>
+<td>England; M25 motorway and surrounding major roads</td>
+<td>motorway / major A roads</td>
+<td>Bayesian spatial count model plus mixed logit severity model</td>
+<td>annual fatal, serious injury, and slight injury accident counts per segment</td>
+<td>complete observed HA traffic counts; log(AADT) and log(length) in frequency model; cost-rate normalised by vehicle-km</td>
+<td>directional road segment between junctions</td>
+<td>2003-2007 panel</td>
+<td>in-sample MAD only; no held-out validation</td>
+<td>Severity-disaggregated frequency model supports future severity methodology; log(length) near 1 supports exposure-offset documentation with motorway/major-road scope caveat</td>
+<td>medium</td>
+<td>high</td>
+<td>high</td>
+<td>medium</td>
+<td>documentation-only</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>conditional</td>
+<td>Check published version if quoting exact table values</td>
+<td>Relevant stage: Stage 2, severity, documentation. Transferability: medium. Complete HA traffic counts assumed for all segments, so data assumptions do not transfer to Open Road Risk’s minor road network.</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -2025,6 +2382,46 @@ Note
 <td>LVR-specific and EB-output response</td>
 <td>Test whether low-AADT links are dominated by geometry vs exposure uncertainty</td>
 <td>Pilot-first.</td>
+</tr>
+<tr class="even">
+<td>Mensah &amp; Hauer 1998</td>
+<td>AADT as averaged traffic-flow argument in SPF theory</td>
+<td>Argument-averaging and function-averaging bias diagnostics</td>
+<td>Theoretical examples, not a fitted Open Road Risk-scale model</td>
+<td>Estimate free AADT elasticity and CV(q) diagnostics from Stage 1b profiles before claiming temporal conditioning value</td>
+<td>Diagnostic only.</td>
+</tr>
+<tr class="odd">
+<td>Qin et al.&nbsp;2006</td>
+<td>hourly directional traffic volume by crash type and time of day</td>
+<td>Time-of-day and crash-type-specific exposure functions</td>
+<td>Rural US two-lane scope; no heldout validation</td>
+<td>Supports documenting SV/MV and time-of-day aggregation limits in annual Stage 2</td>
+<td>Diagnostic only.</td>
+</tr>
+<tr class="even">
+<td>Dutta &amp; Fontaine 2020</td>
+<td>AADT vs average-hourly/15-minute/raw-hourly freeway volumes</td>
+<td>Smoothed temporal flow profiles can improve SPF validation metrics; raw noisy data can hurt</td>
+<td>Direct freeway sensor coverage and random split; not national open-data coverage</td>
+<td>Stage 1b WebTRIS profiles are plausible diagnostic features but expected gain is limited</td>
+<td>Diagnostic only.</td>
+</tr>
+<tr class="odd">
+<td>Sung et al.&nbsp;2024</td>
+<td>AADT/AHT/AMT temporal SPF comparison</td>
+<td>Temporal aggregation can change SPF performance</td>
+<td>Random split, balanced samples, complete Korean VDS coverage</td>
+<td>Directional support only for temporal exposure diagnostics</td>
+<td>Diagnostic only.</td>
+</tr>
+<tr class="even">
+<td>National Highways 2022</td>
+<td>vehicle miles as Poisson rate scale</td>
+<td>UK official support for exposure-rate mathematical structure and denominator sensitivity checks</td>
+<td>Assumes observed traffic; aggregate comparison method</td>
+<td>Supports AADT-denominator sensitivity analysis, not direct production ranking</td>
+<td>Documentation and diagnostic.</td>
 </tr>
 </tbody>
 </table>
@@ -2237,6 +2634,38 @@ Note
 <td>Low for current all-injury link model</td>
 <td>Future active-travel literature only.</td>
 </tr>
+<tr class="odd">
+<td>Savolainen et al.&nbsp;2011</td>
+<td>crash-injury severity review</td>
+<td>methodological review</td>
+<td>Severity modelling requires separate estimands and careful treatment of correlation/heterogeneity</td>
+<td>High if post-event variables are used prospectively</td>
+<td>Current documentation and future severity target.</td>
+</tr>
+<tr class="even">
+<td>National Highways 2022</td>
+<td>casualty rate and casualties per collision</td>
+<td>compound Poisson / non-parametric casualty component</td>
+<td>Casualty-per-collision distribution should not be forced into simple count family</td>
+<td>Low if kept separate; high if folded into frequency target</td>
+<td>Future severity/casualty-rate diagnostic only.</td>
+</tr>
+<tr class="odd">
+<td>DfT reported casualties 2024</td>
+<td>national severity/casualty official statistics</td>
+<td>descriptive statistics and severity adjustment caveats</td>
+<td>STATS19 under-reporting and adjusted severity figures affect interpretation of outcome</td>
+<td>Low leakage risk; high documentation relevance</td>
+<td>Current documentation context.</td>
+</tr>
+<tr class="even">
+<td>DfT CF/RSF guidance 2025</td>
+<td>contributory / road safety factors</td>
+<td>official guidance on subjective post-event factors and transition break</td>
+<td>CF/RSF fields are not prospective road attributes</td>
+<td>High if used as Stage 2 features; low if diagnostic context</td>
+<td>Documentation/provenance only.</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -2329,6 +2758,48 @@ Note
 <td>ranking precision at top-k; interval calibration</td>
 <td>within-year temporal holdout only; same roads in train/test; no spatial holdout; weaker than current Open Road Risk CV</td>
 <td>Implement AccHR@k for Stage 2 risk percentile validation; MPIW/PICP deferred until probabilistic outputs added.</td>
+</tr>
+<tr class="odd">
+<td>Quddus 2007</td>
+<td>temporal holdout and INAR/NB time-series comparisons</td>
+<td>temporal generalisation and serial correlation</td>
+<td>aggregate time series, not link-year validation</td>
+<td>Add temporal holdout and link-level serial-correlation diagnostics cautiously.</td>
+</tr>
+<tr class="even">
+<td>Savolainen et al.&nbsp;2011</td>
+<td>severity-methodology review</td>
+<td>spatial/temporal correlation and heterogeneity cautions</td>
+<td>review evidence, not a single validation design</td>
+<td>Supports cluster-robust SE and separate severity framing.</td>
+</tr>
+<tr class="odd">
+<td>Roshandel et al.&nbsp;circa 2015</td>
+<td>systematic review/meta-analysis of real-time freeway crash prediction</td>
+<td>explanatory ceiling and operational false-positive caution</td>
+<td>real-time freeway crash occurrence, not annual link risk</td>
+<td>Supports cautious decision-support framing and non-operational claims.</td>
+</tr>
+<tr class="even">
+<td>Dutta &amp; Fontaine 2020</td>
+<td>CURE plots and 70/30 validation for temporal flow SPFs</td>
+<td>functional-form diagnostics over volume range</td>
+<td>freeway sensor data and random split</td>
+<td>Add CURE-by-AADT/length diagnostics; avoid expecting large temporal-feature gains.</td>
+</tr>
+<tr class="odd">
+<td>Sung et al.&nbsp;2024</td>
+<td>random split temporal SPF comparison</td>
+<td>high R2 values under weak validation</td>
+<td>random split and balanced sampling make metrics optimistic</td>
+<td>Use as validation-caveat example, not performance benchmark.</td>
+</tr>
+<tr class="even">
+<td>National Highways 2022</td>
+<td>Monte-Carlo likelihood-ratio test and bootstrap intervals</td>
+<td>low-count rate-comparison sensitivity</td>
+<td>aggregate pairwise comparisons; fictitious example only</td>
+<td>Use for aggregate diagnostics and AADT denominator sensitivity, not production link ranking.</td>
 </tr>
 </tbody>
 </table>
@@ -2434,30 +2905,36 @@ Note
 <td>prospective feature availability and leakage audit</td>
 </tr>
 <tr class="odd">
+<td>STATS19 CF/RSF fields as stable prospective Stage 2 predictors; DfT 2024/2025</td>
+<td>officer-recorded post-event judgements; partial coverage; 2024 CF-to-RSF structural break; record-level RSF not in standard open download</td>
+<td>provenance/EDA notes and diagnostic context only</td>
+<td>audited open-data availability, stable definitions, and explicit non-leakage design</td>
+</tr>
+<tr class="even">
 <td>Zonal TAZ CAR model for link ranking; Wang et al.&nbsp;2015</td>
 <td>loses link-level geometry; MAUP risk</td>
 <td>contextual/junction-density inspiration</td>
 <td>link-level validation of derived proxies</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>STZITD-GNN full architecture; Gao et al.&nbsp;2024</td>
 <td>GRU+GAT+ZITD at 2.17M links is computationally infeasible; no exposure offset; daily resolution; severity-weighted composite not raw count</td>
 <td>AccHR@k metric and Tweedie GLM as extractable contributions</td>
 <td>scaled pilot (small area), exposure offset retained, annual aggregation, robust cross-year holdout</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ARIMA/SARIMAX on corridor-level collision data without exposure; Balawi &amp; Tenekeci 2024</td>
 <td>wrong response variable (vehicles involved not collision count); no exposure denominator; negative predicted counts; implausible R-squared values; methodology not replicable</td>
 <td>negative example: illustrates post-event feature leakage from STATS19 attributes</td>
 <td>not recommended under any circumstances for this pipeline</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Random V-fold CV as primary Stage 2 validation; implied by Mahoney et al.&nbsp;2023</td>
 <td>severely underestimates true prediction error for spatially autocorrelated data (2% within target range vs 37% for spatial CV)</td>
 <td>current grouped-link temporal split is an improvement but does not enforce spatial separation; document limitation</td>
 <td>spatial clustering CV with buffer sized to autocorrelation range of Stage 2 residuals</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Pedestrian intersection SPF as all-injury link model; Roll et al.&nbsp;2026</td>
 <td>different mode, exposure, and unit</td>
 <td>active-travel/future junction literature</td>
@@ -2865,6 +3342,62 @@ Note
 <td>new</td>
 <td>now</td>
 </tr>
+<tr class="odd">
+<td>LIT-TODO-027</td>
+<td>Add AADT denominator sensitivity diagnostic for Stage 2 risk percentiles</td>
+<td>diagnostic</td>
+<td>Stage 1a / Stage 2 validation</td>
+<td>National Highways 2022; Hauer 2001; Jayasinghe 2019</td>
+<td>National Highways recommends traffic-denominator sensitivity, and Open Road Risk uses estimated AADT for most links</td>
+<td>high</td>
+<td>medium</td>
+<td>low-medium</td>
+<td>Sensitivity bands must be labelled illustrative, not formal uncertainty intervals</td>
+<td>new</td>
+<td>now</td>
+</tr>
+<tr class="even">
+<td>LIT-TODO-028</td>
+<td>Document STATS19 CF/RSF transition and keep CF/RSF fields out of Stage 2 predictors</td>
+<td>documentation note</td>
+<td>feature engineering / documentation</td>
+<td>DfT 2024; DfT 2025 CF/RSF guide; DfT 2025 casualty report</td>
+<td>CF/RSF fields are subjective, partially recorded, post-event, and structurally broken around 2024</td>
+<td>high</td>
+<td>medium</td>
+<td>low</td>
+<td>Treating missing CF/RSF as “factor absent” or using converted RSFs as time-series evidence</td>
+<td>partly present in literature pages</td>
+<td>now</td>
+</tr>
+<tr class="odd">
+<td>LIT-TODO-029</td>
+<td>Add current UK STATS19 under-reporting and severity-adjustment caveat to outcome documentation</td>
+<td>documentation note</td>
+<td>Stage 2 / documentation</td>
+<td>DfT 2025 casualty report; Savolainen 2011</td>
+<td>Police-reported injury collisions under-report non-fatal casualties and adjusted severity series differ from raw records</td>
+<td>high</td>
+<td>medium</td>
+<td>low</td>
+<td>Mixing adjusted national figures with raw pipeline outcome without labelling</td>
+<td>partly present in severity page</td>
+<td>now</td>
+</tr>
+<tr class="even">
+<td>LIT-TODO-030</td>
+<td>Add low-count aggregate rate-comparison note for any “significance” flagging</td>
+<td>documentation note / diagnostic</td>
+<td>validation / Stage 2</td>
+<td>National Highways 2022</td>
+<td>Asymptotic tests can mislead at low exposure; Monte-Carlo LRT is useful for pairwise aggregates but not at-scale ranking</td>
+<td>medium</td>
+<td>medium</td>
+<td>low</td>
+<td>Users may overinterpret link-level p-values as practical safety certainty</td>
+<td>new</td>
+<td>later</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -2894,6 +3427,8 @@ Note
 <li>Hotspot/risk percentile sensitivity to spatial unit and residual clustering needs explicit documentation.</li>
 <li>The current Stage 2 Poisson GLM likely underestimates zeros at link-year level. Pew 2020 shows that a Poisson-equivalent model (ZIP with π ≈ 0) calibrates poorly on zero-heavy count data; the improvement from NB/ZINB comes from the dispersion parameter, not zero-inflation per se. This has not been tested on Open Road Risk data.</li>
 <li>Post-event variables from collision records must not leak into prospective Stage 2 features.</li>
+<li>STATS19 contributory factors and road safety factors are subjective post-event fields with partial coverage and a 2024 structural break; they should remain provenance/EDA context unless a separate non-prospective analysis is explicitly labelled.</li>
+<li>Current UK official statistics confirm that non-fatal casualties remain under-reported and that severity-adjusted national series are not automatically comparable to raw pipeline collision records.</li>
 </ul>
 </section>
 <section id="current-areas-where-the-repo-is-deliberately-conservative" class="level3">
@@ -3052,6 +3587,13 @@ Note
 <td>Use combined record for severity target, traffic-lag design, and leakage-guardrail claims.</td>
 </tr>
 <tr class="even">
+<td>Wang, Quddus &amp; Ison 2011</td>
+<td>paper-extraction-wang-2011-two-stage-severity-ranking.md</td>
+<td>paper-extraction-wang-2011-two-stage-severity-ranking.md</td>
+<td>In-sample MAD only; no held-out validation. Complete HA traffic counts assumed for all segments — not replicable for Open Road Risk’s minor road network. Log(length) ≈ 1 finding supports exposure offset but is from motorway/major roads only.</td>
+<td>Use for severity-disaggregation methodology reference and exposure-offset documentation; do not use MAD values as external benchmarks.</td>
+</tr>
+<tr class="odd">
 <td>Ziakopoulos &amp; Yannis 2020</td>
 <td>paper-extraction-ziakopoulos-yannis-2020-COMBINED.md</td>
 <td>paper-extraction-ziakopoulos-2020-spatial-approaches-road-safety.md; paper-extraction-ziakopoulos-yannis-2020-spatial-review.md</td>
@@ -3150,10 +3692,10 @@ Note
 <tr class="even">
 <td>quarto/literature/exposure-and-traffic-volume.qmd</td>
 <td>Document AADT/AADF/WebTRIS exposure handling</td>
-<td>Gilardi 2022; Hauer 2001; Jayasinghe 2019 combined; Roll 2026 combined; Aguero-Valverde 2008; Wang 2009; Pew 2020; Gao 2024</td>
-<td>Exposure is central but elasticity, estimated-AADT uncertainty, and no-exposure contrast cases need clear separation</td>
-<td>Exposure-treatment matrix; Stage 1a validation summary; no-offset contrast table; AADT/AADPT data-fusion note</td>
-<td>exists — linked in site nav; use combined Jayasinghe/Roll records and keep Pew/Gao as cautious no-offset contrasts</td>
+<td>Gilardi 2022; Hauer 2001; Jayasinghe 2019 combined; Roll 2026 combined; Aguero-Valverde 2008; Wang 2009; Pew 2020; Gao 2024; Mensah &amp; Hauer 1998; Qin 2006; Dutta 2020; Sung 2024; National Highways 2022</td>
+<td>Exposure is central but elasticity, estimated-AADT uncertainty, no-exposure contrast cases, and temporal-flow aggregation need clear separation</td>
+<td>Exposure-treatment matrix; Stage 1a validation summary; no-offset contrast table; AADT/AADPT data-fusion note; temporal exposure caveats</td>
+<td>exists — current after 2026-05-12 update; use LIT-049 to LIT-052 and LIT-055 for temporal/exposure additions</td>
 </tr>
 <tr class="odd">
 <td>quarto/literature/spatial-methods-and-network-risk.qmd</td>
@@ -3174,26 +3716,26 @@ Note
 <tr class="odd">
 <td>quarto/literature/severity-modelling.qmd</td>
 <td>Separate severity from frequency and define future severity path</td>
-<td>Boulieri 2016; Gilardi 2022; Michalaki 2015; Quddus/Wang/Ison combined; Ma 2019; Gao 2024</td>
-<td>Severity is conditional/different target and can conflict with frequency; severity-weighted composites should not be treated as validated Stage 2 risk</td>
-<td>Severity target taxonomy; leakage warning table; composite-vs-separate response variable note</td>
-<td>exists — linked in site nav; use combined Quddus record and keep exact table/bibliographic details conditional</td>
+<td>Boulieri 2016; Gilardi 2022; Michalaki 2015; Quddus/Wang/Ison combined; Wang/Quddus/Ison 2011; Ma 2019; Gao 2024; Savolainen 2011; DfT 2025 casualty report; DfT 2025 CF/RSF guide; National Highways 2022</td>
+<td>Severity is conditional/different target and can conflict with frequency; severity-weighted composites should not be treated as validated Stage 2 risk; CF/RSF fields are post-event and structurally unstable across 2024</td>
+<td>Severity target taxonomy; leakage warning table; composite-vs-separate response variable note; STATS19 under-reporting and CF/RSF provenance notes</td>
+<td>exists — current after 2026-05-12 update; use LIT-059 for Wang/Quddus/Ison 2011 severity-disaggregated frequency citation</td>
 </tr>
 <tr class="even">
 <td>quarto/literature/validation-and-metrics.qmd</td>
 <td>Document heldout, balanced accuracy, CURE, pseudo-R2 limitations</td>
-<td>Brodersen 2010; Gilardi 2022; Chengye 2013; Roll 2026 combined; Lord 2010; Huda 2024 combined; Mahoney 2023; Pew 2020; Gao 2024</td>
-<td>Metrics test different things; avoid in-sample/holdout confusion; spatial CV, zero-calibration, AccHR@k, and CURE diagnostics are candidate validation additions</td>
-<td>Metric taxonomy; current repo validation map; CV method performance table from Mahoney; zero-check diagnostic table from Pew; AccHR@k definition from Gao</td>
-<td>exists — needs light update to cite LIT-042/LIT-045 combined records and keep Pew/Gao exact-value checks conditional</td>
+<td>Brodersen 2010; Gilardi 2022; Chengye 2013; Roll 2026 combined; Lord 2010; Huda 2024 combined; Mahoney 2023; Pew 2020; Gao 2024; Quddus 2007; Savolainen 2011; Roshandel circa 2015; Dutta 2020; Sung 2024; National Highways 2022</td>
+<td>Metrics test different things; avoid in-sample/holdout confusion; spatial CV, temporal holdout, zero-calibration, AccHR@k, CURE plots, and AADT denominator sensitivity are candidate validation additions</td>
+<td>Metric taxonomy; current repo validation map; CV method performance table from Mahoney; zero-check diagnostic table from Pew; AccHR@k definition from Gao; low-count and denominator sensitivity notes</td>
+<td>exists — current after 2026-05-12 update; keep Pew/Gao exact-value checks conditional</td>
 </tr>
 <tr class="odd">
 <td>quarto/literature/transferability-and-open-data-limits.qmd</td>
 <td>Explain what transfers to open UK data and what does not</td>
-<td>All papers, with combined records for Huda, Jayasinghe, Poch, Roll, Quddus/Wang/Ison, and Ziakopoulos/Yannis; Gao 2024 and Balawi &amp; Tenekeci 2024 as negative-transfer examples</td>
-<td>Some evidence is blocked by missing lane/turning/exposure data or different unit/target; apparent UK relevance still needs data-stack checks</td>
-<td>Transferability table; data-availability matrix; negative-transfer rows; combined-record provenance note</td>
-<td>exists — linked in site nav; needs light citation refresh to prefer combined records</td>
+<td>All papers, with combined records for Huda, Jayasinghe, Poch, Roll, Quddus/Wang/Ison, and Ziakopoulos/Yannis; Gao 2024 and Balawi &amp; Tenekeci 2024 as negative-transfer examples; DfT 2024/2025 CF/RSF and casualty-statistics records for open-data limits</td>
+<td>Some evidence is blocked by missing lane/turning/exposure data or different unit/target; apparent UK relevance still needs data-stack checks; CF/RSF fields have a 2024 structural break and RSFs are not open at record level</td>
+<td>Transferability table; data-availability matrix; negative-transfer rows; combined-record provenance note; CF/RSF provenance note</td>
+<td>exists — current after 2026-05-12 update; keep DfT records as documentation context, not model evidence</td>
 </tr>
 </tbody>
 </table>
@@ -3295,6 +3837,8 @@ Note
 <p><strong>Update (2026-05-10):</strong> Six additional review-pass extraction files have been added as LIT-036 through LIT-041: <code>paper-extraction-huda-2024-network-screening-low-volume-roads.md</code>, <code>paper-extraction-pan-2017-global-road-safety-performance-function-dbn.md</code>, <code>paper-extraction-poch-mannering-1996-nb-intersection.md</code>, <code>paper-extraction-quddus-2009-road-traffic-congestion-crash-severity.md</code>, <code>paper-extraction-roll-2026-pedestrian-safety-performance-function-oregon.md</code>, and <code>paper-extraction-ziakopoulos-yannis-2020-spatial-review.md</code>. <code>paper-extraction-mcfadden-not-stated-conditional-logit.md</code> was removed from this register because it is not a road-safety paper and has no material current relevance to Open Road Risk.</p>
 <p><strong>Update (2026-05-10):</strong> Four final combined/reconciled records have been added as LIT-042 through LIT-045: <code>paper-extraction-huda-2024-COMBINED.md</code>, <code>paper-extraction-jayasinghe-2019-COMBINED.md</code>, <code>paper-extraction-poch-mannering-1996-COMBINED.md</code>, and <code>paper-extraction-roll-2026-oregon-COMBINED.md</code>. These are now the preferred records for future citation/TODO work for those papers; the earlier extraction files remain in the inventory for provenance.</p>
 <p><strong>Update (2026-05-10):</strong> Two further combined/reconciled records have been added as LIT-046 and LIT-047: <code>paper-extraction-quddus-wang-ison-COMBINED.md</code> and <code>paper-extraction-ziakopoulos-yannis-2020-COMBINED.md</code>. These move Quddus/Wang/Ison and Ziakopoulos/Yannis out of the active reconciliation queue. All seven candidate Quarto literature pages now exist under <code>quarto/literature/</code> and have been added to the website Literature menu.</p>
+<p><strong>Update (2026-05-12):</strong> Eleven additional extraction files have been added as LIT-048 through LIT-058: <code>paper-extraction-quddus-2007-inar-time-series-count.md</code>, <code>paper-extraction-mensah-hauer-1998-two-problems-averaging.md</code>, <code>paper-extraction-qin-et-al-2006-bayesian-hourly-exposure.md</code>, <code>paper-extraction-dutta-2020-freeway-crash-prediction-disaggregate-flow.md</code>, <code>paper-extraction-sung-et-al-2024-modified-temporal-spf.md</code>, <code>paper-extraction-savolainen-et-al-2011-severity-modelling-review.md</code>, <code>paper-extraction-roshandel-2015-realtime-traffic-freeway-crash.md</code>, <code>paper-extraction-national-highways-2022-comparing-collision-casualty-rates.md</code>, <code>paper-extraction-dft-2024-rsf-initial-analysis.md</code>, <code>paper-extraction-dft-2025-guide-cf-rsf-transition.md</code>, and <code>paper-extraction-dft-2025-reported-road-casualties-gb-2024.md</code>. The associated Quarto literature references have been updated from <code>LIT-PENDING</code> to these register IDs where an extraction exists.</p>
+<p><strong>Update (2026-05-12):</strong> <code>paper-extraction-wang-2011-two-stage-severity-ranking.md</code> has been added as LIT-059 and linked from <code>quarto/literature/severity-modelling.qmd</code>.</p>
 
 
 </section>

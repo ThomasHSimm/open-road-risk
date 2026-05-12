@@ -209,19 +209,11 @@ engineering.
 
 ---
 
-## Open Road Risk alignment
+---
 
-| Junction issue | Literature evidence | Current pipeline | Gap / recommended action |
-|---|---|---|---|
-| Turning/opposing volumes | Poch & Mannering 1996 — elasticity 2.95–2.28 | Not available; AADT only | Document as a fundamental limitation of link-level exposure. |
-| Signal phase / control type | Poch & Mannering 1996 | Not available | Document; OSM signal presence is the maximum achievable. |
-| Signalised junction density | Al-Omari 2021 — most significant predictor; Wang 2015 | Not currently in pipeline | **Candidate feature**: count junctions (degree ≥ 3) per link length from OS Open Roads; optionally signalised variant from OSM. |
-| Access point density | Al-Omari 2021 — consistently significant | Not currently in pipeline | **Candidate feature** (partial): minor-road connections per km derivable from OS Open Roads topology; true driveway accesses not available. |
-| Network tree structure / betweenness | Wang 2015 | Betweenness centrality already in pipeline as Stage 1a / Stage 2 candidate | Diagnostic test of whether betweenness adds value over road type + AADT in Stage 2 GLM. |
-| Junction proximity | Baddeley 2021; Ziakopoulos 2020 — segment-intersection correlation | Not currently in pipeline | **Candidate feature**: distance from link midpoint to nearest OS Open Roads junction node. |
-| Exposure denominator mismatch at junctions | Hauer 2001 — intersections need different SPF form | Link-level offset treats all links identically | Document; add flag for junction-connector links; consider sensitivity analysis removing or up-weighting junction links. |
-| Speed limit as junction-density confound | Al-Omari 2021 — negative coefficient is confound, not causal | OSM speed limit in pipeline | **Documentation note**: negative speed-limit coefficient proxies for low junction density; do not interpret causally. |
-| Pedestrian/cyclist junction risk | Roll 2026 | Not modelled | Future work: separate junction layer with pedestrian exposure if data becomes available. |
+::: {.callout-note}
+For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the [Literature–Pipeline Alignment](literature-pipeline-alignment.qmd) page.
+:::
 
 ---
 

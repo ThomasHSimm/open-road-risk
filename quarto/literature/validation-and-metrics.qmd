@@ -449,25 +449,35 @@ US Highway Safety Manual context.
 
 ---
 
-## Open Road Risk validation map
+## Low-count rate comparison
 
-The table below records which validation methods are currently implemented in
-the Open Road Risk pipeline, which are planned, and where literature gaps exist.
+National Highways (2022) proposes formal tests and confidence intervals for comparing
+collision and casualty rates between roads, road types, or time periods. The core collision
+model is a Poisson rate model with vehicle miles as exposure, so it is consistent with the
+Open Road Risk offset structure. Its main validation relevance is not a new predictive
+metric, but a caution about inference in sparse settings: asymptotic Z-test p-values can be
+misleading when traffic volumes or collision counts are low.
 
-| Validation method | Status | Notes / literature basis |
-|---|---|---|
-| Grouped link cross-validation (held-out links) | **Implemented** | Controls within-link temporal leakage; does not control spatial autocorrelation between neighbours |
-| Temporal holdout (held-out years, same links) | Not yet implemented | Quddus 2007; Chengye 2013 template (MAD/MSPE on 2-year holdout); straightforward to add |
-| Spatially blocked CV (exclusion buffer) | Not yet implemented | Mahoney 2023: recommended approach; requires residual autocorrelation range estimate |
-| Police force area holdout | Not yet implemented | Mahoney 2023 practical approximation for spatial holdout |
-| Balanced accuracy (TPR/TNR) | Not yet implemented | Brodersen 2010; Gilardi 2022; pool confusion matrices, do not average fold metrics |
-| AccHR@k ranking quality | Not yet implemented | Gao 2024; proportion of top-k% predicted links with actual crashes |
-| Pseudo-R² (ρ²) | Reported | In-sample only; treat as model-comparison diagnostic, not predictive performance |
-| CURE plots | Not yet implemented | Roll 2026; Dutta 2020; cumulative residuals vs AADT and link length; requires AADT-quantile binning at 2.1M scale |
-| Posterior predictive zero check | Not yet implemented | Pew 2020; run after Stage 2 Poisson GLM fit; diagnostic for zero-inflation |
-| Exposure-only baseline comparison | Not yet implemented | Roll 2026 Appendix A design; compare full feature model to exposure-only NB/Poisson |
-| Cluster-robust standard errors | Not yet implemented | Quddus 2007; Savolainen 2011; group by `link_id`; corrects within-link serial correlation inflation of t-statistics |
-| Serial correlation ACF diagnostic | Not yet implemented | Quddus 2007; compute lag-1 ACF on a sample of high-crash links; informs whether cluster SEs are needed |
+For Open Road Risk, this supports treating any link-level "significance" flag cautiously,
+especially on low-AADT links with zero or one observed collision. The National Highways
+Monte-Carlo likelihood-ratio test is more appropriate for pairwise aggregate comparisons
+than for production-scale ranking across 2.1 million links. It is therefore best treated as
+methodological support for diagnostic rate comparisons, not as a replacement for grouped
+holdout validation.
+
+The same document explicitly warns that traffic estimates may be inaccurate and recommends
+sensitivity analysis around the traffic denominator. That maps directly to Open Road Risk's
+Stage 1a uncertainty problem: varying AADT estimates by plausible percentages and checking
+whether risk percentiles or rate comparisons change direction would be a useful diagnostic,
+but not formal uncertainty propagation.
+
+---
+
+---
+
+::: {.callout-note}
+For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the [Literature–Pipeline Alignment](literature-pipeline-alignment.qmd) page.
+:::
 
 ---
 
@@ -484,8 +494,9 @@ the Open Road Risk pipeline, which are planned, and where literature gaps exist.
 | LIT-033 | Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. & Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches. |
 | LIT-032 | Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. *TRIP.* |
 | LIT-034 | Gao, X. et al. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. |
-| LIT-PENDING | Quddus, M.A. (2007). Time series count data models: an empirical application to traffic accidents. *Accident Analysis and Prevention.* hdl.handle.net/2134/5308 |
-| LIT-PENDING | Savolainen, P.T., Mannering, F.L., Lord, D. & Quddus, M.A. (2011). The statistical analysis of highway crash-injury severities. *Accident Analysis and Prevention, 43(5), 1666–1676.* DOI: 10.1016/j.aap.2011.03.025 |
-| LIT-PENDING | Roshandel, S., Zheng, Z. & Washington, S. (2015). Impact of real-time traffic characteristics on freeway crash occurrence: systematic review and meta-analysis. *Accident Analysis and Prevention.* |
-| LIT-PENDING | Dutta, N. & Fontaine, M.D. (2020). Improving freeway crash prediction models using disaggregate flow state information. *VTRC 20-R15, Virginia DOT.* |
-| LIT-PENDING | Sung, Y., Kim, S., Park, J. & Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. *Journal of Advanced Transportation.* DOI: 10.1155/2024/7970454 |
+| LIT-048 | Quddus, M.A. (2007). Time series count data models: an empirical application to traffic accidents. *Accident Analysis and Prevention.* hdl.handle.net/2134/5308 |
+| LIT-053 | Savolainen, P.T., Mannering, F.L., Lord, D. & Quddus, M.A. (2011). The statistical analysis of highway crash-injury severities. *Accident Analysis and Prevention, 43(5), 1666–1676.* DOI: 10.1016/j.aap.2011.03.025 |
+| LIT-054 | Roshandel, S., Zheng, Z. & Washington, S. (2015). Impact of real-time traffic characteristics on freeway crash occurrence: systematic review and meta-analysis. *Accident Analysis and Prevention.* |
+| LIT-051 | Dutta, N. & Fontaine, M.D. (2020). Improving freeway crash prediction models using disaggregate flow state information. *VTRC 20-R15, Virginia DOT.* |
+| LIT-055 | National Highways (2022). Statistical methods for comparing road traffic collision and casualty rates: proposed approach. *National Highways PR81/22.* |
+| LIT-052 | Sung, Y., Kim, S., Park, J. & Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. *Journal of Advanced Transportation.* DOI: 10.1155/2024/7970454 |

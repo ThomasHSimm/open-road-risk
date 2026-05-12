@@ -1,0 +1,63 @@
+.quarto-title-block .quarto-title-banner {
+  position: relative;
+  isolation: isolate;
+  min-height: 420px;
+  padding: 8rem max(2rem, calc((100vw - 1120px) / 2)) 5rem;
+  background-position: center;
+  background-size: cover;
+  color: #fff;
+  overflow: hidden;
+}
+
+.quarto-title-block .quarto-title-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(6, 18, 25, 0.07), rgba(6, 18, 25, 0.35));
+}
+
+.quarto-title-block .quarto-title-banner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.quarto-title-block .quarto-title-banner .quarto-title,
+.quarto-title-block .quarto-title-banner .description {
+  max-width: 760px;
+}
+
+.quarto-title-block .quarto-title-banner .title,
+.quarto-title-block .quarto-title-banner .subtitle,
+.quarto-title-block .quarto-title-banner .description {
+  color: #fff;
+}
+
+.quarto-title-block .quarto-title-banner .title {
+  font-size: 3.25rem;
+  line-height: 1.05;
+}
+
+.quarto-title-block .quarto-title-banner .subtitle {
+  font-size: 1.35rem;
+}
+
+.quarto-title-block .quarto-title-banner .description {
+  margin-top: 1rem;
+  font-size: 1.05rem;
+}
+
+#title-block-header:has(.quarto-title-banner) .quarto-title-meta {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .quarto-title-block .quarto-title-banner {
+    min-height: 340px;
+    padding: 5.5rem 1.25rem 3.5rem;
+  }
+
+  .quarto-title-block .quarto-title-banner .title {
+    font-size: 2.35rem;
+  }
+}

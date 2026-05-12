@@ -1,0 +1,145 @@
+---
+title: "Literature Review"
+description: "Overview of the road safety and transport modelling literature reviewed for Open Road Risk, its scope, review process, and how it informs the pipeline."
+format:
+  html:
+    toc: true
+    toc-depth: 2
+image: ../assets/seamiss.jpg
+title-block-banner: ../assets/seamiss.jpg
+title-block-banner-color: "#ffffff"
+---
+
+This section documents the methodological literature that informs the Open Road Risk
+pipeline. It is not a comprehensive survey of road safety research. It is a targeted
+review focused on one question: what does the peer-reviewed evidence say about building
+an exposure-adjusted road collision risk model at national scale from open UK data?
+
+---
+
+## Purpose and scope
+
+Open Road Risk estimates crash risk for approximately 2.17 million OS Open Roads links
+across England, using STATS19 injury collision data, estimated AADT from sparse DfT AADF
+counts, and road/network/contextual features derived from open data. The pipeline has
+three stages:
+
+- **Stage 1a** — machine-learning AADT estimation from ~8,000 DfT AADF count sites
+- **Stage 1b** — time-zone traffic profile estimation from WebTRIS National Highways sensors
+- **Stage 2** — Poisson GLM and XGBoost collision risk model at link × year grain
+
+The literature review was designed to answer questions that arise directly from these
+design choices:
+
+- Which count model family is appropriate for zero-heavy, low-mean integer outcomes?
+- How should traffic exposure be handled when most AADT values are estimated rather than observed?
+- What does the evidence say about temporal disaggregation of exposure?
+- How do spatial autocorrelation and cross-validation design interact?
+- What is the evidence base for junction-level risk mechanisms that the link-year model cannot capture?
+- When and how should severity be modelled separately from frequency?
+- What validation metrics are appropriate for a sparse count ranking model?
+- Which methods from the international literature are actually transferable to UK open data?
+
+Papers were selected for extraction if they spoke directly to these questions, used methods
+comparable to the pipeline's approach, or provided cautionary evidence about failure modes.
+
+---
+
+## Review process
+
+Each paper was extracted using a structured prompt schema that records:
+
+- response variable, spatial unit, temporal resolution
+- exposure treatment and traffic data source
+- model family and validation design
+- transferability to Open Road Risk's data stack
+- repo-actionable implications
+
+High-priority papers received two independent AI extractions, a cross-audit, and a
+reconciliation to produce a final record. Lower-priority papers received a single
+extraction and lightweight sanity check.
+
+The review process is documented in full in
+`literature/prompts/README_literature_extraction.md`.
+
+---
+
+## What this review is not
+
+This review does not:
+
+- Cover crash causation or behavioural risk factors (driver behaviour, alcohol, vehicle
+  condition). These are documented as a structural explanatory ceiling in the
+  [Validation and Metrics](validation-and-metrics.qmd) page.
+- Survey pedestrian or cyclist safety literature, except where it provides methodological
+  evidence relevant to the collision frequency model.
+- Cover the Highway Safety Manual or US AASHTO design guidance as primary sources;
+  specific findings from US studies are included where they transfer to UK open data.
+- Constitute a systematic review in the epidemiological sense. Coverage is selective and
+  driven by pipeline questions, not exhaustive search and inclusion criteria.
+
+---
+
+## Literature pages
+
+Each page below synthesises findings across multiple papers on a connected topic.
+The pages document what papers found; they do not describe the current state of the
+pipeline. For the pipeline-state view, see the alignment page.
+
+| Page | What it covers |
+|---|---|
+| [Crash Frequency Models](crash-frequency-models.qmd) | Poisson, NB, zero-inflation, EB shrinkage, overdispersion, serial correlation |
+| [Exposure and Traffic Volume](exposure-and-traffic-volume.qmd) | AADT elasticity, exposure offset structure, estimated vs observed AADT, temporal exposure disaggregation, argument-averaging bias |
+| [Spatial Methods and Network Risk](spatial-methods-and-network-risk.qmd) | Spatial autocorrelation in crash models, spatial CV design, network point processes, MAUP |
+| [Junctions and Conflict Structure](junctions-and-conflict-structure.qmd) | Junction risk mechanisms, why the link-year model cannot capture them, derivable proxy features |
+| [Severity Modelling](severity-modelling.qmd) | Frequency vs severity as separate estimands, ordered response models, joint modelling, post-event variable leakage, STATS19 underreporting |
+| [Validation and Metrics](validation-and-metrics.qmd) | Metric taxonomy, balanced accuracy, pseudo-R², CURE plots, spatial CV, temporal holdout, structural explanatory ceiling |
+| [Transferability and Open Data Limits](transferability-and-open-data-limits.qmd) | Per-paper transferability assessment, UK open-data availability matrix, negative-transfer examples |
+
+---
+
+## Pipeline alignment
+
+The [Literature–Pipeline Alignment](literature-pipeline-alignment.qmd) page consolidates
+the implications from all seven pages into one place, organised by pipeline stage. It maps
+each literature recommendation to the current pipeline state and recommended action. This
+is the page that changes when the pipeline changes; the literature pages themselves are
+stable.
+
+---
+
+## Literature register
+
+The [Evidence Register](../background/literature-evidence-register.qmd) tracks all extracted papers,
+their extraction status, active reconciliation work, and the candidate Quarto pages they
+feed. It is the primary provenance record for the literature review.
+
+---
+
+## Coverage gaps
+
+Several topic areas are not yet well-covered in the reviewed set:
+
+**Temporal disaggregation at the model level.** Mensah & Hauer (1998), Qin et al. (2006),
+and Dutta & Fontaine (2020) establish the theoretical and empirical case for temporal
+exposure conditioning. The pipeline infrastructure (Stage 1b time-zone profiles) exists,
+but whether conditioning Stage 2 on time-zone fractions materially improves held-out
+performance has not been formally validated. An ad-hoc diagnostic using
+`core_overnight_ratio` showed a modest improvement (~+0.004 R²) under a single seed;
+this should be confirmed with the 5-seed harness before production adoption.
+
+**Spatial validation.** No paper in the reviewed set was designed to validate a
+link-level crash model on a network as large or diverse as Open Road Risk's. Mahoney
+et al. (2023) provide the best available methodology guidance for spatial CV, but their
+simulation used a regular grid with a single crash type. The empirical spatial
+autocorrelation range for Open Road Risk's mixed national network has not been measured.
+
+**Severity at link-year scale.** The severity literature (Boulieri 2016, Gilardi 2022,
+Michalaki 2015, Quddus 2010) is mostly at aggregate spatial units or event level. The
+sparse KSI count problem at individual OS Open Roads link-year grain — where most links
+have zero KSI events in any given year — is not directly addressed in the reviewed set.
+
+**Minor road exposure estimation.** The Stage 1a AADT estimation problem for unclassified
+and classified unnumbered roads (approximately 60% of the network) is documented as a gap,
+but no reviewed paper directly addresses ML-based AADT estimation at this spatial density
+and road-type composition.

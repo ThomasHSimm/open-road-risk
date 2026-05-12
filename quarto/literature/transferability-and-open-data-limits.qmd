@@ -39,7 +39,7 @@ What is freely available at national England scale, and what is not.
 | Road network geometry | OS Open Roads: link geometry, road name, road classification, form of way | Lane count (sparse in OSM, absent in OS Open Roads); shoulder width; median type/width; lane marking |
 | Traffic volume (AADT) | DfT AADF count points (~8,000 sites) | Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density |
 | Traffic profiles | WebTRIS sensor data (National Highways motorways/A-roads) | Push-button pedestrian actuations; turning-movement counts; corridor-level time series without exposure |
-| Collision records | STATS19 injury collisions: location, severity, date, road class | PDO collisions; contributory factors (not available in Stage 2 feature set); post-event crash attributes |
+| Collision records | STATS19 injury collisions: location, severity, date, road class; record-level CF fields for pre-2024 context where recorded | PDO collisions; record-level RSF fields in the standard open download; post-event crash attributes as Stage 2 predictors |
 | Road geometry/context | OS Terrain 50 DEM (grade derivable); OS Open Roads topology | Degree of horizontal curvature (derivable from polyline geometry but not a RAMM/DOT-style inventory); driveway/access density; side slope; fixed objects |
 | Junction context | OS Open Roads node topology; OSM junction tags | Turning volumes per approach; signal timing; pedestrian crossing presence/type |
 | Socioeconomic context | IMD (English indices); Census (ONS) | School proximity counts (at national scale); pedestrian demand models |
@@ -51,6 +51,14 @@ Roll 2026 on Oregon, Wang 2009 on M25) either have full sensor coverage or
 proprietary probe data (INRIX). Open Road Risk estimates AADT for ~96% of links
 via Stage 1a machine learning; this introduces uncertainty that most comparison
 papers never face.
+
+DfT's 2025 CF/RSF guidance adds a separate collision-data limitation. Contributory
+factors (CFs) are available at record level in standard STATS19 downloads, but coverage is
+partial and varies by severity, road class, year, and police force. Road safety factors
+(RSFs) replace CFs from the 2024 transition period, but record-level RSFs are not available
+in the standard open download and the CF→RSF transition creates a structural break. These
+fields are therefore useful provenance/context for diagnostics, not stable production
+features for Stage 2.
 
 ---
 
@@ -376,37 +384,11 @@ its availability in the UK open data stack used by Open Road Risk.
 
 ---
 
-## Implications for Open Road Risk
+---
 
-The gap analysis above supports the following documentation positions:
-
-1. **Exposure uncertainty is a first-class limitation.** Most literature papers
-   have observed AADT. Open Road Risk estimates AADT for ~96% of links. This
-   uncertainty is not propagated into Stage 2 rankings and should be documented
-   explicitly, with Huda 2024's finding (geometry dominates on low-AADT links)
-   as partial mitigation for the lowest-volume rural tier.
-
-2. **Geometry features are derivable but need UK calibration.** Curvature and
-   grade are in principle derivable from OS Open Roads + OS Terrain 50. However,
-   the US-derived CART thresholds (Huda: 9°, 28° curvature; 4% grade) are
-   Oregon-specific. UK thresholds should be derived from Open Road Risk's own
-   EB-ranked link data before these features are added to production.
-
-3. **Lane width, shoulder width, and access density are not available.** These
-   are the most commonly cited geometric predictors in the LVR and motorway
-   literature. They cannot be included without a different data source (e.g.,
-   OS MasterMap or Highways England for major roads — out of current scope).
-
-4. **UK geography is not UK data availability.** The two UK-context papers that
-   appear most applicable — Gao 2024 (London boroughs) and Balawi & Tenekeci
-   2024 (London A-roads) — both fail to transfer because they lack exposure,
-   use wrong or composite response variables, or aggregate across spatial units
-   that conflict with link-level modelling.
-
-5. **The closest valid UK analogue is Gilardi et al. 2022** (Leeds OS segments,
-   log-offset form, balanced accuracy for sparse crash data). Its limitations
-   are scale (Leeds only) and exposure quality (commuter flow, not AADF-
-   calibrated AADT), not fundamental structural incompatibility.
+::: {.callout-note}
+For a consolidated view of how these transferability findings map to the current pipeline state, open gaps, and recommended actions, see the [Literature–Pipeline Alignment](literature-pipeline-alignment.qmd) page.
+:::
 
 ---
 
@@ -431,3 +413,6 @@ The gap analysis above supports the following documentation positions:
 | LIT-029 | Wang, C., Quddus, M.A. & Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway. *Accident Analysis & Prevention.* |
 | LIT-035 | Balawi, M. & Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. *Heliyon.* [DOI:10.1016/j.heliyon.2024.e25710](https://doi.org/10.1016/j.heliyon.2024.e25710) |
 | LIT-031/041 | Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in road safety. — reconciliation pending; year and DOI not confirmed from PDF; do not cite numerical values from reviewed studies without checking primary sources. |
+| LIT-056 | Department for Transport (2024). *Road Safety Factors: Initial Analysis.* Official Statistics. |
+| LIT-057 | Department for Transport (2025). *Guide to road safety and contributory factors for reported road casualties Great Britain.* |
+| LIT-058 | Department for Transport (2025). *Reported Road Casualties Great Britain, Annual Report: 2024.* Accredited Official Statistics. |

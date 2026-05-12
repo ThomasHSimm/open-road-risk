@@ -15,14 +15,14 @@ from pathlib import Path
 
 # Robustly find project data root
 def find_data_root():
-    candidates = [
-        Path(".."),           # Expected if run from quarto/project/
-        Path("../.."),        # Expected if run from within subfolders
-        Path("."),            # Expected if run from repo root
-        Path("quarto").parent # Expected if run from repo root with quarto folder
+    cwd = Path.cwd().resolve()
+    candidates = [cwd, *cwd.parents]
+    required = [
+        Path("data/models/collision_metrics.json"),
+        Path("data/models/aadt_validation_summary.parquet"),
     ]
     for c in candidates:
-        if (c / "data").exists():
+        if any((c / p).exists() for p in required):
             return c
     return None
 

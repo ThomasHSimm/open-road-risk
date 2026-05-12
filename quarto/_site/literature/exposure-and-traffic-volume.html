@@ -113,6 +113,7 @@ window.Quarto = {
 };
 </script>
 
+<link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Exposure and Traffic Volume – Open Road Risk">
 <meta property="og:description" content="How the literature handles traffic exposure in crash models, what AADT elasticity evidence says, and what Open Road Risk can and cannot do with estimated rather than observed traffic counts.">
 <meta property="og:site_name" content="Open Road Risk">
@@ -181,6 +182,14 @@ window.Quarto = {
  <span class="menu-text">Literature</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
         <li>
     <a class="dropdown-item" href="../literature/crash-frequency-models.html">
  <span class="dropdown-text">Crash frequency models</span></a>
@@ -377,7 +386,6 @@ window.Quarto = {
   <li><a href="#the-empirical-bayes-connection" id="toc-the-empirical-bayes-connection" class="nav-link" data-scroll-target="#the-empirical-bayes-connection">The Empirical Bayes connection</a></li>
   <li><a href="#what-does-not-transfer-exposure-approaches-that-require-unavailable-data" id="toc-what-does-not-transfer-exposure-approaches-that-require-unavailable-data" class="nav-link" data-scroll-target="#what-does-not-transfer-exposure-approaches-that-require-unavailable-data">What does not transfer: exposure approaches that require unavailable data</a></li>
   <li><a href="#stage-1a-validation-what-the-literature-suggests" id="toc-stage-1a-validation-what-the-literature-suggests" class="nav-link" data-scroll-target="#stage-1a-validation-what-the-literature-suggests">Stage 1a validation: what the literature suggests</a></li>
-  <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -410,7 +418,7 @@ window.Quarto = {
 </header>
 
 
-<p>Exposure normalisation is the central design decision in crash-frequency modelling. A model that counts collisions without accounting for traffic volume cannot distinguish a genuinely dangerous road from a heavily used one. What follows synthesises the exposure treatment from eleven reviewed papers and maps their approaches against Open Road Risk’s data stack.</p>
+<p>Exposure normalisation is the central design decision in crash-frequency modelling. A model that counts collisions without accounting for traffic volume cannot distinguish a genuinely dangerous road from a heavily used one. What follows synthesises the exposure treatment from reviewed papers and official-method sources, and maps their approaches against Open Road Risk’s data stack.</p>
 <hr>
 <section id="what-exposure-normalisation-means" class="level2">
 <h2 class="anchored" data-anchor-id="what-exposure-normalisation-means">What exposure normalisation means</h2>
@@ -418,6 +426,7 @@ window.Quarto = {
 <p><span class="math display">\[\log(\mu_i) = \log(E_i) + \beta_0 + \sum_k \beta_k X_{ik}\]</span></p>
 <p>where <span class="math inline">\(E_i = \text{AADT}_i \times L_i \times T\)</span> is the vehicle-kilometres (or vehicle-days) of travel on segment <span class="math inline">\(i\)</span> over period <span class="math inline">\(T\)</span>. The offset is not a coefficient to be estimated — it is a constraint that forces the model to predict a crash <em>rate</em> rather than a raw count. Without it, a model cannot separate roads that have more crashes because they carry more traffic from roads that have more crashes because they are inherently more dangerous.</p>
 <p>Open Road Risk’s Stage 2 uses <code>log(AADT × link_length_km × 365 / 1e6)</code> as its exposure offset, which is structurally equivalent to the VMT-style offset used in Hauer et al.&nbsp;(2001) and directly analogous to the <code>log(length × traffic_flow)</code> offset used by Gilardi et al.&nbsp;(2022) on OS road segments in Leeds. Both papers support this exposure-offset structure for a UK segment-level crash model.</p>
+<p>National Highways (2022) gives the same structure in official UK rate-comparison guidance: collision counts are treated as Poisson with vehicle miles as the exposure scale, <span class="math inline">\(N_i \sim \text{Poisson}(\gamma_i v_i)\)</span>. This is mathematically equivalent to a Poisson GLM with <code>log(vehicle miles)</code> as an offset. The guidance assumes vehicle miles are known, so it supports the offset form but does not solve Open Road Risk’s separate problem of estimated AADT uncertainty.</p>
 <hr>
 </section>
 <section id="the-aadt-elasticity-question" class="level2">
@@ -646,30 +655,36 @@ Warning
 <td>Mathematical structure identical</td>
 </tr>
 <tr class="even">
+<td>Poisson rate comparison with vehicle-miles exposure</td>
+<td>National Highways 2022</td>
+<td>Documentation support</td>
+<td>Same mathematical offset structure; assumes observed traffic rather than estimated AADT</td>
+</tr>
+<tr class="odd">
 <td>AADT as free covariate (elasticity estimated)</td>
 <td>Aguero-Valverde 2008; Wang 2009</td>
 <td>Diagnostic only</td>
 <td>Useful to test offset elasticity assumption; not a production replacement</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Complete observed sensor AADT</td>
 <td>Wang 2009; Aguero-Valverde 2008; Pew 2020</td>
 <td>Not available nationally</td>
 <td>DfT AADF covers ~0.4% of links; Stage 1a fills the gap</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>INRIX probe-based AADT</td>
 <td>Roll 2026 (tier 2)</td>
 <td>Not available (commercial)</td>
 <td>No open equivalent; WebTRIS provides time profiles, not link-level AADT</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Census commuting OD routing</td>
 <td>Gilardi 2022</td>
 <td>Superseded by Stage 1a</td>
 <td>Open Road Risk already has a better proxy</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>No traffic exposure</td>
 <td>Gao 2024; Balawi &amp; Tenekeci 2024</td>
 <td>Should not transfer</td>
@@ -686,75 +701,20 @@ Warning
 <p>Roll et al.&nbsp;(2026) show that CV metrics alone are insufficient: application sanity checks (checking the full-network prediction distribution by road class and AADT band) detected implausible outputs in two of the four models tested, failures that the CV metrics did not reveal. Open Road Risk should compare the distribution of Stage 1a predicted AADT by road class and rural/urban classification against observed AADF values and known traffic-volume relationships.</p>
 <p>Both papers confirm that low-AADT links are the hardest to estimate well. Jayasinghe et al. (2019) report RMSE of 193–412% in the lowest AADT category. Huda and Al-Kaisy (2024) find that AADT explains almost nothing in the crash-risk model for links with fewer than 1000 vehicles per day — geometry dominates at that end. This does not mean Stage 1a performance on low-volume links is unimportant, but it contextualises what is at stake: for minor rural roads, exposure uncertainty matters less to the final risk ranking than the quality of the geometric and network features.</p>
 <hr>
-</section>
-<section id="open-road-risk-alignment" class="level2">
-<h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Requirement</th>
-<th>Literature recommendation</th>
-<th>Current pipeline</th>
-<th>Gap</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Exposure structure</td>
-<td>Log-offset of AADT × length; elasticity testable as a diagnostic</td>
-<td>Fixed offset (<code>log(AADT × link_length_km × 365 / 1e6)</code>)</td>
-<td>Elasticity not yet tested as free covariate; sub-linear risk on urban classes possible</td>
-</tr>
-<tr class="even">
-<td>Traffic data source</td>
-<td>Observed or estimated AADT; Census proxies weaker</td>
-<td>Stage 1a ML estimate from AADF + features</td>
-<td>Coverage limitation for minor roads; uncertainty not propagated into Stage 2</td>
-</tr>
-<tr class="odd">
-<td>Exposure uncertainty</td>
-<td>Acknowledge and document; EB shrinkage partially absorbs it for sparse links</td>
-<td>EB shrinkage exists as diagnostic variant; uncertainty not propagated</td>
-<td>Stage 2 treats estimated AADT as if observed; no uncertainty interval on risk percentile</td>
-</tr>
-<tr class="even">
-<td>AADT elasticity</td>
-<td>Test whether elasticity differs from 1.0 by road class</td>
-<td>Not yet tested</td>
-<td>Free-coefficient diagnostic not yet run</td>
-</tr>
-<tr class="odd">
-<td>Validation of exposure model</td>
-<td>Spatial/grouped holdout; learning-curve diagnostic; application sanity checks</td>
-<td>CV metrics available but sanity checks not formalised</td>
-<td>Low-AADT subgroup error not separately reported</td>
-</tr>
-<tr class="even">
-<td>No-exposure contrast</td>
-<td>Document papers that omit exposure as cautionary examples</td>
-<td>Not yet documented</td>
-<td>Add Gao 2024 and Balawi &amp; Tenekeci 2024 as cautionary contrasts</td>
-</tr>
-<tr class="odd">
-<td>Temporal exposure conditioning</td>
-<td>Use time-zone fractions to condition Stage 2; argument-averaging bias is moderate but real (Mensah &amp; Hauer 1998)</td>
-<td>Stage 1b profiles not in Stage 2</td>
-<td><code>core_overnight_ratio</code> ad-hoc diagnostic run (~+0.004 R², stdout only, not a saved artifact); full temporal conditioning pending</td>
-</tr>
-<tr class="even">
-<td>Single-vehicle vs multi-vehicle crash types</td>
-<td>Qin 2006 — opposing flow relationships; combining in one model is function-averaging</td>
-<td>Total injury collisions combined</td>
-<td>Document as known limitation; SV/MV diagnostic is a candidate action</td>
-</tr>
-</tbody>
-</table>
+<hr>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a consolidated view of how the findings on this page map to the current pipeline state, open gaps, and recommended diagnostic actions, see the <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page.</p>
+</div>
+</div>
 <hr>
 </section>
 <section id="references" class="level2">
@@ -816,19 +776,23 @@ Warning
 <td>Balawi, M. &amp; Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. <em>Heliyon.</em> DOI: 10.1016/j.heliyon.2024.e25710</td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-049</td>
 <td>Mensah, A. &amp; Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. <em>Transportation Research Record 1635, Paper No.&nbsp;98-0232.</em></td>
 </tr>
 <tr class="odd">
-<td>LIT-PENDING</td>
+<td>LIT-050</td>
 <td>Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. &amp; Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. <em>Accident Analysis and Prevention, 38(6), 1071–1080.</em> DOI: 10.1016/j.aap.2006.04.012</td>
 </tr>
 <tr class="even">
-<td>LIT-PENDING</td>
+<td>LIT-051</td>
 <td>Dutta, N. &amp; Fontaine, M.D.&nbsp;(2020). Improving freeway crash prediction models using disaggregate flow state information. <em>VTRC 20-R15, Virginia DOT.</em></td>
 </tr>
 <tr class="odd">
-<td>LIT-PENDING</td>
+<td>LIT-055</td>
+<td>National Highways (2022). Statistical methods for comparing road traffic collision and casualty rates: proposed approach. <em>National Highways PR81/22.</em></td>
+</tr>
+<tr class="even">
+<td>LIT-052</td>
 <td>Sung, Y., Kim, S., Park, J. &amp; Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. <em>Journal of Advanced Transportation.</em> DOI: 10.1155/2024/7970454</td>
 </tr>
 </tbody>
