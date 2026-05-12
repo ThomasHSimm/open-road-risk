@@ -1,5 +1,6 @@
 ---
 title: "Validation and Metrics"
+description: "Methodological basis for Open Road Risk validation design: grouped CV, temporal holdout, spatial blocking, balanced accuracy, pseudo-R², CURE plots, and the structural explanatory ceiling of road-environment models."
 subtitle: "Methodology basis for Open Road Risk validation design"
 format:
   html:
@@ -178,8 +179,7 @@ question is whether predictive performance on held-out data is acceptable.
 **Huda & Al-Kaisy (2024)** fit OLS regression to log-transformed Empirical
 Bayes expected crash counts, achieving adjusted R² of 0.91–0.92. These values
 are **not comparable** to pseudo-R² from Open Road Risk's Poisson GLM or
-XGBoost R² on raw crash counts, for two reasons (see combined record LIT-042
-for the canonical citation):
+XGBoost R² on raw crash counts, for two reasons:
 
 1. The response variable (EB expected crashes) is already a smoothed model
    output, not a zero-heavy integer count. Regressing on a model output
@@ -196,8 +196,7 @@ Do not benchmark Open Road Risk's R² or pseudo-R² against Huda & Al-Kaisy
 ### CURE plots
 
 **Roll, Anderson & McNeil (2026)** use cumulative residual (CURE) plots as a
-standard in-sample fit diagnostic for safety performance functions (see combined
-record LIT-045 for the canonical citation). A CURE
+standard in-sample fit diagnostic for safety performance functions. A CURE
 plot shows the cumulative sum of residuals (observed minus predicted) against
 an ordered covariate (typically AADT or link length), with ±2 standard
 deviation bands:
@@ -319,6 +318,137 @@ documentation.
 
 ---
 
+## Temporal holdout validation
+
+Open Road Risk's current grouped-by-link split holds out entire links (all years for a
+given link assigned to either train or test). This controls for within-link temporal
+leakage — the model cannot memorise a specific link's crash history across years. It does
+not enforce any temporal holdout: the model trains and tests on the same calendar years,
+just different links.
+
+Quddus (2007) demonstrates the value of temporal holdout using INAR(1) and competing
+time-series count models on UK STATS19 data. The most concrete finding for Open Road Risk
+is the London congestion charging zone result: the INAR(1) model detects the ~27% casualty
+reduction from the February 2003 congestion charge using only post-2005 temporal holdout
+data. This result is consistent across all four model families tested (ARIMA, SARIMA, NB,
+INAR(1)), confirming that STATS19 data at monthly resolution can detect policy interventions
+of ~25–30% magnitude when a genuine temporal holdout is used.
+
+The practical implication for Open Road Risk: hold out the most recent 1–2 years of crash
+data (e.g. 2023–2024) and evaluate Stage 2 model predictions on these unseen years.
+This tests whether the model's risk rankings generalise temporally — a different question
+from the current grouped-link CV, which tests whether risk patterns transfer across links
+within the same time window.
+
+Chengye and Ranjitkar (2013) provide a template: they hold out 2009–2010 from a
+2004–2008 fitting period, report MAD and MSPE on the holdout, and find that ramp-type
+sub-models reduce holdout MSPE by ~24% relative to the pooled model. This temporal
+holdout result is more informative than the in-sample pseudo-R² for assessing
+generalisation.
+
+::: {.callout-note}
+A temporal holdout (hold out 2023–2024, train on 2015–2022) combined with the existing
+grouped-link split is the most informative validation design for Open Road Risk. The two
+splits test different things: grouped-link tests spatial/link generalisation; temporal
+tests year-to-year stability. Run both before any production model update.
+:::
+
+---
+
+## Serial correlation and standard error validity
+
+Standard Poisson GLM and NB regression assume that observations are independent given the
+feature set. For Open Road Risk's panel structure (same road link observed over 10 years),
+this assumption is violated: crash counts on the same link in consecutive years are
+correlated, both through unmeasured persistent link characteristics and through genuine
+temporal autocorrelation in risk.
+
+Quddus (2007) quantifies this for monthly UK crash counts: the INAR(1) thinning parameter
+$\hat{\alpha} = 0.355$ for the London CC zone monthly data, indicating ~35% stochastic
+carry-over from one month to the next. Standard NB models that ignore this produce MAPE
+25.27% versus INAR(1) MAPE 18.23% on the same holdout data.
+
+The direct consequence for Open Road Risk is that GLM coefficient standard errors are
+likely underestimated, inflating the apparent statistical significance of features. The
+fix is low-effort: cluster-robust standard errors grouped by `link_id` in the Stage 2
+Poisson GLM. Most Python and R GLM implementations support this via the `HC3` or cluster
+sandwich estimator.
+
+Savolainen et al. (2011) confirm this is a general, unresolved challenge in the severity
+and frequency literature: "crashes that occur in close proximity in space or in time are
+likely to share important unobserved effects. If such correlations are ignored, there will
+be a loss of efficiency and parameters will be estimated with less precision."
+
+---
+
+## Structural explanatory ceiling
+
+Roshandel, Zheng and Washington (2015) synthesise 13 studies on real-time crash prediction
+from loop detector data and find that road environment and traffic variables explain only a
+small fraction of crash causation. Citing Lum and Reagan (1995), they note that behavioural
+factors account for approximately 93% of crash causation, with road environment factors
+accounting for ~34% (with substantial overlap). Even the best real-time binary prediction
+models reviewed achieve only 66–80% correct prediction with false positive rates of 5–20%,
+and the paper concludes these models are "currently unsuitable for implementation at the
+real world operational level."
+
+This is directly relevant to Open Road Risk's expected performance. The pipeline models
+road-environment risk — road class, AADT, geometry, land use — and explicitly excludes
+behavioural factors (individual driver behaviour, vehicle condition, alcohol involvement).
+A structural ceiling on discriminative power is therefore expected, regardless of model
+choice or feature engineering. Open Road Risk's appropriate objective is aggregate risk
+ranking for network screening, not individual-event crash prediction. These are different
+tasks with different achievable performance levels.
+
+::: {.callout-note}
+Open Road Risk's XGBoost held-out pseudo-R² of ~0.32 is not a failure — it is consistent
+with what road-environment models achieve when behavioural factors dominate crash causation.
+The relevant benchmark is whether the model's risk rankings identify links with
+disproportionate observed crash rates, not whether it predicts individual crash events.
+:::
+
+---
+
+## Random split weakness: a documented example
+
+Sung et al. (2024) develop a modified temporal SPF on 1,095 Korean highway segments
+(2018–2022) using XGBoost, LGBM, and random forest, reporting R² up to 0.83 for the AADT
+XGBoost model. These values should not be compared directly to Open Road Risk's grouped-CV
+metrics for two reasons:
+
+1. **Random 8:2 split on panel data:** the same road segment can appear in both training
+   and test sets in different time periods, creating leakage through persistent segment
+   characteristics.
+2. **Balanced 1:1 undersampling for 15-minute models:** the 15-minute dataset was
+   undersampled to 1:1 crash/non-crash ratio (from ~18% crash rate). This inflates apparent
+   model performance by ~50× relative to the true base rate at deployment.
+
+Open Road Risk's grouped-by-link split is more conservative than this design. The
+comparison is documented here to clarify why high R² values from other papers should not
+be taken as evidence that better-performing models are achievable in Open Road Risk without
+equivalent validation weaknesses.
+
+---
+
+## CURE plots as a functional-form diagnostic
+
+Dutta and Fontaine (2020) use cumulative residual (CURE) plots throughout their Virginia
+freeway SPF analysis as the primary in-sample model-fit diagnostic. Their average-hourly
+volume models pass the CURE plot test (cumulative residuals within ±2 SD bands), providing
+evidence that the functional form is adequate across the volume range. Importantly, raw
+hourly models fail this check in some volume ranges, consistent with the overall finding
+that raw hourly data (with 23% quality failures) underperforms smoothed average-hourly data.
+
+For Open Road Risk, CURE plots by AADT quantile and link-length quantile are a low-effort
+diagnostic that would reveal whether the Stage 2 model systematically under- or
+over-predicts at specific exposure ranges. At 2.17M rows, individual-link CURE plots are
+unreadable; 50-quantile bins of AADT and length are appropriate.
+
+Roll et al. (2026) use the same diagnostic — CURE plots are standard SPF practice in the
+US Highway Safety Manual context.
+
+---
+
 ## Open Road Risk validation map
 
 The table below records which validation methods are currently implemented in
@@ -327,15 +457,17 @@ the Open Road Risk pipeline, which are planned, and where literature gaps exist.
 | Validation method | Status | Notes / literature basis |
 |---|---|---|
 | Grouped link cross-validation (held-out links) | **Implemented** | Controls within-link temporal leakage; does not control spatial autocorrelation between neighbours |
-| Temporal holdout (held-out years, same links) | Not yet implemented | Chengye 2013 provides a template (MAD/MSPE on 2-year holdout); straightforward to add |
+| Temporal holdout (held-out years, same links) | Not yet implemented | Quddus 2007; Chengye 2013 template (MAD/MSPE on 2-year holdout); straightforward to add |
 | Spatially blocked CV (exclusion buffer) | Not yet implemented | Mahoney 2023: recommended approach; requires residual autocorrelation range estimate |
 | Police force area holdout | Not yet implemented | Mahoney 2023 practical approximation for spatial holdout |
 | Balanced accuracy (TPR/TNR) | Not yet implemented | Brodersen 2010; Gilardi 2022; pool confusion matrices, do not average fold metrics |
 | AccHR@k ranking quality | Not yet implemented | Gao 2024; proportion of top-k% predicted links with actual crashes |
 | Pseudo-R² (ρ²) | Reported | In-sample only; treat as model-comparison diagnostic, not predictive performance |
-| CURE plots | Not yet implemented | Roll 2026; cumulative residuals vs AADT and link length; requires AADT-quantile binning at 2.1M scale |
+| CURE plots | Not yet implemented | Roll 2026; Dutta 2020; cumulative residuals vs AADT and link length; requires AADT-quantile binning at 2.1M scale |
 | Posterior predictive zero check | Not yet implemented | Pew 2020; run after Stage 2 Poisson GLM fit; diagnostic for zero-inflation |
 | Exposure-only baseline comparison | Not yet implemented | Roll 2026 Appendix A design; compare full feature model to exposure-only NB/Poisson |
+| Cluster-robust standard errors | Not yet implemented | Quddus 2007; Savolainen 2011; group by `link_id`; corrects within-link serial correlation inflation of t-statistics |
+| Serial correlation ACF diagnostic | Not yet implemented | Quddus 2007; compute lag-1 ACF on a sample of high-crash links; informs whether cluster SEs are needed |
 
 ---
 
@@ -344,12 +476,16 @@ the Open Road Risk pipeline, which are planned, and where literature gaps exist.
 | ID | Citation |
 |---|---|
 | LIT-011 | Brodersen, K.H., Ong, C.S., Stephan, K.E. & Buhmann, J.M. (2010). The balanced accuracy and its posterior distribution. *ICPR 2010.* |
-| LIT-017 | Gilardi, A., Caimo, A. & Ghosh, S. (2022). Network lattice models for road collision analyses. *SSRN preprint.* |
+| LIT-012/013/014 | Gilardi, A., Caimo, A. & Ghosh, S. (2022). Network lattice models for road collision analyses. *SSRN preprint.* |
 | LIT-009 | Chengye, P. & Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. *EASTS Proceedings.* |
-| LIT-028 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* |
-| LIT-005 | Lord, D. & Mannering, F. (2010). The statistical analysis of crash-frequency data: a review and assessment of methodological alternatives. *Transportation Research Part A.* [DOI:10.1016/j.tra.2010.02.001](https://doi.org/10.1016/j.tra.2010.02.001) |
-| LIT-016 / LIT-042 | Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. *Future Transportation.* [DOI:10.3390/futuretransp4010013](https://doi.org/10.3390/futuretransp4010013) — use combined record LIT-042. |
-| LIT-027 | Mahoney, K., Pugh, D. & Medrano-Gracia, P. (2023). Spatial cross-validation methods for crash frequency prediction models. |
-| LIT-019 | Pew, C., Dixon, K. & Banerjee, N. (2020). Zero-inflated crash frequency models. |
-| LIT-029 | Gao, C., Zhang, Y., Ma, X., Yang, D. & Ma, J. (2024). Spatiotemporal zero-inflated truncated distribution with graph neural networks for road risk prediction. |
-| LIT-028 / LIT-045 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* — use combined record LIT-045. |
+| LIT-028/045 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* — use combined record LIT-045. |
+| LIT-019 | Lord, D. & Mannering, F. (2010). The statistical analysis of crash-frequency data: a review and assessment of methodological alternatives. *Transportation Research Part A.* DOI: 10.1016/j.tra.2010.02.001 |
+| LIT-016 / LIT-042 | Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. *Future Transportation.* DOI: 10.3390/futuretransp4010013 — use combined record LIT-042. |
+| LIT-033 | Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. & Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches. |
+| LIT-032 | Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. *TRIP.* |
+| LIT-034 | Gao, X. et al. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. |
+| LIT-PENDING | Quddus, M.A. (2007). Time series count data models: an empirical application to traffic accidents. *Accident Analysis and Prevention.* hdl.handle.net/2134/5308 |
+| LIT-PENDING | Savolainen, P.T., Mannering, F.L., Lord, D. & Quddus, M.A. (2011). The statistical analysis of highway crash-injury severities. *Accident Analysis and Prevention, 43(5), 1666–1676.* DOI: 10.1016/j.aap.2011.03.025 |
+| LIT-PENDING | Roshandel, S., Zheng, Z. & Washington, S. (2015). Impact of real-time traffic characteristics on freeway crash occurrence: systematic review and meta-analysis. *Accident Analysis and Prevention.* |
+| LIT-PENDING | Dutta, N. & Fontaine, M.D. (2020). Improving freeway crash prediction models using disaggregate flow state information. *VTRC 20-R15, Virginia DOT.* |
+| LIT-PENDING | Sung, Y., Kim, S., Park, J. & Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. *Journal of Advanced Transportation.* DOI: 10.1155/2024/7970454 |

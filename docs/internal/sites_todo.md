@@ -1,7 +1,7 @@
 # Site TODO
 
 Outstanding work on the public Quarto documentation site
-(<https://thomashsimm.github.io/open-road-risk/>). Engineering work belongs
+(<https://openroadrisk.org/>). Engineering work belongs
 in `TODO.md` at the repo root.
 
 Last reviewed: 2026-04-28.

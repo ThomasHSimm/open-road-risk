@@ -85,10 +85,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 
 <meta property="og:title" content="Severity Modelling – Open Road Risk">
-<meta property="og:description" content="Why severity is a separate modelling target from collision frequency, and what the literature says about each">
+<meta property="og:description" content="Why collision severity is a separate modelling target from frequency, what the literature says about each, and what post-event variables must be excluded from Open Road Risk Stage 2.">
 <meta property="og:site_name" content="Open Road Risk">
 <meta name="twitter:title" content="Severity Modelling – Open Road Risk">
-<meta name="twitter:description" content="Why severity is a separate modelling target from collision frequency, and what the literature says about each">
+<meta name="twitter:description" content="Why collision severity is a separate modelling target from frequency, what the literature says about each, and what post-event variables must be excluded from Open Road Risk Stage 2.">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -340,7 +340,8 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#frequency-and-severity-are-different-estimands" id="toc-frequency-and-severity-are-different-estimands" class="nav-link active" data-scroll-target="#frequency-and-severity-are-different-estimands">Frequency and severity are different estimands</a></li>
+  <li><a href="#stats19-underreporting-and-its-effect-on-the-stage-2-outcome" id="toc-stats19-underreporting-and-its-effect-on-the-stage-2-outcome" class="nav-link active" data-scroll-target="#stats19-underreporting-and-its-effect-on-the-stage-2-outcome">STATS19 underreporting and its effect on the Stage 2 outcome</a></li>
+  <li><a href="#frequency-and-severity-are-different-estimands" id="toc-frequency-and-severity-are-different-estimands" class="nav-link" data-scroll-target="#frequency-and-severity-are-different-estimands">Frequency and severity are different estimands</a></li>
   <li><a href="#what-the-literature-says-about-severity-mechanisms" id="toc-what-the-literature-says-about-severity-mechanisms" class="nav-link" data-scroll-target="#what-the-literature-says-about-severity-mechanisms">What the literature says about severity mechanisms</a>
   <ul class="collapse">
   <li><a href="#traffic-flow-and-severity" id="toc-traffic-flow-and-severity" class="nav-link" data-scroll-target="#traffic-flow-and-severity">Traffic flow and severity</a></li>
@@ -350,7 +351,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#when-severity-levels-should-be-modelled-jointly" id="toc-when-severity-levels-should-be-modelled-jointly" class="nav-link" data-scroll-target="#when-severity-levels-should-be-modelled-jointly">When severity levels should be modelled jointly</a></li>
   <li><a href="#ordered-response-models-for-severity" id="toc-ordered-response-models-for-severity" class="nav-link" data-scroll-target="#ordered-response-models-for-severity">Ordered response models for severity</a></li>
-  <li><a href="#post-event-variables-a-catalogue-for-open-road-risk" id="toc-post-event-variables-a-catalogue-for-open-road-risk" class="nav-link" data-scroll-target="#post-event-variables-a-catalogue-for-open-road-risk">Post-event variables: a catalogue for Open Road Risk</a></li>
+  <li><a href="#post-event-variables-a-catalogue-for-open-road-risk" id="toc-post-event-variables-a-catalogue-for-open-road-risk" class="nav-link" data-scroll-target="#post-event-variables-a-catalogue-for-open-road-risk">Post-event variables: a catalogue for Open Road Risk</a>
+  <ul class="collapse">
+  <li><a href="#ksi-vs-slight-different-predictor-sets" id="toc-ksi-vs-slight-different-predictor-sets" class="nav-link" data-scroll-target="#ksi-vs-slight-different-predictor-sets">KSI vs slight: different predictor sets</a></li>
+  </ul></li>
   <li><a href="#open-road-risk-alignment" id="toc-open-road-risk-alignment" class="nav-link" data-scroll-target="#open-road-risk-alignment">Open Road Risk alignment</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -365,6 +369,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p class="subtitle lead">Why severity is a separate modelling target from collision frequency, and what the literature says about each</p>
 </div>
 
+<div>
+  <div class="description">
+    Why collision severity is a separate modelling target from frequency, what the literature says about each, and what post-event variables must be excluded from Open Road Risk Stage 2.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta column-page-left">
@@ -382,6 +391,25 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p>Open Road Risk’s Stage 2 outcome is the count of injury collisions per link-year, regardless of severity. All police-reported injury crashes — slight, serious, and fatal — are pooled into a single integer count and modelled against an exposure offset. This is a pragmatic choice at national scale with sparse data, but it comes with a known limitation: the mechanisms that cause a collision to be fatal or serious are not the same as those that cause a collision to occur in the first place, and conflating the two can misidentify which roads are highest-priority for intervention.</p>
 <p>This page documents what the reviewed literature says about severity as a distinct modelling target, where the boundaries between frequency and severity lie, and what the leakage implications are for the current pipeline.</p>
 <hr>
+<section id="stats19-underreporting-and-its-effect-on-the-stage-2-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="stats19-underreporting-and-its-effect-on-the-stage-2-outcome">STATS19 underreporting and its effect on the Stage 2 outcome</h2>
+<p>Open Road Risk’s Stage 2 outcome pools all police-reported injury collisions — slight, serious, and fatal — into a single count. Savolainen et al.&nbsp;(2011) review meta-analyses of crash underreporting rates and document a systematic pattern: reporting rates are strongly outcome-dependent. Elvik and Myssen (1999) find underreporting rates of approximately 30% for serious injuries, 75% for slight injuries, and 90% for very slight injuries. Fatal crashes are nearly 100% reported; property-damage-only crashes are excluded from STATS19 by design.</p>
+<p>The consequence for Open Road Risk is that the Stage 2 outcome underweights slight-injury crashes relative to their true frequency, particularly on lower-traffic links where police response and reporting practices may differ from high-traffic corridors. Links with predominantly slight-injury crashes will have their collision count systematically underestimated relative to their true risk. This is not a modelling choice that can be corrected without independent data on reporting rates; it should be documented as a known limitation of the outcome variable.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The underreporting rates above (Elvik &amp; Myssen 1999) are from a European meta-analysis; UK-specific STATS19 reporting rates may differ and have evolved over time as insurance reporting requirements have changed. Verify against current DfT or TRL underreporting studies before using these figures in formal documentation.</p>
+</div>
+</div>
+<p>Savolainen et al.&nbsp;(2011) also confirm that joint frequency-severity models are feasible using the non-crash-specific data that Open Road Risk already has. Their footnote 1 states explicitly that joint models “can only use non-crash-specific data (roadway geometry, traffic volumes, etc.)” — which is exactly the feature set in Stage 2. If a severity dimension is ever added, the existing features are compatible with a joint approach without requiring per-crash data.</p>
+</section>
 <section id="frequency-and-severity-are-different-estimands" class="level2">
 <h2 class="anchored" data-anchor-id="frequency-and-severity-are-different-estimands">Frequency and severity are different estimands</h2>
 <p>The distinction runs through every paper in this section. A crash-frequency model asks: given this road’s features and traffic exposure, how many injury collisions per year are expected? A severity model asks: given that a collision has occurred, how serious is it likely to be?</p>
@@ -549,7 +577,11 @@ Note
 </tbody>
 </table>
 <p><strong>Note on lighting:</strong> OSM <code>lit=yes/no</code> is a road-infrastructure attribute that is known before any crash and is not post-event. STATS19 lighting condition at crash time (<code>Light Conditions</code> field) is an observation at the crash moment and is post-event. These are different variables and should not be conflated.</p>
+<section id="ksi-vs-slight-different-predictor-sets" class="level3">
+<h3 class="anchored" data-anchor-id="ksi-vs-slight-different-predictor-sets">KSI vs slight: different predictor sets</h3>
+<p>Wang, Quddus and Ison (2011) fit separate Bayesian Poisson models for KSI (fatal + serious combined) and slight injury crash counts on 70 M25 motorway segments. Their results show that the number of lanes is significant for slight injury crashes but not for KSI, while gradient is consistently significant for both. This provides direct empirical evidence that KSI and slight injury crashes have different predictor structures — fitting a single combined model conflates these into one coefficient set that may misrepresent both. For Open Road Risk, this supports the case for separate KSI and slight models as a diagnostic step, while noting that KSI counts at link-year level will be very sparse and require EB shrinkage or Bayesian smoothing before the rankings are reliable.</p>
 <hr>
+</section>
 </section>
 <section id="open-road-risk-alignment" class="level2">
 <h2 class="anchored" data-anchor-id="open-road-risk-alignment">Open Road Risk alignment</h2>
@@ -658,6 +690,14 @@ Note
 <tr class="even">
 <td>LIT-027/039</td>
 <td>Quddus, M.A., Wang, C. &amp; Ison, S.G. (2010). Road traffic congestion and crash severity: an econometric analysis using ordered response models. <em>Journal of Transportation Engineering, 136(5), 424–435.</em> DOI: 10.1061/(ASCE)TE.1943-5436.0000044</td>
+</tr>
+<tr class="odd">
+<td>LIT-PENDING</td>
+<td>Savolainen, P.T., Mannering, F.L., Lord, D. &amp; Quddus, M.A.&nbsp;(2011). The statistical analysis of highway crash-injury severities: a review and assessment of methodological alternatives. <em>Accident Analysis and Prevention, 43(5), 1666–1676.</em> DOI: 10.1016/j.aap.2011.03.025</td>
+</tr>
+<tr class="even">
+<td>LIT-PENDING</td>
+<td>Wang, C., Quddus, M.A.&nbsp;&amp; Ison, S.G. (2011). Predicting accident frequency at their severity levels and its application in site ranking using a two-stage mixed multivariate model. <em>Accident Analysis and Prevention, 43(6), 1979–1990.</em> DOI: 10.1016/j.aap.2011.05.016</td>
 </tr>
 </tbody>
 </table>

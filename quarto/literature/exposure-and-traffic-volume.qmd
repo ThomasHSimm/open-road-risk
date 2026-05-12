@@ -1,5 +1,6 @@
 ---
 title: "Exposure and Traffic Volume"
+description: "How the literature handles traffic exposure in crash models, what AADT elasticity evidence says, and what Open Road Risk can and cannot do with estimated rather than observed traffic counts."
 subtitle: "How the literature handles traffic exposure, and what Open Road Risk can and cannot do"
 format:
   html:
@@ -30,7 +31,7 @@ traffic from roads that have more crashes because they are inherently more dange
 Open Road Risk's Stage 2 uses `log(AADT × link_length_km × 365 / 1e6)` as its exposure
 offset, which is structurally equivalent to the VMT-style offset used in Hauer et al. (2001)
 and directly analogous to the `log(length × traffic_flow)` offset used by Gilardi et al. (2022)
-on OS road segments in Leeds. Both papers confirm this is the correct mathematical structure
+on OS road segments in Leeds. Both papers support this exposure-offset structure
 for a UK segment-level crash model.
 
 ---
@@ -153,6 +154,105 @@ dominates at low AADT) is partial mitigation, not a solution.
 
 ---
 
+## The temporal exposure problem: why AADT is a biased argument
+
+Using AADT as the SPF exposure argument introduces a structural approximation error that
+is distinct from AADT estimation uncertainty. This is the *argument-averaging bias* first
+formalised by Mensah and Hauer (1998).
+
+Within a year, traffic flow varies continuously: peak-hour motorway flows may be ten times
+the overnight flow. Crashes, however, are not uniformly distributed across the flow
+distribution — they occur at specific instantaneous conditions. A model fitted using the
+annual average (AADT) as its exposure argument is fitted to a smoothed version of the
+exposure that may systematically misrepresent the underlying flow-accident relationship.
+
+Mensah and Hauer (1998) derive a correction factor for the exponential SPF
+$\mu = \alpha q^\beta$:
+
+$$w \approx 1 + \tfrac{1}{2}(\beta^2 - \beta) \cdot \text{CV}^2(q)$$
+
+where $\text{CV}(q) = \sigma(q)/\mathbb{E}(q)$ is the coefficient of variation of hourly
+traffic flow within a year. For the commonly observed range $\beta \in (0.5, 0.9)$ and
+typical rural road $\text{CV}(q) \approx 0.79$, the correction factor $w$ is approximately
+0.92–0.95 — meaning that fitting an SPF to AADT-based data underestimates the true SPF by
+5–8% for a typical exponential specification. The bias is moderate, not catastrophic, for
+standard road types, but it is non-zero and direction-dependent: for $\beta < 1$ (sub-linear
+elasticity), $w < 1$ and the SPF is underestimated; for $\beta > 1$ (super-linear), $w > 1$.
+
+Mensah and Hauer (1998) also identify a second problem — *function averaging* — that is
+more directly relevant to Open Road Risk's Stage 1b work. Fitting a single annual SPF to
+combined daytime and nighttime data produces a composite function that does not represent
+a true cause-effect relationship. For any given average flow, there are more crashes at
+night than during the day. The composite SPF's predicted crash count depends not only on
+the average flow but also on the ratio of daytime to nighttime flow, which varies by road
+section. A link with predominantly overnight traffic will have a different composite
+crash-to-flow relationship than a link with the same AADT but primarily daytime flow. This
+is not captured by a single annual exposure offset.
+
+::: {.callout-note}
+The argument-averaging correction factor $w$ requires two inputs: a free AADT
+elasticity estimate $\beta$, and an approximate $\text{CV}(q)$ per road type derivable
+from Stage 1b WebTRIS time-zone fractions. The current Stage 2 GLM constrains AADT
+elasticity to 1.0 via the offset; $\beta$ would need to be estimated from a separate
+free-elasticity diagnostic model (fitting log(AADT) and log(length) as free covariates
+rather than as a combined offset).
+:::
+
+Qin et al. (2006) provide empirical evidence that the flow-crash relationship is non-linear
+($\alpha_v \neq 1$) for all four crash types and both states tested (Michigan and
+Connecticut rural two-lane highways). Two findings are particularly relevant:
+
+**Opposing crash-type relationships:** The flow exponent $\alpha_v$ for single-vehicle
+crashes is frequently negative (crash probability decreases as hourly volume increases,
+consistent with congestion reducing speeds), while multi-vehicle crash types show positive
+$\alpha_v$. Open Road Risk's Stage 2 models total injury collisions — combining single-vehicle
+and multi-vehicle crash types in one model. The opposing flow-crash relationships for these
+two types partially cancel in the combined outcome, potentially producing a GLM coefficient
+on log(AADT) that underestimates the true relationship for both types individually. This is
+the empirical counterpart to Mensah and Hauer's function-averaging-over-accident-types
+concern.
+
+**Time-of-day stratification changes the relationship:** For at least one crash type in
+both states, the flow exponent $\alpha_v$ varies significantly by time-of-day period (7am–3pm,
+3pm–11pm, 11pm–7am). Fitting a single annual model collapses these into a composite function.
+Stage 1b time-zone profiles are the available mechanism in Open Road Risk for conditioning
+the model on temporal flow patterns, but they are not currently used in Stage 2.
+
+Dutta and Fontaine (2020) provide empirical validation of these theoretical concerns at
+scale. Testing AADT-based, average-hourly, average 15-minute, and raw-hourly SPF models
+on 110 rural and 80 urban Virginia freeway segments (2011–2017), they find that average-hourly
+volume models outperform AADT-based models on all out-of-sample validation measures:
+
+| Comparison | MAD improvement | MAPE improvement | MSPE improvement |
+|---|---|---|---|
+| Urban total crashes: average-hourly vs AADT | 20% | 22% | 38% |
+| Rural total crashes: average-hourly vs AADT | 11% | 33% | 29% |
+
+Raw hourly data — the highest temporal resolution — performed *worse* than AADT because
+23% of raw hourly observations failed quality checks, introducing noise. Average-hourly
+data (using available observations smoothed to a typical hourly profile) gave the best
+results. This is directly relevant to Open Road Risk's WebTRIS data situation: Stage 1b
+already builds smoothed time-zone profiles, which is the correct approach for sparse and
+imperfect data.
+
+Sung et al. (2024) confirm the same pattern on a larger scale — 1,095 Korean national
+highway segments with complete VDS sensor coverage — finding that modified temporal SPFs
+outperform AADT-based models consistently. However, their validation uses a random 8:2
+split without spatial holdout, and the training data is balanced to a 1:1 crash/non-crash
+ratio, which inflates apparent model performance. The directional finding (temporal
+disaggregation helps) is credible; the specific magnitude of improvement is not directly
+transferable.
+
+::: {.callout-warning}
+The Dutta and Fontaine (2020) improvements (20–38% in MSPE) are from Virginia freeways
+with direct sensor coverage on every segment. Open Road Risk must estimate time-zone
+fractions via Stage 1b for most links rather than observing them. The improvements are
+therefore an upper bound on what temporal conditioning could achieve in Open Road Risk —
+the actual gain will be smaller, particularly for minor roads where Stage 1b coverage is
+thinnest. The experiment with `core_overnight_ratio` as a Stage 2 feature (+0.004 R²)
+is more directly representative of the achievable gain in the current pipeline.
+:::
+
 ## The Empirical Bayes connection
 
 Hauer et al. (2001) provide the canonical mathematical connection between the exposure
@@ -254,6 +354,8 @@ the quality of the geometric and network features.
 | AADT elasticity | Test whether elasticity differs from 1.0 by road class | Not yet tested | Free-coefficient diagnostic not yet run |
 | Validation of exposure model | Spatial/grouped holdout; learning-curve diagnostic; application sanity checks | CV metrics available but sanity checks not formalised | Low-AADT subgroup error not separately reported |
 | No-exposure contrast | Document papers that omit exposure as cautionary examples | Not yet documented | Add Gao 2024 and Balawi & Tenekeci 2024 as cautionary contrasts |
+| Temporal exposure conditioning | Use time-zone fractions to condition Stage 2; argument-averaging bias is moderate but real (Mensah & Hauer 1998) | Stage 1b profiles not in Stage 2 | `core_overnight_ratio` ad-hoc diagnostic run (~+0.004 R², stdout only, not a saved artifact); full temporal conditioning pending |
+| Single-vehicle vs multi-vehicle crash types | Qin 2006 — opposing flow relationships; combining in one model is function-averaging | Total injury collisions combined | Document as known limitation; SV/MV diagnostic is a candidate action |
 
 ---
 
@@ -272,3 +374,7 @@ the quality of the geometric and network features.
 | LIT-029 | Wang, C., Quddus, M.A. & Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway in England. *Accident Analysis & Prevention.* |
 | LIT-034 | Gao, X. et al. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. *arXiv:2309.05072v4.* |
 | LIT-035 | Balawi, M. & Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. *Heliyon.* DOI: 10.1016/j.heliyon.2024.e25710 |
+| LIT-PENDING | Mensah, A. & Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. *Transportation Research Record 1635, Paper No. 98-0232.* |
+| LIT-PENDING | Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. & Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. *Accident Analysis and Prevention, 38(6), 1071–1080.* DOI: 10.1016/j.aap.2006.04.012 |
+| LIT-PENDING | Dutta, N. & Fontaine, M.D. (2020). Improving freeway crash prediction models using disaggregate flow state information. *VTRC 20-R15, Virginia DOT.* |
+| LIT-PENDING | Sung, Y., Kim, S., Park, J. & Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. *Journal of Advanced Transportation.* DOI: 10.1155/2024/7970454 |

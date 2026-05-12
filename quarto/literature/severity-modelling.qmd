@@ -1,5 +1,6 @@
 ---
 title: "Severity Modelling"
+description: "Why collision severity is a separate modelling target from frequency, what the literature says about each, and what post-event variables must be excluded from Open Road Risk Stage 2."
 subtitle: "Why severity is a separate modelling target from collision frequency, and what the literature says about each"
 format:
   html:
@@ -20,6 +21,38 @@ target, where the boundaries between frequency and severity lie, and what the le
 implications are for the current pipeline.
 
 ---
+
+## STATS19 underreporting and its effect on the Stage 2 outcome
+
+Open Road Risk's Stage 2 outcome pools all police-reported injury collisions — slight,
+serious, and fatal — into a single count. Savolainen et al. (2011) review meta-analyses of
+crash underreporting rates and document a systematic pattern: reporting rates are strongly
+outcome-dependent. Elvik and Myssen (1999) find underreporting rates of approximately 30%
+for serious injuries, 75% for slight injuries, and 90% for very slight injuries. Fatal
+crashes are nearly 100% reported; property-damage-only crashes are excluded from STATS19
+by design.
+
+The consequence for Open Road Risk is that the Stage 2 outcome underweights slight-injury
+crashes relative to their true frequency, particularly on lower-traffic links where police
+response and reporting practices may differ from high-traffic corridors. Links with
+predominantly slight-injury crashes will have their collision count systematically
+underestimated relative to their true risk. This is not a modelling choice that can be
+corrected without independent data on reporting rates; it should be documented as a known
+limitation of the outcome variable.
+
+::: {.callout-note}
+The underreporting rates above (Elvik & Myssen 1999) are from a European meta-analysis;
+UK-specific STATS19 reporting rates may differ and have evolved over time as insurance
+reporting requirements have changed. Verify against current DfT or TRL underreporting
+studies before using these figures in formal documentation.
+:::
+
+Savolainen et al. (2011) also confirm that joint frequency-severity models are feasible
+using the non-crash-specific data that Open Road Risk already has. Their footnote 1 states
+explicitly that joint models "can only use non-crash-specific data (roadway geometry,
+traffic volumes, etc.)" — which is exactly the feature set in Stage 2. If a severity
+dimension is ever added, the existing features are compatible with a joint approach without
+requiring per-crash data.
 
 ## Frequency and severity are different estimands
 
@@ -232,6 +265,18 @@ before any crash and is not post-event. STATS19 lighting condition at crash time
 Conditions` field) is an observation at the crash moment and is post-event. These are
 different variables and should not be conflated.
 
+### KSI vs slight: different predictor sets
+
+Wang, Quddus and Ison (2011) fit separate Bayesian Poisson models for KSI (fatal + serious
+combined) and slight injury crash counts on 70 M25 motorway segments. Their results show
+that the number of lanes is significant for slight injury crashes but not for KSI, while
+gradient is consistently significant for both. This provides direct empirical evidence that
+KSI and slight injury crashes have different predictor structures — fitting a single combined
+model conflates these into one coefficient set that may misrepresent both. For Open Road
+Risk, this supports the case for separate KSI and slight models as a diagnostic step, while
+noting that KSI counts at link-year level will be very sparse and require EB shrinkage or
+Bayesian smoothing before the rankings are reliable.
+
 ---
 
 ## Open Road Risk alignment
@@ -259,3 +304,5 @@ different variables and should not be conflated.
 | LIT-020 | Ma, J. et al. (2019). Analyzing the leading causes of traffic fatalities using XGBoost and grid-based analysis. *IEEE Access, 7, 148057–148071.* DOI: 10.1109/ACCESS.2019.2946401 |
 | LIT-022/023 | Michalaki, P., Quddus, M.A., Pitfield, D. & Huetson, A. (2015). Exploring the factors affecting motorway accident severity in England using the generalised ordered logistic regression model. *Journal of Safety Research, 55, 89–96.* DOI: 10.1016/j.jsr.2015.09.004 |
 | LIT-027/039 | Quddus, M.A., Wang, C. & Ison, S.G. (2010). Road traffic congestion and crash severity: an econometric analysis using ordered response models. *Journal of Transportation Engineering, 136(5), 424–435.* DOI: 10.1061/(ASCE)TE.1943-5436.0000044 |
+| LIT-PENDING | Savolainen, P.T., Mannering, F.L., Lord, D. & Quddus, M.A. (2011). The statistical analysis of highway crash-injury severities: a review and assessment of methodological alternatives. *Accident Analysis and Prevention, 43(5), 1666–1676.* DOI: 10.1016/j.aap.2011.03.025 |
+| LIT-PENDING | Wang, C., Quddus, M.A. & Ison, S.G. (2011). Predicting accident frequency at their severity levels and its application in site ranking using a two-stage mixed multivariate model. *Accident Analysis and Prevention, 43(6), 1979–1990.* DOI: 10.1016/j.aap.2011.05.016 |

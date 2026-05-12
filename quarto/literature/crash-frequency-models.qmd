@@ -1,5 +1,6 @@
 ---
 title: "Crash Frequency Models: Poisson, NB, and Zero-Inflation"
+description: "Evidence base for count model family choice in Open Road Risk Stage 2: Poisson vs negative binomial, zero-inflation, overdispersion, serial correlation, and Empirical Bayes shrinkage."
 format:
   html:
     toc: true
@@ -209,6 +210,34 @@ metrics (NB MAD 3.21, MSPE 24.92; GEE MAD 3.74, MSPE 34.46 on fitting data). Thi
 evidence from a single corridor that temporal autocorrelation modelling does not materially
 improve annual count predictions.
 
+Quddus (2007) provides a more rigorous treatment of temporal serial correlation in UK crash
+count data using Integer-Valued Autoregressive (INAR(1)) models. Fitted to monthly car
+casualties in the London congestion charging zone (178 months, 1991–2005), the INAR(1)
+thinning parameter $\hat{\alpha} = 0.355$ indicates that approximately 35% of one month's
+casualty count carries over stochastically into the next. Standard NB models, which assume
+independent observations, perform substantially worse on this data: MAPE 25.27% (SARIMA)
+vs 18.23% (INAR(1)). The practical implication for Open Road Risk is that year-to-year
+within-link serial correlation is likely non-trivial, and standard errors from the Stage 2
+Poisson GLM may be underestimated. Cluster-robust standard errors by road link are a
+low-effort mitigation.
+
+::: {.callout-note}
+A useful diagnostic is to compute the ACF of year-to-year crash counts for a sample of road
+links with at least 3 crashes in 5 or more years. If average ACF at lag 1 exceeds ~0.15,
+adding cluster-robust standard errors (grouped by `link_id`) to the Stage 2 Poisson GLM
+is warranted. Most links have too few crashes per year for reliable ACF estimation
+individually; restrict to a sample of the 500–1000 highest-crash links.
+:::
+
+A further concern from Mensah and Hauer (1998) is relevant here: combining single-vehicle
+and multi-vehicle crash types in a single outcome model is itself a form of
+*function-averaging*. Qin et al. (2006) demonstrate empirically that single-vehicle crashes
+have a negative or flat flow exponent (crash probability decreases at higher hourly volume,
+consistent with congestion reducing speeds), while multi-vehicle crashes have a positive
+exponent. Combining them in Open Road Risk's total injury collision count produces a mixed
+signal that partially cancels both effects. The total-crash coefficient on log(AADT) is a
+biased aggregate of two structurally different relationships.
+
 ---
 
 ## 6. Facility Stratification
@@ -332,3 +361,6 @@ distribution. It should be run before making any decision about distributional f
 | LIT-025/037 | Pan, G., Fu, L. & Thakali, L. (2017). Development of a global road safety performance function using deep neural networks. *International Journal of Transportation Science and Technology*, 6(3), 159–173. DOI: 10.1016/j.ijtst.2017.07.004 |
 | LIT-003 | Al-Omari, M. (2021). Crash analysis and development of safety performance functions for Florida roads in the framework of the context classification system. *MSc thesis, University of Central Florida.* stars.library.ucf.edu/etd2020/633 |
 | LIT-032 | Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. *Transportation Research Interdisciplinary Perspectives*, 8, 100249. DOI: 10.1016/j.trip.2020.100249 |
+| LIT-PENDING | Quddus, M.A. (2007). Time series count data models: an empirical application to traffic accidents. *Accident Analysis and Prevention.* hdl.handle.net/2134/5308 |
+| LIT-PENDING | Mensah, A. & Hauer, E. (1998). Two problems of averaging arising in the estimation of the relationship between accidents and traffic flow. *Transportation Research Record 1635.* |
+| LIT-PENDING | Qin, X., Ivan, J.N., Ravishanker, N., Liu, J. & Tepas, D. (2006). Bayesian estimation of hourly exposure functions by crash type and time of day. *Accident Analysis and Prevention, 38(6), 1071–1080.* DOI: 10.1016/j.aap.2006.04.012 |
