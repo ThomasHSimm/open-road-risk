@@ -2,6 +2,7 @@
 title: "Literature–Pipeline Alignment"
 description: "Consolidated mapping of literature evidence to the current Open Road Risk pipeline: what is implemented, what is pending, and what the literature recommends for each stage."
 subtitle: "Where the evidence base meets the current pipeline"
+date: last-modified
 format:
   html:
     toc: true
@@ -69,6 +70,46 @@ recommendations are diagnostic first.
 | Facility stratification: per-family models reduce overdispersion and enable per-family EB weights | [Crash frequency](crash-frequency-models.qmd): Chengye 2013 (MSPE −24% from ramp split); Al-Omari 2021 | Diagnostic v1 (`risk_scores_family.parquet`) exists | **Validation**: run grouped or temporal holdout on per-family models before production |
 | Single-vehicle and multi-vehicle crashes have opposing flow relationships; combining inflates function-averaging bias | [Crash frequency](crash-frequency-models.qmd): Qin 2006; Mensah & Hauer 1998 | Total injury collisions combined | **Documentation**: note as known limitation; SV/MV split diagnostic is a candidate action |
 
+### Statistical baseline versus operational ranking model
+
+The literature reviewed on this site primarily supports the **GLM/SPF family** as the
+transparent, interpretable baseline for exposure-adjusted crash-frequency modelling. The
+reviewed papers — Aguero-Valverde 2008, Gilardi 2022, Hauer 2001, Chengye 2013, Wang 2009,
+and others — address Poisson and negative binomial GLMs with log-offsets, overdispersion
+diagnostics, EB shrinkage, and spatial residual structure. This is the methodological evidence
+base documented across the literature pages.
+
+The **operational `risk_percentile`** in Open Road Risk is currently produced by XGBoost, not
+the Poisson GLM. These are structurally different models with different properties:
+
+| Property | Poisson GLM | XGBoost |
+|---|---|---|
+| Exposure elasticity | Fixed at 1.0 via log-offset | Implicitly learned; `estimated_aadt` is a free feature |
+| AADT functional form | Log-linear, unit coefficient | Non-parametric; can capture non-linear AADT effects |
+| Interpretability | Coefficients directly interpretable | Requires SHAP or partial dependence plots |
+| Overdispersion | Not handled (Poisson baseline) | Not a count model; produces risk scores, not counts |
+| Literature support | Direct SPF/GLM evidence base on this site | No dedicated literature review in this register |
+| Spatial leakage risk | Controlled via grouped-link CV | Same grouped-link CV applies |
+| Calibration | Can be calibrated via observed/predicted ratio | Score not directly calibrated as a crash rate |
+
+**Key implication for the elasticity limitation:** The AADT unit-elasticity constraint is a
+limitation of the **GLM only**. XGBoost implicitly estimates whatever AADT–crash relationship
+the data support, including sub-linear or non-linear forms. The free-elasticity diagnostic
+(priority action 2) therefore applies specifically to the GLM and its use as a methodological
+baseline. It does not constrain the XGBoost ranking output, but the XGBoost model also has
+no explicit exposure structure — it cannot be directly validated as an exposure-adjusted
+crash rate in the way the GLM can.
+
+::: {.callout-note}
+The GLM and XGBoost serve different purposes. The GLM provides the interpretable,
+literature-grounded methodological baseline, supports EB shrinkage, and enables coefficient
+diagnostics. XGBoost provides predictive ranking performance. Validation metrics
+(`AccHR@k`, spatial holdout, temporal holdout) apply to both, but calibration and exposure
+diagnostics (CURE plots, elasticity tests) apply primarily to the GLM. Any formal claim that
+`risk_percentile` is exposure-adjusted should document which model produces it and what
+exposure structure that model uses.
+:::
+
 ### Exposure offset
 
 | Requirement | Literature basis | Current pipeline | Gap / action |
@@ -131,7 +172,7 @@ recommendations are diagnostic first.
 | Spatial CV with exclusion buffer matching residual autocorrelation range | [Validation](validation-and-metrics.qmd): Mahoney 2023 (V-fold only 2% reliable; spatial CV ~60%) | Not implemented | **Diagnostic → pilot**: variogram first, then police-force holdout |
 | Police force area holdout as practical spatial CV approximation | [Spatial](spatial-methods-and-network-risk.qmd); [Validation](validation-and-metrics.qmd): Mahoney 2023 | Not implemented | **Pilot**: hold out one force area; evaluate Stage 2 performance |
 | Balanced accuracy (pool confusion matrices across folds, do not average) | [Validation](validation-and-metrics.qmd): Brodersen 2010; Gilardi 2022 | Not yet implemented | **Diagnostic**: implement after choosing classification threshold |
-| AccHR@k ranking quality metric | [Validation](validation-and-metrics.qmd): Gao 2024 | Not yet implemented | **Diagnostic**: compute for top-1% and top-5% predicted links |
+| `AccHR@k` ranking quality metric | [Validation](validation-and-metrics.qmd): Gao 2024 | Not yet implemented | **Diagnostic**: compute for top-1% and top-5% predicted links |
 | CURE plots by AADT quantile and link-length quantile | [Validation](validation-and-metrics.qmd): Roll 2026; Dutta 2020 | Not yet implemented | **Diagnostic**: 50-quantile bins; in-sample only |
 | Posterior predictive zero check | [Validation](validation-and-metrics.qmd); [Crash frequency](crash-frequency-models.qmd): Pew 2020 | Not yet run | **Diagnostic** (low effort): should precede NB vs ZINB decision |
 | Exposure-only baseline comparison | [Validation](validation-and-metrics.qmd): Roll 2026 | Not yet run | **Diagnostic**: compare full feature model against exposure-only NB/Poisson |
@@ -176,7 +217,7 @@ The table below lists all actions in priority order, combining effort and inform
 | 14 | Police force holdout as practical spatial CV | Pilot | S2 / spatial | Medium |
 | 15 | EB shrinkage extended to KSI sub-band | Pilot | S2 / severity | Medium |
 | 16 | Per-family NB overdispersion parameter for EB weights | Candidate | S2 / EB | Medium |
-| 17 | Balanced accuracy and AccHR@k implementation | Diagnostic | Validation | Medium |
+| 17 | Balanced accuracy and `AccHR@k` implementation | Diagnostic | Validation | Medium |
 | 18 | Argument-averaging correction factor w computation | Diagnostic | S2 / S1b | Medium |
 | 19 | Temporal holdout validation for per-family models | Validation | S2 | Medium |
 | 20 | Separate KSI and slight diagnostic models | Pilot | S2 / severity | High |

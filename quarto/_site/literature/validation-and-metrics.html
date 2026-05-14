@@ -382,7 +382,7 @@ window.Quarto = {
   <li><a href="#classification-and-binary-ranking-metrics" id="toc-classification-and-binary-ranking-metrics" class="nav-link" data-scroll-target="#classification-and-binary-ranking-metrics">Classification and binary ranking metrics</a>
   <ul class="collapse">
   <li><a href="#balanced-accuracy" id="toc-balanced-accuracy" class="nav-link" data-scroll-target="#balanced-accuracy">Balanced accuracy</a></li>
-  <li><a href="#acchrk-accuracy-hit-rate-at-top-k" id="toc-acchrk-accuracy-hit-rate-at-top-k" class="nav-link" data-scroll-target="#acchrk-accuracy-hit-rate-at-top-k">AccHR@k — accuracy hit rate at top-k%</a></li>
+  <li><a href="#acchrk-accuracy-hit-rate-at-top-k" id="toc-acchrk-accuracy-hit-rate-at-top-k" class="nav-link" data-scroll-target="#acchrk-accuracy-hit-rate-at-top-k"><code>AccHR@k</code> — accuracy hit rate at top-k%</a></li>
   </ul></li>
   <li><a href="#count-model-fit-metrics" id="toc-count-model-fit-metrics" class="nav-link" data-scroll-target="#count-model-fit-metrics">Count model fit metrics</a>
   <ul class="collapse">
@@ -491,7 +491,7 @@ window.Quarto = {
 <td>Must pool confusion matrices across folds, not average fold metrics; Brodersen 2010</td>
 </tr>
 <tr class="odd">
-<td>AccHR@k</td>
+<td><code>AccHR@k</code></td>
 <td>Ranking usefulness: top-k% predicted links vs actual crash locations</td>
 <td><strong>Out-of-sample</strong></td>
 <td>Depends on k choice; no exposure normalisation in Gao 2024’s implementation</td>
@@ -565,15 +565,15 @@ Caution
 </div>
 </section>
 <section id="acchrk-accuracy-hit-rate-at-top-k" class="level3">
-<h3 class="anchored" data-anchor-id="acchrk-accuracy-hit-rate-at-top-k">AccHR@k — accuracy hit rate at top-k%</h3>
-<p><strong>Gao, Zhang, Ma, Yang &amp; Ma (2024)</strong> introduce AccHR@k as a ranking quality metric for road risk prediction:</p>
+<h3 class="anchored" data-anchor-id="acchrk-accuracy-hit-rate-at-top-k"><code>AccHR@k</code> — accuracy hit rate at top-k%</h3>
+<p><strong>Gao, Zhang, Ma, Yang &amp; Ma (2024)</strong> introduce <code>AccHR@k</code> as a ranking quality metric for road risk prediction:</p>
 <p><span class="math display">\[\text{AccHR@}k = \frac{|\text{predicted top-}k\% \cap \text{actual crash roads}|}{|\text{predicted top-}k\%|}\]</span></p>
 <p>In words: among the top-<span class="math inline">\(k\)</span>% of roads ranked by predicted risk, what fraction actually experienced crashes in the evaluation period?</p>
-<p>The metric is complementary to balanced accuracy. Balanced accuracy evaluates overall TPR/TNR at a chosen threshold; AccHR@k directly measures whether the model’s high-risk predictions are useful for network screening.</p>
-<p>Gao et al.’s reported AccHR@k values (Table 4, single-year London data) should be treated as indicative rather than directly comparable to Open Road Risk, for three reasons:</p>
+<p>The metric is complementary to balanced accuracy. Balanced accuracy evaluates overall TPR/TNR at a chosen threshold; <code>AccHR@k</code> directly measures whether the model’s high-risk predictions are useful for network screening.</p>
+<p>Gao et al.’s reported <code>AccHR@k</code> values (Table 4, single-year London data) should be treated as indicative rather than directly comparable to Open Road Risk, for three reasons:</p>
 <ol type="1">
 <li><strong>No exposure offset</strong>: the Gao 2024 model uses a severity-weighted composite response without normalising by AADT or link length. Open Road Risk models exposure-adjusted crash frequency.</li>
-<li><strong>Within-year temporal split only</strong>: train/validation/test split is 8:2:2 within a single year (2019). No spatial holdout. AccHR@k may be optimistic due to spatial autocorrelation between nearby training and test links.</li>
+<li><strong>Within-year temporal split only</strong>: train/validation/test split is 8:2:2 within a single year (2019). No spatial holdout. <code>AccHR@k</code> may be optimistic due to spatial autocorrelation between nearby training and test links.</li>
 <li><strong>Single-year London data</strong>: may not generalise across Open Road Risk’s multi-year, multi-region scope.</li>
 </ol>
 <div class="callout callout-style-default callout-note callout-titled">
