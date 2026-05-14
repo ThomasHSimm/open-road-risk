@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2026-05-14">
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
 <title>Literature–Pipeline Alignment – Open Road Risk</title>
@@ -355,6 +356,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li><a href="#stage-2-collision-risk-model" id="toc-stage-2-collision-risk-model" class="nav-link" data-scroll-target="#stage-2-collision-risk-model">Stage 2 — Collision Risk Model</a>
   <ul class="collapse">
   <li><a href="#model-family" id="toc-model-family" class="nav-link" data-scroll-target="#model-family">Model family</a></li>
+  <li><a href="#statistical-baseline-versus-operational-ranking-model" id="toc-statistical-baseline-versus-operational-ranking-model" class="nav-link" data-scroll-target="#statistical-baseline-versus-operational-ranking-model">Statistical baseline versus operational ranking model</a></li>
   <li><a href="#exposure-offset" id="toc-exposure-offset" class="nav-link" data-scroll-target="#exposure-offset">Exposure offset</a></li>
   <li><a href="#empirical-bayes-shrinkage" id="toc-empirical-bayes-shrinkage" class="nav-link" data-scroll-target="#empirical-bayes-shrinkage">Empirical Bayes shrinkage</a></li>
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a></li>
@@ -386,6 +388,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <div class="quarto-title-meta column-page-left">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 14, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -548,6 +556,76 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </tr>
 </tbody>
 </table>
+</section>
+<section id="statistical-baseline-versus-operational-ranking-model" class="level3">
+<h3 class="anchored" data-anchor-id="statistical-baseline-versus-operational-ranking-model">Statistical baseline versus operational ranking model</h3>
+<p>The literature reviewed on this site primarily supports the <strong>GLM/SPF family</strong> as the transparent, interpretable baseline for exposure-adjusted crash-frequency modelling. The reviewed papers — Aguero-Valverde 2008, Gilardi 2022, Hauer 2001, Chengye 2013, Wang 2009, and others — address Poisson and negative binomial GLMs with log-offsets, overdispersion diagnostics, EB shrinkage, and spatial residual structure. This is the methodological evidence base documented across the literature pages.</p>
+<p>The <strong>operational <code>risk_percentile</code></strong> in Open Road Risk is currently produced by XGBoost, not the Poisson GLM. These are structurally different models with different properties:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Poisson GLM</th>
+<th>XGBoost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Exposure elasticity</td>
+<td>Fixed at 1.0 via log-offset</td>
+<td>Implicitly learned; <code>estimated_aadt</code> is a free feature</td>
+</tr>
+<tr class="even">
+<td>AADT functional form</td>
+<td>Log-linear, unit coefficient</td>
+<td>Non-parametric; can capture non-linear AADT effects</td>
+</tr>
+<tr class="odd">
+<td>Interpretability</td>
+<td>Coefficients directly interpretable</td>
+<td>Requires SHAP or partial dependence plots</td>
+</tr>
+<tr class="even">
+<td>Overdispersion</td>
+<td>Not handled (Poisson baseline)</td>
+<td>Not a count model; produces risk scores, not counts</td>
+</tr>
+<tr class="odd">
+<td>Literature support</td>
+<td>Direct SPF/GLM evidence base on this site</td>
+<td>No dedicated literature review in this register</td>
+</tr>
+<tr class="even">
+<td>Spatial leakage risk</td>
+<td>Controlled via grouped-link CV</td>
+<td>Same grouped-link CV applies</td>
+</tr>
+<tr class="odd">
+<td>Calibration</td>
+<td>Can be calibrated via observed/predicted ratio</td>
+<td>Score not directly calibrated as a crash rate</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key implication for the elasticity limitation:</strong> The AADT unit-elasticity constraint is a limitation of the <strong>GLM only</strong>. XGBoost implicitly estimates whatever AADT–crash relationship the data support, including sub-linear or non-linear forms. The free-elasticity diagnostic (priority action 2) therefore applies specifically to the GLM and its use as a methodological baseline. It does not constrain the XGBoost ranking output, but the XGBoost model also has no explicit exposure structure — it cannot be directly validated as an exposure-adjusted crash rate in the way the GLM can.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The GLM and XGBoost serve different purposes. The GLM provides the interpretable, literature-grounded methodological baseline, supports EB shrinkage, and enables coefficient diagnostics. XGBoost provides predictive ranking performance. Validation metrics (<code>AccHR@k</code>, spatial holdout, temporal holdout) apply to both, but calibration and exposure diagnostics (CURE plots, elasticity tests) apply primarily to the GLM. Any formal claim that <code>risk_percentile</code> is exposure-adjusted should document which model produces it and what exposure structure that model uses.</p>
+</div>
+</div>
 </section>
 <section id="exposure-offset" class="level3">
 <h3 class="anchored" data-anchor-id="exposure-offset">Exposure offset</h3>
@@ -825,7 +903,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <td><strong>Diagnostic</strong>: implement after choosing classification threshold</td>
 </tr>
 <tr class="even">
-<td>AccHR@k ranking quality metric</td>
+<td><code>AccHR@k</code> ranking quality metric</td>
 <td><a href="../literature/validation-and-metrics.html">Validation</a>: Gao 2024</td>
 <td>Not yet implemented</td>
 <td><strong>Diagnostic</strong>: compute for top-1% and top-5% predicted links</td>
@@ -1057,7 +1135,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </tr>
 <tr class="odd">
 <td>17</td>
-<td>Balanced accuracy and AccHR@k implementation</td>
+<td>Balanced accuracy and <code>AccHR@k</code> implementation</td>
 <td>Diagnostic</td>
 <td>Validation</td>
 <td>Medium</td>

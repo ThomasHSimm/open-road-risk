@@ -229,6 +229,11 @@ GLM on link-year data.
 
 **Use combined record LIT-045 for citation.**
 
+Roll et al. is used here only as a source for SPF validation practices — specifically
+CURE plots and exposure-only baseline comparisons — not as a transferable vehicle-collision
+coefficient source. The crash target, spatial unit, and exposure definition are all
+incompatible with Open Road Risk.
+
 **Transfers:** CURE plots as in-sample model-fit diagnostics. The exposure-only
 baseline approach (compare full feature model vs log(AADT)-only baseline). The
 three-tier AADT estimation hierarchy (observed → probe → ML data fusion) as
@@ -329,7 +334,7 @@ paper does not transfer to Open Road Risk for the following reasons:
 | **GNN architecture** | GRU temporal encoder + GAT spatial encoder at borough scale (~4,700–5,700 nodes). Computationally infeasible at Open Road Risk's 2.1M link scale. |
 | **Three-borough scope** | Three London boroughs (highly urbanised). Generalisation to Open Road Risk's national rural/urban mixed scope is not tested. |
 
-**What does transfer:** AccHR@k (accuracy hit rate at top-k% predicted roads)
+**What does transfer:** `AccHR@k` (accuracy hit rate at top-k% predicted roads)
 as a ranking evaluation metric. MPIW/PICP as probabilistic uncertainty metrics
 for future probabilistic outputs.
 
@@ -400,7 +405,7 @@ For a consolidated view of how these transferability findings map to the current
 | LIT-003 | Al-Omari, M.M.A. (2021). Crash analysis and development of safety performance functions for Florida roads. *Thesis, University of Central Florida.* |
 | LIT-009 | Chengye, P. & Ranjitkar, P. (2013). Modelling motorway accidents using negative binomial regression. *EASTS Proceedings.* |
 | LIT-034 | Gao, X., Jiang, X., Zhuang, D., Chen, H., Wang, S., Law, S. & Haworth, J. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. |
-| LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *JRSS-A.* — reconciliation pending; do not cite Table 2 coefficient signs without PDF check. |
+| LIT-012/013/014 | Gilardi, A., Mateu, J., Borgoni, R. & Lovelace, R. (2022). Multivariate hierarchical analysis of car crashes data considering a spatial network lattice. *JRSS-A.* — *See verification callout above: do not cite Table 2 coefficient signs without PDF check.* |
 | LIT-015 | Hauer, E., Harwood, D.W., Council, F.M. & Griffith, M.S. (2001). Estimating safety by the empirical Bayes method: a tutorial. *TRR.* |
 | LIT-016 / LIT-042 | Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. *Future Transportation.* [DOI:10.3390/futuretransp4010013](https://doi.org/10.3390/futuretransp4010013) — use combined record LIT-042. |
 | LIT-017 / LIT-043 | Jayasinghe, A., Sano, K., Abenayake, C. & Mahanama, P.K.S. (2019). A novel approach to model traffic on road segments of large-scale urban road networks. *MethodsX.* — use combined record LIT-043. |
@@ -412,7 +417,7 @@ For a consolidated view of how these transferability findings map to the current
 | LIT-028 / LIT-045 | Roll, J., Anderson, J. & McNeil, N. (2026). Developing a pedestrian safety performance function for Oregon. *FHWA-OR-RD-26-06.* — use combined record LIT-045. |
 | LIT-029 | Wang, C., Quddus, M.A. & Ison, S.G. (2009). Impact of traffic congestion on road safety: a spatial analysis of the M25 motorway. *Accident Analysis & Prevention.* |
 | LIT-035 | Balawi, M. & Tenekeci, G. (2024). Time series traffic collision analysis of London hotspots. *Heliyon.* [DOI:10.1016/j.heliyon.2024.e25710](https://doi.org/10.1016/j.heliyon.2024.e25710) |
-| LIT-031/041 | Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in road safety. — reconciliation pending; year and DOI not confirmed from PDF; do not cite numerical values from reviewed studies without checking primary sources. |
+| LIT-031/041 | Ziakopoulos, A. & Yannis, G. (2020). A review of spatial approaches in road safety. — *Year and DOI not confirmed from PDF; reconciliation pending. Do not cite numerical values from reviewed studies without checking primary sources.* |
 | LIT-056 | Department for Transport (2024). *Road Safety Factors: Initial Analysis.* Official Statistics. |
 | LIT-057 | Department for Transport (2025). *Guide to road safety and contributory factors for reported road casualties Great Britain.* |
 | LIT-058 | Department for Transport (2025). *Reported Road Casualties Great Britain, Annual Report: 2024.* Accredited Official Statistics. |

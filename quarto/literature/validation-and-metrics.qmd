@@ -30,7 +30,7 @@ classifies the metrics used or referenced in this project.
 | V-fold cross-validation RMSE | Resampled estimate of predictive error | **Spatially leaky** | Mahoney 2023: V-fold CV is severely optimistic; only 2% within target RMSE range at best parameter settings |
 | Spatially blocked CV RMSE | Predictive error with spatial autocorrelation controlled | **Spatial holdout** | Requires choice of exclusion buffer; Mahoney 2023: clustering CV achieves 37–60% within target range |
 | Balanced accuracy | Classification quality under severe class imbalance | **Holdout or posterior** | Must pool confusion matrices across folds, not average fold metrics; Brodersen 2010 |
-| AccHR@k | Ranking usefulness: top-k% predicted links vs actual crash locations | **Out-of-sample** | Depends on k choice; no exposure normalisation in Gao 2024's implementation |
+| `AccHR@k` | Ranking usefulness: top-k% predicted links vs actual crash locations | **Out-of-sample** | Depends on k choice; no exposure normalisation in Gao 2024's implementation |
 | CURE plot | Model misspecification at specific covariate ranges | **In-sample diagnostic** | Does not test generalisation; flags systematic bias by AADT or length band |
 | Posterior predictive zero check | Zero-inflation calibration | **In-sample diagnostic** | Pew 2020 procedure; p ≈ 0.50 indicates calibration; p ≫ 0.50 indicates excess predicted zeros |
 | MPIW / PICP | Prediction interval width and coverage | **Out-of-sample** | Gao 2024; requires probabilistic model |
@@ -92,9 +92,9 @@ verified against the source PDF at this level of extraction confidence. Do not
 cite specific coefficient signs from that table without checking the original.
 :::
 
-### AccHR@k — accuracy hit rate at top-k%
+### `AccHR@k` — accuracy hit rate at top-k%
 
-**Gao, Zhang, Ma, Yang & Ma (2024)** introduce AccHR@k as a ranking quality
+**Gao, Zhang, Ma, Yang & Ma (2024)** introduce `AccHR@k` as a ranking quality
 metric for road risk prediction:
 
 $$\text{AccHR@}k = \frac{|\text{predicted top-}k\% \cap \text{actual crash roads}|}{|\text{predicted top-}k\%|}$$
@@ -103,10 +103,10 @@ In words: among the top-$k$% of roads ranked by predicted risk, what fraction
 actually experienced crashes in the evaluation period?
 
 The metric is complementary to balanced accuracy. Balanced accuracy evaluates
-overall TPR/TNR at a chosen threshold; AccHR@k directly measures whether the
+overall TPR/TNR at a chosen threshold; `AccHR@k` directly measures whether the
 model's high-risk predictions are useful for network screening.
 
-Gao et al.'s reported AccHR@k values (Table 4, single-year London data)
+Gao et al.'s reported `AccHR@k` values (Table 4, single-year London data)
 should be treated as indicative rather than directly comparable to Open Road
 Risk, for three reasons:
 
@@ -114,7 +114,7 @@ Risk, for three reasons:
    composite response without normalising by AADT or link length. Open Road
    Risk models exposure-adjusted crash frequency.
 2. **Within-year temporal split only**: train/validation/test split is 8:2:2
-   within a single year (2019). No spatial holdout. AccHR@k may be optimistic
+   within a single year (2019). No spatial holdout. `AccHR@k` may be optimistic
    due to spatial autocorrelation between nearby training and test links.
 3. **Single-year London data**: may not generalise across Open Road Risk's
    multi-year, multi-region scope.
