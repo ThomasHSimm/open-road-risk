@@ -1,0 +1,88 @@
+---
+title: "ukgeo — UK Location Geocoder"
+description: "Resolving UK road references, place names, and infrastructure to coordinates"
+---
+
+## What is ukgeo?
+
+[ukgeo](https://github.com/ThomasHSimm/ukgeo) is an open-source Python geocoder built specifically for UK location text. It resolves messy free-text inputs — road references, junction names, place names, colloquial names — to latitude/longitude coordinates without API calls or rate limits.
+
+It was developed alongside Open Road Risk to handle the kinds of location strings that appear in road safety data: motorway junction references, A-road descriptions, named interchanges, and administrative place names.
+
+## Why it matters for road safety data
+
+Standard geocoders struggle with road safety inputs:
+
+- `"M62 Junction 26"` — a junction reference, not a postal address
+- `"A647 near Bradford"` — a road with place context
+- `"Spaghetti Junction Birmingham"` — a colloquial name
+- `"Lofthouse Interchange"` — a named motorway feature
+
+ukgeo handles all of these using a tiered pipeline backed by OS Open Names, OS Open Roads, and OpenStreetMap data.
+
+## Installation
+
+```bash
+pip install ukgeo
+ukgeo setup    # downloads ~50MB reference dataset from Kaggle
+```
+
+## Basic usage
+
+```python
+from ukgeo import Geocoder
+
+geo = Geocoder()
+
+# Single query
+result = geo.geocode("M62 Junction 26")
+print(result.lat, result.lon)     # 53.7362, -1.7266
+print(result.confidence)          # High
+print(result.level_resolved)      # 2
+
+# Batch geocoding
+import polars as pl
+locations = pl.Series(["LS1 1BA", "A647 near Bradford", "Skipton, North Yorkshire"])
+results = geo.geocode_batch(locations)
+```
+
+## How it works
+
+ukgeo uses a four-level pipeline, escalating complexity only when needed:
+
+| Level | Method | Speed | Examples handled |
+|---|---|---|---|
+| 0 | Infrastructure alias lookup | <1ms | Dartford Crossing, Spaghetti Junction |
+| 1 | Regex + postcodes.io | ~100ms | LS1 1BA, M62 J26 |
+| 2 | OS Names token scoring | ~5ms | Skipton North Yorkshire, A647 Bradford |
+| 3 | OS Names API fallback | ~200ms | Bus stations, airports, services |
+
+## Performance
+
+Benchmarked against 5,000 STATS19 2024 collision records:
+
+| Input type | Median error | Notes |
+|---|---|---|
+| Postcode | <100m | postcodes.io centroid |
+| Motorway junction | <10m | OS Open Roads point geometry |
+| B-road | 1,927m | OSM segment matching |
+| A-road | 4,490m | Road centroid — structurally limited |
+
+Road-only inputs (no junction or place context) resolve to the road's OS centroid. For STATS19 records this rarely matters since GPS coordinates are already present — ukgeo is most useful for derived datasets and reports that have road references but no coordinates.
+
+## Data sources
+
+| Dataset | Content | Licence |
+|---|---|---|
+| OS Open Names | Places, roads, postcodes | OGL v3 |
+| OS Open Roads | Motorway junction points | OGL v3 |
+| OpenStreetMap | Named junctions, roundabouts, B-roads | ODbL |
+
+Pre-built data available on [Kaggle](https://www.kaggle.com/datasets/thomassimm/ukgeo-combined-dataset).
+
+## Links
+
+- [GitHub repository](https://github.com/ThomasHSimm/ukgeo)
+- [PyPI package](https://pypi.org/project/ukgeo/)
+- [Kaggle dataset](https://www.kaggle.com/datasets/thomassimm/ukgeo-combined-dataset)
+- [Known limitations and ecosystem overview](https://github.com/ThomasHSimm/ukgeo/blob/main/docs/gaps_and_ecosystem.md)

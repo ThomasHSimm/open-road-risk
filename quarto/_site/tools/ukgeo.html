@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>Literature Review – Open Road Risk</title>
+<title>ukgeo — UK Location Geocoder – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -82,41 +117,21 @@ gtag('js', new Date());
 gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </script>
 <style>html{ scroll-behavior: smooth; }</style>
-<style>
-
-      .quarto-title-block .quarto-title-banner h1,
-      .quarto-title-block .quarto-title-banner h2,
-      .quarto-title-block .quarto-title-banner h3,
-      .quarto-title-block .quarto-title-banner h4,
-      .quarto-title-block .quarto-title-banner h5,
-      .quarto-title-block .quarto-title-banner h6
-      {
-        color: #ffffff;
-      }
-
-      .quarto-title-block .quarto-title-banner {
-        color: #ffffff;
-background-image: url(../assets/oldmiss.jpg);
-background-size: cover;
-      }
-</style>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Literature Review – Open Road Risk">
-<meta property="og:description" content="Overview of the road safety and transport modelling literature reviewed for Open Road Risk, its scope, review process, and how it informs the pipeline.">
-<meta property="og:image" content="https://openroadrisk.org/assets/oldmiss.jpg">
+<meta property="og:title" content="ukgeo — UK Location Geocoder – Open Road Risk">
+<meta property="og:description" content="Resolving UK road references, place names, and infrastructure to coordinates">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Literature Review – Open Road Risk">
-<meta name="twitter:description" content="Overview of the road safety and transport modelling literature reviewed for Open Road Risk, its scope, review process, and how it informs the pipeline.">
-<meta name="twitter:image" content="https://openroadrisk.org/assets/oldmiss.jpg">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ukgeo — UK Location Geocoder – Open Road Risk">
+<meta name="twitter:description" content="Resolving UK road references, place names, and infrastructure to coordinates">
+<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -372,161 +387,210 @@ background-size: cover;
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Literature Review</h1>
-                  <div>
-        <div class="description">
-          Overview of the road safety and transport modelling literature reviewed for Open Road Risk, its scope, review process, and how it informs the pipeline.
-        </div>
-      </div>
-                </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page-left">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul class="collapse">
-  <li><a href="#purpose-and-scope" id="toc-purpose-and-scope" class="nav-link active" data-scroll-target="#purpose-and-scope">Purpose and scope</a></li>
-  <li><a href="#review-process" id="toc-review-process" class="nav-link" data-scroll-target="#review-process">Review process</a></li>
-  <li><a href="#what-this-review-is-not" id="toc-what-this-review-is-not" class="nav-link" data-scroll-target="#what-this-review-is-not">What this review is not</a></li>
-  <li><a href="#literature-pages" id="toc-literature-pages" class="nav-link" data-scroll-target="#literature-pages">Literature pages</a></li>
-  <li><a href="#pipeline-alignment" id="toc-pipeline-alignment" class="nav-link" data-scroll-target="#pipeline-alignment">Pipeline alignment</a></li>
-  <li><a href="#literature-register" id="toc-literature-register" class="nav-link" data-scroll-target="#literature-register">Literature register</a></li>
-  <li><a href="#coverage-gaps" id="toc-coverage-gaps" class="nav-link" data-scroll-target="#coverage-gaps">Coverage gaps</a></li>
+  <ul>
+  <li><a href="#what-is-ukgeo" id="toc-what-is-ukgeo" class="nav-link active" data-scroll-target="#what-is-ukgeo">What is ukgeo?</a></li>
+  <li><a href="#why-it-matters-for-road-safety-data" id="toc-why-it-matters-for-road-safety-data" class="nav-link" data-scroll-target="#why-it-matters-for-road-safety-data">Why it matters for road safety data</a></li>
+  <li><a href="#installation" id="toc-installation" class="nav-link" data-scroll-target="#installation">Installation</a></li>
+  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a></li>
+  <li><a href="#how-it-works" id="toc-how-it-works" class="nav-link" data-scroll-target="#how-it-works">How it works</a></li>
+  <li><a href="#performance" id="toc-performance" class="nav-link" data-scroll-target="#performance">Performance</a></li>
+  <li><a href="#data-sources" id="toc-data-sources" class="nav-link" data-scroll-target="#data-sources">Data sources</a></li>
+  <li><a href="#links" id="toc-links" class="nav-link" data-scroll-target="#links">Links</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">ukgeo — UK Location Geocoder</h1>
+</div>
+
+<div>
+  <div class="description">
+    Resolving UK road references, place names, and infrastructure to coordinates
+  </div>
+</div>
 
 
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
-<p>This section documents the methodological literature that informs the Open Road Risk pipeline. It is not a comprehensive survey of road safety research. It is a targeted review focused on one question: what does the peer-reviewed evidence say about building an exposure-adjusted road collision risk model at national scale from open UK data?</p>
-<hr>
-<section id="purpose-and-scope" class="level2">
-<h2 class="anchored" data-anchor-id="purpose-and-scope">Purpose and scope</h2>
-<p>Open Road Risk estimates crash risk for approximately 2.17 million OS Open Roads links across England, using STATS19 injury collision data, estimated AADT from sparse DfT AADF counts, and road/network/contextual features derived from open data. The pipeline has three stages:</p>
-<ul>
-<li><strong>Stage 1a</strong> — machine-learning AADT estimation from ~8,000 DfT AADF count sites</li>
-<li><strong>Stage 1b</strong> — time-zone traffic profile estimation from WebTRIS National Highways sensors</li>
-<li><strong>Stage 2</strong> — Poisson GLM and XGBoost collision risk model at link × year grain</li>
-</ul>
-<p>The literature review was designed to answer questions that arise directly from these design choices:</p>
-<ul>
-<li>Which count model family is appropriate for zero-heavy, low-mean integer outcomes?</li>
-<li>How should traffic exposure be handled when most AADT values are estimated rather than observed?</li>
-<li>What does the evidence say about temporal disaggregation of exposure?</li>
-<li>How do spatial autocorrelation and cross-validation design interact?</li>
-<li>What is the evidence base for junction-level risk mechanisms that the link-year model cannot capture?</li>
-<li>When and how should severity be modelled separately from frequency?</li>
-<li>What validation metrics are appropriate for a sparse count ranking model?</li>
-<li>Which methods from the international literature are actually transferable to UK open data?</li>
-</ul>
-<p>Papers were selected for extraction if they spoke directly to these questions, used methods comparable to the pipeline’s approach, or provided cautionary evidence about failure modes.</p>
-<hr>
+
+<section id="what-is-ukgeo" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-ukgeo">What is ukgeo?</h2>
+<p><a href="https://github.com/ThomasHSimm/ukgeo">ukgeo</a> is an open-source Python geocoder built specifically for UK location text. It resolves messy free-text inputs — road references, junction names, place names, colloquial names — to latitude/longitude coordinates without API calls or rate limits.</p>
+<p>It was developed alongside Open Road Risk to handle the kinds of location strings that appear in road safety data: motorway junction references, A-road descriptions, named interchanges, and administrative place names.</p>
 </section>
-<section id="review-process" class="level2">
-<h2 class="anchored" data-anchor-id="review-process">Review process</h2>
-<p>Each paper was extracted using a structured prompt schema that records:</p>
+<section id="why-it-matters-for-road-safety-data" class="level2">
+<h2 class="anchored" data-anchor-id="why-it-matters-for-road-safety-data">Why it matters for road safety data</h2>
+<p>Standard geocoders struggle with road safety inputs:</p>
 <ul>
-<li>response variable, spatial unit, temporal resolution</li>
-<li>exposure treatment and traffic data source</li>
-<li>model family and validation design</li>
-<li>transferability to Open Road Risk’s data stack</li>
-<li>repo-actionable implications</li>
+<li><code>"M62 Junction 26"</code> — a junction reference, not a postal address</li>
+<li><code>"A647 near Bradford"</code> — a road with place context</li>
+<li><code>"Spaghetti Junction Birmingham"</code> — a colloquial name</li>
+<li><code>"Lofthouse Interchange"</code> — a named motorway feature</li>
 </ul>
-<p>High-priority papers received two independent AI extractions, a cross-audit, and a reconciliation to produce a final record. Lower-priority papers received a single extraction and lightweight sanity check.</p>
-<p>The review process is documented in full in <code>literature/prompts/README_literature_extraction.md</code>.</p>
-<hr>
+<p>ukgeo handles all of these using a tiered pipeline backed by OS Open Names, OS Open Roads, and OpenStreetMap data.</p>
 </section>
-<section id="what-this-review-is-not" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-review-is-not">What this review is not</h2>
-<p>This review does not:</p>
-<ul>
-<li>Cover crash causation or behavioural risk factors (driver behaviour, alcohol, vehicle condition). These are documented as a structural explanatory ceiling in the <a href="../literature/validation-and-metrics.html">Validation and Metrics</a> page.</li>
-<li>Survey pedestrian or cyclist safety literature, except where it provides methodological evidence relevant to the collision frequency model.</li>
-<li>Cover the Highway Safety Manual or US AASHTO design guidance as primary sources; specific findings from US studies are included where they transfer to UK open data.</li>
-<li>Constitute a systematic review in the epidemiological sense. Coverage is selective and driven by pipeline questions, not exhaustive search and inclusion criteria.</li>
-</ul>
-<hr>
+<section id="installation" class="level2">
+<h2 class="anchored" data-anchor-id="installation">Installation</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install ukgeo</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ukgeo</span> setup    <span class="co"># downloads ~50MB reference dataset from Kaggle</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="literature-pages" class="level2">
-<h2 class="anchored" data-anchor-id="literature-pages">Literature pages</h2>
-<p>Each page below synthesises findings across multiple papers on a connected topic. The pages document what papers found; they do not describe the current state of the pipeline. For the pipeline-state view, see the alignment page.</p>
+<section id="basic-usage" class="level2">
+<h2 class="anchored" data-anchor-id="basic-usage">Basic usage</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ukgeo <span class="im">import</span> Geocoder</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>geo <span class="op">=</span> Geocoder()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Single query</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> geo.geocode(<span class="st">"M62 Junction 26"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(result.lat, result.lon)     <span class="co"># 53.7362, -1.7266</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(result.confidence)          <span class="co"># High</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(result.level_resolved)      <span class="co"># 2</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Batch geocoding</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>locations <span class="op">=</span> pl.Series([<span class="st">"LS1 1BA"</span>, <span class="st">"A647 near Bradford"</span>, <span class="st">"Skipton, North Yorkshire"</span>])</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> geo.geocode_batch(locations)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="how-it-works" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-works">How it works</h2>
+<p>ukgeo uses a four-level pipeline, escalating complexity only when needed:</p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
 <thead>
 <tr class="header">
-<th>Page</th>
-<th>What it covers</th>
+<th>Level</th>
+<th>Method</th>
+<th>Speed</th>
+<th>Examples handled</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../literature/crash-frequency-models.html">Crash Frequency Models</a></td>
-<td>Poisson, NB, zero-inflation, EB shrinkage, overdispersion, serial correlation</td>
+<td>0</td>
+<td>Infrastructure alias lookup</td>
+<td>&lt;1ms</td>
+<td>Dartford Crossing, Spaghetti Junction</td>
 </tr>
 <tr class="even">
-<td><a href="../literature/exposure-and-traffic-volume.html">Exposure and Traffic Volume</a></td>
-<td>AADT elasticity, exposure offset structure, estimated vs observed AADT, temporal exposure disaggregation, argument-averaging bias</td>
+<td>1</td>
+<td>Regex + postcodes.io</td>
+<td>~100ms</td>
+<td>LS1 1BA, M62 J26</td>
 </tr>
 <tr class="odd">
-<td><a href="../literature/spatial-methods-and-network-risk.html">Spatial Methods and Network Risk</a></td>
-<td>Spatial autocorrelation in crash models, spatial CV design, network point processes, MAUP</td>
+<td>2</td>
+<td>OS Names token scoring</td>
+<td>~5ms</td>
+<td>Skipton North Yorkshire, A647 Bradford</td>
 </tr>
 <tr class="even">
-<td><a href="../literature/junctions-and-conflict-structure.html">Junctions and Conflict Structure</a></td>
-<td>Junction risk mechanisms, why the link-year model cannot capture them, derivable proxy features</td>
-</tr>
-<tr class="odd">
-<td><a href="../literature/severity-modelling.html">Severity Modelling</a></td>
-<td>Frequency vs severity as separate estimands, ordered response models, joint modelling, post-event variable leakage, STATS19 underreporting</td>
-</tr>
-<tr class="even">
-<td><a href="../literature/validation-and-metrics.html">Validation and Metrics</a></td>
-<td>Metric taxonomy, balanced accuracy, pseudo-R², CURE plots, spatial CV, temporal holdout, structural explanatory ceiling</td>
-</tr>
-<tr class="odd">
-<td><a href="../literature/transferability-and-open-data-limits.html">Transferability and Open Data Limits</a></td>
-<td>Per-paper transferability assessment, UK open-data availability matrix, negative-transfer examples</td>
+<td>3</td>
+<td>OS Names API fallback</td>
+<td>~200ms</td>
+<td>Bus stations, airports, services</td>
 </tr>
 </tbody>
 </table>
-<hr>
 </section>
-<section id="pipeline-alignment" class="level2">
-<h2 class="anchored" data-anchor-id="pipeline-alignment">Pipeline alignment</h2>
-<p>The <a href="../literature/literature-pipeline-alignment.html">Literature–Pipeline Alignment</a> page consolidates the implications from all seven pages into one place, organised by pipeline stage. It maps each literature recommendation to the current pipeline state and recommended action. This is the page that changes when the pipeline changes; the literature pages themselves are stable.</p>
-<hr>
+<section id="performance" class="level2">
+<h2 class="anchored" data-anchor-id="performance">Performance</h2>
+<p>Benchmarked against 5,000 STATS19 2024 collision records:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Input type</th>
+<th>Median error</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Postcode</td>
+<td>&lt;100m</td>
+<td>postcodes.io centroid</td>
+</tr>
+<tr class="even">
+<td>Motorway junction</td>
+<td>&lt;10m</td>
+<td>OS Open Roads point geometry</td>
+</tr>
+<tr class="odd">
+<td>B-road</td>
+<td>1,927m</td>
+<td>OSM segment matching</td>
+</tr>
+<tr class="even">
+<td>A-road</td>
+<td>4,490m</td>
+<td>Road centroid — structurally limited</td>
+</tr>
+</tbody>
+</table>
+<p>Road-only inputs (no junction or place context) resolve to the road’s OS centroid. For STATS19 records this rarely matters since GPS coordinates are already present — ukgeo is most useful for derived datasets and reports that have road references but no coordinates.</p>
 </section>
-<section id="literature-register" class="level2">
-<h2 class="anchored" data-anchor-id="literature-register">Literature register</h2>
-<p>The <a href="../background/literature-evidence-register.html">Evidence Register</a> tracks all extracted papers, their extraction status, active reconciliation work, and the candidate Quarto pages they feed. It is the primary provenance record for the literature review.</p>
-<hr>
+<section id="data-sources" class="level2">
+<h2 class="anchored" data-anchor-id="data-sources">Data sources</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>Content</th>
+<th>Licence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OS Open Names</td>
+<td>Places, roads, postcodes</td>
+<td>OGL v3</td>
+</tr>
+<tr class="even">
+<td>OS Open Roads</td>
+<td>Motorway junction points</td>
+<td>OGL v3</td>
+</tr>
+<tr class="odd">
+<td>OpenStreetMap</td>
+<td>Named junctions, roundabouts, B-roads</td>
+<td>ODbL</td>
+</tr>
+</tbody>
+</table>
+<p>Pre-built data available on <a href="https://www.kaggle.com/datasets/thomassimm/ukgeo-combined-dataset">Kaggle</a>.</p>
 </section>
-<section id="coverage-gaps" class="level2">
-<h2 class="anchored" data-anchor-id="coverage-gaps">Coverage gaps</h2>
-<p>Several topic areas are not yet well-covered in the reviewed set:</p>
-<p><strong>Temporal disaggregation at the model level.</strong> Mensah &amp; Hauer (1998), Qin et al.&nbsp;(2006), and Dutta &amp; Fontaine (2020) establish the theoretical and empirical case for temporal exposure conditioning. The pipeline infrastructure (Stage 1b time-zone profiles) exists, but whether conditioning Stage 2 on time-zone fractions materially improves held-out performance has not been formally validated. An ad-hoc diagnostic using <code>core_overnight_ratio</code> showed a modest improvement (~+0.004 R²) under a single seed; this should be confirmed with the 5-seed harness before production adoption.</p>
-<p><strong>Spatial validation.</strong> No paper in the reviewed set was designed to validate a link-level crash model on a network as large or diverse as Open Road Risk’s. Mahoney et al.&nbsp;(2023) provide the best available methodology guidance for spatial CV, but their simulation used a regular grid with a single crash type. The empirical spatial autocorrelation range for Open Road Risk’s mixed national network has not been measured.</p>
-<p><strong>Severity at link-year scale.</strong> The severity literature (Boulieri 2016, Gilardi 2022, Michalaki 2015, Quddus 2010) is mostly at aggregate spatial units or event level. The sparse KSI count problem at individual OS Open Roads link-year grain — where most links have zero KSI events in any given year — is not directly addressed in the reviewed set.</p>
-<p><strong>Minor road exposure estimation.</strong> The Stage 1a AADT estimation problem for unclassified and classified unnumbered roads (approximately 60% of the network) is documented as a gap, but no reviewed paper directly addresses ML-based AADT estimation at this spatial density and road-type composition.</p>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<ul>
+<li><a href="https://github.com/ThomasHSimm/ukgeo">GitHub repository</a></li>
+<li><a href="https://pypi.org/project/ukgeo/">PyPI package</a></li>
+<li><a href="https://www.kaggle.com/datasets/thomassimm/ukgeo-combined-dataset">Kaggle dataset</a></li>
+<li><a href="https://github.com/ThomasHSimm/ukgeo/blob/main/docs/gaps_and_ecosystem.md">Known limitations and ecosystem overview</a></li>
+</ul>
 
 
 </section>
