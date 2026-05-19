@@ -464,7 +464,7 @@ Note
 <section id="open-road-risks-exposure-data-stack" class="level2">
 <h2 class="anchored" data-anchor-id="open-road-risks-exposure-data-stack">Open Road Risk’s exposure data stack</h2>
 <p>The single largest gap between Open Road Risk and most papers in the literature is that Open Road Risk does not observe AADT — it estimates it.</p>
-<p>Approximately 0.4% of OS Open Roads links have a directly counted DfT AADF observation. The remaining ~96% of links receive an AADT estimate from the Stage 1a machine-learning model, trained on the counted subset using road/network/context features. This introduces estimation uncertainty that most comparison papers never face: they work with either complete sensor networks (Wang 2009 on the M25, using UKHA hourly counts for all 70 segments), or nationally complete probe-based data (Roll et al.&nbsp;2026, which uses INRIX commercial speed data for a second estimation tier in Oregon).</p>
+<p>The processed AADF table contains approximately 14,200 count points across 2015–2024, including DfT-estimated rows. Stage 1a trains on the cleaner subset of approximately 12,900 count points with at least one directly <code>Counted</code> observation. That direct-count training signal is equivalent to only about 0.6% as many measured locations as the 2.17 million OS Open Roads links being scored, so the remaining ~99.4% of links receive an AADT estimate from the Stage 1a machine-learning model. This introduces estimation uncertainty that most comparison papers never face: they work with either complete sensor networks (Wang 2009 on the M25, using UKHA hourly counts for all 70 segments), or nationally complete probe-based data (Roll et al.&nbsp;2026, which uses INRIX commercial speed data for a second estimation tier in Oregon).</p>
 <p>The table below summarises how the reviewed papers obtain their traffic exposure.</p>
 <table class="caption-top table">
 <colgroup>
@@ -532,7 +532,7 @@ Note
 </tr>
 <tr class="odd">
 <td>Open Road Risk</td>
-<td>DfT AADF (~8,000 sites, ~0.4% of links) → Stage 1a ML estimate</td>
+<td>DfT AADF (~12,900 directly counted count points; ~0.6% of link count) → Stage 1a ML estimate</td>
 <td>All ~2.17M links (estimated)</td>
 <td>Stage 1a model fills the gap; uncertainty not propagated into Stage 2</td>
 </tr>
@@ -681,7 +681,7 @@ Warning
 <td>Complete observed sensor AADT</td>
 <td>Wang 2009; Aguero-Valverde 2008; Pew 2020</td>
 <td>Not available nationally</td>
-<td>DfT AADF covers ~0.4% of links; Stage 1a fills the gap</td>
+<td>Directly counted DfT AADF training locations are equivalent to ~0.6% of the scored link count; Stage 1a fills the gap</td>
 </tr>
 <tr class="odd">
 <td>INRIX probe-based AADT</td>
@@ -708,7 +708,7 @@ Warning
 <section id="stage-1a-validation-what-the-literature-suggests" class="level2">
 <h2 class="anchored" data-anchor-id="stage-1a-validation-what-the-literature-suggests">Stage 1a validation: what the literature suggests</h2>
 <p>Two papers speak directly to how Stage 1a AADT estimation should be validated and what its failure modes are.</p>
-<p>Jayasinghe et al.&nbsp;(2019) show that a learning-curve diagnostic — measuring validation error as a function of the number of calibration count points — is a simple, useful way to understand how performance degrades with sparse coverage. Around 40 calibration observations produced RMSE below 30% in their five case cities. Open Road Risk has approximately 8,000 DfT AADF count points, which is dense by comparison, but the points are highly skewed toward major roads. The learning curve for minor road AADT estimation would look quite different if assessed separately.</p>
+<p>Jayasinghe et al.&nbsp;(2019) show that a learning-curve diagnostic — measuring validation error as a function of the number of calibration count points — is a simple, useful way to understand how performance degrades with sparse coverage. Around 40 calibration observations produced RMSE below 30% in their five case cities. Open Road Risk has approximately 12,900 directly counted DfT AADF count points in the current Stage 1a training signal, which is dense by comparison, but the points are highly skewed toward major roads. The learning curve for minor road AADT estimation would look quite different if assessed separately.</p>
 <p>Roll et al.&nbsp;(2026) show that CV metrics alone are insufficient: application sanity checks (checking the full-network prediction distribution by road class and AADT band) detected implausible outputs in two of the four models tested, failures that the CV metrics did not reveal. Open Road Risk should compare the distribution of Stage 1a predicted AADT by road class and rural/urban classification against observed AADF values and known traffic-volume relationships.</p>
 <p>Both papers confirm that low-AADT links are the hardest to estimate well. Jayasinghe et al. (2019) report RMSE of 193–412% in the lowest AADT category. Huda and Al-Kaisy (2024) find that AADT explains almost nothing in the crash-risk model for links with fewer than 1000 vehicles per day — geometry dominates at that end. This does not mean Stage 1a performance on low-volume links is unimportant, but it contextualises what is at stake: for minor rural roads, exposure uncertainty matters less to the final risk ranking than the quality of the geometric and network features.</p>
 <hr>

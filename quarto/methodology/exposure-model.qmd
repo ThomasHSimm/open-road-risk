@@ -21,11 +21,13 @@ traffic exposure. A motorway with 100,000 vehicles per day should have more
 collisions than a rural lane with 500. Risk is collisions per unit of traffic
 exposure, not collisions per road link.
 
-AADF (Annual Average Daily Flow) count points provide directly measured
-exposure at ~13,000 locations across the study area (Birmingham to Yorkshire).
-Most road links — particularly minor and unclassified roads — have no nearby
-count point. Stage 1a estimates AADT for all 2.1 million OS Open Roads links
-using the measured count points as training data.
+AADF (Annual Average Daily Flow) count points provide the measured exposure
+anchor for Stage 1a. The processed table contains ~14,200 count points across
+2015--2024, including DfT-estimated rows; the current training signal uses the
+~12,900 count points with at least one directly `Counted` observation. Most
+road links — particularly minor and unclassified roads — have no nearby count
+point. Stage 1a estimates AADT for all 2.17 million OS Open Roads links using
+the directly counted subset as training data.
 
 ## Data and model setup
 
@@ -153,8 +155,9 @@ holdout validation. Estimated AADF rows are year-on-year interpolations, so
 including them would mix DfT interpolation with the project's own network-wide
 extrapolation model.
 
-This drops 1,288 count points (9.1% of count-point locations) with no Counted
-observation in the 2015-2024 training window. The drop rate is approximately
+This drops 1,288 of 14,193 count points (9.1% of count-point locations) with no
+Counted observation in the 2015-2024 training window, leaving 12,905 directly
+counted training count points. The drop rate is approximately
 twice as high on Major roads (11.2%) as on Minor roads (4.6%), which means the
 counted-only training set is modestly less representative of Major-road
 conditions than a raw AADF training set would be. Regional distribution is

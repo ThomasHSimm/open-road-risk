@@ -38,10 +38,10 @@ recommendations are diagnostic first.
 
 | Requirement | Literature basis | Current pipeline | Gap / action |
 |---|---|---|---|
-| AADT coverage: observed counts as ground truth, ML fills the gap | [Exposure](exposure-and-traffic-volume.qmd): Roll 2026 three-tier hierarchy; Jayasinghe 2019 | DfT AADF (~0.4% of links) → Stage 1a ML estimate for all ~2.17M links | **Documentation**: document that ~96% of AADT is estimated, not observed |
+| AADT coverage: observed counts as ground truth, ML fills the gap | [Exposure](exposure-and-traffic-volume.qmd): Roll 2026 three-tier hierarchy; Jayasinghe 2019 | DfT AADF (~12,900 directly counted training count points; ~0.6% of link count) → Stage 1a ML estimate for all ~2.17M links | **Documentation**: document that ~99.4% of link-level AADT is estimated, not directly observed |
 | Low-AADT links hardest to estimate; geometry dominates below 1000 vpd | [Exposure](exposure-and-traffic-volume.qmd): Jayasinghe 2019 (RMSE 193–412% for lowest AADT band); Huda 2024 (R² drop 0.009 when AADT removed at low-volume) | Stage 1a trained on AADF without low-AADT stratification | **Diagnostic**: report Stage 1a CV error separately by road class and AADT band |
 | Application sanity checks on full-network predictions | [Exposure](exposure-and-traffic-volume.qmd): Roll 2026 (XGBoost produced negative AADT; NB produced implausible maxima; CV metrics did not reveal this) | CV metrics reported; full-network distribution not checked by road class | **Diagnostic**: compare distribution of predicted AADT by road class and rural/urban against AADF observations |
-| Learning-curve diagnostic for sparse-count validation | [Exposure](exposure-and-traffic-volume.qmd): Jayasinghe 2019 (~40 calibration points → RMSE < 30%) | Not run | **Diagnostic** (low effort): plot Stage 1a CV error vs number of AADF sites in each road class |
+| Learning-curve diagnostic for sparse-count validation | [Exposure](exposure-and-traffic-volume.qmd): Jayasinghe 2019 (~40 calibration points → RMSE < 30%) | Not run | **Diagnostic** (low effort): plot Stage 1a CV error vs number of directly counted AADF count points in each road class |
 | Centrality features support AADT estimation | [Transferability](transferability-and-open-data-limits.qmd): Jayasinghe 2019; Gilardi 2022 | Betweenness centrality already in Stage 1a feature set | No gap — document as confirmed by literature |
 
 ---
