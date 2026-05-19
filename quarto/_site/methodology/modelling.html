@@ -440,7 +440,7 @@ background-size: cover;
 <tr class="odd">
 <td><strong>1a — Traffic volume</strong></td>
 <td>AADT for every road link</td>
-<td>DfT measures traffic at ~13,000 count points; the network has 2.1M links</td>
+<td>DfT AADF has ~14,200 processed count points, of which ~12,900 provide directly counted Stage 1a training signal; the network has 2.17M links</td>
 <td><code>aadt_estimates.parquet</code></td>
 </tr>
 <tr class="even">
@@ -462,8 +462,8 @@ background-size: cover;
 <section id="why-exposure-has-to-be-modelled-not-measured" class="level2">
 <h2 class="anchored" data-anchor-id="why-exposure-has-to-be-modelled-not-measured">Why exposure has to be modelled, not measured</h2>
 <p>Comparing collision counts across roads requires a denominator. A motorway with 100,000 vehicles per day should have more collisions than a country lane with 500 — that’s not a safety problem, it’s a volume problem.</p>
-<p>The natural denominator is AADT (Annual Average Daily Flow), and DfT publishes AADF for ~13,000 count points across the study area. But the project scores 2.1 million road links. Most of the network — particularly minor and unclassified roads where collision under-counting is most severe — has no nearby count point.</p>
-<p><strong>Stage 1a</strong> trains a gradient-boosted model on the directly counted AADF rows, learning the relationship between road class, location, network position, and traffic volume. It then applies that relationship to every link in the network, producing an AADT estimate for the 99.4% of links without a count point.</p>
+<p>The natural denominator is AADT (Annual Average Daily Flow), and the processed DfT AADF table contains ~14,200 count points across the study area. Stage 1a uses the ~12,900 count points with at least one directly counted observation as the training signal. But the project scores 2.17 million road links. Most of the network — particularly minor and unclassified roads where collision under-counting is most severe — has no nearby count point.</p>
+<p><strong>Stage 1a</strong> trains a gradient-boosted model on the directly counted AADF rows, learning the relationship between road class, location, network position, and traffic volume. It then applies that relationship to every link in the network, producing an AADT estimate for the ~99.4% of links without a directly counted AADF point.</p>
 <p>The CV R² of ~0.83 (counted-only training set) means the estimator captures the dominant patterns but is not perfect — uncertainty in AADT is propagated forward and shows up in the residual structure of Stage 2.</p>
 <p><a href="../methodology/exposure-model.html">→ Stage 1a: Traffic Volume</a></p>
 </section>

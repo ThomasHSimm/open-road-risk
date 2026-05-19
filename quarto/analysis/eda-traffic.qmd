@@ -59,7 +59,7 @@ else:
 val_path = ROOT / "data/models/aadt_validation_summary.parquet"
 val_summary = pd.read_parquet(val_path) if val_path.exists() else pd.DataFrame()
 
-print(f"AADF count points : {aadf['count_point_id'].nunique():,} sites × {aadf['year'].nunique()} years ({aadf.shape[0]:,} rows)")
+print(f"AADF count points : {aadf['count_point_id'].nunique():,} count points × {aadf['year'].nunique()} years ({aadf.shape[0]:,} rows)")
 print(f"AADT estimates    : {aadt['link_id'].nunique():,} links × {aadt['year'].nunique()} years ({len(aadt):,} rows)")
 if openroads is not None:
     print(f"OS Open Roads     : {len(openroads):,} links")
@@ -92,8 +92,8 @@ if HAS_GPD and openroads is not None:
     gdf_pts.plot(ax=ax, markersize=3, color="#e63946", alpha=0.6, zorder=2)
 
     ax.set_title(
-        f"AADF count-point locations ({gdf_pts['count_point_id'].nunique():,} sites)\n"
-        "Red dots = measured sites; grey = full road network (200k link sample)"
+        f"AADF count-point locations ({gdf_pts['count_point_id'].nunique():,} count points)\n"
+        "Red dots = AADF count points; grey = full road network (200k link sample)"
     )
     ax.set_axis_off()
     plt.tight_layout()

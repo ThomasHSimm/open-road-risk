@@ -37,7 +37,7 @@ What is freely available at national England scale, and what is not.
 | Data domain | Available (open) | Not available / not open |
 |---|---|---|
 | Road network geometry | OS Open Roads: link geometry, road name, road classification, form of way | Lane count (sparse in OSM, absent in OS Open Roads); shoulder width; median type/width; lane marking |
-| Traffic volume (AADT) | DfT AADF count points (~8,000 sites) | Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density |
+| Traffic volume (AADT) | DfT AADF count points (~14,200 processed count points; ~12,900 directly counted for Stage 1a training) | Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density |
 | Traffic profiles | WebTRIS sensor data (National Highways motorways/A-roads) | Push-button pedestrian actuations; turning-movement counts; corridor-level time series without exposure |
 | Collision records | STATS19 injury collisions: location, severity, date, road class; record-level CF fields for pre-2024 context where recorded | PDO collisions; record-level RSF fields in the standard open download; post-event crash attributes as Stage 2 predictors |
 | Road geometry/context | OS Terrain 50 DEM (grade derivable); OS Open Roads topology | Degree of horizontal curvature (derivable from polyline geometry but not a RAMM/DOT-style inventory); driveway/access density; side slope; fixed objects |
@@ -48,7 +48,7 @@ What is freely available at national England scale, and what is not.
 The single largest gap relative to the US/NZ literature is **complete observed
 traffic counts**. US studies (Chengye 2013 on Auckland, Huda 2024 on Oregon,
 Roll 2026 on Oregon, Wang 2009 on M25) either have full sensor coverage or
-proprietary probe data (INRIX). Open Road Risk estimates AADT for ~96% of links
+proprietary probe data (INRIX). Open Road Risk estimates AADT for ~99.4% of links
 via Stage 1a machine learning; this introduces uncertainty that most comparison
 papers never face.
 
@@ -369,7 +369,7 @@ its availability in the UK open data stack used by Open Road Risk.
 | Road link geometry | OS Open Roads | S1a / S2 | None — core data | All |
 | Road classification (motorway/A/B/minor) | OS Open Roads | S2 | None | Chengye, Wang, Michalaki, Al-Omari |
 | Form of way (slip road, roundabout, motorway) | OS Open Roads | S2 | Partial (not all distinctions visible) | Chengye (ramp detection) |
-| Annual observed traffic count (AADF) | DfT AADF (~8,000 sites) | S1a | **Major** — only ~0.4% of links have AADF; rest estimated | All exposure papers |
+| Annual observed traffic count (AADF) | DfT AADF (~12,900 directly counted training count points) | S1a | **Major** — direct-count locations are equivalent to only ~0.6% of the scored link count; rest estimated | All exposure papers |
 | Motorway/A-road traffic profiles | WebTRIS (National Highways) | S1b | **Major** — not nationally complete | Chengye, Wang, Roll |
 | Injury collision records | STATS19 | S2 | Partial — PDO absent; contributory factors excluded | All |
 | Terrain / elevation / grade | OS Terrain 50 DEM (planned) | S2 (candidate) | Low-medium — derivable, not validated | Huda, Wang, Chengye |
