@@ -1,5 +1,23 @@
 ## ⚪ Parked (investigated, deprioritised — with reason)
 
+- **Standalone KSI atlas — parked.** Part A of the pre-registered KSI
+  diagnostic (`reports/ksi_reporting_consistency.md`,
+  `reports/preregistration/ksi_diagnostic_preregistration.md`,
+  May 2026) found heterogeneous force/year KSI-to-all-injury ratio
+  instability across the study area's 23 forces. 28 force/year rows were
+  flagged under the pre-registered ±20% year-on-year ratio-change rule, and
+  26 of those survived a practical sensitivity threshold requiring an
+  absolute KSI count change of at least 25 collisions. The flag pattern is
+  consistent with the documented 2016–2019 CRaSH/COPA injury-based
+  severity reporting reform plus Staffordshire-specific anomalies, but does
+  not collapse cleanly under tested restricted windows (2017–2024,
+  2017–2023, 2019–2023). Strict pre-registered verdict: per-force handling
+  required before KSI modelling is defensible. Part B is not run. Revisit
+  only if (a) integrating DfT's published severity adjustment factors
+  becomes worthwhile for a specific deliverable, or (b) the study area is
+  restricted to a single force or force-group with internally stable
+  reporting.
+
 - **Temporal descriptor integration into Stage 2** — completed evaluation.
   `core_overnight_ratio` and the WebTRIS HGV% descriptor both produced small,
   reproducible improvements in the post-fix collision model, but neither
