@@ -3,7 +3,7 @@ join.py
 -------
 Spatial and attribute joins across all four data sources.
 
-The final output is a road_link × year table — one row per MRDB road
+The final output is a road_link × year table — one row per OS Open Roads
 link per year — with collision counts, traffic volume, and vehicle mix
 aggregated onto each link.
 
@@ -11,7 +11,7 @@ Pipeline
 --------
 1. snap_collisions_to_roads()
       Stage 1 — attribute match: reconstruct road name from
-      first_road_class + first_road_number, match to MRDB road_name_clean.
+      first_road_class + first_road_number, match to OpenRoads road_name_clean.
       Then nearest-neighbour *within that named road only*.
 
       Stage 2 — spatial fallback: pure nearest-neighbour for collisions
@@ -20,8 +20,8 @@ Pipeline
       recorded but snap_method = 'unmatched'.
 
 2. build_road_features()
-      Joins AADF count point data onto MRDB links via count_point_id
-      (direct key join). WebTRIS sensor data joined to AADF count points
+      Joins AADF count point data onto OS Open Roads links via spatial
+      nearest-neighbour. WebTRIS sensor data joined to AADF count points
       via spatial nearest-neighbour (no shared key).
 
 3. build_road_link_annual()
@@ -35,7 +35,6 @@ OpenRoads road_name_clean  -> STATS19 road_name_clean  (Stage 1)
 OpenRoads geometry         -> STATS19 lat/lon          (Stage 2 spatial)
 AADF      lat/lon          -> OpenRoads link centroid  (spatial, nearest)
 AADF      lat/lon          -> WebTRIS lat/lon          (spatial, nearest)
-MRDB      used for road metadata only (road_type on major roads)
 """
 
 import logging
@@ -276,7 +275,7 @@ def _nearest_link(
 
 
 # ---------------------------------------------------------------------------
-# 2. Build road features (AADF + WebTRIS per MRDB link per year)
+# 2. Build road features (AADF + WebTRIS per OS Open Roads link per year)
 # ---------------------------------------------------------------------------
 
 
