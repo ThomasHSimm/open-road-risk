@@ -35,6 +35,38 @@ or "none / superseded by X" if closed permanently>
 
 <!-- newest first -->
 
+## 2026-05-23: Adjusted Part A rerun with DfT severity adjustment — parking confirmed
+
+**Investigated:** does applying DfT's published collision-level adjusted
+severity columns (`collision_adjusted_severity_serious` + fatal indicator) to
+the Part A force/year consistency test materially change the parking verdict?
+
+**Method:** feasibility check confirmed DfT-published probabilistic severity
+adjustments available across full 2015–2024 study window in local STATS19 data;
+same Part A diagnostic rerun with adjusted expected KSI target
+(`fatal_indicator + collision_adjusted_severity_serious`); pre-registered ±20%
+YoY ratio-change rule retained unchanged.
+
+**Outcome:** adjusted target halves the flag count (28 → 15 pre-registered,
+26 → 13 practical-sensitivity) but does not clear the pre-registered Part A
+gate. Residual heterogeneity is concentrated in (a) Staffordshire 2021–2024
+post-COVID period (4 of 15 flags; this is data quality, not severity reform),
+(b) the 2016–2017 CRaSH/COPA transition (5 flags that adjustment partially but
+not fully smooths), and (c) scattered 2019 transition tail (4 flags).
+Least-disrupted tested window remains 2019–2023, ex-Staffordshire.
+
+**Artefacts:**
+- `reports/dft_severity_adjustment_feasibility.md`
+- `reports/ksi_reporting_consistency_adjusted.md`
+- `reports/figures/ksi_reporting_consistency_adjusted_expected_count.png`
+- `reports/figures/ksi_reporting_consistency_adjusted_ratio.png`
+
+**Revisit condition:** Reopen only as part of the parent KSI revisit condition
+(see 2026-05-22 entry). The adjusted rerun does not unpark KSI; it confirms
+parking with a more specific revisit trigger.
+
+---
+
 ## 2026-05-22: Standalone KSI atlas — parked
 
 **Investigated:** can a separate KSI count model produce a meaningfully
@@ -66,11 +98,15 @@ B was not run.
 - `src/road_risk/diagnostics/ksi_reporting_consistency.py`
 - `todo/parked.md` (KSI entry)
 
-**Revisit condition:** Reopen only if (a) DfT's published severity
-adjustment factors are integrated for a specific deliverable, or (b) the
-study area is restricted to a single force or force-group with internally
-stable severity reporting. Do not reopen at the current scope and
-threshold based on this evidence.
+**Revisit condition:** Reopen only if (a) the Part A adjusted diagnostic is
+rerun on a restricted window (2019–2023 plus exclusion of Staffordshire) and
+clears the pre-registered ±20% threshold, with explicit methodology for applying
+probabilistic per-collision expected KSI at link-year grain including EB
+shrinkage re-derivation; or (b) DfT publishes a corrected historical
+Staffordshire series for the acknowledged 2017–2023 under-reporting issue and
+the full-window adjusted diagnostic then passes. See the 2026-05-23 adjusted
+Part A entry and `reports/staffordshire_data_quality.md`; treat Staffordshire
+as out-of-scope by default for any future KSI revisit.
 
 ---
 

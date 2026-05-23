@@ -11,12 +11,16 @@
   consistent with the documented 2016–2019 CRaSH/COPA injury-based
   severity reporting reform plus Staffordshire-specific anomalies, but does
   not collapse cleanly under tested restricted windows (2017–2024,
-  2017–2023, 2019–2023). Strict pre-registered verdict: per-force handling
-  required before KSI modelling is defensible. Part B is not run. Revisit
-  only if (a) integrating DfT's published severity adjustment factors
-  becomes worthwhile for a specific deliverable, or (b) the study area is
-  restricted to a single force or force-group with internally stable
-  reporting.
+  2017–2023, 2019–2023). The adjusted Part A rerun using DfT's collision-level
+  severity probabilities (`reports/ksi_reporting_consistency_adjusted.md`)
+  reduced the flag count but still failed the pre-registered gate. Staffordshire
+  is now confirmed as a DfT-acknowledged 2017–2023 source under-reporting issue
+  (`reports/staffordshire_data_quality.md`). Strict pre-registered verdict:
+  per-force handling required before KSI modelling is defensible. Part B is not
+  run. Revisit only if (a) adjusted Part A passes on a restricted 2019–2023
+  ex-Staffordshire window with explicit expected-count and EB methodology, or
+  (b) DfT publishes a corrected historical Staffordshire series and the
+  full-window adjusted diagnostic then passes.
 
 - **Temporal descriptor integration into Stage 2** — completed evaluation.
   `core_overnight_ratio` and the WebTRIS HGV% descriptor both produced small,
