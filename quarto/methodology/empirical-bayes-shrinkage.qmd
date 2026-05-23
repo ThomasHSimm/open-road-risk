@@ -582,10 +582,13 @@ unshrunken baseline:
 
 | k | unshrunken mean Jaccard | unshrunken min Jaccard |
 |---|---:|---:|
-| 100 | 0.903 | 0.869 |
-| 1000 | 0.893 | 0.864 |
-| 10000 | 0.927 | 0.919 |
-| top-1% | 0.918 | 0.908 |
+| 100 | 0.878141 | 0.851852 |
+| 1000 | 0.870936 | 0.858736 |
+| 10000 | 0.883074 | 0.873185 |
+| top-1% | 0.903575 | 0.896574 |
+
+These unshrunken baseline values reflect the post-hgv-fix model state in
+`reports/rank_stability.md`.
 
 This comparison is deferred. Session 2's seed-churn diagnostic found that EB
 does not disproportionately affect borderline links — the population that
@@ -729,9 +732,11 @@ Session 2 provides empirical evidence against the pre-run priors stated in
 this section.
 
 - **`risk_percentile_eb` is highly correlated with `risk_percentile`, but not
-  identical.** This matched: top-1% intersection is 84.93% (18,408 of 21,675
-  links); median absolute percentile change is 0.07 points; p99 change is
-  2.96 points.
+  identical.** This matched in the post-hgv-fix model state: top-1%
+  intersection is 38.85% (8,421 of 21,675 links); median absolute percentile
+  change is 0.491798 points; p99 change is 29.312792 points. These figures are
+  from `reports/eb_validation.md` using production k = 3.451158 from
+  `data/provenance/eb_dispersion_provenance.json`.
 
 - **Narrow top-k lists are not stabilised by EB.** The pre-run prior
   ("narrow top-k lists may become more stable if EB dampens seed-specific
