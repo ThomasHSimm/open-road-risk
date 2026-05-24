@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>Open Road Risk Methodology – Open Road Risk</title>
+<title>Staffordshire Data Quality Discontinuity, 2017–2023 – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -82,41 +82,21 @@ gtag('js', new Date());
 gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </script>
 <style>html{ scroll-behavior: smooth; }</style>
-<style>
-
-      .quarto-title-block .quarto-title-banner h1,
-      .quarto-title-block .quarto-title-banner h2,
-      .quarto-title-block .quarto-title-banner h3,
-      .quarto-title-block .quarto-title-banner h4,
-      .quarto-title-block .quarto-title-banner h5,
-      .quarto-title-block .quarto-title-banner h6
-      {
-        color: #ffffff;
-      }
-
-      .quarto-title-block .quarto-title-banner {
-        color: #ffffff;
-background-image: url(../assets/londonmiss.jpg);
-background-size: cover;
-      }
-</style>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Open Road Risk Methodology – Open Road Risk">
-<meta property="og:description" content="Guide to the Open Road Risk methodology pages covering data joining, feature engineering, modelling, shrinkage, and diagnostics.">
-<meta property="og:image" content="https://openroadrisk.org/assets/londonmiss.jpg">
+<meta property="og:title" content="Staffordshire Data Quality Discontinuity, 2017–2023 – Open Road Risk">
+<meta property="og:description" content="A DfT-acknowledged source-data issue surfaced via the KSI diagnostic">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Open Road Risk Methodology – Open Road Risk">
-<meta name="twitter:description" content="Guide to the Open Road Risk methodology pages covering data joining, feature engineering, modelling, shrinkage, and diagnostics.">
-<meta name="twitter:image" content="https://openroadrisk.org/assets/londonmiss.jpg">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Staffordshire Data Quality Discontinuity, 2017–2023 – Open Road Risk">
+<meta name="twitter:description" content="A DfT-acknowledged source-data issue surfaced via the KSI diagnostic">
+<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -403,81 +383,74 @@ background-size: cover;
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Open Road Risk Methodology</h1>
-                  <div>
-        <div class="description">
-          Guide to the Open Road Risk methodology pages covering data joining, feature engineering, modelling, shrinkage, and diagnostics.
-        </div>
-      </div>
-                </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page-left">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul class="collapse">
-  <li><a href="#what-this-section-covers" id="toc-what-this-section-covers" class="nav-link active" data-scroll-target="#what-this-section-covers">What this section covers</a></li>
-  <li><a href="#pages-in-this-section" id="toc-pages-in-this-section" class="nav-link" data-scroll-target="#pages-in-this-section">Pages in this section</a></li>
-  <li><a href="#methodology-vs-models" id="toc-methodology-vs-models" class="nav-link" data-scroll-target="#methodology-vs-models">Methodology vs Models</a></li>
-  <li><a href="#what-is-not-in-methodology" id="toc-what-is-not-in-methodology" class="nav-link" data-scroll-target="#what-is-not-in-methodology">What is <em>not</em> in Methodology</a></li>
+  <ul>
+  <li><a href="#question" id="toc-question" class="nav-link active" data-scroll-target="#question">Question</a></li>
+  <li><a href="#method" id="toc-method" class="nav-link" data-scroll-target="#method">Method</a></li>
+  <li><a href="#findings" id="toc-findings" class="nav-link" data-scroll-target="#findings">Findings</a></li>
+  <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation">Interpretation</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#related-artefacts" id="toc-related-artefacts" class="nav-link" data-scroll-target="#related-artefacts">Related artefacts</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Staffordshire Data Quality Discontinuity, 2017–2023</h1>
+<p class="subtitle lead">A DfT-acknowledged source-data issue surfaced via the KSI diagnostic</p>
+</div>
 
 
 
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
 
 
-<section id="what-this-section-covers" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-section-covers">What this section covers</h2>
-<p>The Methodology section documents the <strong>decisions and processes</strong> that turn raw data sources into model-ready features. It is distinct from the <a href="../methodology/modelling.html">Models</a> section, which covers the predictive models themselves and their performance.</p>
-<p>A useful way to think of the split:</p>
-<ul>
-<li><strong>Methodology</strong>: how the data is shaped — joining sources together, building features, handling overdispersion in count data.</li>
-<li><strong>Models</strong>: what predictions are made from that data — traffic estimation, time-zone profiles, collision risk.</li>
-</ul>
-<p>The two sections sit on either side of a clear handoff. Methodology produces <code>road_link_annual.parquet</code> with one row per link per year and a fixed schema. Models consume that table and produce predictions.</p>
+</header>
+
+
+<p>This investigation arose from the KSI Part A diagnostic; see <a href="../investigations/ksi-atlas.html">KSI atlas</a> for context.</p>
+<p><em>Decision register entry: <a href="https://github.com/thomashsimm/open-road-risk/blob/main/docs/internal/decision-register.md">2026-05-23 — Adjusted Part A rerun with DfT severity adjustment — parking confirmed</a></em></p>
+<section id="question" class="level2">
+<h2 class="anchored" data-anchor-id="question">Question</h2>
+<p>Are the persistent Staffordshire flags in the adjusted KSI Part A diagnostic a pipeline defect or a source-data issue, and how does this affect the all-injury production model?</p>
 </section>
-<section id="pages-in-this-section" class="level2">
-<h2 class="anchored" data-anchor-id="pages-in-this-section">Pages in this section</h2>
-<p><a href="../methodology/data-joining.html"><strong>Joining the Datasets</strong></a> — how STATS19 collisions, AADF count points, WebTRIS sensors, and OS Open Roads links are spatially joined into a single road-link-by-year table. Includes the four-dimension weighted snap, distance caps, and quality tracking.</p>
-<p><a href="../methodology/feature-engineering.html"><strong>Feature Engineering</strong></a> — link-level features built on top of the joined table: network centrality, road geometry, OSM attributes, population density. Documents the imputation rules for sparse OSM fields and the <code>speed_limit_mph_effective</code> tiered fallback.</p>
-<p><a href="../methodology/empirical-bayes-shrinkage.html"><strong>Empirical Bayes Shrinkage</strong></a> — the post-modelling adjustment that handles overconfidence on links with zero observed collisions. Explains the choice of shrinkage parameter <em>k</em> and the operational impact on rankings.</p>
+<section id="method" class="level2">
+<h2 class="anchored" data-anchor-id="method">Method</h2>
+<!-- placeholder; user will write -->
 </section>
-<section id="methodology-vs-models" class="level2">
-<h2 class="anchored" data-anchor-id="methodology-vs-models">Methodology vs Models</h2>
-<p>A few decisions sit on the boundary between sections:</p>
-<ul>
-<li><strong>Year handling</strong> is a methodology question (how to encode time) but interacts directly with model choice. The pipeline uses year as a categorical feature; the COVID years (2020–2021) are absorbed by year-specific fixed effects. An <code>is_covid</code> flag is the natural alternative if year is not already in the model.</li>
-<li><strong>Group-aware cross-validation</strong> is a model-choice decision but depends on methodology — the grouping key (<code>count_point_id</code>, <code>site_id</code>, <code>link_id</code>) is determined by what the joining pipeline produces.</li>
-<li><strong>Forbidden post-event columns</strong> — several derived columns are excluded from modelling because they are computed from collision records themselves. This is enforced in the modelling code but the list is documented as a methodology decision.</li>
-</ul>
-<p>These cross-cutting items are documented on the page where they have most impact. Cross-references run in both directions.</p>
+<section id="findings" class="level2">
+<h2 class="anchored" data-anchor-id="findings">Findings</h2>
+<!-- placeholder; user will write -->
 </section>
-<section id="what-is-not-in-methodology" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-not-in-methodology">What is <em>not</em> in Methodology</h2>
+<section id="interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
+<!-- placeholder; user will write -->
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<!-- placeholder; user will write -->
+</section>
+<section id="related-artefacts" class="level2">
+<h2 class="anchored" data-anchor-id="related-artefacts">Related artefacts</h2>
 <ul>
-<li>Individual model details (architectures, hyperparameters, metrics) are in <a href="../methodology/modelling.html">Models</a>.</li>
-<li>Exploratory analysis of source data is in <a href="../analysis/eda-collisions.html">Exploratory Data Analysis</a> — what the raw data looks like before processing.</li>
-<li>Source dataset descriptions are in <a href="../data-sources/stats19.html">Data Sources</a> — provider, format, fields, project location.</li>
+<li><code>reports/staffordshire_data_quality.md</code></li>
+<li><a href="https://www.gov.uk/government/publications/reported-road-casualty-statistics-background-quality-report/road-casualty-statistics-known-data-issues">DfT road casualty statistics — known data issues</a></li>
+<li>Decision register entry: 2026-05-23</li>
 </ul>
 
 

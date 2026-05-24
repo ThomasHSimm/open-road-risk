@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>Open Road Risk Methodology – Open Road Risk</title>
+<title>Investigations – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -82,41 +82,21 @@ gtag('js', new Date());
 gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </script>
 <style>html{ scroll-behavior: smooth; }</style>
-<style>
-
-      .quarto-title-block .quarto-title-banner h1,
-      .quarto-title-block .quarto-title-banner h2,
-      .quarto-title-block .quarto-title-banner h3,
-      .quarto-title-block .quarto-title-banner h4,
-      .quarto-title-block .quarto-title-banner h5,
-      .quarto-title-block .quarto-title-banner h6
-      {
-        color: #ffffff;
-      }
-
-      .quarto-title-block .quarto-title-banner {
-        color: #ffffff;
-background-image: url(../assets/londonmiss.jpg);
-background-size: cover;
-      }
-</style>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Open Road Risk Methodology – Open Road Risk">
-<meta property="og:description" content="Guide to the Open Road Risk methodology pages covering data joining, feature engineering, modelling, shrinkage, and diagnostics.">
-<meta property="og:image" content="https://openroadrisk.org/assets/londonmiss.jpg">
+<meta property="og:title" content="Investigations – Open Road Risk">
+<meta property="og:description" content="Closed methodological inquiries: question asked, evidence gathered, verdict reached.">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Open Road Risk Methodology – Open Road Risk">
-<meta name="twitter:description" content="Guide to the Open Road Risk methodology pages covering data joining, feature engineering, modelling, shrinkage, and diagnostics.">
-<meta name="twitter:image" content="https://openroadrisk.org/assets/londonmiss.jpg">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Investigations – Open Road Risk">
+<meta name="twitter:description" content="Closed methodological inquiries: question asked, evidence gathered, verdict reached.">
+<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -403,85 +383,78 @@ background-size: cover;
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Open Road Risk Methodology</h1>
-                  <div>
-        <div class="description">
-          Guide to the Open Road Risk methodology pages covering data joining, feature engineering, modelling, shrinkage, and diagnostics.
-        </div>
-      </div>
-                </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page-left">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul class="collapse">
-  <li><a href="#what-this-section-covers" id="toc-what-this-section-covers" class="nav-link active" data-scroll-target="#what-this-section-covers">What this section covers</a></li>
-  <li><a href="#pages-in-this-section" id="toc-pages-in-this-section" class="nav-link" data-scroll-target="#pages-in-this-section">Pages in this section</a></li>
-  <li><a href="#methodology-vs-models" id="toc-methodology-vs-models" class="nav-link" data-scroll-target="#methodology-vs-models">Methodology vs Models</a></li>
-  <li><a href="#what-is-not-in-methodology" id="toc-what-is-not-in-methodology" class="nav-link" data-scroll-target="#what-is-not-in-methodology">What is <em>not</em> in Methodology</a></li>
-  </ul>
-</nav>
-    </div>
+    
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content column-page" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Investigations</h1>
+</div>
+
+<div>
+  <div class="description">
+    Closed methodological inquiries: question asked, evidence gathered, verdict reached.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta column-page">
+
+    
+  
+    
+  </div>
+  
 
 
-
-<section id="what-this-section-covers" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-section-covers">What this section covers</h2>
-<p>The Methodology section documents the <strong>decisions and processes</strong> that turn raw data sources into model-ready features. It is distinct from the <a href="../methodology/modelling.html">Models</a> section, which covers the predictive models themselves and their performance.</p>
-<p>A useful way to think of the split:</p>
-<ul>
-<li><strong>Methodology</strong>: how the data is shaped — joining sources together, building features, handling overdispersion in count data.</li>
-<li><strong>Models</strong>: what predictions are made from that data — traffic estimation, time-zone profiles, collision risk.</li>
-</ul>
-<p>The two sections sit on either side of a clear handoff. Methodology produces <code>road_link_annual.parquet</code> with one row per link per year and a fixed schema. Models consume that table and produce predictions.</p>
-</section>
-<section id="pages-in-this-section" class="level2">
-<h2 class="anchored" data-anchor-id="pages-in-this-section">Pages in this section</h2>
-<p><a href="../methodology/data-joining.html"><strong>Joining the Datasets</strong></a> — how STATS19 collisions, AADF count points, WebTRIS sensors, and OS Open Roads links are spatially joined into a single road-link-by-year table. Includes the four-dimension weighted snap, distance caps, and quality tracking.</p>
-<p><a href="../methodology/feature-engineering.html"><strong>Feature Engineering</strong></a> — link-level features built on top of the joined table: network centrality, road geometry, OSM attributes, population density. Documents the imputation rules for sparse OSM fields and the <code>speed_limit_mph_effective</code> tiered fallback.</p>
-<p><a href="../methodology/empirical-bayes-shrinkage.html"><strong>Empirical Bayes Shrinkage</strong></a> — the post-modelling adjustment that handles overconfidence on links with zero observed collisions. Explains the choice of shrinkage parameter <em>k</em> and the operational impact on rankings.</p>
-</section>
-<section id="methodology-vs-models" class="level2">
-<h2 class="anchored" data-anchor-id="methodology-vs-models">Methodology vs Models</h2>
-<p>A few decisions sit on the boundary between sections:</p>
-<ul>
-<li><strong>Year handling</strong> is a methodology question (how to encode time) but interacts directly with model choice. The pipeline uses year as a categorical feature; the COVID years (2020–2021) are absorbed by year-specific fixed effects. An <code>is_covid</code> flag is the natural alternative if year is not already in the model.</li>
-<li><strong>Group-aware cross-validation</strong> is a model-choice decision but depends on methodology — the grouping key (<code>count_point_id</code>, <code>site_id</code>, <code>link_id</code>) is determined by what the joining pipeline produces.</li>
-<li><strong>Forbidden post-event columns</strong> — several derived columns are excluded from modelling because they are computed from collision records themselves. This is enforced in the modelling code but the list is documented as a methodology decision.</li>
-</ul>
-<p>These cross-cutting items are documented on the page where they have most impact. Cross-references run in both directions.</p>
-</section>
-<section id="what-is-not-in-methodology" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-not-in-methodology">What is <em>not</em> in Methodology</h2>
-<ul>
-<li>Individual model details (architectures, hyperparameters, metrics) are in <a href="../methodology/modelling.html">Models</a>.</li>
-<li>Exploratory analysis of source data is in <a href="../analysis/eda-collisions.html">Exploratory Data Analysis</a> — what the raw data looks like before processing.</li>
-<li>Source dataset descriptions are in <a href="../data-sources/stats19.html">Data Sources</a> — provider, format, fields, project location.</li>
-</ul>
+</header>
 
 
-</section>
+<p>Investigations are closed methodological inquiries — distinct from <a href="../methodology/methodology-index.html">Methodology</a> pages, which describe how the current production model works. Each investigation poses a specific question, defines a verdict criterion in advance where possible, gathers evidence, and reaches a conclusion that is either adopted into the pipeline or parked with an explicit revisit condition. Promoting an investigation here means the evidence is complete, the verdict is defensible, and the finding is stable enough to describe publicly.</p>
+<p>Not all closed investigations are promoted here. Some remain internal diagnostics or are incomplete. The full internal record, including entries for EB shrinkage, facility-family split, and OSM tiered imputation, is in <a href="https://github.com/thomashsimm/open-road-risk/blob/main/docs/internal/decision-register.md"><code>docs/internal/decision-register.md</code></a>.</p>
+<hr>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Investigation</th>
+<th>Verdict</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../investigations/ksi-atlas.html">KSI atlas diagnostic</a></td>
+<td>Parked</td>
+<td>Severity-reporting inconsistency across police forces makes a standalone KSI model indefensible at current scope.</td>
+</tr>
+<tr class="even">
+<td><a href="../investigations/staffordshire-data-quality.html">Staffordshire data quality discontinuity</a></td>
+<td>Source-data issue confirmed</td>
+<td>Persistent Staffordshire flags are a DfT-acknowledged under-reporting issue, not a pipeline defect; Staffordshire treated as out-of-scope by default for KSI revisit.</td>
+</tr>
+<tr class="odd">
+<td><a href="../investigations/temporal-descriptors.html">Temporal descriptors evaluation</a></td>
+<td>Below threshold</td>
+<td>Overnight-ratio and HGV descriptors carry real but marginal signal; both failed the pre-registered adoption rule.</td>
+</tr>
+<tr class="even">
+<td><a href="../investigations/aadf-counted-only-filter.html">AADF counted-only filter</a></td>
+<td>Adopted</td>
+<td>Filtering to directly-counted AADF rows raised Stage 1a CV R² from 0.72 to 0.83; Estimated-weighted alternative rejected.</td>
+</tr>
+<tr class="odd">
+<td><a href="../investigations/rank-stability.html">Rank stability harness</a></td>
+<td>Noise floor established</td>
+<td>Five-seed evaluation sets the baseline for evaluating future feature additions.</td>
+</tr>
+</tbody>
+</table>
+
+
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
