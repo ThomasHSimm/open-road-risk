@@ -507,6 +507,7 @@ window.Quarto = {
 </header>
 
 
+<p>The standalone Jupyter notebook for this walkthrough is available in GitHub at <a href="https://github.com/ThomasHSimm/open-road-risk/blob/main/quarto/walkthroughs/count-models-explainer.ipynb"><code>quarto/walkthroughs/count-models-explainer.ipynb</code></a>.</p>
 <section id="why-count-data-needs-a-different-distribution" class="level2">
 <h2 class="anchored" data-anchor-id="why-count-data-needs-a-different-distribution">Why count data needs a different distribution</h2>
 <p>The normal distribution represents the kind of smooth, symmetric outcome that ordinary linear regression is designed for. Crash counts look different: they are whole numbers, cannot go below zero, and often contain many zeros. From the figure below the normal distribution is not suitable, due to negative values and the symmetrical distribution.</p>
@@ -590,7 +591,7 @@ P(Y = k) = \frac{\lambda^k e^{-\lambda}}{k!}
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.set_index(pd.Index(means, name<span class="op">=</span><span class="st">"Poisson mean"</span>))</span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div id="poisson-distribution-at-different-means" class="cell-output cell-output-display" data-execution_count="17">
+<div id="poisson-distribution-at-different-means" class="cell-output cell-output-display" data-execution_count="3">
 <div>
 
 
@@ -617,35 +618,35 @@ P(Y = k) = \frac{\lambda^k e^{-\lambda}}{k!}
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0.02</th>
-<td>98.03</td>
-<td>1.95</td>
-<td>0.02</td>
+<td>98.09</td>
+<td>1.90</td>
+<td>0.01</td>
 <td>0.00</td>
 <td>0.00</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">0.05</th>
-<td>95.16</td>
-<td>4.71</td>
-<td>0.13</td>
+<td>95.18</td>
+<td>4.67</td>
+<td>0.14</td>
 <td>0.00</td>
 <td>0.00</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0.10</th>
-<td>90.30</td>
-<td>9.24</td>
-<td>0.45</td>
+<td>90.36</td>
+<td>9.15</td>
+<td>0.48</td>
 <td>0.01</td>
 <td>0.00</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1.20</th>
-<td>30.04</td>
-<td>36.32</td>
-<td>21.60</td>
-<td>8.78</td>
-<td>3.26</td>
+<td>30.30</td>
+<td>35.76</td>
+<td>21.84</td>
+<td>8.91</td>
+<td>3.19</td>
 </tr>
 </tbody>
 </table>

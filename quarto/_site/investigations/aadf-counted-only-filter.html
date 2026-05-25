@@ -442,19 +442,63 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </section>
 <section id="method" class="level2">
 <h2 class="anchored" data-anchor-id="method">Method</h2>
-<!-- placeholder; user will write -->
+<p>The comparison treated AADF provenance as part of the Stage 1a target definition. The pre-filter target mixed directly counted AADF observations with DfT <code>Estimated</code> rows. The adopted test filtered Stage 1a training and holdout validation to count points with at least one <code>estimation_method == "Counted"</code> observation in 2015-2024, then compared:</p>
+<ul>
+<li>GroupKFold cross-validation performance;</li>
+<li>local holdout performance;</li>
+<li>spatial holdout performance;</li>
+<li>the count-point coverage removed by the filter;</li>
+<li>road-class and regional skew in the removed points.</li>
+</ul>
+<p>The rejected alternative was to keep DfT <code>Estimated</code> rows but downweight them. That would preserve more count-point locations, but DfT does not publish uncertainty weights for its interpolation scheme, so the weighting would be a project judgement rather than an observed reliability measure.</p>
 </section>
 <section id="result" class="level2">
 <h2 class="anchored" data-anchor-id="result">Result</h2>
-<!-- placeholder; user will write -->
+<p>Counted-only training was adopted. The filter drops 1,288 of 14,193 count points (9.1%) that are always <code>Estimated</code> across the 2015-2024 training window, leaving 12,905 directly counted training count points.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Measure</th>
+<th style="text-align: right;">Before filter</th>
+<th style="text-align: right;">Counted-only</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GroupKFold CV R²</td>
+<td style="text-align: right;">~0.72</td>
+<td style="text-align: right;">~0.83</td>
+</tr>
+<tr class="even">
+<td>Local holdout R²</td>
+<td style="text-align: right;">0.776</td>
+<td style="text-align: right;">0.832</td>
+</tr>
+<tr class="odd">
+<td>Spatial holdout R²</td>
+<td style="text-align: right;">0.707</td>
+<td style="text-align: right;">0.788</td>
+</tr>
+</tbody>
+</table>
+<p>The improvement should be read as a cleaner, more honest validation target rather than proof that the model became intrinsically stronger. DfT’s smoothed carry-forward estimates no longer contaminate the learning signal or holdout target. Log-MAE is slightly higher on counted-only holdout, which is expected because direct measurements retain real traffic variance that DfT-estimated rows partly smooth away.</p>
+<p>The removed points are not completely neutral. Dropped points skew Major versus Minor (11.2% vs 4.6%), so the counted-only training set is modestly less representative of Major-road conditions than a raw AADF training set would be. Regional loss is broadly uniform, with Wales higher at 17% on a small sample.</p>
+<p>The filter affects only the learning signal. The fitted Stage 1a model is still applied to every OS Open Roads link for every AADF year, so downstream exposure coverage remains unchanged.</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<!-- placeholder; user will write -->
+<ul>
+<li>Direct counts are noisier than DfT-estimated rows, so counted-only validation is a harder target even though it is methodologically cleaner.</li>
+<li>The filter removes a larger share of Major-road count points than Minor-road count points, leaving the counted-only target modestly less representative of raw AADF Major-road conditions.</li>
+<li>Wales has a higher Estimated-only share, but on a small sample. This was treated as consistent with an edge-of-study-area effect and was not investigated further.</li>
+<li>The decision does not add uncertainty propagation from Stage 1a AADT estimates into Stage 2 collision modelling.</li>
+<li>Reopen if DfT publishes methodology that makes the Counted/Estimated distinction less load-bearing, or if a specific deliverable requires coverage on roads where only Estimated AADF exists.</li>
+</ul>
 </section>
 <section id="related-artefacts" class="level2">
 <h2 class="anchored" data-anchor-id="related-artefacts">Related artefacts</h2>
 <ul>
+<li><code>docs/internal/decision-register.md</code></li>
 <li><code>quarto/methodology/exposure-model.qmd</code></li>
 <li><code>todo/done.md</code> (counted-only AADF filter entry)</li>
 </ul>
