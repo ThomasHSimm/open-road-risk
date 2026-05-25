@@ -19,15 +19,78 @@ from seed-level churn?
 
 ## Method
 
-<!-- placeholder; user will write -->
+The harness retrained the Stage 2 XGBoost model across five random seeds
+(42–46), using the same grouped-by-link cross-validation design. Seed 42 is the
+production realisation, so the diagnostic also tested whether the production
+seed was representative of the seed set.
+
+For each seed, the run recorded:
+
+- held-out pseudo-R²;
+- top-k ranking overlap using pairwise Jaccard similarity;
+- full-rank Spearman correlation;
+- observed per-decile calibration stability.
+
+The follow-up Jaccard investigation used the saved per-seed predictions to
+inspect why top-k overlap was non-monotonic: top-1000 overlap was lower than
+top-100 and top-10000 overlap.
 
 ## Result
 
-<!-- placeholder; user will write -->
+Pseudo-R² was stable but not identical across seeds:
+
+| seed | pseudo-R² |
+|---|---:|
+| 42 | 0.321444 |
+| 43 | 0.321372 |
+| 44 | 0.326320 |
+| 45 | 0.326529 |
+| 46 | 0.321825 |
+| **mean** | **0.323498** |
+| **std** | **0.002678** |
+
+Ranking overlap was high at full-rank scale but less stable at narrow top-k
+thresholds:
+
+| threshold | pairwise mean Jaccard | pairwise minimum Jaccard |
+|---|---:|---:|
+| Top 100 | 0.878141 | 0.851852 |
+| Top 1,000 | 0.870936 | 0.858736 |
+| Top 10,000 | 0.883074 | 0.873185 |
+| Top 1% | 0.903575 | 0.896574 |
+
+Full-rank Spearman correlation was extremely high (pairwise mean 0.999140,
+minimum 0.999069), which means the broad ordering is stable even though exact
+membership near narrow cut-offs can churn.
+
+Seed 42 is representative: its pseudo-R² is within one cross-seed standard
+deviation of the mean, its mean top-1% Jaccard against the other seeds is
+0.902825, and its mean Spearman correlation against the other seeds is 0.999130.
+
+The practical noise floor is therefore:
+
+> A proposed feature or model change should improve pseudo-R² by roughly 0.006
+> or more (about 1.5× the cross-seed standard deviation) before it is treated as
+> distinguishable from random-seed variation.
+
+The Jaccard follow-up showed that the lower top-1000 overlap is not simply a
+local predicted-risk spacing issue. Instead, the useful interpretation is
+operational: narrow top-k thresholds, especially around top-1000, should be
+treated as fuzzy frontiers. Links close to the threshold may swap in or out
+across equally valid seed realisations.
 
 ## Limitations
 
-<!-- placeholder; user will write -->
+- The diagnostic measures random-seed variation only. It does not measure
+  uncertainty from feature engineering choices, spatial split design, AADT
+  uncertainty, or year-to-year temporal instability.
+- The same grouped-link cross-validation design is used for every seed. Any
+  optimism from spatial autocorrelation is shared across seeds and is not
+  diagnosed here.
+- The top-k Jaccard values are sensitive to the chosen thresholds. The exact
+  top-100 or top-1000 membership should not be interpreted as deterministic.
+- The noise floor is calibrated for the current Stage 2 XGBoost setup. A major
+  model-family change would need its own stability check.
 
 ## Related artefacts
 

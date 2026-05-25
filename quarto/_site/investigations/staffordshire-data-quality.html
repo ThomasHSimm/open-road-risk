@@ -134,21 +134,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Background</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
-        <li>
-    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
- <span class="dropdown-text">Metrics and methodology</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../background/literature-evidence-register.html">
- <span class="dropdown-text">Literature evidence register</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Literature</span>
     </a>
@@ -156,6 +141,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-index.html">
  <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -188,6 +177,21 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
  <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-walkthroughs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Walkthroughs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-walkthroughs">    
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/walkthroughs-index.html">
+ <span class="dropdown-text">Walkthroughs overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/count-models-explainer.html">
+ <span class="dropdown-text">Count models explainer</span></a>
   </li>  
     </ul>
   </li>
@@ -340,6 +344,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../investigations/rank-stability.html">
  <span class="dropdown-text">Rank stability harness</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -431,19 +439,47 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </section>
 <section id="method" class="level2">
 <h2 class="anchored" data-anchor-id="method">Method</h2>
-<!-- placeholder; user will write -->
+<p>The investigation compared Staffordshire collision counts across the pipeline, from raw DfT STATS19 records through processed, cleaned, snapped, feature, and production scoring artefacts. The purpose was to locate where the discontinuity entered the data.</p>
+<p>The checks covered:</p>
+<ul>
+<li>raw DfT collision CSV counts by police force and year;</li>
+<li>processed and cleaned STATS19 tables;</li>
+<li>snapped collision records and the Part A snap-quality filter;</li>
+<li>bounding-box coverage for Staffordshire records;</li>
+<li>monthly, highway-authority, and road-class splits;</li>
+<li>comparison with neighbouring forces: Cheshire, West Mercia, Warwickshire, and Derbyshire;</li>
+<li>production <code>risk_scores.parquet</code> on Staffordshire-associated links.</li>
+</ul>
+<p>The DfT known-data-issues page was then used as an external source check. That page identifies Staffordshire police under-reporting between 2017 and 2023 due to incomplete and untimely STATS19 processing returns.</p>
 </section>
 <section id="findings" class="level2">
 <h2 class="anchored" data-anchor-id="findings">Findings</h2>
-<!-- placeholder; user will write -->
+<p>The discontinuity is already present in raw STATS19. Staffordshire raw collision counts fall from 2,582 in 2016 to 1,807 in 2017, reach a trough of 507 in 2022, then rebound to 1,496 in 2024. The same counts are preserved through processed and cleaned data.</p>
+<p>The 2022 trough is not caused by Open Road Risk processing:</p>
+<ul>
+<li>raw, processed, cleaned, and snapped-all Staffordshire counts are all 507 in 2022;</li>
+<li>the retained snapped count is 506, so the snap/filter cascade removes only one row;</li>
+<li>all 2022 Staffordshire records are inside the configured study bounding box;</li>
+<li>the low count is visible across the whole year, not a single missing month;</li>
+<li>both Staffordshire highway authorities show the same fall and rebound pattern.</li>
+</ul>
+<p>Neighbouring forces do not show the same pattern. Staffordshire falls by 38.1% from 2021 to 2022, while the neighbour median changes by approximately +4.7%. Staffordshire then rises by 74.2% in 2023 and 69.4% in 2024, again unlike the comparison forces.</p>
+<p>The all-injury production scores do not look mechanically broken for Staffordshire-associated links. Their nonzero-link share is comparable to neighbouring forces, and 8.38% of Staffordshire-associated links are in the network-wide top 1%. The issue is therefore not that Staffordshire links are missing from production scoring; it is that the source counts under-record some Staffordshire collisions in the affected years.</p>
 </section>
 <section id="interpretation" class="level2">
 <h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
-<!-- placeholder; user will write -->
+<p>This is a source-data issue, not an Open Road Risk pipeline defect. The pipeline transmits the published STATS19 data faithfully through ingest, cleaning, snapping, feature aggregation, and scoring.</p>
+<p>The appropriate response is a scope restriction. Future KSI revisit work should treat Staffordshire as out of scope by default unless DfT publishes a corrected historical series. For all-injury outputs, the production model does not need to be discarded on this finding alone, but Staffordshire local interpretation needs a source-data caveat: the model reflects published STATS19 counts, and those counts include a force-specific 2017-2023 under-reporting issue that may under-rank affected Staffordshire links.</p>
+<p>This also explains why Staffordshire remained visible in the adjusted KSI Part A rerun. Severity adjustment reduces the broader force/year heterogeneity, but it cannot recover missing collision records from a force-level under-reporting period.</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<!-- placeholder; user will write -->
+<ul>
+<li><code>risk_scores.parquet</code> has no police-force field. The production-score check therefore uses collision-associated links as a proxy for Staffordshire links, not a definitive administrative boundary.</li>
+<li>The investigation identifies the location and likely cause of the anomaly; it does not estimate the true number of missing Staffordshire collisions.</li>
+<li>No imputation is attempted. DfT has not imputed the affected historical series, and there is no defensible local correction inside Open Road Risk.</li>
+<li>The finding applies directly to Staffordshire. It does not imply that other police-force areas have the same issue.</li>
+</ul>
 </section>
 <section id="related-artefacts" class="level2">
 <h2 class="anchored" data-anchor-id="related-artefacts">Related artefacts</h2>

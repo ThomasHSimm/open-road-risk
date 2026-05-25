@@ -1,0 +1,243 @@
+---
+title: "Why Crash Counts Need Count Models"
+description: "Visual walkthrough of why ordinary regression is inappropriate for crash frequency data, and what properties make count models the right choice."
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    notebook-links: true
+---
+
+The standalone Jupyter notebook for this walkthrough is available in GitHub at
+[`quarto/walkthroughs/count-models-explainer.ipynb`](https://github.com/ThomasHSimm/open-road-risk/blob/main/quarto/walkthroughs/count-models-explainer.ipynb).
+
+```{python}
+#| label: setup
+#| echo: false
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+np.random.seed(42)
+```
+
+## Why count data needs a different distribution
+
+The normal distribution represents the kind of smooth, symmetric outcome that ordinary linear regression is designed for. Crash counts look different: they are whole numbers, cannot go below zero, and often contain many zeros. From the figure below the normal distribution is not suitable, due to negative values and the symmetrical distribution.
+
+An alternative distribution that better models the expected behaviour is the Poisson distribution. It is also the starting point for all subsequent model families, such as the negative binomial distribution shown in the same figure below.
+
+The figure below places all three distributions side by side at a low mean — the regime typical of annual injury collisions per road link in Open Road Risk (roughly 0.01–0.02 per link-year at link level, higher in aggregate).
+
+```{python}
+#| label: count-distribution-comparison
+#| fig-cap: "At a low mean, Poisson and negative binomial counts are dominated by zeros and small integers. A normal distribution cannot reproduce this shape: it is continuous, symmetric around the mean, and assigns probability mass to negative values."
+
+n = 50_000
+
+y_normal = np.random.normal(0.7, .5, size=n)
+y_poisson = np.random.poisson(lam=0.2, size=n)
+
+r = 0.4
+p = r / (r + 0.2)
+y_negbin = np.random.negative_binomial(n=r, p=p, size=n)
+
+dist_all = {
+    "Normal outcome": y_normal,
+    "Poisson count": y_poisson,
+    "Negative binomial count": y_negbin,
+}
+
+fig, ax = plt.subplots(1, 3, figsize=(15, 4))
+cols = ['blue', 'orange', 'green']
+for i, (name, values) in enumerate(dist_all.items()):
+    if name == "Normal outcome":
+        ax[i].hist(values, bins=40, alpha=0.7, color=cols[i])
+    else:
+        bins = np.arange(values.max() + 2) - 0.5
+        ax[i].hist(values, bins=bins, alpha=0.7, color=cols[i])
+        ax[i].set_xticks(range(min(values.max() + 1, 8)))
+        ax[i].set_xlim(-0.5, 7.5)
+    ax[i].set_title(name)
+    ax[i].set_xlabel("Value")
+    if i == 0:
+        ax[i].set_ylabel("Frequency")
+    ax[i].grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+```
+
+## Poisson distribution
+
+The reason the Poisson distribution is a useful distribution to model count data is due to:
+
+- It ouputs discrete, non-negative integers, which matches the nature of count data.
+- It is simple and has only one parameter, the mean
+
+The Poisson probability distribution is defined as follows, where $\lambda$ is the mean (and variance) of the distribution, and k is the count value:
+
+$$
+P(Y = k) = \frac{\lambda^k e^{-\lambda}}{k!}
+$$
+
+Broadly speaking for mean values in the range of road networks, the mean of the distribution gives the fraction of zeros: a mean of 0.02 corresponds to about 98% zeros, a mean of 0.1 corresponds to about 90% zeros.
+
+```{python}
+#| label: Poisson-distribution-at-different-means
+#| tbl-cap: "Poisson count distribution at different means"
+rng = np.random.default_rng()
+poisson_eg, means = [], []
+for poisson_mean in [0.02, 0.05, 0.1, 1.2]:
+    y_poisson = rng.poisson(poisson_mean, n)
+    counts, bins = np.histogram(y_poisson, bins=[0, 1, 2, 3, 4, 5])
+    counts = counts / counts.sum()  # Normalize to get probabilities
+    # to 2 decimal places
+    counts = 100 * np.round(counts, 4)
+    poisson_eg.append(counts)
+    means.append(poisson_mean)
+df = pd.DataFrame(data=poisson_eg, index=means)
+
+# rename the index to "Poisson mean"
+df = df.set_index(pd.Index(means, name="Poisson mean"))
+df
+```
+
+---
+
+The Poisson model assumes that the variance equals the mean. Crash count data almost always violates this: observed variance tends to be well in excess of the mean — a property called *overdispersion*. Overdispersion can arise from unobserved heterogeneity (e.g. unmeasured link characteristics). These can include many factors: driver behaviour on a specific day, momentary distraction, weather variation.  Even with perfect knowledge of the road, year-to-year variance would exceed what Poisson allows because some things are genuinely unobservable, not just hard to measure. 
+
+---
+
+## Why ordinary regression fails: heteroscedasticity
+
+```{python}
+#| label: data-setup
+#| echo: false
+
+n = 50000
+x = np.random.uniform(0, 5, size=n)
+
+y_continuous = 2 * x + np.random.normal(0, 1, size=n)
+
+mean_count = np.exp(-4 + 1.1 * x)
+y_count = np.random.poisson(mean_count)
+
+yhat_continuous = 2 * x
+yhat_count = mean_count
+
+residual_continuous = y_continuous - yhat_continuous
+residual_count = y_count - yhat_count
+
+cols_rc = {"continuous": "blue", "count": "green"}
+```
+
+One of the core assumptions behind ordinary least-squares regression is *homoscedasticity*: residual variance is approximately constant across the range of predicted values. For crash counts this assumption fails by construction. Because Poisson variance equals its mean, a model predicting higher counts must also predict larger residuals — there is no way to have the same spread at a predicted value of 0.1 as at a predicted value of 4.
+
+The figure below uses a perfect model — one that knows the true conditional mean — to isolate this data property from any model error.
+
+```{python}
+#| label: residual-vs-predicted
+#| fig-cap: "Left: a continuous outcome with constant noise. Residuals are evenly spread across all predicted values. Right: a Poisson count outcome using the same true conditional mean. Even with a perfect model, the residual cloud fans outward as predicted values increase — heteroscedasticity is a structural property of count data, not a modelling failure."
+
+fig, ax = plt.subplots(1, 2, figsize=(12, 4))
+
+ax[0].scatter(yhat_continuous, residual_continuous, s=3, alpha=0.3, color=cols_rc["continuous"])
+ax[0].axhline(0, color="red", lw=1)
+ax[0].set_title("Continuous outcome\n(residual vs predicted)")
+ax[0].set_xlabel("Predicted value")
+ax[0].set_ylabel("Residual (observed − predicted)")
+ax[0].grid()
+
+ax[1].scatter(yhat_count, residual_count, s=3, alpha=0.3, color=cols_rc["count"])
+ax[1].axhline(0, color="red", lw=1)
+ax[1].set_title("Count outcome\n(residual vs predicted)")
+ax[1].set_xlabel("Predicted value")
+ax[1].grid()
+
+plt.tight_layout()
+plt.show()
+```
+
+The right panel also illustrates a second problem: residuals cannot go below $-\hat{\lambda}$ (you cannot observe fewer than zero crashes), so at low predicted values the distribution is hard-bounded below and strongly right-skewed. Ordinary regression makes no use of this constraint; a count model builds it in through the Poisson log-linear mean.
+
+---
+
+## How residual shape changes with predicted value
+
+At low predicted values the residual distribution is asymmetric — almost all observations are at zero, and the only possible residuals are 0 or small positive integers. At higher predicted values the distribution widens and becomes more symmetric, but the spread is substantially larger than at low values.
+
+```{python}
+#| label: residual-distributions-by-prediction
+#| fig-cap: "Residual distributions conditioned on two predicted-value windows. Near zero (left), the count residuals are heavily right-skewed: the floor at −mean_count means there is almost no mass below zero. Near a predicted value of three (right), the distribution is broader and closer to symmetric, but the spread is much larger. A continuous outcome (blue) maintains roughly the same shape in both panels."
+
+fig, ax_all = plt.subplots(1, 2, figsize=(12, 4))
+diff = 0.1
+
+for i, pred_val in enumerate([0, 3]):
+    ax = ax_all[i]
+    cond_cont = (yhat_continuous >= pred_val - diff) & (yhat_continuous < pred_val + diff)
+    ax.hist(residual_continuous[cond_cont], bins=30, alpha=0.7, color=cols_rc["continuous"],
+            density=True, label="Continuous")
+
+    cond_count = (yhat_count >= pred_val - diff) & (yhat_count < pred_val + diff)
+    axR = ax.twinx()
+    axR.hist(residual_count[cond_count], bins=30, alpha=0.7, color=cols_rc["count"],
+             density=True, label="Count")
+
+    ax.set_ylabel("Density")
+    ax.set_xlabel("Residual (observed − predicted)")
+    ax.set_title(f"Residuals for predictions near {pred_val}")
+    ax.legend(loc="upper left")
+    axR.legend(loc="upper right")
+    ax.grid()
+    ax.set_xlim(-5, 5)
+
+plt.tight_layout()
+plt.show()
+```
+
+---
+
+## MSE loss is dominated by rare high-count events
+
+Ordinary regression minimises mean squared error (MSE). On zero-heavy count data this creates a structural problem: the few observations with large counts contribute far more to the total squared error than the many observations with counts near zero, even though the zero regime is the one the model needs to handle well.
+
+```{python}
+#| label: mse-vs-predicted
+#| fig-cap: "Average absolute error (MAE) and average squared error (MSE) for the count outcome, computed within narrow windows of predicted values. Both grow with the predicted value — variance is not constant. The right axis (dashed) shows the total squared-error contribution from each window, which peaks in the high-count tail despite those observations being rare. An MSE loss therefore steers parameter updates towards high-count outliers and away from the zero-heavy bulk of the data."
+
+fig, ax = plt.subplots(1, 1, figsize=(7, 4))
+
+resids, resid_sq, preds, sums = [], [], [], []
+for pred_val in np.arange(0, 4.1, 0.2):
+    cond = (yhat_count >= pred_val - diff) & (yhat_count < pred_val + diff)
+    preds.append(pred_val)
+    sums.append(cond.sum())
+    resids.append(abs(residual_count[cond]).mean())
+    resid_sq.append((residual_count[cond] ** 2).mean())
+
+ax.plot(preds, resids, label="MAE", color=cols_rc["continuous"], marker="o", markersize=4)
+ax.plot(preds, resid_sq, label="MSE", color=cols_rc["continuous"],
+        linestyle="dashed", marker="s", markersize=4)
+
+axR = ax.twinx()
+axR.plot(preds, np.array(sums) * np.array(resid_sq),
+         label="Total squared-error contribution", color=cols_rc["count"],
+         linestyle="dashed", marker="<", markersize=4)
+
+ax.set_xlabel("Predicted value")
+ax.set_ylabel("Average residual / average squared residual")
+axR.set_ylabel("Total squared-error contribution (n × MSE)")
+ax.set_title("Residual size and total error contribution vs predicted value")
+ax.legend(loc="upper left")
+axR.legend(loc="upper right")
+ax.grid()
+axR.set_ybound(0)
+ax.set_ybound(0)
+plt.tight_layout()
+plt.show()
+```
+

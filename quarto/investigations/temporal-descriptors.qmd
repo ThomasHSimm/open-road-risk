@@ -20,15 +20,109 @@ improve Stage 2 XGBoost pseudo-R² enough to warrant production adoption?
 
 ## Method
 
-<!-- placeholder; user will write -->
+The evaluation reframed the existing temporal traffic work from full
+time-disaggregated exposure modelling into link-level descriptor testing. The
+question was deliberately narrow: do temporal descriptors add enough predictive
+signal to the annual Stage 2 XGBoost model to justify production complexity?
+
+The candidate descriptors were screened before the collision-model ablation:
+
+- `core_overnight_ratio`: daytime flow per hour during 07:00-18:59 divided by
+  overnight flow per hour during 00:00-06:00;
+- weekday/weekend ratio;
+- monthly seasonal index;
+- WebTRIS-derived HGV percentage.
+
+Weekday/weekend and seasonal descriptors were parked before ablation because
+WebTRIS showed those patterns were mostly global rather than link-specific at
+the available grain. `core_overnight_ratio` and WebTRIS HGV percentage had
+enough link-specific variation to test.
+
+The Stage 2 collision model was rerun across seeds 42-46 under three
+configurations:
+
+| Config | Features |
+|---|---|
+| A | Baseline |
+| B | Baseline + `core_overnight_ratio` |
+| C | Baseline + `core_overnight_ratio` + WebTRIS HGV% |
+
+The pre-registered adoption rule required both:
+
+- pseudo-R² improvement greater than 0.009 over baseline;
+- test deviance reduction greater than 0.6%;
+
+with improvement on at least four of five seeds. The primary comparison excluded
+737 held-out links that snapped directly to WebTRIS sites, because those links
+have mild leakage geometry between the temporal training data and the collision
+model test fold.
 
 ## Result
 
-<!-- placeholder; user will write -->
+Both tested descriptor configurations produced small, reproducible
+improvements, but neither cleared the pre-registered adoption threshold.
+
+| Config | Pseudo-R² improvement | Deviance reduction | Verdict |
+|---|---:|---:|---|
+| B: `core_overnight_ratio` | 0.0036-0.0045 | 0.53%-0.66% | Null |
+| C: `core_overnight_ratio` + WebTRIS HGV% | 0.0056-0.0063 | 0.82%-0.92% | Null |
+
+Configuration C was the stronger result. It improved pseudo-R² by about 0.006
+and reduced deviance by about 0.85% across all five seeds. That is real signal:
+the descriptors are not redundant with the existing feature surface. But the
+pseudo-R² gain remained below the 0.009 adoption threshold on every seed, so the
+production decision remains parked.
+
+The result should be read as "real but below threshold", not "no effect".
+Operationally, the descriptors reshuffled rankings: top-1% Jaccard versus the
+baseline was about 0.764 for configuration B and 0.751 for configuration C.
+That movement is not enough to justify adoption without the stronger headline
+lift required by the pre-registered rule.
+
+Two supporting screening results explain the final scope:
+
+- `core_overnight_ratio` varies substantially across WebTRIS sites, with median
+  7.07 and 5th-95th percentile range 4.19-15.18.
+- WebTRIS HGV percentage has meaningful site-level spread, with monthly
+  across-site standard deviations around 6.50-8.17 percentage points.
+
+By contrast, weekday/weekend and seasonal patterns are useful as global
+descriptors but not as link-level annual-model features from the current WebTRIS
+data.
 
 ## Limitations
 
-<!-- placeholder; user will write -->
+- WebTRIS sensors are concentrated on motorways and major A-roads. The lack of
+  link-specific weekday/weekend or seasonal variation may reflect that monitored
+  network, not all minor roads.
+- `core_overnight_ratio` predictions are higher than measured WebTRIS values at
+  network scale: the applied model median is 9.09, while measured WebTRIS median
+  is 7.07. This may be real minor-road behaviour, extrapolation, or both.
+- Stage 2 already includes AADF-derived `hgv_proportion`. The WebTRIS HGV
+  descriptor was only worth testing because it is a distinct traffic-composition
+  measure; the marginal lift suggests overlap remains substantial.
+- The leakage check found 737 held-out collision links that snap to WebTRIS
+  sites. The primary result excluded them, but this confirms that temporal
+  features need fold-aware handling if revisited.
+- The conclusion applies to adding annual link-level descriptors to the current
+  Stage 2 XGBoost model. It does not test a fully time-conditioned collision
+  model or time-of-day-specific crash risk.
+
+## What is missing for a complete revisit
+
+The current investigation is complete for the scoped adoption decision. A future
+revisit would need new evidence, not just a rerun at the same threshold:
+
+- better validation of `core_overnight_ratio` predictions on minor roads, where
+  WebTRIS has sparse coverage;
+- fold-aligned temporal model training, so WebTRIS sites on collision-model
+  held-out links cannot leak into descriptor predictions;
+- a corrected or replaced corridor grouping in `temporal.py` if its corridor
+  outputs are used directly;
+- a decision on whether the project wants to lower the adoption threshold for
+  small but reproducible gains;
+- a broader design if the goal is temporal exposure conditioning rather than
+  annual link-level descriptors.
 
 ## Related artefacts
 

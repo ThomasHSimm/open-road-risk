@@ -21,16 +21,96 @@ Open Road Risk study area?
 
 ## Method
 
-<!-- placeholder; user will write -->
-<!-- This page should cover BOTH Part A (original) and the adjusted Part A rerun in sequence. -->
+The investigation was pre-registered as a two-part diagnostic.
+
+**Part A** tested whether KSI reporting was stable enough across police forces
+and years to justify a national-scope KSI model. It used the same snapped
+collision source that feeds `road_link_annual.parquet`, after the Stage 2
+snap-method and snap-score filters. KSI was defined as collisions with
+`collision_severity` equal to fatal or serious. For each force/year cell, the
+diagnostic calculated the KSI-to-all-injury ratio and flagged rows where the
+year-on-year ratio change exceeded ±20%. A practical sensitivity flag also
+required an absolute KSI count change of at least 25 collisions, but the
+pre-registered verdict was based on the ±20% ratio rule.
+
+**Part B** would have compared a standalone KSI modelling path against the
+all-injury ranking, including a predictor-set comparison and EB-shrunk Jaccard
+against the current ranking. Part B was conditional on Part A clearing the
+reporting-consistency gate.
+
+After the original Part A failed, a follow-up feasibility check confirmed that
+DfT severity-adjustment columns were available across the 2015–2024 study
+window. Part A was then rerun using an adjusted expected KSI target:
+
+```text
+adjusted_expected_ksi = fatal_indicator + collision_adjusted_severity_serious
+```
+
+This adjusted target is probabilistic and aggregate-facing: it is an expected
+count, not a deterministic record-level KSI label. The same pre-registered ±20%
+year-on-year force/year ratio rule was retained unchanged.
 
 ## Result
 
-<!-- placeholder; user will write -->
+The original Part A diagnostic did not clear the reporting-consistency gate.
+Across 23 police forces and 2015–2024:
+
+- 450,991 all-injury collision records were retained after Stage 2 snap filters;
+- 99,559 were recorded KSI collisions;
+- 28 force/year rows were flagged by the pre-registered ±20% rule;
+- 26 of those also survived the practical sensitivity threshold.
+
+The result was not mainly small-number volatility. The flag pattern was
+consistent with a mixture of the 2016–2019 CRaSH/COPA severity-reporting
+transition, Staffordshire-specific anomalies, and residual force-specific
+heterogeneity that did not collapse under tested restricted windows. The strict
+pre-registered verdict was: **per-force handling required before KSI modelling is
+defensible**.
+
+The adjusted Part A rerun improved the result but did not reverse the verdict.
+Using adjusted expected KSI:
+
+- total adjusted expected KSI was 114,817.3;
+- the pre-registered flagged force/year rows fell from 28 to 15;
+- the practical-sensitivity flagged rows fell from 26 to 13;
+- residual flags remained concentrated in Staffordshire 2021–2024, the
+  2016–2017 CRaSH/COPA transition, and a scattered 2019 transition tail.
+
+Because the adjusted rerun still failed the pre-registered consistency gate,
+Part B was not run. The standalone KSI atlas remains parked.
+
+::: {.callout-note}
+The Staffordshire flags are now treated as a source-data issue rather than a KSI
+modelling result. See [Staffordshire data quality](staffordshire-data-quality.qmd)
+for the separate investigation.
+:::
 
 ## Limitations
 
-<!-- placeholder; user will write -->
+- The diagnostic tests reporting consistency, not whether KSI risk is
+  substantively unimportant. It only says the available target is not yet stable
+  enough for a defensible national-scope standalone model.
+- The DfT-adjusted target is an expected count, not an observed integer count.
+  Using it in a link-year model would require explicit target-definition,
+  validation, and EB-shrinkage decisions.
+- The KSI target is sparse at link-year level, so even a reporting-consistent
+  target would need careful validation before operational ranking.
+- The adjusted rerun does not prove that KSI modelling is impossible. It narrows
+  the revisit path: use a restricted window, treat Staffordshire as out of scope
+  by default, and re-derive the modelling and EB assumptions for expected-count
+  targets.
+
+## Revisit condition
+
+Reopen the KSI atlas only if one of the following happens:
+
+- the adjusted Part A diagnostic is rerun on a restricted window, such as
+  2019–2023 excluding Staffordshire, and clears the pre-registered ±20%
+  threshold, with explicit methodology for expected KSI at link-year grain and
+  EB shrinkage; or
+- DfT publishes a corrected historical Staffordshire series for the acknowledged
+  2017–2023 under-reporting issue, and the full-window adjusted diagnostic then
+  passes.
 
 ## Related artefacts
 

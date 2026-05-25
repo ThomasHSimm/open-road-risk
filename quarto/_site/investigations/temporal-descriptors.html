@@ -134,21 +134,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Background</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
-        <li>
-    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
- <span class="dropdown-text">Metrics and methodology</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../background/literature-evidence-register.html">
- <span class="dropdown-text">Literature evidence register</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Literature</span>
     </a>
@@ -156,6 +141,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-index.html">
  <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -188,6 +177,21 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
  <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-walkthroughs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Walkthroughs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-walkthroughs">    
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/walkthroughs-index.html">
+ <span class="dropdown-text">Walkthroughs overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/count-models-explainer.html">
+ <span class="dropdown-text">Count models explainer</span></a>
   </li>  
     </ul>
   </li>
@@ -340,6 +344,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../investigations/rank-stability.html">
  <span class="dropdown-text">Rank stability harness</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -395,6 +403,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li><a href="#method" id="toc-method" class="nav-link" data-scroll-target="#method">Method</a></li>
   <li><a href="#result" id="toc-result" class="nav-link" data-scroll-target="#result">Result</a></li>
   <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#what-is-missing-for-a-complete-revisit" id="toc-what-is-missing-for-a-complete-revisit" class="nav-link" data-scroll-target="#what-is-missing-for-a-complete-revisit">What is missing for a complete revisit</a></li>
   <li><a href="#related-artefacts" id="toc-related-artefacts" class="nav-link" data-scroll-target="#related-artefacts">Related artefacts</a></li>
   </ul>
 </nav>
@@ -435,15 +444,107 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </section>
 <section id="method" class="level2">
 <h2 class="anchored" data-anchor-id="method">Method</h2>
-<!-- placeholder; user will write -->
+<p>The evaluation reframed the existing temporal traffic work from full time-disaggregated exposure modelling into link-level descriptor testing. The question was deliberately narrow: do temporal descriptors add enough predictive signal to the annual Stage 2 XGBoost model to justify production complexity?</p>
+<p>The candidate descriptors were screened before the collision-model ablation:</p>
+<ul>
+<li><code>core_overnight_ratio</code>: daytime flow per hour during 07:00-18:59 divided by overnight flow per hour during 00:00-06:00;</li>
+<li>weekday/weekend ratio;</li>
+<li>monthly seasonal index;</li>
+<li>WebTRIS-derived HGV percentage.</li>
+</ul>
+<p>Weekday/weekend and seasonal descriptors were parked before ablation because WebTRIS showed those patterns were mostly global rather than link-specific at the available grain. <code>core_overnight_ratio</code> and WebTRIS HGV percentage had enough link-specific variation to test.</p>
+<p>The Stage 2 collision model was rerun across seeds 42-46 under three configurations:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Config</th>
+<th>Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td>Baseline</td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td>Baseline + <code>core_overnight_ratio</code></td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td>Baseline + <code>core_overnight_ratio</code> + WebTRIS HGV%</td>
+</tr>
+</tbody>
+</table>
+<p>The pre-registered adoption rule required both:</p>
+<ul>
+<li>pseudo-R² improvement greater than 0.009 over baseline;</li>
+<li>test deviance reduction greater than 0.6%;</li>
+</ul>
+<p>with improvement on at least four of five seeds. The primary comparison excluded 737 held-out links that snapped directly to WebTRIS sites, because those links have mild leakage geometry between the temporal training data and the collision model test fold.</p>
 </section>
 <section id="result" class="level2">
 <h2 class="anchored" data-anchor-id="result">Result</h2>
-<!-- placeholder; user will write -->
+<p>Both tested descriptor configurations produced small, reproducible improvements, but neither cleared the pre-registered adoption threshold.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 28%">
+<col style="width: 28%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Config</th>
+<th style="text-align: right;">Pseudo-R² improvement</th>
+<th style="text-align: right;">Deviance reduction</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>B: <code>core_overnight_ratio</code></td>
+<td style="text-align: right;">0.0036-0.0045</td>
+<td style="text-align: right;">0.53%-0.66%</td>
+<td>Null</td>
+</tr>
+<tr class="even">
+<td>C: <code>core_overnight_ratio</code> + WebTRIS HGV%</td>
+<td style="text-align: right;">0.0056-0.0063</td>
+<td style="text-align: right;">0.82%-0.92%</td>
+<td>Null</td>
+</tr>
+</tbody>
+</table>
+<p>Configuration C was the stronger result. It improved pseudo-R² by about 0.006 and reduced deviance by about 0.85% across all five seeds. That is real signal: the descriptors are not redundant with the existing feature surface. But the pseudo-R² gain remained below the 0.009 adoption threshold on every seed, so the production decision remains parked.</p>
+<p>The result should be read as “real but below threshold”, not “no effect”. Operationally, the descriptors reshuffled rankings: top-1% Jaccard versus the baseline was about 0.764 for configuration B and 0.751 for configuration C. That movement is not enough to justify adoption without the stronger headline lift required by the pre-registered rule.</p>
+<p>Two supporting screening results explain the final scope:</p>
+<ul>
+<li><code>core_overnight_ratio</code> varies substantially across WebTRIS sites, with median 7.07 and 5th-95th percentile range 4.19-15.18.</li>
+<li>WebTRIS HGV percentage has meaningful site-level spread, with monthly across-site standard deviations around 6.50-8.17 percentage points.</li>
+</ul>
+<p>By contrast, weekday/weekend and seasonal patterns are useful as global descriptors but not as link-level annual-model features from the current WebTRIS data.</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<!-- placeholder; user will write -->
+<ul>
+<li>WebTRIS sensors are concentrated on motorways and major A-roads. The lack of link-specific weekday/weekend or seasonal variation may reflect that monitored network, not all minor roads.</li>
+<li><code>core_overnight_ratio</code> predictions are higher than measured WebTRIS values at network scale: the applied model median is 9.09, while measured WebTRIS median is 7.07. This may be real minor-road behaviour, extrapolation, or both.</li>
+<li>Stage 2 already includes AADF-derived <code>hgv_proportion</code>. The WebTRIS HGV descriptor was only worth testing because it is a distinct traffic-composition measure; the marginal lift suggests overlap remains substantial.</li>
+<li>The leakage check found 737 held-out collision links that snap to WebTRIS sites. The primary result excluded them, but this confirms that temporal features need fold-aware handling if revisited.</li>
+<li>The conclusion applies to adding annual link-level descriptors to the current Stage 2 XGBoost model. It does not test a fully time-conditioned collision model or time-of-day-specific crash risk.</li>
+</ul>
+</section>
+<section id="what-is-missing-for-a-complete-revisit" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-missing-for-a-complete-revisit">What is missing for a complete revisit</h2>
+<p>The current investigation is complete for the scoped adoption decision. A future revisit would need new evidence, not just a rerun at the same threshold:</p>
+<ul>
+<li>better validation of <code>core_overnight_ratio</code> predictions on minor roads, where WebTRIS has sparse coverage;</li>
+<li>fold-aligned temporal model training, so WebTRIS sites on collision-model held-out links cannot leak into descriptor predictions;</li>
+<li>a corrected or replaced corridor grouping in <code>temporal.py</code> if its corridor outputs are used directly;</li>
+<li>a decision on whether the project wants to lower the adoption threshold for small but reproducible gains;</li>
+<li>a broader design if the goal is temporal exposure conditioning rather than annual link-level descriptors.</li>
+</ul>
 </section>
 <section id="related-artefacts" class="level2">
 <h2 class="anchored" data-anchor-id="related-artefacts">Related artefacts</h2>

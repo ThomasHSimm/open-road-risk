@@ -163,21 +163,6 @@ window.Quarto = {
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Background</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
-        <li>
-    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
- <span class="dropdown-text">Metrics and methodology</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../background/literature-evidence-register.html">
- <span class="dropdown-text">Literature evidence register</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Literature</span>
     </a>
@@ -185,6 +170,10 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../literature/literature-index.html">
  <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -217,6 +206,21 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
  <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-walkthroughs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Walkthroughs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-walkthroughs">    
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/walkthroughs-index.html">
+ <span class="dropdown-text">Walkthroughs overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/count-models-explainer.html">
+ <span class="dropdown-text">Count models explainer</span></a>
   </li>  
     </ul>
   </li>
@@ -369,6 +373,10 @@ window.Quarto = {
     <a class="dropdown-item" href="../investigations/rank-stability.html">
  <span class="dropdown-text">Rank stability harness</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -427,9 +435,8 @@ window.Quarto = {
   <li><a href="#exposure-structure-and-the-eb-link" id="toc-exposure-structure-and-the-eb-link" class="nav-link" data-scroll-target="#exposure-structure-and-the-eb-link">4. Exposure Structure and the EB Link</a></li>
   <li><a href="#spatial-and-temporal-correlation" id="toc-spatial-and-temporal-correlation" class="nav-link" data-scroll-target="#spatial-and-temporal-correlation">5. Spatial and Temporal Correlation</a></li>
   <li><a href="#facility-stratification" id="toc-facility-stratification" class="nav-link" data-scroll-target="#facility-stratification">6. Facility Stratification</a></li>
-  <li><a href="#why-dbnmse-is-not-appropriate" id="toc-why-dbnmse-is-not-appropriate" class="nav-link" data-scroll-target="#why-dbnmse-is-not-appropriate">7. Why DBN/MSE Is Not Appropriate</a></li>
-  <li><a href="#model-family-comparison-table" id="toc-model-family-comparison-table" class="nav-link" data-scroll-target="#model-family-comparison-table">8. Model-Family Comparison Table</a></li>
-  <li><a href="#zero-calibration-diagnostic" id="toc-zero-calibration-diagnostic" class="nav-link" data-scroll-target="#zero-calibration-diagnostic">10. Zero-Calibration Diagnostic</a></li>
+  <li><a href="#model-family-comparison-table" id="toc-model-family-comparison-table" class="nav-link" data-scroll-target="#model-family-comparison-table">7. Model-Family Comparison Table</a></li>
+  <li><a href="#zero-calibration-diagnostic" id="toc-zero-calibration-diagnostic" class="nav-link" data-scroll-target="#zero-calibration-diagnostic">8. Zero-Calibration Diagnostic</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -491,7 +498,7 @@ Note
 <section id="overdispersion-the-primary-challenge" class="level2">
 <h2 class="anchored" data-anchor-id="overdispersion-the-primary-challenge">2. Overdispersion: The Primary Challenge</h2>
 <p>The negative binomial (NB) model is the standard extension for overdispersion. It replaces Poisson mean-variance equality with <span class="math inline">\(\text{Var}(y) = \mathbb{E}[y] + \alpha\,\mathbb{E}[y]^2\)</span>, where <span class="math inline">\(\alpha\)</span> is an overdispersion parameter. When <span class="math inline">\(\alpha = 0\)</span> the NB reduces to Poisson.</p>
-<p>Chengye and Ranjitkar (2013) fit NB models to a 74 km Auckland motorway corridor (7 years, 959 segment-years) and report <span class="math inline">\(\hat{\alpha} = 0.183\)</span> for the overall model, falling to 0.106–0.130 when the data are stratified by ramp type. The reduction demonstrates two things: overdispersion is present even in a relatively high-count motorway dataset, and facility stratification absorbs heterogeneity that the pooled model cannot. Al-Omari (2021) reports overdispersion parameter <span class="math inline">\(k\)</span> ranging from 0.29 to 1.37 across Florida road classes, consistent with this pattern.</p>
+<p>Chengye and Ranjitkar (2013) fit NB models to a 74 km Auckland motorway corridor (7 years, 959 segment-years) and report <span class="math inline">\(\hat{\alpha} = 0.183\)</span> for the overall model, falling to 0.106–0.130 when the data are stratified by ramp type. The reduction demonstrates two things: overdispersion is present even in a relatively high-count motorway dataset, and facility stratification absorbs heterogeneity that the pooled model cannot. Al-Omari (2021) reports overdispersion parameter <span class="math inline">\(k\)</span> ranging from 0.29 to 1.37 across Florida road classes, consistent with this pattern. Note that Al-Omari’s <span class="math inline">\(k\)</span> follows the US DOT/HSM inverse-dispersion convention (<span class="math inline">\(\text{Var}(y) = \mathbb{E}[y] + \mathbb{E}[y]^2/k\)</span>; larger <span class="math inline">\(k\)</span> means <em>less</em> dispersion, converging to Poisson as <span class="math inline">\(k \to \infty\)</span>), which is the reciprocal of the <span class="math inline">\(\alpha\)</span> used elsewhere on this page. Converting: <span class="math inline">\(k = 0.29 \Rightarrow \alpha = 3.45\)</span>; <span class="math inline">\(k = 1.37 \Rightarrow \alpha = 0.73\)</span>.</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -538,7 +545,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The zero-calibration check from Pew et al.&nbsp;(2020) is described in §10. It should be run on the current Stage 2 Poisson GLM before deciding whether to progress to NB or ZINB.</p>
+<p>The zero-calibration check (§8) has been run on the Open Road Risk data. The Poisson GLM fails (p = 0.000); the negative binomial with α = 2.057 reproduces the observed zero count adequately (p = 0.722). This confirms that overdispersion — not structural zero-inflation — dominates, and that ZINB is not the priority next step. See the <a href="../investigations/zero-calibration.html">Zero-Calibration Diagnostic</a> for full results.</p>
 </div>
 </div>
 <hr>
@@ -550,6 +557,8 @@ Note
 <p>The overdispersion parameter <span class="math inline">\(\phi\)</span> (in units per km for road segments) is estimated from NB regression on a reference population. It determines how much weight is placed on the SPF prediction versus the observed count. For sparse links with few observed collisions, <span class="math inline">\(w \to 1\)</span> and the EB estimate is dominated by the SPF; for links with a long accident history, <span class="math inline">\((1 - w) \to 1\)</span> and the observed data dominates.</p>
 <p>This has a concrete consequence for Open Road Risk: the current Stage 2 Poisson GLM plays the role of the SPF. For the EB shrinkage weight to be correct, <span class="math inline">\(\phi\)</span> must be estimated from an NB regression fitted to the same data, not assumed from a Poisson fit (where <span class="math inline">\(\phi = \infty\)</span> and <span class="math inline">\(w = 0\)</span>). The current EB implementation uses a method-of-moments estimate of <span class="math inline">\(k\)</span> that partially addresses this, but a direct NB estimate would be more principled.</p>
 <p>Hauer et al.&nbsp;(2001) also describe the <em>full EB procedure</em>, which accommodates year-specific AADT changes by replacing <span class="math inline">\(\eta = \mu \times Y\)</span> with <span class="math inline">\(\sum_t \mu_t\)</span> in the weight formula. Open Road Risk’s Stage 1a estimates AADT per link per year, making the full procedure directly implementable. The full procedure produces more precise EB estimates because it uses the complete 2015–2024 accident history per link.</p>
+<p>Pan et al.&nbsp;(2017) provide a cautionary contrast: their Deep Belief Network uses AADT and segment length as normalised input features rather than a formal exposure offset. Without a Poisson offset, predicted values are continuous with no natural interpretation as expected crash counts. The near-unity NB coefficients on <span class="math inline">\(\log(\text{AADT} \times \text{length})\)</span> reported in Pan et al.&nbsp;(2017) for all six highway types confirm that the exposure relationship the DBN handles implicitly through feature scaling is well-captured by a formal offset — an argument for the simpler structure, not against it.</p>
+<p>The Open Road Risk XGBoost model faces the same exposure-offset problem: AADT enters as a feature rather than as a constrained offset, which is a known limitation of the current pipeline. The related training-loss critique of MSE on sparse counts is documented in <a href="../literature/validation-and-metrics.html#training-loss-as-a-metric-mse-on-count-data">Validation and Metrics</a>.</p>
 <hr>
 </section>
 <section id="spatial-and-temporal-correlation" class="level2">
@@ -607,15 +616,8 @@ Warning
 <p>A structural consequence of stratification, visible in Chengye and Ranjitkar (2013): the NB overdispersion parameter <span class="math inline">\(\hat{\alpha}\)</span> falls from 0.183 in the overall model to 0.106–0.130 in ramp-split sub-models. Once per-family NB models are estimated, the per-family <span class="math inline">\(\hat{\phi}\)</span> becomes available for the Hauer et al.&nbsp;(2001) EB weight formula, removing the need for a global dispersion estimate that spans heterogeneous road types. This connection — facility-family NB regression enabling per-family EB weights — is one of the main arguments for the v2 per-family EB recommendation already in the pipeline’s open caveats.</p>
 <hr>
 </section>
-<section id="why-dbnmse-is-not-appropriate" class="level2">
-<h2 class="anchored" data-anchor-id="why-dbnmse-is-not-appropriate">7. Why DBN/MSE Is Not Appropriate</h2>
-<p>Pan et al.&nbsp;(2017) train a Deep Belief Network on pooled crash data from Ontario Highway 401, Colorado, and Washington state, using mean squared error as the loss function. AADT and segment length are normalised input features rather than a formal exposure offset. The paper reports modest improvements over locally calibrated NB on temporally held-out data — 0–32% MAE reduction depending on dataset, with 0% improvement on rural multilane Washington data.</p>
-<p>Three structural properties make the DBN/MSE approach unsuitable for Open Road Risk’s link-year data. First, MSE loss gives equal weight to all residuals and is dominated by the rare high-count rows on zero-heavy data; it does not penalise distributional mismatch in the zero regime. Second, without a Poisson offset, predicted values are continuous with no natural interpretation as expected crash counts. Third, the near-unity NB coefficients on <span class="math inline">\(\log(\text{AADT} \times \text{length})\)</span> reported in Pan et al.&nbsp;(2017) for all six highway types confirm that the exposure relationship the DBN handles implicitly through feature scaling is well-captured by a formal offset — an argument for the simpler structure, not against it.</p>
-<p>Pan et al.&nbsp;(2017) acknowledge “several unsolved questions” in their conclusions. The improvement over NB is marginal for most highway types and disappears entirely for the rural multilane case. The Open Road Risk XGBoost model faces the same exposure-offset problem (AADT enters as a feature rather than as a constrained offset), which is a known limitation of the current pipeline.</p>
-<hr>
-</section>
 <section id="model-family-comparison-table" class="level2">
-<h2 class="anchored" data-anchor-id="model-family-comparison-table">8. Model-Family Comparison Table</h2>
+<h2 class="anchored" data-anchor-id="model-family-comparison-table">7. Model-Family Comparison Table</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 20%">
@@ -703,7 +705,7 @@ Note
 <hr>
 </section>
 <section id="zero-calibration-diagnostic" class="level2">
-<h2 class="anchored" data-anchor-id="zero-calibration-diagnostic">10. Zero-Calibration Diagnostic</h2>
+<h2 class="anchored" data-anchor-id="zero-calibration-diagnostic">8. Zero-Calibration Diagnostic</h2>
 <p>The posterior predictive zero check (Pew et al.&nbsp;2020) tests whether a fitted model adequately reproduces the observed zero rate. The procedure is:</p>
 <ol type="1">
 <li>Fit the Stage 2 model and obtain predicted <span class="math inline">\(\hat{\lambda}_i\)</span> per link-year (incorporating the exposure offset).</li>

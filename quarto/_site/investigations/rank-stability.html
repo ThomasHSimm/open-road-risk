@@ -134,21 +134,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Background</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
-        <li>
-    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
- <span class="dropdown-text">Metrics and methodology</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../background/literature-evidence-register.html">
- <span class="dropdown-text">Literature evidence register</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Literature</span>
     </a>
@@ -156,6 +141,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-index.html">
  <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -188,6 +177,21 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
  <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-walkthroughs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Walkthroughs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-walkthroughs">    
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/walkthroughs-index.html">
+ <span class="dropdown-text">Walkthroughs overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/count-models-explainer.html">
+ <span class="dropdown-text">Count models explainer</span></a>
   </li>  
     </ul>
   </li>
@@ -340,6 +344,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../investigations/rank-stability.html">
  <span class="dropdown-text">Rank stability harness</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -434,15 +442,105 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </section>
 <section id="method" class="level2">
 <h2 class="anchored" data-anchor-id="method">Method</h2>
-<!-- placeholder; user will write -->
+<p>The harness retrained the Stage 2 XGBoost model across five random seeds (42–46), using the same grouped-by-link cross-validation design. Seed 42 is the production realisation, so the diagnostic also tested whether the production seed was representative of the seed set.</p>
+<p>For each seed, the run recorded:</p>
+<ul>
+<li>held-out pseudo-R²;</li>
+<li>top-k ranking overlap using pairwise Jaccard similarity;</li>
+<li>full-rank Spearman correlation;</li>
+<li>observed per-decile calibration stability.</li>
+</ul>
+<p>The follow-up Jaccard investigation used the saved per-seed predictions to inspect why top-k overlap was non-monotonic: top-1000 overlap was lower than top-100 and top-10000 overlap.</p>
 </section>
 <section id="result" class="level2">
 <h2 class="anchored" data-anchor-id="result">Result</h2>
-<!-- placeholder; user will write -->
+<p>Pseudo-R² was stable but not identical across seeds:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>seed</th>
+<th style="text-align: right;">pseudo-R²</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>42</td>
+<td style="text-align: right;">0.321444</td>
+</tr>
+<tr class="even">
+<td>43</td>
+<td style="text-align: right;">0.321372</td>
+</tr>
+<tr class="odd">
+<td>44</td>
+<td style="text-align: right;">0.326320</td>
+</tr>
+<tr class="even">
+<td>45</td>
+<td style="text-align: right;">0.326529</td>
+</tr>
+<tr class="odd">
+<td>46</td>
+<td style="text-align: right;">0.321825</td>
+</tr>
+<tr class="even">
+<td><strong>mean</strong></td>
+<td style="text-align: right;"><strong>0.323498</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>std</strong></td>
+<td style="text-align: right;"><strong>0.002678</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Ranking overlap was high at full-rank scale but less stable at narrow top-k thresholds:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>threshold</th>
+<th style="text-align: right;">pairwise mean Jaccard</th>
+<th style="text-align: right;">pairwise minimum Jaccard</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Top 100</td>
+<td style="text-align: right;">0.878141</td>
+<td style="text-align: right;">0.851852</td>
+</tr>
+<tr class="even">
+<td>Top 1,000</td>
+<td style="text-align: right;">0.870936</td>
+<td style="text-align: right;">0.858736</td>
+</tr>
+<tr class="odd">
+<td>Top 10,000</td>
+<td style="text-align: right;">0.883074</td>
+<td style="text-align: right;">0.873185</td>
+</tr>
+<tr class="even">
+<td>Top 1%</td>
+<td style="text-align: right;">0.903575</td>
+<td style="text-align: right;">0.896574</td>
+</tr>
+</tbody>
+</table>
+<p>Full-rank Spearman correlation was extremely high (pairwise mean 0.999140, minimum 0.999069), which means the broad ordering is stable even though exact membership near narrow cut-offs can churn.</p>
+<p>Seed 42 is representative: its pseudo-R² is within one cross-seed standard deviation of the mean, its mean top-1% Jaccard against the other seeds is 0.902825, and its mean Spearman correlation against the other seeds is 0.999130.</p>
+<p>The practical noise floor is therefore:</p>
+<blockquote class="blockquote">
+<p>A proposed feature or model change should improve pseudo-R² by roughly 0.006 or more (about 1.5× the cross-seed standard deviation) before it is treated as distinguishable from random-seed variation.</p>
+</blockquote>
+<p>The Jaccard follow-up showed that the lower top-1000 overlap is not simply a local predicted-risk spacing issue. Instead, the useful interpretation is operational: narrow top-k thresholds, especially around top-1000, should be treated as fuzzy frontiers. Links close to the threshold may swap in or out across equally valid seed realisations.</p>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<!-- placeholder; user will write -->
+<ul>
+<li>The diagnostic measures random-seed variation only. It does not measure uncertainty from feature engineering choices, spatial split design, AADT uncertainty, or year-to-year temporal instability.</li>
+<li>The same grouped-link cross-validation design is used for every seed. Any optimism from spatial autocorrelation is shared across seeds and is not diagnosed here.</li>
+<li>The top-k Jaccard values are sensitive to the chosen thresholds. The exact top-100 or top-1000 membership should not be interpreted as deterministic.</li>
+<li>The noise floor is calibrated for the current Stage 2 XGBoost setup. A major model-family change would need its own stability check.</li>
+</ul>
 </section>
 <section id="related-artefacts" class="level2">
 <h2 class="anchored" data-anchor-id="related-artefacts">Related artefacts</h2>

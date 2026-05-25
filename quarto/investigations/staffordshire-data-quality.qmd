@@ -18,19 +18,85 @@ Are the persistent Staffordshire flags in the adjusted KSI Part A diagnostic a p
 
 ## Method
 
-<!-- placeholder; user will write -->
+The investigation compared Staffordshire collision counts across the pipeline,
+from raw DfT STATS19 records through processed, cleaned, snapped, feature, and
+production scoring artefacts. The purpose was to locate where the discontinuity
+entered the data.
+
+The checks covered:
+
+- raw DfT collision CSV counts by police force and year;
+- processed and cleaned STATS19 tables;
+- snapped collision records and the Part A snap-quality filter;
+- bounding-box coverage for Staffordshire records;
+- monthly, highway-authority, and road-class splits;
+- comparison with neighbouring forces: Cheshire, West Mercia, Warwickshire, and
+  Derbyshire;
+- production `risk_scores.parquet` on Staffordshire-associated links.
+
+The DfT known-data-issues page was then used as an external source check. That
+page identifies Staffordshire police under-reporting between 2017 and 2023 due
+to incomplete and untimely STATS19 processing returns.
 
 ## Findings
 
-<!-- placeholder; user will write -->
+The discontinuity is already present in raw STATS19. Staffordshire raw collision
+counts fall from 2,582 in 2016 to 1,807 in 2017, reach a trough of 507 in 2022,
+then rebound to 1,496 in 2024. The same counts are preserved through processed
+and cleaned data.
+
+The 2022 trough is not caused by Open Road Risk processing:
+
+- raw, processed, cleaned, and snapped-all Staffordshire counts are all 507 in
+  2022;
+- the retained snapped count is 506, so the snap/filter cascade removes only one
+  row;
+- all 2022 Staffordshire records are inside the configured study bounding box;
+- the low count is visible across the whole year, not a single missing month;
+- both Staffordshire highway authorities show the same fall and rebound pattern.
+
+Neighbouring forces do not show the same pattern. Staffordshire falls by 38.1%
+from 2021 to 2022, while the neighbour median changes by approximately +4.7%.
+Staffordshire then rises by 74.2% in 2023 and 69.4% in 2024, again unlike the
+comparison forces.
+
+The all-injury production scores do not look mechanically broken for
+Staffordshire-associated links. Their nonzero-link share is comparable to
+neighbouring forces, and 8.38% of Staffordshire-associated links are in the
+network-wide top 1%. The issue is therefore not that Staffordshire links are
+missing from production scoring; it is that the source counts under-record some
+Staffordshire collisions in the affected years.
 
 ## Interpretation
 
-<!-- placeholder; user will write -->
+This is a source-data issue, not an Open Road Risk pipeline defect. The pipeline
+transmits the published STATS19 data faithfully through ingest, cleaning,
+snapping, feature aggregation, and scoring.
+
+The appropriate response is a scope restriction. Future KSI revisit work should
+treat Staffordshire as out of scope by default unless DfT publishes a corrected
+historical series. For all-injury outputs, the production model does not need to
+be discarded on this finding alone, but Staffordshire local interpretation needs
+a source-data caveat: the model reflects published STATS19 counts, and those
+counts include a force-specific 2017-2023 under-reporting issue that may
+under-rank affected Staffordshire links.
+
+This also explains why Staffordshire remained visible in the adjusted KSI Part A
+rerun. Severity adjustment reduces the broader force/year heterogeneity, but it
+cannot recover missing collision records from a force-level under-reporting
+period.
 
 ## Limitations
 
-<!-- placeholder; user will write -->
+- `risk_scores.parquet` has no police-force field. The production-score check
+  therefore uses collision-associated links as a proxy for Staffordshire links,
+  not a definitive administrative boundary.
+- The investigation identifies the location and likely cause of the anomaly; it
+  does not estimate the true number of missing Staffordshire collisions.
+- No imputation is attempted. DfT has not imputed the affected historical series,
+  and there is no defensible local correction inside Open Road Risk.
+- The finding applies directly to Staffordshire. It does not imply that other
+  police-force areas have the same issue.
 
 ## Related artefacts
 
