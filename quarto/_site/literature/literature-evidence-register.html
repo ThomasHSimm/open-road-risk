@@ -154,21 +154,6 @@ background-size: cover;
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Background</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
-        <li>
-    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
- <span class="dropdown-text">Metrics and methodology</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../background/literature-evidence-register.html">
- <span class="dropdown-text">Literature evidence register</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Literature</span>
     </a>
@@ -176,6 +161,10 @@ background-size: cover;
         <li>
     <a class="dropdown-item" href="../literature/literature-index.html">
  <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -208,6 +197,21 @@ background-size: cover;
         <li>
     <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
  <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-walkthroughs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Walkthroughs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-walkthroughs">    
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/walkthroughs-index.html">
+ <span class="dropdown-text">Walkthroughs overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/count-models-explainer.html">
+ <span class="dropdown-text">Count models explainer</span></a>
   </li>  
     </ul>
   </li>
@@ -328,6 +332,41 @@ background-size: cover;
         <li>
     <a class="dropdown-item" href="../methodology/model-inventory.html">
  <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-investigations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Investigations</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-investigations">    
+        <li>
+    <a class="dropdown-item" href="../investigations/index.html">
+ <span class="dropdown-text">Investigations overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/ksi-atlas.html">
+ <span class="dropdown-text">KSI atlas diagnostic</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/staffordshire-data-quality.html">
+ <span class="dropdown-text">Staffordshire data quality</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/temporal-descriptors.html">
+ <span class="dropdown-text">Temporal descriptors evaluation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/aadf-counted-only-filter.html">
+ <span class="dropdown-text">AADF counted-only filter</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/rank-stability.html">
+ <span class="dropdown-text">Rank stability harness</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
   </li>  
     </ul>
   </li>
@@ -2235,6 +2274,93 @@ Note
 <td>Check published version if quoting exact table values</td>
 <td>Relevant stage: Stage 2, severity, documentation. Transferability: medium. Complete HA traffic counts assumed for all segments, so data assumptions do not transfer to Open Road Risk’s minor road network.</td>
 </tr>
+<tr class="odd">
+<td>LIT-060</td>
+<td>paper-extraction-khodadadi-2021-NB-parameterisations-NFAS-SPF.md</td>
+<td>2021__A__Khodadadi_NFAS.pdf</td>
+<td>Application of different negative binomial parameterizations to develop safety performance functions for non-federal aid system roads</td>
+<td>Ali Khodadadi; Ioannis Tsapakis; Subasish Das; Dominique Lord; Yingfeng Li</td>
+<td>2021</td>
+<td>SPF development; NB parameterisation comparison; Bayesian count modelling for zero-heavy low-volume crash data</td>
+<td>USA; Virginia</td>
+<td>rural and urban local low-volume NFAS roads (AADT ≤ 2347 vpd); non-federal aid system (6R; 7R; 7U)</td>
+<td>Six NB parameterisations (NB-1; NB-2; NB-P; NB1-L; NB2-L; NBP-L) × five dispersion structures; full Bayesian MCMC (rjags); WAIC and LOO model selection; CURE plots</td>
+<td>5-year aggregate crash count per road segment (all injury and property damage; intersection crashes excluded; no severity stratification)</td>
+<td>Ln(AADT) and length as free predictors with estimated elasticities (AADT ~0.63–0.74; length ~0.47–0.68); no fixed log-offset; poor-quality AADT records excluded</td>
+<td>NFAS road segment (variable length; mean 1.37 mi rural; 0.40 mi urban local)</td>
+<td>5-year aggregate cross-section; no panel; no within-year structure</td>
+<td>Approximate PSIS-LOO and WAIC from Bayesian posterior (no external holdout; no spatial or temporal split)</td>
+<td>NB-L models outperform NB-2 by WAIC ≈ 600 units when zero proportion ≥ 37% and skewness ≥ 1.92; length elasticity statistically &lt; 1.0 in all 30 model variants; CURE plots as standard SPF residual diagnostic; WAIC/LOO preferred over DIC for Bayesian model comparison</td>
+<td>high</td>
+<td>high</td>
+<td>high</td>
+<td>high</td>
+<td>baseline-comparison-first</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>conditional</td>
+<td>Verify “AADT over 5 years” label means daily flow rate not 5-year total (confirmed by max 2347 vpd); check underlined coefficient counts match stated 95% HPD criterion in Tables 2–4</td>
+<td>NB-L superiority corroborated across WAIC; LOO; MAD; and CURE plots — not a single measure. Open Road Risk at ~98–99% link-year zeros is in more extreme sparsity regime than this paper’s 37%; the NB-L case is stronger. Full Bayesian MCMC infeasible at 2.17M links; frequentist or sampled NB-L recommended first. Also updates evidence base for LIT-TODO-002; LIT-TODO-016; and LIT-TODO-022.</td>
+</tr>
+<tr class="even">
+<td>LIT-061</td>
+<td>paper-extraction-asumadu-2015-poisson-NB-Ghana-road-accidents.md</td>
+<td>Comparative_Assessment_Of_Poisson_And_Ne.pdf</td>
+<td>Comparative Assessment Of Poisson And Negative Binomial Regressions As Best Models For Road Count Data</td>
+<td>Oppong Richard Asumadu; Assuah Charles Kojo; Asiedu-Addo Samuel Kwesi</td>
+<td>2015</td>
+<td>Poisson vs NB model comparison; descriptive analysis</td>
+<td>Ghana</td>
+<td>national aggregate; no road class or spatial disaggregation</td>
+<td>Poisson GLM and NB GLM with log link; MLE in R (glm; glm.nb)</td>
+<td>count of road fatalities per day-of-week per year (national total; fatal only; no exposure offset)</td>
+<td>none — no traffic volume; no offset; raw fatality count only</td>
+<td>national aggregate (Ghana)</td>
+<td>annual totals by day of week; 2001–2010; 70 observations</td>
+<td>none; in-sample AIC and deviance comparison only</td>
+<td>Confirmatory: NB reduces overdispersion vs Poisson (Poisson dispersion 2.297; NB 1.290; ΔAIC 12.5). Low transferability; better evidenced by Khodadadi 2021 for road SPF context.</td>
+<td>low</td>
+<td>low</td>
+<td>low</td>
+<td>low</td>
+<td>no</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>no</td>
+<td>Paper is simple and short; findings clearly stated; no DOI; low-visibility open-access journal</td>
+<td>No exposure offset — day-of-week coefficients confound traffic volume with risk. Ghana national aggregate has no spatial disaggregation. Do not cite as primary evidence for NB over Poisson in SPF context; Khodadadi 2021 is the appropriate reference. Retained for literature-search completeness only.</td>
+</tr>
+<tr class="odd">
+<td>LIT-062</td>
+<td>paper-extraction-verhoef-boveng-2007-quasipoisson-vs-NB-overdispersion.md</td>
+<td>QUASI-POISSON_VS__NEGATIVE_BINOMIAL_REGRESSION__HOW_SHOULD_WE_MOD.pdf</td>
+<td>Quasi-Poisson vs.&nbsp;Negative Binomial Regression: How Should We Model Overdispersed Count Data?</td>
+<td>Jay M. Ver Hoef; Peter L. Boveng</td>
+<td>2007</td>
+<td>statistical methods (ecology application; not road safety)</td>
+<td>USA; Alaska (harbor seal aerial surveys)</td>
+<td>not applicable</td>
+<td>quasi-Poisson GLM; NB GLM; IWLS weight derivation; variance-mean diagnostic plot</td>
+<td>harbor seal counts per survey site (ecology); relevant as statistical methods reference only</td>
+<td>not applicable; no exposure offset</td>
+<td>individual haul-out site (423 sites)</td>
+<td>10-day survey period (1998)</td>
+<td>none; methods paper</td>
+<td>Quasi-Poisson and NB differ in IWLS weights: QP weights scale linearly with mean (high-count observations dominate); NB weights level off at 1/κ (low-count observations get more relative influence); variance-mean diagnostic plot distinguishes them; AIC cannot compare QP vs NB directly</td>
+<td>medium</td>
+<td>medium</td>
+<td>medium</td>
+<td>medium</td>
+<td>diagnostic-only</td>
+<td>Claude</td>
+<td>Claude Sonnet 4.6</td>
+<td>high</td>
+<td>conditional</td>
+<td>Verify IWLS weight derivations (Eqs. 4–5) before implementing variance-mean diagnostic; abundance estimates do not need checking</td>
+<td>Ecology paper — application does not transfer; statistical methodology does. For Open Road Risk’s ranking-across-all-links goal; NB’s weighting scheme is more appropriate than QP on scientific grounds. Paper explicitly states “no general answer” — the goal determines the choice.</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -2333,6 +2459,30 @@ Note
 <td>Full GNN at national scale; no exposure offset; daily urban resolution; severity-weighted composite not raw count</td>
 <td>Medium: AccHR@k metric is immediately applicable; architecture does not transfer</td>
 <td>Implement AccHR@k as validation metric for Stage 2 risk percentile output.</td>
+</tr>
+<tr class="even">
+<td>Khodadadi et al.&nbsp;2021</td>
+<td>Six NB parameterisations × five dispersion structures; Bayesian MCMC; WAIC/LOO; CURE plots</td>
+<td>NB-L models strongly outperform NB-2 for zero-heavy low-sample-mean data (WAIC advantage ~600; CURE convergence); length elasticity &lt; 1.0 confirmed across all parameterisations; WAIC/LOO preferred over DIC for Bayesian hierarchical model comparison</td>
+<td>Full Bayesian MCMC infeasible at 2.17M links; Virginia NFAS roads (low-volume; no geometry features); coefficient values not transferable to UK</td>
+<td>High: most directly relevant paper for Stage 2 model family choice after Pew 2020</td>
+<td>Compute skewness and zero proportion of link-year crash distribution; implement CURE plots; test NB-2 then NB-L as Stage 2 candidates.</td>
+</tr>
+<tr class="odd">
+<td>Ver Hoef &amp; Boveng 2007</td>
+<td>Quasi-Poisson vs NB IWLS weight derivation; variance-mean diagnostic</td>
+<td>Theoretical framework for choosing between QP and NB: QP favours high-count observations; NB gives relatively more influence to low-count observations; variance-mean diagnostic distinguishes them; AIC invalid for QP vs NB comparison</td>
+<td>Ecology application context; no exposure offset; no road safety data</td>
+<td>Medium: scientific justification for NB over QP for Open Road Risk’s ranking-across-all-links goal</td>
+<td>Add variance-mean diagnostic plot before NB implementation; document AIC limitation for QP vs NB comparison.</td>
+</tr>
+<tr class="even">
+<td>Asumadu et al.&nbsp;2015</td>
+<td>Poisson vs NB comparison on Ghana national fatality data</td>
+<td>Confirmatory: NB reduces overdispersion vs Poisson (Poisson dispersion 2.297; NB 1.290; ΔAIC 12.5)</td>
+<td>No exposure offset; national aggregate; Ghana-specific; fatality only; no SPF structure</td>
+<td>Low: better evidenced by Khodadadi 2021 and Lord 2010</td>
+<td>No action; retained for literature-search completeness only.</td>
 </tr>
 </tbody>
 </table>
@@ -2454,6 +2604,14 @@ Note
 <td>Assumes observed traffic; aggregate comparison method</td>
 <td>Supports AADT-denominator sensitivity analysis, not direct production ranking</td>
 <td>Documentation and diagnostic.</td>
+</tr>
+<tr class="odd">
+<td>Khodadadi et al.&nbsp;2021</td>
+<td>Ln(AADT) and length as free predictors; AADT elasticity 0.63–0.74; length elasticity 0.47–0.68; both statistically &lt; 1.0</td>
+<td>Second independent paper (after Wang et al.&nbsp;M25) confirming sub-linear length elasticity across a very different road type; AADT elasticity varies by road class</td>
+<td>NFAS Virginia roads (low-volume; US; no geometry); coefficients not directly transferable to UK</td>
+<td>Run diagnostic test of log(AADT) and log(length) as free predictors stratified by road class; supports LIT-TODO-002</td>
+<td>Diagnostic; also updates evidence for per-family offset testing in Stage 2.</td>
 </tr>
 </tbody>
 </table>
@@ -2832,6 +2990,20 @@ Note
 <td>low-count rate-comparison sensitivity</td>
 <td>aggregate pairwise comparisons; fictitious example only</td>
 <td>Use for aggregate diagnostics and AADT denominator sensitivity, not production link ranking.</td>
+</tr>
+<tr class="odd">
+<td>Khodadadi et al.&nbsp;2021</td>
+<td>WAIC and PSIS-LOO from full Bayesian posterior; CURE plots; MAD (in-sample)</td>
+<td>WAIC/LOO approximate leave-one-out predictive accuracy; CURE plots diagnose systematic misfit over AADT/length range</td>
+<td>No external holdout; Virginia-only; LOO is approximated not true holdout; WAIC not computable for quasi-likelihood models</td>
+<td>WAIC/LOO preferred over DIC for Bayesian hierarchical model comparison; CURE plots by AADT and length quantile directly implementable as Stage 2 diagnostics; supports LIT-TODO-016.</td>
+</tr>
+<tr class="even">
+<td>Ver Hoef &amp; Boveng 2007</td>
+<td>Variance-mean diagnostic plot; cross-validation as alternative when AIC is unavailable</td>
+<td>Determines empirically whether QP or NB better fits variance structure; AIC cannot compare QP vs NB</td>
+<td>Methods paper; no external validation; harbor seal context</td>
+<td>Run variance-mean diagnostic on Stage 2 Poisson residuals before choosing NB or QP; document AIC limitation for QP vs NB comparison; supports LIT-TODO-032 and LIT-TODO-033.</td>
 </tr>
 </tbody>
 </table>
@@ -3430,6 +3602,48 @@ Note
 <td>new</td>
 <td>later</td>
 </tr>
+<tr class="odd">
+<td>LIT-TODO-031</td>
+<td>Compute skewness and zero proportion of Open Road Risk link-year crash distribution; compare against Shirazi et al.&nbsp;(2017) NB-L preference threshold (skewness &gt; 1.92; zero proportion as context); then test NB-L as Stage 2 candidate on a stratified sample of ~100k link-years</td>
+<td>diagnostic + candidate model extension</td>
+<td>Stage 2 / pre-modelling analysis</td>
+<td>Khodadadi et al.&nbsp;2021; Pew 2020; Lord 2010</td>
+<td>NB-L outperforms NB-2 by WAIC ~600 when skewness &gt; 1.92 and zero proportion ≥ 37%; Open Road Risk at ~98–99% zeros is in a more extreme regime; frequentist NB-L implementation recommended before full Bayesian MCMC</td>
+<td>high</td>
+<td>high</td>
+<td>low (skewness check) / medium (NB-L fit)</td>
+<td>NB-L dispersion estimation can be unstable at very low mean values; test on filtered subsample (e.g.&nbsp;links with ≥1 crash over observation period) before applying at full 2.17M scale</td>
+<td>new</td>
+<td>now (skewness check) / later (NB-L fit)</td>
+</tr>
+<tr class="even">
+<td>LIT-TODO-032</td>
+<td>Before implementing NB-2 or NB-L as Stage 2 alternatives, run a variance-mean diagnostic plot: bin Stage 2 Poisson fitted means into ~10 categories; compute average (Y − μ̂)² per bin; overlay linear (quasi-Poisson) and quadratic (NB) variance curves</td>
+<td>diagnostic</td>
+<td>Stage 2 / pre-model-family-choice</td>
+<td>Ver Hoef &amp; Boveng 2007; Khodadadi 2021</td>
+<td>Directly determines whether Var ∝ μ or Var ∝ μ² better describes link-year crash variance; low effort using existing GLM output</td>
+<td>medium</td>
+<td>medium</td>
+<td>low</td>
+<td>With ~99% zero link-years most bins cluster near μ ≈ 0; compute on non-zero link-years or filter to links with ≥1 crash; document filtering choice</td>
+<td>new</td>
+<td>later</td>
+</tr>
+<tr class="odd">
+<td>LIT-TODO-033</td>
+<td>Add documentation note that AIC cannot compare quasi-Poisson against NB-2 or NB-L; if quasi-Poisson is tested as a Stage 2 alternative use variance-mean diagnostic; CURE plots; and cross-validation for the comparison</td>
+<td>documentation note</td>
+<td>Stage 2 / validation / documentation</td>
+<td>Ver Hoef &amp; Boveng 2007</td>
+<td>Quasi-Poisson lacks a full distributional likelihood; AIC and BIC require full log-likelihood; QAIC is only valid within the quasi class</td>
+<td>medium</td>
+<td>low</td>
+<td>low</td>
+<td>None — documentation only</td>
+<td>new</td>
+<td>later</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -3457,7 +3671,7 @@ Note
 <li>Spatial autocorrelation is not fully handled in production; this may affect coefficient interpretation and ranking confidence.</li>
 <li>The grouped-by-road-link CV split prevents same-link leakage across years but does not enforce spatial separation between neighbouring links on the same corridor. Mahoney 2023 shows that this kind of temporal grouped split produces estimates close to V-fold (optimistically biased) rather than true out-of-sample performance. The degree of bias depends on the spatial autocorrelation range of collision risk, which has not been measured.</li>
 <li>Hotspot/risk percentile sensitivity to spatial unit and residual clustering needs explicit documentation.</li>
-<li>The current Stage 2 Poisson GLM likely underestimates zeros at link-year level. Pew 2020 shows that a Poisson-equivalent model (ZIP with π ≈ 0) calibrates poorly on zero-heavy count data; the improvement from NB/ZINB comes from the dispersion parameter, not zero-inflation per se. This has not been tested on Open Road Risk data.</li>
+<li>The current Stage 2 Poisson GLM likely underestimates zeros at link-year level. Pew 2020 shows that a Poisson-equivalent model (ZIP with π ≈ 0) calibrates poorly on zero-heavy count data; the improvement from NB/ZINB comes from the dispersion parameter, not zero-inflation per se. <strong>Confirmed on Open Road Risk data</strong>: the zero-calibration diagnostic (see <a href="../investigations/zero-calibration.html">Zero-Calibration Diagnostic</a>) finds Poisson severely underestimates zeros (p = 0.000); NB closes the gap (p = 0.722, α = 2.057). NB GLM is the warranted next step; ZINB is not the priority next step.</li>
 <li>Post-event variables from collision records must not leak into prospective Stage 2 features.</li>
 <li>STATS19 contributory factors and road safety factors are subjective post-event fields with partial coverage and a 2024 structural break; they should remain provenance/EDA context unless a separate non-prospective analysis is explicitly labelled.</li>
 <li>Current UK official statistics confirm that non-fatal casualties remain under-reported and that severity-adjusted national series are not automatically comparable to raw pipeline collision records.</li>
@@ -3756,7 +3970,7 @@ Note
 <tr class="even">
 <td>quarto/literature/validation-and-metrics.qmd</td>
 <td>Document heldout, balanced accuracy, CURE, pseudo-R2 limitations</td>
-<td>Brodersen 2010; Gilardi 2022; Chengye 2013; Roll 2026 combined; Lord 2010; Huda 2024 combined; Mahoney 2023; Pew 2020; Gao 2024; Quddus 2007; Savolainen 2011; Roshandel circa 2015; Dutta 2020; Sung 2024; National Highways 2022</td>
+<td>Brodersen 2010; Gilardi 2022; Chengye 2013; Roll 2026 combined; Lord 2010; Huda 2024 combined; Mahoney 2023; Pew 2020; Pan 2017; Gao 2024; Quddus 2007; Savolainen 2011; Roshandel circa 2015; Dutta 2020; Sung 2024; National Highways 2022</td>
 <td>Metrics test different things; avoid in-sample/holdout confusion; spatial CV, temporal holdout, zero-calibration, AccHR@k, CURE plots, and AADT denominator sensitivity are candidate validation additions</td>
 <td>Metric taxonomy; current repo validation map; CV method performance table from Mahoney; zero-check diagnostic table from Pew; AccHR@k definition from Gao; low-count and denominator sensitivity notes</td>
 <td>exists — current after 2026-05-12 update; keep Pew/Gao exact-value checks conditional</td>
@@ -3871,6 +4085,7 @@ Note
 <p><strong>Update (2026-05-10):</strong> Two further combined/reconciled records have been added as LIT-046 and LIT-047: <code>paper-extraction-quddus-wang-ison-COMBINED.md</code> and <code>paper-extraction-ziakopoulos-yannis-2020-COMBINED.md</code>. These move Quddus/Wang/Ison and Ziakopoulos/Yannis out of the active reconciliation queue. All seven candidate Quarto literature pages now exist under <code>quarto/literature/</code> and have been added to the website Literature menu.</p>
 <p><strong>Update (2026-05-12):</strong> Eleven additional extraction files have been added as LIT-048 through LIT-058: <code>paper-extraction-quddus-2007-inar-time-series-count.md</code>, <code>paper-extraction-mensah-hauer-1998-two-problems-averaging.md</code>, <code>paper-extraction-qin-et-al-2006-bayesian-hourly-exposure.md</code>, <code>paper-extraction-dutta-2020-freeway-crash-prediction-disaggregate-flow.md</code>, <code>paper-extraction-sung-et-al-2024-modified-temporal-spf.md</code>, <code>paper-extraction-savolainen-et-al-2011-severity-modelling-review.md</code>, <code>paper-extraction-roshandel-2015-realtime-traffic-freeway-crash.md</code>, <code>paper-extraction-national-highways-2022-comparing-collision-casualty-rates.md</code>, <code>paper-extraction-dft-2024-rsf-initial-analysis.md</code>, <code>paper-extraction-dft-2025-guide-cf-rsf-transition.md</code>, and <code>paper-extraction-dft-2025-reported-road-casualties-gb-2024.md</code>. The associated Quarto literature references have been updated from <code>LIT-PENDING</code> to these register IDs where an extraction exists.</p>
 <p><strong>Update (2026-05-12):</strong> <code>paper-extraction-wang-2011-two-stage-severity-ranking.md</code> has been added as LIT-059 and linked from <code>quarto/literature/severity-modelling.qmd</code>.</p>
+<p><strong>Update (2026-05-24):</strong> Three new extraction files have been added as LIT-060 through LIT-062: <code>paper-extraction-khodadadi-2021-NB-parameterisations-NFAS-SPF.md</code> (LIT-060), <code>paper-extraction-asumadu-2015-poisson-NB-Ghana-road-accidents.md</code> (LIT-061), and <code>paper-extraction-verhoef-boveng-2007-quasipoisson-vs-NB-overdispersion.md</code> (LIT-062). LIT-060 (Khodadadi 2021) is the highest-priority new addition: it provides direct evidence for NB-L model superiority on zero-heavy low-sample-mean crash data and confirms sub-linear length elasticity across 30 model variants, strengthening the evidence base for LIT-TODO-002, LIT-TODO-016, and LIT-TODO-022. Three new TODOs have been added: LIT-TODO-031 (NB-L candidate model on sampled data), LIT-TODO-032 (variance-mean diagnostic plot), LIT-TODO-033 (document AIC limitation for QP vs NB comparison).</p>
 
 
 </section>

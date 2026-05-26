@@ -141,6 +141,23 @@ are relevant if a probabilistic output layer is added.
 
 ## Count model fit metrics
 
+### Training loss as a metric: MSE on count data
+
+Pan et al. (2017) train a Deep Belief Network on pooled crash data from Ontario Highway 401,
+Colorado, and Washington state, using mean squared error as the loss function. The paper
+reports modest improvements over locally calibrated NB on temporally held-out data — 0–32%
+MAE reduction depending on dataset, with 0% improvement on rural multilane Washington data.
+
+MSE loss gives equal weight to all residuals and is dominated by the rare high-count rows on
+zero-heavy data; it does not penalise distributional mismatch in the zero regime. Pan et al.
+(2017) acknowledge "several unsolved questions" in their conclusions. The improvement over
+NB is marginal for most highway types and disappears entirely for the rural multilane case.
+
+This is the training-loss half of the DBN/MSE caution. The related exposure-structure
+critique — AADT as a feature rather than a constrained offset, with continuous predictions
+that lack a count-likelihood interpretation — is documented in
+[Crash Frequency Models §4](crash-frequency-models.qmd#exposure-structure-and-the-eb-link).
+
 ### Pseudo-R² (McFadden's ρ²)
 
 Pseudo-R² for count regression models is defined as:
@@ -493,6 +510,7 @@ For a consolidated view of how the findings on this page map to the current pipe
 | LIT-016 / LIT-042 | Huda, K.T. & Al-Kaisy, A. (2024). Network screening on low-volume roads using risk factors. *Future Transportation.* DOI: 10.3390/futuretransp4010013 — use combined record LIT-042. |
 | LIT-033 | Mahoney, M.J., Johnson, L.K., Silge, J., Frick, H., Kuhn, M. & Beier, C.M. (2023). Assessing the performance of spatial cross-validation approaches. |
 | LIT-032 | Pew, T., Warr, R.L., Schultz, G.G. & Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. *TRIP.* |
+| LIT-025/037 | Pan, G., Fu, L. & Thakali, L. (2017). Development of a global road safety performance function using deep neural networks. *International Journal of Transportation Science and Technology*, 6(3), 159–173. DOI: 10.1016/j.ijtst.2017.07.004 |
 | LIT-034 | Gao, X. et al. (2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction. |
 | LIT-048 | Quddus, M.A. (2007). Time series count data models: an empirical application to traffic accidents. *Accident Analysis and Prevention.* hdl.handle.net/2134/5308 |
 | LIT-053 | Savolainen, P.T., Mannering, F.L., Lord, D. & Quddus, M.A. (2011). The statistical analysis of highway crash-injury severities. *Accident Analysis and Prevention, 43(5), 1666–1676.* DOI: 10.1016/j.aap.2011.03.025 |

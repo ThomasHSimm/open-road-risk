@@ -75,7 +75,11 @@ Chengye and Ranjitkar (2013) fit NB models to a 74 km Auckland motorway corridor
 things: overdispersion is present even in a relatively high-count motorway dataset, and
 facility stratification absorbs heterogeneity that the pooled model cannot. Al-Omari (2021)
 reports overdispersion parameter $k$ ranging from 0.29 to 1.37 across Florida road classes,
-consistent with this pattern.
+consistent with this pattern. Note that Al-Omari's $k$ follows the US DOT/HSM
+inverse-dispersion convention ($\text{Var}(y) = \mathbb{E}[y] + \mathbb{E}[y]^2/k$;
+larger $k$ means *less* dispersion, converging to Poisson as $k \to \infty$), which is
+the reciprocal of the $\alpha$ used elsewhere on this page. Converting:
+$k = 0.29 \Rightarrow \alpha = 3.45$; $k = 1.37 \Rightarrow \alpha = 0.73$.
 
 ::: {.callout-warning}
 Chengye and Ranjitkar (2013) use an 80% confidence level (not 95%) as the variable
@@ -135,8 +139,11 @@ prediction. Any future model comparison in Open Road Risk must respect this desi
 requirement.
 
 ::: {.callout-note}
-The zero-calibration check from Pew et al. (2020) is described in §10. It should be run
-on the current Stage 2 Poisson GLM before deciding whether to progress to NB or ZINB.
+The zero-calibration check (§8) has been run on the Open Road Risk data. The Poisson
+GLM fails (p = 0.000); the negative binomial with α = 2.057 reproduces the observed
+zero count adequately (p = 0.722). This confirms that overdispersion — not structural
+zero-inflation — dominates, and that ZINB is not the priority next step. See the
+[Zero-Calibration Diagnostic](../investigations/zero-calibration.qmd) for full results.
 :::
 
 ---
@@ -169,6 +176,19 @@ AADT changes by replacing $\eta = \mu \times Y$ with $\sum_t \mu_t$ in the weigh
 Open Road Risk's Stage 1a estimates AADT per link per year, making the full procedure
 directly implementable. The full procedure produces more precise EB estimates because it
 uses the complete 2015–2024 accident history per link.
+
+Pan et al. (2017) provide a cautionary contrast: their Deep Belief Network uses AADT and
+segment length as normalised input features rather than a formal exposure offset. Without a
+Poisson offset, predicted values are continuous with no natural interpretation as expected
+crash counts. The near-unity NB coefficients on $\log(\text{AADT} \times \text{length})$
+reported in Pan et al. (2017) for all six highway types confirm that the exposure
+relationship the DBN handles implicitly through feature scaling is well-captured by a formal
+offset — an argument for the simpler structure, not against it.
+
+The Open Road Risk XGBoost model faces the same exposure-offset problem: AADT enters as a
+feature rather than as a constrained offset, which is a known limitation of the current
+pipeline. The related training-loss critique of MSE on sparse counts is documented in
+[Validation and Metrics](validation-and-metrics.qmd#training-loss-as-a-metric-mse-on-count-data).
 
 ---
 
@@ -269,33 +289,7 @@ caveats.
 
 ---
 
-## 7. Why DBN/MSE Is Not Appropriate
-
-Pan et al. (2017) train a Deep Belief Network on pooled crash data from Ontario Highway 401,
-Colorado, and Washington state, using mean squared error as the loss function. AADT and
-segment length are normalised input features rather than a formal exposure offset. The paper
-reports modest improvements over locally calibrated NB on temporally held-out data — 0–32%
-MAE reduction depending on dataset, with 0% improvement on rural multilane Washington data.
-
-Three structural properties make the DBN/MSE approach unsuitable for Open Road Risk's
-link-year data. First, MSE loss gives equal weight to all residuals and is dominated by the
-rare high-count rows on zero-heavy data; it does not penalise distributional mismatch in the
-zero regime. Second, without a Poisson offset, predicted values are continuous with no
-natural interpretation as expected crash counts. Third, the near-unity NB coefficients on
-$\log(\text{AADT} \times \text{length})$ reported in Pan et al. (2017) for all six highway
-types confirm that the exposure relationship the DBN handles implicitly through feature
-scaling is well-captured by a formal offset — an argument for the simpler structure, not
-against it.
-
-Pan et al. (2017) acknowledge "several unsolved questions" in their conclusions. The
-improvement over NB is marginal for most highway types and disappears entirely for the
-rural multilane case. The Open Road Risk XGBoost model faces the same exposure-offset
-problem (AADT enters as a feature rather than as a constrained offset), which is a known
-limitation of the current pipeline.
-
----
-
-## 8. Model-Family Comparison Table
+## 7. Model-Family Comparison Table
 
 | Model | Zero-heavy handling | Formal exposure offset | Computational scale | Open Road Risk status |
 |---|---|---|---|---|
@@ -317,7 +311,7 @@ For a consolidated view of how the findings on this page map to the current pipe
 
 ---
 
-## 10. Zero-Calibration Diagnostic
+## 8. Zero-Calibration Diagnostic
 
 The posterior predictive zero check (Pew et al. 2020) tests whether a fitted model
 adequately reproduces the observed zero rate. The procedure is:

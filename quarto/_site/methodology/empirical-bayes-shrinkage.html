@@ -171,21 +171,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Background</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
-        <li>
-    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
- <span class="dropdown-text">Metrics and methodology</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../background/literature-evidence-register.html">
- <span class="dropdown-text">Literature evidence register</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Literature</span>
     </a>
@@ -193,6 +178,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-index.html">
  <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -225,6 +214,21 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
  <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-walkthroughs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Walkthroughs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-walkthroughs">    
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/walkthroughs-index.html">
+ <span class="dropdown-text">Walkthroughs overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/count-models-explainer.html">
+ <span class="dropdown-text">Count models explainer</span></a>
   </li>  
     </ul>
   </li>
@@ -345,6 +349,41 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../methodology/model-inventory.html">
  <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-investigations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Investigations</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-investigations">    
+        <li>
+    <a class="dropdown-item" href="../investigations/index.html">
+ <span class="dropdown-text">Investigations overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/ksi-atlas.html">
+ <span class="dropdown-text">KSI atlas diagnostic</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/staffordshire-data-quality.html">
+ <span class="dropdown-text">Staffordshire data quality</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/temporal-descriptors.html">
+ <span class="dropdown-text">Temporal descriptors evaluation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/aadf-counted-only-filter.html">
+ <span class="dropdown-text">AADF counted-only filter</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/rank-stability.html">
+ <span class="dropdown-text">Rank stability harness</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
   </li>  
     </ul>
   </li>
@@ -1100,26 +1139,27 @@ risk_percentile_eb = percentile_rank(predicted_eb)</code></pre>
 <tbody>
 <tr class="odd">
 <td>100</td>
-<td style="text-align: right;">0.903</td>
-<td style="text-align: right;">0.869</td>
+<td style="text-align: right;">0.878141</td>
+<td style="text-align: right;">0.851852</td>
 </tr>
 <tr class="even">
 <td>1000</td>
-<td style="text-align: right;">0.893</td>
-<td style="text-align: right;">0.864</td>
+<td style="text-align: right;">0.870936</td>
+<td style="text-align: right;">0.858736</td>
 </tr>
 <tr class="odd">
 <td>10000</td>
-<td style="text-align: right;">0.927</td>
-<td style="text-align: right;">0.919</td>
+<td style="text-align: right;">0.883074</td>
+<td style="text-align: right;">0.873185</td>
 </tr>
 <tr class="even">
 <td>top-1%</td>
-<td style="text-align: right;">0.918</td>
-<td style="text-align: right;">0.908</td>
+<td style="text-align: right;">0.903575</td>
+<td style="text-align: right;">0.896574</td>
 </tr>
 </tbody>
 </table>
+<p>These unshrunken baseline values reflect the post-hgv-fix model state in <code>reports/rank_stability.md</code>.</p>
 <p>This comparison is deferred. Session 2’s seed-churn diagnostic found that EB does not disproportionately affect borderline links — the population that seed-churns. Running the full 5-seed EB comparison is therefore unlikely to surface a different conclusion (EB-adjusted Jaccard is likely to be similar to or slightly worse than unshrunken, because EB introduces movement without addressing the underlying source of seed-induced churn). The 5-seed EB comparison remains feasible if explicit confirmation is wanted, but it is not required for the adoption decision and is deferred.</p>
 </section>
 <section id="reporting" class="level3">
@@ -1194,7 +1234,7 @@ k_median             (diagnostic)</code></pre>
 <h2 class="anchored" data-anchor-id="observed-outcomes">9. Observed outcomes</h2>
 <p>Session 2 provides empirical evidence against the pre-run priors stated in this section.</p>
 <ul>
-<li><p><strong><code>risk_percentile_eb</code> is highly correlated with <code>risk_percentile</code>, but not identical.</strong> This matched: top-1% intersection is 84.93% (18,408 of 21,675 links); median absolute percentile change is 0.07 points; p99 change is 2.96 points.</p></li>
+<li><p><strong><code>risk_percentile_eb</code> is highly correlated with <code>risk_percentile</code>, but not identical.</strong> This matched in the post-hgv-fix model state: top-1% intersection is 38.85% (8,421 of 21,675 links); median absolute percentile change is 0.491798 points; p99 change is 29.312792 points. These figures are from <code>reports/eb_validation.md</code> using production k = 3.451158 from <code>data/provenance/eb_dispersion_provenance.json</code>.</p></li>
 <li><p><strong>Narrow top-k lists are not stabilised by EB.</strong> The pre-run prior (“narrow top-k lists may become more stable if EB dampens seed-specific threshold churn”) was not supported. Session 2’s seed-churn diagnostic found EB does not disproportionately affect the seed-churn population. EB is unlikely to improve narrow top-k stability.</p></li>
 <li><p><strong>Short or low-exposure links with limited observed support drop.</strong> This matched: the qualitative review found 5 Motorway links with <code>predicted_xgb</code> ≈ 1.0 collision/year and zero observed collisions over 10 years dropping out of top-1%.</p></li>
 <li><p><strong>Links with repeated observed collisions relative to the model prior rise.</strong> This matched: A Road, Motorway, and Classified Unnumbered links with 9–14 observed collisions against a model prior of ~0.03 collisions/year entered top-1%.</p></li>

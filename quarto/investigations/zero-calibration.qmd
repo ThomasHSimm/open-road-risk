@@ -1,0 +1,178 @@
+---
+title: "Zero-Calibration Diagnostic"
+subtitle: "Does the Stage 2 Poisson GLM reproduce the observed zero rate?"
+description: "Posterior predictive zero check (Pew et al. 2020): tests whether the current Poisson GLM adequately calibrates the zero regime before deciding whether to progress to negative binomial or zero-inflated models."
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    page-layout: full
+---
+
+*Methodological basis: [Crash Frequency Models §3 and §8](../literature/crash-frequency-models.qmd)*
+
+## Question
+
+Does the Stage 2 Poisson GLM adequately reproduce the observed proportion of zero-collision
+link-years? If not, how large is the shortfall, and does a negative binomial GLM close it?
+
+The answer determines the next modelling step: a moderate shortfall justifies switching to
+an NB GLM; a large shortfall that NB does not close would require testing zero-inflated
+models (ZIP or ZINB).
+
+## Background
+
+The Open Road Risk pipeline cites Pew et al. (2020) to justify treating overdispersion
+as the primary distributional challenge and NB as the priority next step ahead of ZINB.
+Pew et al. fitted ZIP and ZINB to Utah signalised intersection data and found
+$\hat{\pi} \approx 0.00$ — the structural-zero mixing probability was negligible.
+That finding applied to a specific road class in Utah. It has not been verified on
+Open Road Risk's mixed UK network.
+
+The zero-calibration check (§8 of crash-frequency-models.qmd) is the appropriate
+diagnostic to run before any model-family decision. It tests the current Poisson GLM
+directly on the production data without requiring a new model to be fitted first.
+
+## Method
+
+The check follows Pew et al. (2020) exactly:
+
+1. Fit the Stage 2 model and obtain $\hat{\lambda}_i$ per link-year (incorporating the
+   log-exposure offset).
+2. Draw $S = 1{,}000$ predictive realisations: for each draw $s$, sample
+   $\tilde{y}_i^{(s)} \sim \text{Poisson}(\hat{\lambda}_i)$ for all link-years independently.
+3. Count zeros in each realisation: $Z^{(s)} = \sum_i \mathbf{1}[\tilde{y}_i^{(s)} = 0]$.
+4. Record $p = \hat{\mathbb{P}}(Z^{(s)} > Z_{\text{obs}})$ — the proportion of simulated
+   datasets with more zeros than observed.
+
+A well-calibrated model produces $p \approx 0.50$. The Poisson GLM on overdispersed data
+is expected to produce $p \ll 0.50$ — most simulated datasets will have fewer zeros than
+observed because the model underestimates the true variance.
+
+**Implementation note**: the production Poisson GLM is trained on a 1:10 downsampled
+dataset (all positives; zeros sampled at 10× that count). With 391k positives, keeping
+all of them within a 2M-row cap leaves only 1.6M zeros — an 80% zero rate, far from
+the true 98.2%. A GLM fitted on that biased sample learns inflated baseline rates
+(intercept biased upward; predicted collision rates too high; predicted zero probability
+too low). This makes the zero-count underestimation even more severe — the biased model
+pushes p further towards 0.00 rather than yielding an unbiased baseline against which to
+measure misfit.
+
+The correct diagnostic approach is a **pure random sample** from the full frame. At 2M
+rows the draw preserves the true ~98% zero rate (~36k positives, ~1.96M zeros), giving
+an unbiased GLM and a meaningful check. This is the approach used here.
+
+A secondary NB fit on the same diagnostic sample tests whether adding an overdispersion
+parameter closes the zero-count gap.
+
+## How to run
+
+```bash
+conda run -n env1 python src/road_risk/diagnostics/zero_calibration.py
+```
+
+Requires Stage 2 data files to be present:
+
+- `data/models/aadt_estimates.parquet`
+- `data/processed/shapefiles/openroads.parquet`
+- `data/features/road_link_annual.parquet`
+
+Output: `reports/zero_calibration.md` and supporting files in `reports/supporting/`.
+
+## Results
+
+Diagnostic sample: 2,000,000 link-years (35,933 positives, 1,964,067 zeros; zero rate 98.20%, matching the full dataset).
+
+| Model | Z_obs | E[Z_sim] | SD[Z_sim] | p-value | Interpretation |
+|---|---|---|---|---|---|
+| **Poisson GLM** | 1,964,067 | 1,961,163 | 183 | **0.000** | Severe misfit — Poisson underestimates zeros by ~2,900 (≈16 SDs) |
+| **Negative Binomial** | 1,964,067 | 1,964,172 | — | **0.722** | Adequate calibration — NB reproduces the observed zero count |
+
+NB overdispersion parameter: **α = 2.057 (SE = 0.049, 95% CI [1.962, 2.152])**.
+
+NB MLE convergence: `converged = True`, `warnflag = 0`, gradient norm at solution = 9.7 × 10⁻⁶. The MLE is well-identified and the result is reliable.
+
+### Findings
+
+The Poisson GLM fails the zero-calibration check (p = 0.000). The gap — approximately
+2,900 missing zeros per 2 million link-years — is small in absolute percentage terms
+(0.15 pp) but highly statistically significant. The Poisson's mean-equals-variance
+constraint cannot accommodate the excess zeros that arise from the network's
+heterogeneous crash risk distribution.
+
+The negative binomial closes the gap completely (p = 0.722). The estimated global
+overdispersion parameter **α = 2.057 is in the NB2 parameterisation** (Var = μ + α·μ²;
+higher α = more dispersion), confirmed against a known-parameter simulation — statsmodels
+`NegativeBinomial` recovers the true NB2 α to within 1%.
+
+Comparing to the literature requires care, because different papers use different
+conventions:
+
+- **Chengye & Ranjitkar (2013)** report α = 0.106–0.183 in the same NB2 convention.
+  Our pooled α = 2.057 is 11–19× higher — a real difference, explained by the UK
+  network spanning motorways through minor rural roads rather than a single motorway
+  corridor.
+- **Al-Omari (2021)** reports k = 0.29–1.37 using the **inverse-dispersion** convention
+  (Var = μ + μ²/k; larger k means *less* dispersion). Converting to NB2: α = 1/k,
+  so k = 0.29 → α = 3.45 and k = 1.37 → α = 0.73. Our α = 2.057 falls within
+  this range — not anomalously high once the parameterisations are reconciled.
+
+The result is therefore consistent with the literature: higher than a class-homogeneous
+motorway corridor, but within the range seen across mixed road classes.
+
+Critically, the NB closes the gap **without** any zero-inflation component. This
+confirms that the Pew et al. (2020) finding — $\hat{\pi} \approx 0$ for signalised
+intersections — transfers directionally to the Open Road Risk link-year data. Overdispersion,
+not structural zero-inflation, is the dominant distributional feature.
+
+::: {.callout-note}
+The α = 2.057 here is from a pooled diagnostic GLM using core structural features only
+(no optional network covariates). Per-family NB fits — as recommended in
+[Crash Frequency Models §6](../literature/crash-frequency-models.qmd#facility-stratification)
+— would likely return lower per-family α values, with the global estimate inflated by
+between-family heterogeneity.
+:::
+
+### Verdict
+
+**NB GLM is the warranted next step. ZINB is not the priority next step.**
+
+Progressing from Poisson to NB is the priority model-family change for Stage 2.
+The global α = 2.057 should be used as the starting estimate for the NB dispersion
+parameter, with per-family values estimated once family-stratified NB models are fitted.
+
+## Interpretation framework
+
+| p-value range | Finding |
+|---|---|
+| p ≈ 0.50 | Model well-calibrated for the zero regime; no distributional change needed |
+| 0.10 ≤ p < 0.25 | Marginal misfit; NB diagnostic recommended |
+| p < 0.10 | Moderate misfit; NB GLM warranted as next step |
+| p < 0.01 | Severe misfit; Poisson substantially underestimates zeros — NB is high priority |
+
+If NB also produces p ≪ 0.50, zero-inflation testing (ZIP or ZINB) is warranted.
+If NB produces p ≈ 0.50, the distributional change from Poisson to NB is sufficient
+and zero-inflation adds no value — consistent with Pew et al. (2020) finding $\hat{\pi} \approx 0$.
+
+## Limitations
+
+- The diagnostic sample (up to 2M link-years) is drawn randomly from the full
+  ~21M-row frame. Results may vary slightly across runs; the 1,000-draw simulation
+  should give stable estimates of p to ±0.02.
+- The NB fit uses `statsmodels.NegativeBinomial` (NB2 parameterisation: Var = μ + α·μ²),
+  estimating a single global $\alpha$. The MLE converged cleanly (`warnflag = 0`,
+  gradient norm 9.7 × 10⁻⁶, SE = 0.049). Per-family $\alpha$ values (as found
+  by Chengye & Ranjitkar 2013) would give a more precise characterisation — the global
+  estimate absorbs between-family heterogeneity — but require per-family subsets.
+- The check tests zero-rate calibration only. It does not test calibration at higher
+  counts (x = 1, 2, …). A full posterior predictive check across all count values
+  would require a rootogram or probability integral transform.
+
+## Related artefacts
+
+- `reports/zero_calibration.md` — generated by the script
+- `reports/supporting/zero_calibration_summary.json`
+- `reports/supporting/zero_calibration_z_distribution.csv`
+- `src/road_risk/diagnostics/zero_calibration.py`
+- [Crash Frequency Models §3](../literature/crash-frequency-models.qmd#zero-inflation-what-the-evidence-says) — zero-inflation evidence
+- [Crash Frequency Models §8](../literature/crash-frequency-models.qmd#zero-calibration-diagnostic) — the procedure this investigation implements

@@ -163,21 +163,6 @@ window.Quarto = {
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-background" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Background</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-background">    
-        <li>
-    <a class="dropdown-item" href="../background/metrics-and-methodology.html">
- <span class="dropdown-text">Metrics and methodology</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../background/literature-evidence-register.html">
- <span class="dropdown-text">Literature evidence register</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Literature</span>
     </a>
@@ -185,6 +170,10 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../literature/literature-index.html">
  <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -217,6 +206,21 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../literature/transferability-and-open-data-limits.html">
  <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-walkthroughs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Walkthroughs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-walkthroughs">    
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/walkthroughs-index.html">
+ <span class="dropdown-text">Walkthroughs overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../walkthroughs/count-models-explainer.html">
+ <span class="dropdown-text">Count models explainer</span></a>
   </li>  
     </ul>
   </li>
@@ -341,6 +345,41 @@ window.Quarto = {
     </ul>
   </li>
   <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-investigations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Investigations</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-investigations">    
+        <li>
+    <a class="dropdown-item" href="../investigations/index.html">
+ <span class="dropdown-text">Investigations overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/ksi-atlas.html">
+ <span class="dropdown-text">KSI atlas diagnostic</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/staffordshire-data-quality.html">
+ <span class="dropdown-text">Staffordshire data quality</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/temporal-descriptors.html">
+ <span class="dropdown-text">Temporal descriptors evaluation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/aadf-counted-only-filter.html">
+ <span class="dropdown-text">AADF counted-only filter</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/rank-stability.html">
+ <span class="dropdown-text">Rank stability harness</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Outputs</span>
     </a>
@@ -397,6 +436,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#count-model-fit-metrics" id="toc-count-model-fit-metrics" class="nav-link" data-scroll-target="#count-model-fit-metrics">Count model fit metrics</a>
   <ul class="collapse">
+  <li><a href="#training-loss-as-a-metric-mse-on-count-data" id="toc-training-loss-as-a-metric-mse-on-count-data" class="nav-link" data-scroll-target="#training-loss-as-a-metric-mse-on-count-data">Training loss as a metric: MSE on count data</a></li>
   <li><a href="#pseudo-r²-mcfaddens-ρ²" id="toc-pseudo-r²-mcfaddens-ρ²" class="nav-link" data-scroll-target="#pseudo-r²-mcfaddens-ρ²">Pseudo-R² (McFadden’s ρ²)</a></li>
   <li><a href="#inflated-r²-from-regressing-on-eb-outputs" id="toc-inflated-r²-from-regressing-on-eb-outputs" class="nav-link" data-scroll-target="#inflated-r²-from-regressing-on-eb-outputs">Inflated R² from regressing on EB outputs</a></li>
   <li><a href="#cure-plots" id="toc-cure-plots" class="nav-link" data-scroll-target="#cure-plots">CURE plots</a></li>
@@ -611,6 +651,12 @@ Note
 </section>
 <section id="count-model-fit-metrics" class="level2">
 <h2 class="anchored" data-anchor-id="count-model-fit-metrics">Count model fit metrics</h2>
+<section id="training-loss-as-a-metric-mse-on-count-data" class="level3">
+<h3 class="anchored" data-anchor-id="training-loss-as-a-metric-mse-on-count-data">Training loss as a metric: MSE on count data</h3>
+<p>Pan et al.&nbsp;(2017) train a Deep Belief Network on pooled crash data from Ontario Highway 401, Colorado, and Washington state, using mean squared error as the loss function. The paper reports modest improvements over locally calibrated NB on temporally held-out data — 0–32% MAE reduction depending on dataset, with 0% improvement on rural multilane Washington data.</p>
+<p>MSE loss gives equal weight to all residuals and is dominated by the rare high-count rows on zero-heavy data; it does not penalise distributional mismatch in the zero regime. Pan et al. (2017) acknowledge “several unsolved questions” in their conclusions. The improvement over NB is marginal for most highway types and disappears entirely for the rural multilane case.</p>
+<p>This is the training-loss half of the DBN/MSE caution. The related exposure-structure critique — AADT as a feature rather than a constrained offset, with continuous predictions that lack a count-likelihood interpretation — is documented in <a href="../literature/crash-frequency-models.html#exposure-structure-and-the-eb-link">Crash Frequency Models §4</a>.</p>
+</section>
 <section id="pseudo-r²-mcfaddens-ρ²" class="level3">
 <h3 class="anchored" data-anchor-id="pseudo-r²-mcfaddens-ρ²">Pseudo-R² (McFadden’s ρ²)</h3>
 <p>Pseudo-R² for count regression models is defined as:</p>
@@ -908,30 +954,34 @@ Note
 <td>Pew, T., Warr, R.L., Schultz, G.G. &amp; Heaton, M. (2020). Justification for considering zero-inflated models in crash frequency analysis. <em>TRIP.</em></td>
 </tr>
 <tr class="odd">
+<td>LIT-025/037</td>
+<td>Pan, G., Fu, L. &amp; Thakali, L. (2017). Development of a global road safety performance function using deep neural networks. <em>International Journal of Transportation Science and Technology</em>, 6(3), 159–173. DOI: 10.1016/j.ijtst.2017.07.004</td>
+</tr>
+<tr class="even">
 <td>LIT-034</td>
 <td>Gao, X. et al.&nbsp;(2024). Uncertainty-aware probabilistic graph neural networks for road-level traffic crash prediction.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>LIT-048</td>
 <td>Quddus, M.A.&nbsp;(2007). Time series count data models: an empirical application to traffic accidents. <em>Accident Analysis and Prevention.</em> hdl.handle.net/2134/5308</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>LIT-053</td>
 <td>Savolainen, P.T., Mannering, F.L., Lord, D. &amp; Quddus, M.A.&nbsp;(2011). The statistical analysis of highway crash-injury severities. <em>Accident Analysis and Prevention, 43(5), 1666–1676.</em> DOI: 10.1016/j.aap.2011.03.025</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>LIT-054</td>
 <td>Roshandel, S., Zheng, Z. &amp; Washington, S. (2015). Impact of real-time traffic characteristics on freeway crash occurrence: systematic review and meta-analysis. <em>Accident Analysis and Prevention.</em></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>LIT-051</td>
 <td>Dutta, N. &amp; Fontaine, M.D.&nbsp;(2020). Improving freeway crash prediction models using disaggregate flow state information. <em>VTRC 20-R15, Virginia DOT.</em></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>LIT-055</td>
 <td>National Highways (2022). Statistical methods for comparing road traffic collision and casualty rates: proposed approach. <em>National Highways PR81/22.</em></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>LIT-052</td>
 <td>Sung, Y., Kim, S., Park, J. &amp; Wang, L. (2024). Development of modified temporal safety performance function considering various time flows. <em>Journal of Advanced Transportation.</em> DOI: 10.1155/2024/7970454</td>
 </tr>
