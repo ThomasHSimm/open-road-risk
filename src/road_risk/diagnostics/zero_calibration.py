@@ -198,8 +198,9 @@ def main() -> None:
     # + GLM_ZERO_SAMPLE_RATIO × positives zeros). With 391k positives and
     # a 2M cap, keeping all positives gives only 1.6M zeros → 80% zero rate,
     # far from the true 98.2%. Fitting a GLM on that biased sample produces
-    # inflated predicted rates that cause the simulation to OVER-predict zeros
-    # (p = 1.0), the opposite of expected.
+    # inflated predicted rates (intercept biased upward; predicted zero
+    # probability too low), pushing p even further towards 0.00 — making the
+    # diagnostic more extreme, not a clean baseline.
     #
     # Fix: plain random sample from the full index. At 2M rows the expected
     # split is ~36k positives / ~1.96M zeros (≈ true 98.2% zero rate). This

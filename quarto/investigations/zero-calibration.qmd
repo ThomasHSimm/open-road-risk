@@ -52,8 +52,11 @@ observed because the model underestimates the true variance.
 **Implementation note**: the production Poisson GLM is trained on a 1:10 downsampled
 dataset (all positives; zeros sampled at 10× that count). With 391k positives, keeping
 all of them within a 2M-row cap leaves only 1.6M zeros — an 80% zero rate, far from
-the true 98.2%. A GLM fitted on that biased sample learns inflated baseline rates and
-produces p = 1.0 (over-predicts zeros) rather than the expected p ≪ 0.50.
+the true 98.2%. A GLM fitted on that biased sample learns inflated baseline rates
+(intercept biased upward; predicted collision rates too high; predicted zero probability
+too low). This makes the zero-count underestimation even more severe — the biased model
+pushes p further towards 0.00 rather than yielding an unbiased baseline against which to
+measure misfit.
 
 The correct diagnostic approach is a **pure random sample** from the full frame. At 2M
 rows the draw preserves the true ~98% zero rate (~36k positives, ~1.96M zeros), giving
@@ -132,7 +135,7 @@ between-family heterogeneity.
 
 ### Verdict
 
-**NB GLM is the warranted next step. ZINB testing is not required.**
+**NB GLM is the warranted next step. ZINB is not the priority next step.**
 
 Progressing from Poisson to NB is the priority model-family change for Stage 2.
 The global α = 2.057 should be used as the starting estimate for the NB dispersion
