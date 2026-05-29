@@ -1,6 +1,6 @@
 # Open Road Risk
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20451731.svg)](https://doi.org/10.5281/zenodo.20451731)
+[![DOI](https://zenodo.org/badge/1216505266.svg)](https://doi.org/10.5281/zenodo.20451731)
 [![CI](https://github.com/ThomasHSimm/open-road-risk/actions/workflows/ci.yml/badge.svg)](https://github.com/ThomasHSimm/open-road-risk/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
