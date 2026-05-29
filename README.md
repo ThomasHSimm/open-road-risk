@@ -1,5 +1,7 @@
 # Open Road Risk
 
+[![DOI](https://zenodo.org/badge/1216505266.svg)](https://doi.org/10.5281/zenodo.20451731)
+
 Open Road Risk is an open-source road safety pipeline combining DfT STATS19
 collision data, AADF traffic counts, OS Open Roads geometry, WebTRIS sensor
 data, and OpenStreetMap attributes to produce **exposure-adjusted risk scores
