@@ -1,6 +1,8 @@
 # Open Road Risk
 
 [![DOI](https://zenodo.org/badge/1216505266.svg)](https://doi.org/10.5281/zenodo.20451731)
+[![CI](https://github.com/ThomasHSimm/open-road-risk/actions/workflows/ci.yml/badge.svg)](https://github.com/ThomasHSimm/open-road-risk/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Open Road Risk is an open-source road safety pipeline combining DfT STATS19
 collision data, AADF traffic counts, OS Open Roads geometry, WebTRIS sensor
@@ -214,6 +216,14 @@ using open data — extending exposure-adjusted risk analysis to the 85% of road
 DfT currently has no traffic counts.
 
 Compatible with ESRI/ArcGIS workflows via GeoPackage output. PostGIS backend for app queries.
+
+---
+
+## How to cite
+
+Simm, T. H. (2026). *Open Road Risk: an open-data pipeline for exposure-adjusted
+collision risk across the road network of Northern and Central England.*
+Zenodo. https://doi.org/10.5281/zenodo.20451731
 
 ---
 
