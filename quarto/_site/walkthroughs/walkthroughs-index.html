@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>Open Road Risk Project Overview – Open Road Risk</title>
+<title>Walkthroughs – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -82,41 +82,21 @@ gtag('js', new Date());
 gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </script>
 <style>html{ scroll-behavior: smooth; }</style>
-<style>
-
-      .quarto-title-block .quarto-title-banner h1,
-      .quarto-title-block .quarto-title-banner h2,
-      .quarto-title-block .quarto-title-banner h3,
-      .quarto-title-block .quarto-title-banner h4,
-      .quarto-title-block .quarto-title-banner h5,
-      .quarto-title-block .quarto-title-banner h6
-      {
-        color: #ffffff;
-      }
-
-      .quarto-title-block .quarto-title-banner {
-        color: #ffffff;
-background-image: url(../assets/rainmiss.jpg);
-background-size: cover;
-      }
-</style>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Open Road Risk Project Overview – Open Road Risk">
-<meta property="og:description" content="Overview of the Open Road Risk repository, modelling stages, data sources, outputs, current scope, and known limitations.">
-<meta property="og:image" content="https://openroadrisk.org/assets/rainmiss.jpg">
+<meta property="og:title" content="Walkthroughs – Open Road Risk">
+<meta property="og:description" content="Practical notebooks for understanding road risk modelling: the concepts, the code, and the diagnostics behind the literature and the pipeline.">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Open Road Risk Project Overview – Open Road Risk">
-<meta name="twitter:description" content="Overview of the Open Road Risk repository, modelling stages, data sources, outputs, current scope, and known limitations.">
-<meta name="twitter:image" content="https://openroadrisk.org/assets/rainmiss.jpg">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Walkthroughs – Open Road Risk">
+<meta name="twitter:description" content="Practical notebooks for understanding road risk modelling: the concepts, the code, and the diagnostics behind the literature and the pipeline.">
+<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -411,28 +391,7 @@ background-size: cover;
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Open Road Risk Project Overview</h1>
-                  <div>
-        <div class="description">
-          Overview of the Open Road Risk repository, modelling stages, data sources, outputs, current scope, and known limitations.
-        </div>
-      </div>
-                </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page-left">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
@@ -440,176 +399,64 @@ background-size: cover;
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#repository-structure" id="toc-repository-structure" class="nav-link active" data-scroll-target="#repository-structure">Repository structure</a></li>
-  <li><a href="#documentation-status" id="toc-documentation-status" class="nav-link" data-scroll-target="#documentation-status">Documentation status</a></li>
-  <li><a href="#what-the-pipeline-does" id="toc-what-the-pipeline-does" class="nav-link" data-scroll-target="#what-the-pipeline-does">What the pipeline does</a></li>
-  <li><a href="#data-sources" id="toc-data-sources" class="nav-link" data-scroll-target="#data-sources">Data sources</a></li>
-  <li><a href="#main-outputs" id="toc-main-outputs" class="nav-link" data-scroll-target="#main-outputs">Main outputs</a></li>
-  <li><a href="#current-scope" id="toc-current-scope" class="nav-link" data-scroll-target="#current-scope">Current scope</a></li>
-  <li><a href="#known-limitations" id="toc-known-limitations" class="nav-link" data-scroll-target="#known-limitations">Known limitations</a></li>
-  <li><a href="#site-guide" id="toc-site-guide" class="nav-link" data-scroll-target="#site-guide">Site guide</a></li>
+  <li><a href="#available-walkthroughs" id="toc-available-walkthroughs" class="nav-link active" data-scroll-target="#available-walkthroughs">Available walkthroughs</a></li>
+  <li><a href="#reading-order" id="toc-reading-order" class="nav-link" data-scroll-target="#reading-order">Reading order</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Walkthroughs</h1>
+</div>
+
+<div>
+  <div class="description">
+    Practical notebooks for understanding road risk modelling: the concepts, the code, and the diagnostics behind the literature and the pipeline.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
-<section id="repository-structure" class="level2">
-<h2 class="anchored" data-anchor-id="repository-structure">Repository structure</h2>
+
+<p>The walkthroughs are executable notebooks that work through the concepts behind Open Road Risk’s modelling pipeline. They sit between the formal <a href="../literature/literature-index.html">literature review</a> — which cites and synthesises peer-reviewed sources — and the <a href="../project/project-overview.html">project pages</a>, which document what the pipeline does. Each walkthrough takes a concept or argument from the literature and works through it in code, with plots and prose.</p>
+<p>The format is Python in Quarto, rendered as HTML on this site. Each page also exports as a Jupyter notebook that you can download, open, and modify. The notebooks live alongside the walkthrough sources in <a href="https://github.com/ThomasHSimm/open-road-risk/tree/main/quarto/walkthroughs"><code>quarto/walkthroughs</code></a> on GitHub. Data is mostly synthetic where the point is to show how a method behaves; in some cases real STATS19 or AADF samples are used, published as Kaggle datasets where the real distribution matters.</p>
+<p>The walkthroughs are looser than the literature pages. They include the intuition, the simulations, and the moments where the argument needed a detour to land. Where the literature pages cite, the walkthroughs show.</p>
+<section id="available-walkthroughs" class="level2">
+<h2 class="anchored" data-anchor-id="available-walkthroughs">Available walkthroughs</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
-<th>Path</th>
-<th>Purpose</th>
+<th>Walkthrough</th>
+<th>Notebook</th>
+<th>Companion literature</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>quarto/</code></td>
-<td>Quarto website source.</td>
-</tr>
-<tr class="even">
-<td><code>notebooks/</code></td>
-<td>(Local only; ignored by git) Exploratory analysis and historical development work. Some content is superseded by QMD pages.</td>
-</tr>
-<tr class="odd">
-<td><code>src/</code></td>
-<td>Python package and modelling pipeline code.</td>
-</tr>
-<tr class="even">
-<td><code>data/</code></td>
-<td>Data provenance and folder structure (actual data is excluded from git).</td>
-</tr>
-<tr class="odd">
-<td><code>docs/</code></td>
-<td>Internal technical notes and data quality documentation.</td>
-</tr>
-<tr class="even">
-<td><code>reports/</code></td>
-<td>Detailed analysis reports and validation summaries.</td>
-</tr>
-<tr class="odd">
-<td><code>config/</code></td>
-<td>Project configuration and settings.</td>
-</tr>
-<tr class="even">
-<td><code>tests/</code></td>
-<td>Automated tests for pipeline components.</td>
-</tr>
-<tr class="odd">
-<td><code>todo/</code></td>
-<td>Planning notes and active task tracking.</td>
+<td><a href="../walkthroughs/count-models-explainer.html">Crash frequency models</a></td>
+<td><a href="https://github.com/ThomasHSimm/open-road-risk/blob/main/quarto/walkthroughs/count-models-explainer.ipynb">Jupyter notebook</a></td>
+<td><a href="../literature/crash-frequency-models.html">Crash frequency models</a></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="documentation-status" class="level2">
-<h2 class="anchored" data-anchor-id="documentation-status">Documentation status</h2>
-<p>The <code>.qmd</code> pages located in the <code>quarto/</code> directory serve as the canonical public documentation for this project.</p>
-<p>Note that while a <code>notebooks/</code> directory may exist in the local workspace for exploratory and historical analysis, it is excluded from source control. Internal documentation and historical notes found in <code>docs/</code> or <code>reports/</code> provide additional context but should be treated as supporting material. Generated outputs and rendered artifacts are excluded from the main source tree to maintain a clean repository.</p>
-</section>
-<section id="what-the-pipeline-does" class="level2">
-<h2 class="anchored" data-anchor-id="what-the-pipeline-does">What the pipeline does</h2>
-<p>The project is organised in three main modelling stages:</p>
-<p><strong>Stage 1a — Traffic exposure estimation</strong> Traffic counts from <a href="../data-sources/aadf.html">AADF traffic counts</a> are used to train a model that estimates AADT for road links without direct counts.</p>
-<p><strong>Stage 1b — Time-zone profiles</strong> <a href="../data-sources/webtris.html">WebTRIS sensor data</a> provides supporting information on within-day traffic structure and vehicle mix on major roads.</p>
-<p><strong>Stage 2 — Collision risk modelling</strong> Collision outcomes from <a href="../data-sources/stats19.html">STATS19 collision data</a> are modelled against exposure, road class, network structure, and contextual features to estimate relative road risk. The result is a network-wide risk layer that can be used to identify unusually risky links, compare corridors, and support downstream applications.</p>
-</section>
-<section id="data-sources" class="level2">
-<h2 class="anchored" data-anchor-id="data-sources">Data sources</h2>
-<p>This project currently draws on the following core sources:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Dataset</th>
-<th>Provider</th>
-<th>Role</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="../data-sources/stats19.html">STATS19</a></td>
-<td>Department for Transport</td>
-<td>reported road collisions and casualty context</td>
-</tr>
-<tr class="even">
-<td><a href="../data-sources/aadf.html">AADF</a></td>
-<td>Department for Transport</td>
-<td>observed traffic counts at count points</td>
-</tr>
-<tr class="odd">
-<td><a href="../data-sources/webtris.html">WebTRIS</a></td>
-<td>National Highways</td>
-<td>measured traffic and vehicle-mix context on major roads</td>
-</tr>
-<tr class="even">
-<td><a href="../data-sources/openroads.html">OS Open Roads</a></td>
-<td>Ordnance Survey</td>
-<td>road link geometry and classifications</td>
-</tr>
-<tr class="odd">
-<td>OpenStreetMap</td>
-<td>OSM contributors</td>
-<td>supplementary road attributes</td>
-</tr>
-<tr class="even">
-<td>MRDB</td>
-<td>DfT / OS</td>
-<td>major-road reference network</td>
-</tr>
-<tr class="odd">
-<td>LSOA population data</td>
-<td>ONS</td>
-<td>population-density and contextual features</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="main-outputs" class="level2">
-<h2 class="anchored" data-anchor-id="main-outputs">Main outputs</h2>
-<p>The pipeline is designed to produce:</p>
-<ul>
-<li>estimated traffic exposure for uncounted roads</li>
-<li>link-level risk scores across the network</li>
-<li>residual or excess-risk views showing where observed risk is higher than expected</li>
-<li>corridor- and area-level summaries for applied use cases</li>
-</ul>
-</section>
-<section id="current-scope" class="level2">
-<h2 class="anchored" data-anchor-id="current-scope">Current scope</h2>
-<p>The project began as a Yorkshire pilot and is being used to test whether an open-data workflow can support full-network safety performance modelling. It is intended as: - a methodological prototype - a decision-support and analysis tool - a basis for more focused applications such as corridor screening and local safety prioritisation</p>
-<p>It is not: - a real-time traffic management system - a causal intervention model - a definitive national risk product without wider validation</p>
-</section>
-<section id="known-limitations" class="level2">
-<h2 class="anchored" data-anchor-id="known-limitations">Known limitations</h2>
-<p>Important limitations include:</p>
-<ul>
-<li>STATS19 reflects reported collisions, not all collisions</li>
-<li>direct traffic counts are sparse outside major roads</li>
-<li>WebTRIS only covers the National Highways network</li>
-<li>some road attributes (e.g.&nbsp;speed limits, lanes, lighting) are incomplete</li>
-<li>risk estimates are only as good as the joins and assumptions behind them</li>
-</ul>
-<p>These are discussed in more detail throughout the site.</p>
-</section>
-<section id="site-guide" class="level2">
-<h2 class="anchored" data-anchor-id="site-guide">Site guide</h2>
-<p>The site is organised around the logic of the pipeline:</p>
-<ul>
-<li><strong><a href="../data-sources/index.html">Data Sources</a></strong> — what each dataset contains and what it can and cannot tell us</li>
-<li><strong><a href="../methodology/methodology-index.html">Methodology</a></strong> — how sources are joined and transformed into modelling inputs</li>
-<li><strong><a href="../analysis/model-results.html">Analysis</a></strong> — model behaviour, outputs, and exploratory evaluation</li>
-<li><strong><a href="../future-work.html">Future Work</a></strong> — research questions and extensions the pipeline can support</li>
-</ul>
-<p>A good place to start is with the source pages for <a href="../data-sources/stats19.html">STATS19 collision data</a>, <a href="../data-sources/aadf.html">AADF traffic counts</a>, and <a href="../data-sources/webtris.html">WebTRIS sensor data</a>, then move to the methodology pages on <a href="../methodology/data-joining.html">joining road safety datasets</a> and <a href="../methodology/feature-engineering.html">feature engineering</a>. For possible extensions, <a href="../future-work.html">Future Work</a> collects research questions that are not in the active backlog but are natural next uses of the same road-link, exposure, and collision-risk infrastructure.</p>
+<section id="reading-order" class="level2">
+<h2 class="anchored" data-anchor-id="reading-order">Reading order</h2>
+<p>The walkthroughs are designed to stand alone but they build on each other. A reader new to count modelling should start with the crash frequency walkthrough — it covers the distributional foundations that later pages assume. Readers who already know Poisson and negative binomial regression can skip to whichever topic is relevant.</p>
+<p>The walkthroughs deliberately do not replicate what already exists. The Leeds Institute for Transport Studies’ <a href="https://itsleeds.github.io/rrsrr/">Reproducible Road Safety Research with R</a> is the canonical resource for STATS19 data handling, and the <a href="https://docs.ropensci.org/stats19/">stats19 R package</a> is the de facto standard for working with the data in R. The walkthroughs focus on modelling rather than data handling, and use Python rather than R.</p>
 
 
 </section>

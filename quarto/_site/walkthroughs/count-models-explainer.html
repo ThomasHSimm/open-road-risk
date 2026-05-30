@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>AADF Traffic Counts – Open Road Risk</title>
+<title>Why Crash Counts Need Count Models – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -121,19 +121,48 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="AADF Traffic Counts – Open Road Risk">
-<meta property="og:description" content="Source notes for DfT AADF traffic counts, including count-point coverage, counted-only training data, and traffic exposure estimation.">
-<meta property="og:image" content="https://openroadrisk.org/data-sources/aadf_files/figure-html/fig-aadf-map-output-1.png">
+<meta property="og:title" content="Why Crash Counts Need Count Models – Open Road Risk">
+<meta property="og:description" content="Visual walkthrough of why ordinary regression is inappropriate for crash frequency data, and what properties make count models the right choice.">
+<meta property="og:image" content="https://openroadrisk.org/walkthroughs/count-models-explainer_files/figure-html/count-distribution-comparison-output-1.png">
 <meta property="og:site_name" content="Open Road Risk">
-<meta property="og:image:height" content="1468">
-<meta property="og:image:width" content="1614">
-<meta name="twitter:title" content="AADF Traffic Counts – Open Road Risk">
-<meta name="twitter:description" content="Source notes for DfT AADF traffic counts, including count-point coverage, counted-only training data, and traffic exposure estimation.">
-<meta name="twitter:image" content="https://openroadrisk.org/data-sources/aadf_files/figure-html/fig-aadf-map-output-1.png">
-<meta name="twitter:image-height" content="1468">
-<meta name="twitter:image-width" content="1614">
+<meta property="og:image:height" content="744">
+<meta property="og:image:width" content="2858">
+<meta name="twitter:title" content="Why Crash Counts Need Count Models – Open Road Risk">
+<meta name="twitter:description" content="Visual walkthrough of why ordinary regression is inappropriate for crash frequency data, and what properties make count models the right choice.">
+<meta name="twitter:image" content="https://openroadrisk.org/walkthroughs/count-models-explainer_files/figure-html/count-distribution-comparison-output-1.png">
+<meta name="twitter:image-height" content="744">
+<meta name="twitter:image-width" content="2858">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -443,17 +472,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
-  <li><a href="#role-in-the-pipeline" id="toc-role-in-the-pipeline" class="nav-link" data-scroll-target="#role-in-the-pipeline"><span class="header-section-number">2</span> Role in the pipeline</a></li>
-  <li><a href="#download" id="toc-download" class="nav-link" data-scroll-target="#download"><span class="header-section-number">3</span> Download</a></li>
-  <li><a href="#load-data" id="toc-load-data" class="nav-link" data-scroll-target="#load-data"><span class="header-section-number">4</span> Load data</a></li>
-  <li><a href="#count-point-coverage" id="toc-count-point-coverage" class="nav-link" data-scroll-target="#count-point-coverage"><span class="header-section-number">5</span> Count point coverage</a></li>
-  <li><a href="#flow-trend-over-time" id="toc-flow-trend-over-time" class="nav-link" data-scroll-target="#flow-trend-over-time"><span class="header-section-number">6</span> Flow trend over time</a></li>
-  <li><a href="#flow-and-vehicle-mix-by-road-type" id="toc-flow-and-vehicle-mix-by-road-type" class="nav-link" data-scroll-target="#flow-and-vehicle-mix-by-road-type"><span class="header-section-number">7</span> Flow and vehicle mix by road type</a></li>
-  <li><a href="#variables-and-model-use" id="toc-variables-and-model-use" class="nav-link" data-scroll-target="#variables-and-model-use"><span class="header-section-number">8</span> Variables and model use</a></li>
-  <li><a href="#why-this-source-is-not-enough-on-its-own" id="toc-why-this-source-is-not-enough-on-its-own" class="nav-link" data-scroll-target="#why-this-source-is-not-enough-on-its-own"><span class="header-section-number">9</span> Why this source is not enough on its own</a></li>
-  <li><a href="#known-issues-and-limitations" id="toc-known-issues-and-limitations" class="nav-link" data-scroll-target="#known-issues-and-limitations"><span class="header-section-number">10</span> Known issues and limitations</a></li>
-  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">11</span> Next steps</a></li>
+  <li><a href="#why-count-data-needs-a-different-distribution" id="toc-why-count-data-needs-a-different-distribution" class="nav-link active" data-scroll-target="#why-count-data-needs-a-different-distribution">Why count data needs a different distribution</a></li>
+  <li><a href="#poisson-distribution" id="toc-poisson-distribution" class="nav-link" data-scroll-target="#poisson-distribution">Poisson distribution</a></li>
+  <li><a href="#why-ordinary-regression-fails-heteroscedasticity" id="toc-why-ordinary-regression-fails-heteroscedasticity" class="nav-link" data-scroll-target="#why-ordinary-regression-fails-heteroscedasticity">Why ordinary regression fails: heteroscedasticity</a></li>
+  <li><a href="#how-residual-shape-changes-with-predicted-value" id="toc-how-residual-shape-changes-with-predicted-value" class="nav-link" data-scroll-target="#how-residual-shape-changes-with-predicted-value">How residual shape changes with predicted value</a></li>
+  <li><a href="#mse-loss-is-dominated-by-rare-high-count-events" id="toc-mse-loss-is-dominated-by-rare-high-count-events" class="nav-link" data-scroll-target="#mse-loss-is-dominated-by-rare-high-count-events">MSE loss is dominated by rare high-count events</a></li>
   </ul>
 </nav>
     </div>
@@ -462,12 +485,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">AADF Traffic Counts</h1>
+<h1 class="title">Why Crash Counts Need Count Models</h1>
 </div>
 
 <div>
   <div class="description">
-    Source notes for DfT AADF traffic counts, including count-point coverage, counted-only training data, and traffic exposure estimation.
+    Visual walkthrough of why ordinary regression is inappropriate for crash frequency data, and what properties make count models the right choice.
   </div>
 </div>
 
@@ -484,380 +507,282 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<section id="overview" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
-<p>Annual Average Daily Flow (AADF) data provides <strong>measured traffic counts</strong> at DfT count points across Great Britain. In this project it is the main source of <strong>observed exposure</strong>: the dataset that anchors traffic estimation before that exposure is extended to roads without direct counts.</p>
-<p>This distinction matters. AADF does not provide complete road-link coverage across the network, so it is not the final exposure layer on its own. Instead, it provides the measured foundation for the wider exposure model.</p>
-<div class="callout callout-style-default callout-important callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Important
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Unlike WebTRIS, which covers the National Highways network only, AADF extends well beyond motorways and trunk roads. That makes it the project’s main source of measured traffic outside the strategic road network, even though coverage is still incomplete.</p>
-</div>
-</div>
-</section>
-<section id="role-in-the-pipeline" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="role-in-the-pipeline"><span class="header-section-number">2</span> Role in the pipeline</h2>
-<ul>
-<li>Supplies measured traffic observations that are joined to OS Open Roads links via spatial nearest-neighbour in <code>join.py</code>.</li>
-<li>Anchors the exposure story: observed AADF is used where available, and helps justify traffic estimation where direct counts do not exist.</li>
-<li>Contributes vehicle-mix features such as HGV proportion and heavy-vehicle share.</li>
-<li>Highlights where exposure is directly measured versus modelled — especially on lower-order roads via the <code>estimation_method</code> column.</li>
-</ul>
-<p>In short:</p>
-<blockquote class="blockquote">
-<p>AADF is the measured exposure anchor for the project, but not a complete exposure layer for the full network.</p>
-</blockquote>
-</section>
-<section id="download" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="download"><span class="header-section-number">3</span> Download</h2>
-<p><strong>Source:</strong> <a href="https://roadtraffic.dft.gov.uk/downloads" class="uri">https://roadtraffic.dft.gov.uk/downloads</a></p>
-<p>The project uses the <strong>count point-level AADF</strong> dataset, bidirectional aggregate. Place CSVs in <code>data/raw/aadf/</code>.</p>
-<hr>
-</section>
-<section id="load-data" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="load-data"><span class="header-section-number">4</span> Load data</h2>
-<div id="load-data" class="cell" data-execution_count="2">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>aadf_path <span class="op">=</span> _ROOT <span class="op">/</span> <span class="st">"data/processed/aadf/aadf_clean.parquet"</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>aadf <span class="op">=</span> pd.read_parquet(aadf_path)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"rows          : </span><span class="sc">{</span><span class="bu">len</span>(aadf)<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"count points  : </span><span class="sc">{</span>aadf[<span class="st">'count_point_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"years         : </span><span class="sc">{</span><span class="bu">sorted</span>(aadf[<span class="st">'year'</span>].unique())<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"road types    : </span><span class="sc">{</span><span class="bu">sorted</span>(aadf[<span class="st">'road_type'</span>].dropna().unique())<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>rows          : 105,661
-count points  : 14,193
-years         : [np.int64(2015), np.int64(2016), np.int64(2017), np.int64(2018), np.int64(2019), np.int64(2020), np.int64(2021), np.int64(2022), np.int64(2023), np.int64(2024)]
-road types    : ['Major', 'Minor']</code></pre>
-</div>
-</div>
-<p>The key thing to keep in mind is that AADF is organised around <strong>count points</strong> and <strong>years</strong>, not full road-link coverage. That makes it highly informative where measurements exist, but uneven elsewhere. The page therefore focuses on two questions:</p>
-<ol type="1">
-<li>where observed traffic counts exist,</li>
-<li>and why those counts are still insufficient on their own for full-network exposure modelling.</li>
-</ol>
-<hr>
-</section>
-<section id="count-point-coverage" class="level2" data-number="5">
-<h2 data-number="5" class="anchored" data-anchor-id="count-point-coverage"><span class="header-section-number">5</span> Count point coverage</h2>
-<p>AADF coverage is broader than WebTRIS and extends well beyond the motorway network. Marker size shows traffic volume; colour shows HGV proportion.</p>
-<p>This figure is useful less as a map of “all traffic” and more as a map of where the project has <strong>measured exposure anchors</strong>.</p>
-<div id="cell-fig-aadf-map" class="cell" data-execution_count="3">
+<p>The standalone Jupyter notebook for this walkthrough is available in GitHub at <a href="https://github.com/ThomasHSimm/open-road-risk/blob/main/quarto/walkthroughs/count-models-explainer.ipynb"><code>quarto/walkthroughs/count-models-explainer.ipynb</code></a>.</p>
+<section id="why-count-data-needs-a-different-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="why-count-data-needs-a-different-distribution">Why count data needs a different distribution</h2>
+<p>The normal distribution represents the kind of smooth, symmetric outcome that ordinary linear regression is designed for. Crash counts look different: they are whole numbers, cannot go below zero, and often contain many zeros. From the figure below the normal distribution is not suitable, due to negative values and the symmetrical distribution.</p>
+<p>An alternative distribution that better models the expected behaviour is the Poisson distribution. It is also the starting point for all subsequent model families, such as the negative binomial distribution shown in the same figure below.</p>
+<p>The figure below places all three distributions side by side at a low mean — the regime typical of annual injury collisions per road link in Open Road Risk (roughly 0.01–0.02 per link-year at link level, higher in aggregate).</p>
+<div id="cell-count-distribution-comparison" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>latest <span class="op">=</span> aadf[<span class="st">"year"</span>].<span class="bu">max</span>()</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>snap   <span class="op">=</span> aadf[aadf[<span class="st">"year"</span>] <span class="op">==</span> latest].copy()</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>snap   <span class="op">=</span> snap[snap[<span class="st">"latitude"</span>].notna() <span class="op">&amp;</span> snap[<span class="st">"longitude"</span>].notna()]</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> gpd.GeoDataFrame(</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    snap,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    geometry<span class="op">=</span>gpd.points_from_xy(snap[<span class="st">"longitude"</span>], snap[<span class="st">"latitude"</span>]),</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    crs<span class="op">=</span><span class="st">"EPSG:4326"</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>).to_crs(epsg<span class="op">=</span><span class="dv">3857</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>minx, miny, maxx, maxy <span class="op">=</span> gdf.total_bounds</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>pad <span class="op">=</span> <span class="bu">max</span>(maxx <span class="op">-</span> minx, maxy <span class="op">-</span> miny) <span class="op">*</span> <span class="fl">0.05</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>vals <span class="op">=</span> gdf[<span class="st">"all_motor_vehicles"</span>]</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>smin, smax <span class="op">=</span> <span class="dv">8</span>, <span class="dv">120</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>size_scaled <span class="op">=</span> smin <span class="op">+</span> (smax <span class="op">-</span> smin) <span class="op">*</span> (vals <span class="op">-</span> vals.<span class="bu">min</span>()) <span class="op">/</span> (vals.<span class="bu">max</span>() <span class="op">-</span> vals.<span class="bu">min</span>() <span class="op">+</span> <span class="fl">1e-9</span>)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">9</span>))</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(minx <span class="op">-</span> pad, maxx <span class="op">+</span> pad)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(miny <span class="op">-</span> pad, maxy <span class="op">+</span> pad)</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    cx.add_basemap(ax, source<span class="op">=</span>cx.providers.CartoDB.Positron,</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                   zoom<span class="op">=</span><span class="st">"auto"</span>, attribution_size<span class="op">=</span><span class="dv">5</span>)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Basemap unavailable: </span><span class="sc">{</span>exc<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>gdf.plot(</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    ax<span class="op">=</span>ax, column<span class="op">=</span><span class="st">"hgv_proportion"</span>, cmap<span class="op">=</span><span class="st">"viridis"</span>,</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    markersize<span class="op">=</span>size_scaled, edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.3</span>,</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">0.85</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">3</span>,</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"HGV proportion"</span>, <span class="st">"shrink"</span>: <span class="fl">0.5</span>},</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="bu">max</span>(<span class="fl">0.3</span>, gdf[<span class="st">"hgv_proportion"</span>].quantile(<span class="fl">0.95</span>)),</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>ax.set_axis_off()</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="ss">f"AADF count points — </span><span class="sc">{</span>latest<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">50_000</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>y_normal <span class="op">=</span> np.random.normal(<span class="fl">0.7</span>, <span class="fl">.5</span>, size<span class="op">=</span>n)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>y_poisson <span class="op">=</span> np.random.poisson(lam<span class="op">=</span><span class="fl">0.2</span>, size<span class="op">=</span>n)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> <span class="fl">0.4</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> r <span class="op">/</span> (r <span class="op">+</span> <span class="fl">0.2</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>y_negbin <span class="op">=</span> np.random.negative_binomial(n<span class="op">=</span>r, p<span class="op">=</span>p, size<span class="op">=</span>n)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>dist_all <span class="op">=</span> {</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Normal outcome"</span>: y_normal,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Poisson count"</span>: y_poisson,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Negative binomial count"</span>: y_negbin,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">4</span>))</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> [<span class="st">'blue'</span>, <span class="st">'orange'</span>, <span class="st">'green'</span>]</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, (name, values) <span class="kw">in</span> <span class="bu">enumerate</span>(dist_all.items()):</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"Normal outcome"</span>:</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        ax[i].hist(values, bins<span class="op">=</span><span class="dv">40</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, color<span class="op">=</span>cols[i])</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        bins <span class="op">=</span> np.arange(values.<span class="bu">max</span>() <span class="op">+</span> <span class="dv">2</span>) <span class="op">-</span> <span class="fl">0.5</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        ax[i].hist(values, bins<span class="op">=</span>bins, alpha<span class="op">=</span><span class="fl">0.7</span>, color<span class="op">=</span>cols[i])</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        ax[i].set_xticks(<span class="bu">range</span>(<span class="bu">min</span>(values.<span class="bu">max</span>() <span class="op">+</span> <span class="dv">1</span>, <span class="dv">8</span>)))</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        ax[i].set_xlim(<span class="op">-</span><span class="fl">0.5</span>, <span class="fl">7.5</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    ax[i].set_title(name)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    ax[i].set_xlabel(<span class="st">"Value"</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        ax[i].set_ylabel(<span class="st">"Frequency"</span>)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    ax[i].grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
-<div id="fig-aadf-map" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-aadf-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="aadf_files/figure-html/fig-aadf-map-output-1.png" width="807" height="734" class="figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aadf-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: AADF count points — size by flow, colour by HGV share (most recent year)
-</figcaption>
+<div id="count-distribution-comparison" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="count-models-explainer_files/figure-html/count-distribution-comparison-output-1.png" width="1429" height="372" class="figure-img"></p>
+<figcaption>At a low mean, Poisson and negative binomial counts are dominated by zeros and small integers. A normal distribution cannot reproduce this shape: it is continuous, symmetric around the mean, and assigns probability mass to negative values.</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<hr>
 </section>
-<section id="flow-trend-over-time" class="level2" data-number="6">
-<h2 data-number="6" class="anchored" data-anchor-id="flow-trend-over-time"><span class="header-section-number">6</span> Flow trend over time</h2>
-<p>AADF flows show the COVID drop clearly — 2020 is ~30% below baseline on most road types, partial recovery in 2021, near-full recovery by 2022.</p>
-<div id="cell-fig-aadf-yearly" class="cell" data-execution_count="4">
+<section id="poisson-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="poisson-distribution">Poisson distribution</h2>
+<p>The reason the Poisson distribution is a useful distribution to model count data is due to:</p>
+<ul>
+<li>It ouputs discrete, non-negative integers, which matches the nature of count data.</li>
+<li>It is simple and has only one parameter, the mean</li>
+</ul>
+<p>The Poisson probability distribution is defined as follows, where <span class="math inline">\(\lambda\)</span> is the mean (and variance) of the distribution, and k is the count value:</p>
+<p><span class="math display">\[
+P(Y = k) = \frac{\lambda^k e^{-\lambda}}{k!}
+\]</span></p>
+<p>Broadly speaking for mean values in the range of road networks, the mean of the distribution gives the fraction of zeros: a mean of 0.02 corresponds to about 98% zeros, a mean of 0.1 corresponds to about 90% zeros.</p>
+<div class="cell" data-tbl-cap="Poisson count distribution at different means" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>yearly <span class="op">=</span> (</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    aadf.groupby([<span class="st">"year"</span>, <span class="st">"road_type"</span>])[<span class="st">"all_motor_vehicles"</span>]</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    .mean()</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    .reset_index()</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>road_types <span class="op">=</span> yearly[<span class="st">"road_type"</span>].unique()</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>colours <span class="op">=</span> plt.cm.tab10(np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="bu">len</span>(road_types)))</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>poisson_eg, means <span class="op">=</span> [], []</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> poisson_mean <span class="kw">in</span> [<span class="fl">0.02</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">1.2</span>]:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    y_poisson <span class="op">=</span> rng.poisson(poisson_mean, n)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    counts, bins <span class="op">=</span> np.histogram(y_poisson, bins<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>])</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    counts <span class="op">=</span> counts <span class="op">/</span> counts.<span class="bu">sum</span>()  <span class="co"># Normalize to get probabilities</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># to 2 decimal places</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    counts <span class="op">=</span> <span class="dv">100</span> <span class="op">*</span> np.<span class="bu">round</span>(counts, <span class="dv">4</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    poisson_eg.append(counts)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    means.append(poisson_mean)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame(data<span class="op">=</span>poisson_eg, index<span class="op">=</span>means)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># rename the index to "Poisson mean"</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.set_index(pd.Index(means, name<span class="op">=</span><span class="st">"Poisson mean"</span>))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="poisson-distribution-at-different-means" class="cell-output cell-output-display" data-execution_count="3">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<caption>Poisson count distribution at different means</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">0</th>
+<th data-quarto-table-cell-role="th">1</th>
+<th data-quarto-table-cell-role="th">2</th>
+<th data-quarto-table-cell-role="th">3</th>
+<th data-quarto-table-cell-role="th">4</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">Poisson mean</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0.02</th>
+<td>98.09</td>
+<td>1.90</td>
+<td>0.01</td>
+<td>0.00</td>
+<td>0.00</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">0.05</th>
+<td>95.18</td>
+<td>4.67</td>
+<td>0.14</td>
+<td>0.00</td>
+<td>0.00</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0.10</th>
+<td>90.36</td>
+<td>9.15</td>
+<td>0.48</td>
+<td>0.01</td>
+<td>0.00</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1.20</th>
+<td>30.30</td>
+<td>35.76</td>
+<td>21.84</td>
+<td>8.91</td>
+<td>3.19</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<hr>
+<p>The Poisson model assumes that the variance equals the mean. Crash count data almost always violates this: observed variance tends to be well in excess of the mean — a property called <em>overdispersion</em>. Overdispersion can arise from unobserved heterogeneity (e.g.&nbsp;unmeasured link characteristics). These can include many factors: driver behaviour on a specific day, momentary distraction, weather variation. Even with perfect knowledge of the road, year-to-year variance would exceed what Poisson allows because some things are genuinely unobservable, not just hard to measure.</p>
+<hr>
+</section>
+<section id="why-ordinary-regression-fails-heteroscedasticity" class="level2">
+<h2 class="anchored" data-anchor-id="why-ordinary-regression-fails-heteroscedasticity">Why ordinary regression fails: heteroscedasticity</h2>
+<p>One of the core assumptions behind ordinary least-squares regression is <em>homoscedasticity</em>: residual variance is approximately constant across the range of predicted values. For crash counts this assumption fails by construction. Because Poisson variance equals its mean, a model predicting higher counts must also predict larger residuals — there is no way to have the same spread at a predicted value of 0.1 as at a predicted value of 4.</p>
+<p>The figure below uses a perfect model — one that knows the true conditional mean — to isolate this data property from any model error.</p>
+<div id="cell-residual-vs-predicted" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].scatter(yhat_continuous, residual_continuous, s<span class="op">=</span><span class="dv">3</span>, alpha<span class="op">=</span><span class="fl">0.3</span>, color<span class="op">=</span>cols_rc[<span class="st">"continuous"</span>])</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"red"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">"Continuous outcome</span><span class="ch">\n</span><span class="st">(residual vs predicted)"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_xlabel(<span class="st">"Predicted value"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_ylabel(<span class="st">"Residual (observed − predicted)"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].grid()</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].scatter(yhat_count, residual_count, s<span class="op">=</span><span class="dv">3</span>, alpha<span class="op">=</span><span class="fl">0.3</span>, color<span class="op">=</span>cols_rc[<span class="st">"count"</span>])</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"red"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">"Count outcome</span><span class="ch">\n</span><span class="st">(residual vs predicted)"</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_xlabel(<span class="st">"Predicted value"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].grid()</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="residual-vs-predicted" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="count-models-explainer_files/figure-html/residual-vs-predicted-output-1.png" width="1141" height="373" class="figure-img"></p>
+<figcaption>Left: a continuous outcome with constant noise. Residuals are evenly spread across all predicted values. Right: a Poisson count outcome using the same true conditional mean. Even with a perfect model, the residual cloud fans outward as predicted values increase — heteroscedasticity is a structural property of count data, not a modelling failure.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The right panel also illustrates a second problem: residuals cannot go below <span class="math inline">\(-\hat{\lambda}\)</span> (you cannot observe fewer than zero crashes), so at low predicted values the distribution is hard-bounded below and strongly right-skewed. Ordinary regression makes no use of this constraint; a count model builds it in through the Poisson log-linear mean.</p>
+<hr>
+</section>
+<section id="how-residual-shape-changes-with-predicted-value" class="level2">
+<h2 class="anchored" data-anchor-id="how-residual-shape-changes-with-predicted-value">How residual shape changes with predicted value</h2>
+<p>At low predicted values the residual distribution is asymmetric — almost all observations are at zero, and the only possible residuals are 0 or small positive integers. At higher predicted values the distribution widens and becomes more symmetric, but the spread is substantially larger than at low values.</p>
+<div id="cell-residual-distributions-by-prediction" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig, ax_all <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>diff <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, pred_val <span class="kw">in</span> <span class="bu">enumerate</span>([<span class="dv">0</span>, <span class="dv">3</span>]):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> ax_all[i]</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    cond_cont <span class="op">=</span> (yhat_continuous <span class="op">&gt;=</span> pred_val <span class="op">-</span> diff) <span class="op">&amp;</span> (yhat_continuous <span class="op">&lt;</span> pred_val <span class="op">+</span> diff)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    ax.hist(residual_continuous[cond_cont], bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, color<span class="op">=</span>cols_rc[<span class="st">"continuous"</span>],</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            density<span class="op">=</span><span class="va">True</span>, label<span class="op">=</span><span class="st">"Continuous"</span>)</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="fl">4.5</span>))</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rt, colour <span class="kw">in</span> <span class="bu">zip</span>(road_types, colours):</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    sub <span class="op">=</span> yearly[yearly[<span class="st">"road_type"</span>] <span class="op">==</span> rt]</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    ax.plot(sub[<span class="st">"year"</span>], sub[<span class="st">"all_motor_vehicles"</span>],</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>            marker<span class="op">=</span><span class="st">"o"</span>, linewidth<span class="op">=</span><span class="fl">1.8</span>, label<span class="op">=</span>rt, color<span class="op">=</span>colour)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Shade COVID years</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> yr <span class="kw">in</span> COVID_YEARS:</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    ax.axvspan(yr <span class="op">-</span> <span class="fl">0.5</span>, yr <span class="op">+</span> <span class="fl">0.5</span>, color<span class="op">=</span><span class="st">"#fee2e2"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, zorder<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Year"</span>)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Mean daily flow (veh/day)"</span>)</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"AADF mean flow by road type — COVID years shaded"</span>)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>ax.yaxis.set_major_formatter(mticker.FuncFormatter(<span class="kw">lambda</span> x, _: <span class="ss">f"</span><span class="sc">{</span><span class="bu">int</span>(x)<span class="sc">:,}</span><span class="ss">"</span>))</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>ax.legend(fontsize<span class="op">=</span><span class="dv">8</span>, loc<span class="op">=</span><span class="st">"best"</span>)</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>ax.spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>ax.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    cond_count <span class="op">=</span> (yhat_count <span class="op">&gt;=</span> pred_val <span class="op">-</span> diff) <span class="op">&amp;</span> (yhat_count <span class="op">&lt;</span> pred_val <span class="op">+</span> diff)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    axR <span class="op">=</span> ax.twinx()</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    axR.hist(residual_count[cond_count], bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, color<span class="op">=</span>cols_rc[<span class="st">"count"</span>],</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>             density<span class="op">=</span><span class="va">True</span>, label<span class="op">=</span><span class="st">"Count"</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">"Density"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Residual (observed − predicted)"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"Residuals for predictions near </span><span class="sc">{</span>pred_val<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    ax.legend(loc<span class="op">=</span><span class="st">"upper left"</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    axR.legend(loc<span class="op">=</span><span class="st">"upper right"</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    ax.grid()</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
-<div id="fig-aadf-yearly" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-aadf-yearly-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="aadf_files/figure-html/fig-aadf-yearly-output-1.png" width="950" height="420" class="figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aadf-yearly-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Mean daily flow by road type over time
-</figcaption>
+<div id="residual-distributions-by-prediction" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="count-models-explainer_files/figure-html/residual-distributions-by-prediction-output-1.png" width="1141" height="372" class="figure-img"></p>
+<figcaption>Residual distributions conditioned on two predicted-value windows. Near zero (left), the count residuals are heavily right-skewed: the floor at −mean_count means there is almost no mass below zero. Near a predicted value of three (right), the distribution is broader and closer to symmetric, but the spread is much larger. A continuous outcome (blue) maintains roughly the same shape in both panels.</figcaption>
 </figure>
 </div>
 </div>
 </div>
 <hr>
 </section>
-<section id="flow-and-vehicle-mix-by-road-type" class="level2" data-number="7">
-<h2 data-number="7" class="anchored" data-anchor-id="flow-and-vehicle-mix-by-road-type"><span class="header-section-number">7</span> Flow and vehicle mix by road type</h2>
-<p>Summary at the most recent year. <code>estimation_method</code> indicates whether flow was directly counted or modelled — minor roads are mostly modelled.</p>
-<div id="cell-summary-table" class="cell" data-execution_count="5">
+<section id="mse-loss-is-dominated-by-rare-high-count-events" class="level2">
+<h2 class="anchored" data-anchor-id="mse-loss-is-dominated-by-rare-high-count-events">MSE loss is dominated by rare high-count events</h2>
+<p>Ordinary regression minimises mean squared error (MSE). On zero-heavy count data this creates a structural problem: the few observations with large counts contribute far more to the total squared error than the many observations with counts near zero, even though the zero regime is the one the model needs to handle well.</p>
+<div id="cell-mse-vs-predicted" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> (</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    snap.groupby(<span class="st">"road_type"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        n_count_points       <span class="op">=</span>(<span class="st">"count_point_id"</span>,    <span class="st">"nunique"</span>),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        mean_daily_flow      <span class="op">=</span>(<span class="st">"all_motor_vehicles"</span>, <span class="st">"mean"</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        mean_hgv_flow        <span class="op">=</span>(<span class="st">"all_hgvs"</span>,           <span class="st">"mean"</span>),</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        mean_hgv_share_pct   <span class="op">=</span>(<span class="st">"hgv_proportion"</span>,     <span class="kw">lambda</span> x: <span class="dv">100</span> <span class="op">*</span> x.mean()),</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        mean_heavy_share_pct <span class="op">=</span>(<span class="st">"heavy_vehicle_prop"</span>, <span class="kw">lambda</span> x: <span class="dv">100</span> <span class="op">*</span> x.mean()),</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">round</span>(<span class="dv">1</span>)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    .sort_values(<span class="st">"mean_daily_flow"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>display(summary)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>resids, resid_sq, preds, sums <span class="op">=</span> [], [], [], []</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> pred_val <span class="kw">in</span> np.arange(<span class="dv">0</span>, <span class="fl">4.1</span>, <span class="fl">0.2</span>):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    cond <span class="op">=</span> (yhat_count <span class="op">&gt;=</span> pred_val <span class="op">-</span> diff) <span class="op">&amp;</span> (yhat_count <span class="op">&lt;</span> pred_val <span class="op">+</span> diff)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    preds.append(pred_val)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    sums.append(cond.<span class="bu">sum</span>())</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    resids.append(<span class="bu">abs</span>(residual_count[cond]).mean())</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    resid_sq.append((residual_count[cond] <span class="op">**</span> <span class="dv">2</span>).mean())</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ax.plot(preds, resids, label<span class="op">=</span><span class="st">"MAE"</span>, color<span class="op">=</span>cols_rc[<span class="st">"continuous"</span>], marker<span class="op">=</span><span class="st">"o"</span>, markersize<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>ax.plot(preds, resid_sq, label<span class="op">=</span><span class="st">"MSE"</span>, color<span class="op">=</span>cols_rc[<span class="st">"continuous"</span>],</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        linestyle<span class="op">=</span><span class="st">"dashed"</span>, marker<span class="op">=</span><span class="st">"s"</span>, markersize<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>axR <span class="op">=</span> ax.twinx()</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>axR.plot(preds, np.array(sums) <span class="op">*</span> np.array(resid_sq),</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>         label<span class="op">=</span><span class="st">"Total squared-error contribution"</span>, color<span class="op">=</span>cols_rc[<span class="st">"count"</span>],</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>         linestyle<span class="op">=</span><span class="st">"dashed"</span>, marker<span class="op">=</span><span class="st">"&lt;"</span>, markersize<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Predicted value"</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Average residual / average squared residual"</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>axR.set_ylabel(<span class="st">"Total squared-error contribution (n × MSE)"</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Residual size and total error contribution vs predicted value"</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">"upper left"</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>axR.legend(loc<span class="op">=</span><span class="st">"upper right"</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>ax.grid()</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>axR.set_ybound(<span class="dv">0</span>)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>ax.set_ybound(<span class="dv">0</span>)</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div id="summary-table" class="cell-output cell-output-display">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">n_count_points</th>
-<th data-quarto-table-cell-role="th">mean_daily_flow</th>
-<th data-quarto-table-cell-role="th">mean_hgv_flow</th>
-<th data-quarto-table-cell-role="th">mean_hgv_share_pct</th>
-<th data-quarto-table-cell-role="th">mean_heavy_share_pct</th>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">road_type</th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">Major</th>
-<td>8293</td>
-<td>22166.7</td>
-<td>1381.2</td>
-<td>4.4</td>
-<td>19.5</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">Minor</th>
-<td>2322</td>
-<td>2865.8</td>
-<td>33.7</td>
-<td>1.8</td>
-<td>16.2</td>
-</tr>
-</tbody>
-</table>
-
+<div class="cell-output cell-output-display">
+<div id="mse-vs-predicted" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="count-models-explainer_files/figure-html/mse-vs-predicted-output-1.png" width="660" height="372" class="figure-img"></p>
+<figcaption>Average absolute error (MAE) and average squared error (MSE) for the count outcome, computed within narrow windows of predicted values. Both grow with the predicted value — variance is not constant. The right axis (dashed) shows the total squared-error contribution from each window, which peaks in the high-count tail despite those observations being rare. An MSE loss therefore steers parameter updates towards high-count outliers and away from the zero-heavy bulk of the data.</figcaption>
+</figure>
 </div>
 </div>
 </div>
-<div id="cell-estimation-method" class="cell" data-execution_count="6">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"estimation_method"</span> <span class="kw">in</span> aadf.columns:</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    est <span class="op">=</span> (</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        snap.groupby([<span class="st">"road_type"</span>, <span class="st">"estimation_method"</span>])</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        .size()</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        .unstack(fill_value<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    display(est)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div id="estimation-method" class="cell-output cell-output-display">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">estimation_method</th>
-<th data-quarto-table-cell-role="th">Counted</th>
-<th data-quarto-table-cell-role="th">Estimated</th>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">road_type</th>
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th"></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">Major</th>
-<td>1936</td>
-<td>6357</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">Minor</th>
-<td>1874</td>
-<td>448</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
-<hr>
-</section>
-<section id="variables-and-model-use" class="level2" data-number="8">
-<h2 data-number="8" class="anchored" data-anchor-id="variables-and-model-use"><span class="header-section-number">8</span> Variables and model use</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>AADF column</th>
-<th>Description</th>
-<th>Used in model</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>all_motor_vehicles</code></td>
-<td>Total motor vehicle daily flow</td>
-<td><code>log_motor_vehicles</code>, rate denominator</td>
-</tr>
-<tr class="even">
-<td><code>all_hgvs</code></td>
-<td>HGV daily flow</td>
-<td><code>log_hgv_daily</code></td>
-</tr>
-<tr class="odd">
-<td><code>hgv_proportion</code></td>
-<td>HGV share (0–1)</td>
-<td><code>hgv_pct_aadf</code></td>
-</tr>
-<tr class="even">
-<td><code>heavy_vehicle_prop</code></td>
-<td>All heavy vehicles (HGV + bus) share</td>
-<td>feature</td>
-</tr>
-<tr class="odd">
-<td><code>link_length_km</code></td>
-<td>Road link length</td>
-<td>rate denominator (veh-km)</td>
-</tr>
-<tr class="even">
-<td><code>road_type</code></td>
-<td>Motorway / A / B / minor</td>
-<td>ordinal encoding + flags</td>
-</tr>
-<tr class="odd">
-<td><code>estimation_method</code></td>
-<td>Counted vs modelled</td>
-<td>confidence flag (not currently used)</td>
-</tr>
-</tbody>
-</table>
-<p>The rate calculation in <code>features.py</code> is:</p>
-<pre><code>collision_rate_per_mvkm = collisions / (all_motor_vehicles × link_length_km × 365 / 1e6)</code></pre>
-<hr>
-</section>
-<section id="why-this-source-is-not-enough-on-its-own" class="level2" data-number="9">
-<h2 data-number="9" class="anchored" data-anchor-id="why-this-source-is-not-enough-on-its-own"><span class="header-section-number">9</span> Why this source is not enough on its own</h2>
-<p>AADF is the strongest directly observed traffic dataset in the pipeline, but it is still incomplete in three important ways:</p>
-<ul>
-<li>it is count-point based rather than full road-link coverage,</li>
-<li>it is stronger on major roads than local roads,</li>
-<li>and only a subset of years may be active in the current modelling workflow.</li>
-</ul>
-<p>That is why the project does not stop at joining AADF onto road links. Instead, AADF is used to support the traffic exposure model, which estimates AADT beyond the measured network. ***</p>
-</section>
-<section id="known-issues-and-limitations" class="level2" data-number="10">
-<h2 data-number="10" class="anchored" data-anchor-id="known-issues-and-limitations"><span class="header-section-number">10</span> Known issues and limitations</h2>
-<ul>
-<li><strong>Bidirectional aggregate</strong> — the clean AADF has flows summed across both directions. Directional analysis would require re-running the raw ingest.</li>
-<li><strong>Modelled vs counted flow</strong> — many minor-road AADFs are modelled from nearby counts. The <code>estimation_method</code> column indicates which. Modelled values are less reliable, particularly for HGV proportion.</li>
-<li><strong>Count point drift</strong> — count point locations occasionally move between years. The project uses nearest-neighbour spatial join rather than point ID matching to handle this, at the cost of some precision.</li>
-<li><strong>Temporal granularity</strong> — annual aggregates only. WebTRIS is required for any sub-annual analysis and covers only major roads.</li>
-<li><strong>COVID</strong> — 2020 flows are substantially suppressed. <code>is_covid</code> flag carried through the pipeline allows exclusion or separate modelling of these years.</li>
-</ul>
-<hr>
-</section>
-<section id="next-steps" class="level2" data-number="11">
-<h2 data-number="11" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">11</span> Next steps</h2>
-<p>AADF feeds into:</p>
-<ul>
-<li><code>join.py</code> → spatial nearest-neighbour onto OS Open Roads links (2km cap)</li>
-<li><code>features.py</code> → traffic volume and vehicle mix features</li>
-<li>collision rate denominator via <code>link_length_km × all_motor_vehicles × 365</code></li>
-</ul>
 
 
 </section>
