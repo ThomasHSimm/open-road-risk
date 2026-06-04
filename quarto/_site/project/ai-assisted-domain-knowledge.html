@@ -6,9 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2026-06-04">
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>Temporal Descriptors Evaluation – Open Road Risk</title>
+<title>A checkable literature review for Open Road Risk – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -85,11 +86,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Temporal Descriptors Evaluation – Open Road Risk">
-<meta property="og:description" content="Do link-level temporal descriptors improve Stage 2 XGBoost pseudo-R² enough to warrant production adoption?">
+<meta property="og:title" content="A checkable literature review for Open Road Risk – Open Road Risk">
+<meta property="og:description" content="A project note on using AI-assisted literature review without treating the model as an authority.">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Temporal Descriptors Evaluation – Open Road Risk">
-<meta name="twitter:description" content="Do link-level temporal descriptors improve Stage 2 XGBoost pseudo-R² enough to warrant production adoption?">
+<meta name="twitter:title" content="A checkable literature review for Open Road Risk – Open Road Risk">
+<meta name="twitter:description" content="A project note on using AI-assisted literature review without treating the model as an authority.">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -388,12 +389,26 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#question" id="toc-question" class="nav-link active" data-scroll-target="#question">Question</a></li>
-  <li><a href="#method" id="toc-method" class="nav-link" data-scroll-target="#method">Method</a></li>
-  <li><a href="#result" id="toc-result" class="nav-link" data-scroll-target="#result">Result</a></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
-  <li><a href="#what-is-missing-for-a-complete-revisit" id="toc-what-is-missing-for-a-complete-revisit" class="nav-link" data-scroll-target="#what-is-missing-for-a-complete-revisit">What is missing for a complete revisit</a></li>
-  <li><a href="#related-artefacts" id="toc-related-artefacts" class="nav-link" data-scroll-target="#related-artefacts">Related artefacts</a></li>
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link active" data-scroll-target="#the-problem">The problem</a></li>
+  <li><a href="#the-existing-field" id="toc-the-existing-field" class="nav-link" data-scroll-target="#the-existing-field">The existing field</a></li>
+  <li><a href="#the-case" id="toc-the-case" class="nav-link" data-scroll-target="#the-case">The case</a></li>
+  <li><a href="#the-method" id="toc-the-method" class="nav-link" data-scroll-target="#the-method">The method</a>
+  <ul class="collapse">
+  <li><a href="#one-source-at-a-time" id="toc-one-source-at-a-time" class="nav-link" data-scroll-target="#one-source-at-a-time">One source at a time</a></li>
+  <li><a href="#a-structured-evidence-record" id="toc-a-structured-evidence-record" class="nav-link" data-scroll-target="#a-structured-evidence-record">A structured evidence record</a></li>
+  <li><a href="#atomic-records-late-synthesis" id="toc-atomic-records-late-synthesis" class="nav-link" data-scroll-target="#atomic-records-late-synthesis">Atomic records, late synthesis</a></li>
+  <li><a href="#grounding-and-checking" id="toc-grounding-and-checking" class="nav-link" data-scroll-target="#grounding-and-checking">Grounding and checking</a></li>
+  <li><a href="#recorded-and-disclosed" id="toc-recorded-and-disclosed" class="nav-link" data-scroll-target="#recorded-and-disclosed">Recorded and disclosed</a></li>
+  </ul></li>
+  <li><a href="#what-changed" id="toc-what-changed" class="nav-link" data-scroll-target="#what-changed">What changed</a>
+  <ul class="collapse">
+  <li><a href="#catching-a-leak" id="toc-catching-a-leak" class="nav-link" data-scroll-target="#catching-a-leak">Catching a leak</a></li>
+  <li><a href="#avoiding-premature-model-escalation" id="toc-avoiding-premature-model-escalation" class="nav-link" data-scroll-target="#avoiding-premature-model-escalation">Avoiding premature model escalation</a></li>
+  </ul></li>
+  <li><a href="#what-the-workflow-gives-you" id="toc-what-the-workflow-gives-you" class="nav-link" data-scroll-target="#what-the-workflow-gives-you">What the workflow gives you</a></li>
+  <li><a href="#recommendations" id="toc-recommendations" class="nav-link" data-scroll-target="#recommendations">Recommendations</a></li>
+  <li><a href="#the-limit" id="toc-the-limit" class="nav-link" data-scroll-target="#the-limit">The limit</a></li>
+  <li><a href="#sources" id="toc-sources" class="nav-link" data-scroll-target="#sources">Sources</a></li>
   </ul>
 </nav>
     </div>
@@ -402,13 +417,18 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Temporal Descriptors Evaluation</h1>
-<p class="subtitle lead">Pre-registered ablation; both configurations failed the adoption threshold; parked.</p>
-</div>
+<h1 class="title">A checkable literature review for Open Road Risk</h1>
+<p class="subtitle lead">How AI-assisted extraction, source grounding and human review were used to build an auditable evidence base.</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">methods</div>
+    <div class="quarto-category">literature-review</div>
+    <div class="quarto-category">AI</div>
+  </div>
+  </div>
 
 <div>
   <div class="description">
-    Do link-level temporal descriptors improve Stage 2 XGBoost pseudo-R² enough to warrant production adoption?
+    A project note on using AI-assisted literature review without treating the model as an authority.
   </div>
 </div>
 
@@ -416,6 +436,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <div class="quarto-title-meta column-page-left">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 4, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -425,129 +451,187 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<p>The noise floor used to evaluate these results was established by the <a href="../investigations/rank-stability.html">rank stability harness</a>.</p>
-<p><em>Decision register entry: <a href="https://github.com/thomashsimm/open-road-risk/blob/main/docs/internal/decision-register.md">2026-05-03 — Temporal descriptors evaluation — real but below threshold; parked</a></em></p>
-<section id="question" class="level2">
-<h2 class="anchored" data-anchor-id="question">Question</h2>
-<p>Do link-level temporal descriptors (<code>core_overnight_ratio</code> and WebTRIS HGV%) improve Stage 2 XGBoost pseudo-R² enough to warrant production adoption?</p>
+<p>Open Road Risk needed a literature review that could do more than summarise papers. It needed an evidence base that could audit modelling decisions.</p>
+<p>The project estimates exposure-adjusted collision risk for around 2.17 million road links across northern and central England. That means the literature review has a practical job: establish what the road-safety modelling field already knows, identify where the project is aligned with that field, and expose where the modelling choices are weak, premature, or unsupported.</p>
+<p>AI helped with the labour of that review. It was useful for extracting, organising and comparing sources. But it was only useful when the outputs were made checkable.</p>
+<p>That is the central point of this note: AI-assisted literature review is not mainly a prompting problem. It is a domain-knowledge and verification problem.</p>
+<section id="the-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem">The problem</h2>
+<p>An ungrounded language model is a poor authority in a specialised field. It can summarise fluently, misread confidently and invent sources. That is not a reason to avoid AI-assisted review. It is a reason to design the review around verification.</p>
+<p>This is not a flaw that the next model removes; it is structural. A language model is trained to produce a <em>plausible</em> continuation, not a true one. OpenAI’s own analysis argues that hallucination is a predictable consequence of how models are trained and scored — they are rewarded for confident guessing over admitting uncertainty — and that it persists in state-of-the-art systems <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Attention over a long input is also finite and uneven: models use information best at the start and end of a document and measurably worse in the middle, even models built for long contexts <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. So newer models fabricate less, but they do not change the requirement to check. They lower the rate, not the risk — and they fail hardest exactly where it is hardest to notice.</p>
+<p>The measured rates illustrate the point rather than define it. On older models, Walters and Wilder (2023) found 55% of GPT-3.5 and 18% of GPT-4 bibliographic citations fabricated <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>; Chelli et al.&nbsp;(2024) found hallucination rates of roughly 29%–91% across models reproducing the references of existing systematic reviews <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. Those specific numbers will keep falling with each generation. What does not fall is the structural tendency, and it is worst in the specialised, less-covered corner of a field: fabrication runs higher on specialised topics than well-covered ones <a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>, and citation accuracy varies sharply by discipline <a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> — which is precisely the part you do not yet know well enough to check quickly.</p>
+<p>The answer is not to ask for a better summary. It is to stop treating the model as an authority. Each claim needs a source. Each extraction needs a limitation field. Each synthesis needs to remain traceable back to the source it came from.</p>
 </section>
-<section id="method" class="level2">
-<h2 class="anchored" data-anchor-id="method">Method</h2>
-<p>The evaluation reframed the existing temporal traffic work from full time-disaggregated exposure modelling into link-level descriptor testing. The question was deliberately narrow: do temporal descriptors add enough predictive signal to the annual Stage 2 XGBoost model to justify production complexity?</p>
-<p>The candidate descriptors were screened before the collision-model ablation:</p>
-<ul>
-<li><code>core_overnight_ratio</code>: daytime flow per hour during 07:00-18:59 divided by overnight flow per hour during 00:00-06:00;</li>
-<li>weekday/weekend ratio;</li>
-<li>monthly seasonal index;</li>
-<li>WebTRIS-derived HGV percentage.</li>
-</ul>
-<p>Weekday/weekend and seasonal descriptors were parked before ablation because WebTRIS showed those patterns were mostly global rather than link-specific at the available grain. <code>core_overnight_ratio</code> and WebTRIS HGV percentage had enough link-specific variation to test.</p>
-<p>The Stage 2 collision model was rerun across seeds 42-46 under three configurations:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Config</th>
-<th>Features</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>A</td>
-<td>Baseline</td>
-</tr>
-<tr class="even">
-<td>B</td>
-<td>Baseline + <code>core_overnight_ratio</code></td>
-</tr>
-<tr class="odd">
-<td>C</td>
-<td>Baseline + <code>core_overnight_ratio</code> + WebTRIS HGV%</td>
-</tr>
-</tbody>
-</table>
-<p>The pre-registered adoption rule required both:</p>
-<ul>
-<li>pseudo-R² improvement greater than 0.009 over baseline;</li>
-<li>test deviance reduction greater than 0.6%;</li>
-</ul>
-<p>with improvement on at least four of five seeds. The primary comparison excluded 737 held-out links that snapped directly to WebTRIS sites, because those links have mild leakage geometry between the temporal training data and the collision model test fold.</p>
+<section id="the-existing-field" class="level2">
+<h2 class="anchored" data-anchor-id="the-existing-field">The existing field</h2>
+<p>This is not a claim of methodological novelty. AI-assisted evidence synthesis already has a formal literature, especially in medicine and systematic review work.</p>
+<p>Studies now test LLMs for screening, extraction and review support, usually with human verification. Gartlehner et al.&nbsp;(2024) reported 96.3% extraction accuracy against human extraction in a proof-of-concept study <a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>. Schroeder et al.&nbsp;(2025), by contrast, found only 62%–72% consistency with human coding across three models and argued explicitly for human-in-the-loop validation <a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>. Other work reports useful time savings while still requiring human review and accountability <a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>.</p>
+<p>Reporting standards are also developing. TRIPOD-LLM and the proposed PRISMA-trAIce checklist formalise transparency, oversight and disclosure for AI-assisted reviews <a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a><a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>. The publishing norm is clear: AI may assist, but it cannot be an author or carry responsibility. Human authors remain accountable for the content <a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a>.</p>
+<p>So the contribution here is practical rather than novel: a transparent example of applying that discipline in a small, open, non-medical data-science project.</p>
 </section>
-<section id="result" class="level2">
-<h2 class="anchored" data-anchor-id="result">Result</h2>
-<p>Both tested descriptor configurations produced small, reproducible improvements, but neither cleared the pre-registered adoption threshold.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 21%">
-<col style="width: 28%">
-<col style="width: 28%">
-<col style="width: 21%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Config</th>
-<th style="text-align: right;">Pseudo-R² improvement</th>
-<th style="text-align: right;">Deviance reduction</th>
-<th>Verdict</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>B: <code>core_overnight_ratio</code></td>
-<td style="text-align: right;">0.0036-0.0045</td>
-<td style="text-align: right;">0.53%-0.66%</td>
-<td>Null</td>
-</tr>
-<tr class="even">
-<td>C: <code>core_overnight_ratio</code> + WebTRIS HGV%</td>
-<td style="text-align: right;">0.0056-0.0063</td>
-<td style="text-align: right;">0.82%-0.92%</td>
-<td>Null</td>
-</tr>
-</tbody>
-</table>
-<p>Configuration C was the stronger result. It improved pseudo-R² by about 0.006 and reduced deviance by about 0.85% across all five seeds. That is real signal: the descriptors are not redundant with the existing feature surface. But the pseudo-R² gain remained below the 0.009 adoption threshold on every seed, so the production decision remains parked.</p>
-<p>The result should be read as “real but below threshold”, not “no effect”. Operationally, the descriptors reshuffled rankings: top-1% Jaccard versus the baseline was about 0.764 for configuration B and 0.751 for configuration C. That movement is not enough to justify adoption without the stronger headline lift required by the pre-registered rule.</p>
-<p>Two supporting screening results explain the final scope:</p>
+<section id="the-case" class="level2">
+<h2 class="anchored" data-anchor-id="the-case">The case</h2>
+<p>Open Road Risk is built as an open project. The code, prompts, literature pages, evidence register and modelling documentation are all published alongside the work.</p>
+<p>The literature review was not treated as decoration. Its job was to check the project against the field:</p>
 <ul>
-<li><code>core_overnight_ratio</code> varies substantially across WebTRIS sites, with median 7.07 and 5th-95th percentile range 4.19-15.18.</li>
-<li>WebTRIS HGV percentage has meaningful site-level spread, with monthly across-site standard deviations around 6.50-8.17 percentage points.</li>
+<li>Are collision counts being modelled with appropriate count methods?</li>
+<li>Are exposure offsets being used correctly?</li>
+<li>Are model-validation choices defensible for sparse collision data?</li>
+<li>Are severe and slight collisions being handled honestly?</li>
+<li>Are spatial and network effects acknowledged rather than hidden?</li>
+<li>Are claims about risk calibrated to what the data can support?</li>
 </ul>
-<p>By contrast, weekday/weekend and seasonal patterns are useful as global descriptors but not as link-level annual-model features from the current WebTRIS data.</p>
+<p>In this project, the review also worked retrospectively. Some modelling had already been done before the literature record was mature. That made the review useful as an audit: it tested existing choices against established practice and exposed results that were too good to trust.</p>
 </section>
-<section id="limitations" class="level2">
-<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<ul>
-<li>WebTRIS sensors are concentrated on motorways and major A-roads. The lack of link-specific weekday/weekend or seasonal variation may reflect that monitored network, not all minor roads.</li>
-<li><code>core_overnight_ratio</code> predictions are higher than measured WebTRIS values at network scale: the applied model median is 9.09, while measured WebTRIS median is 7.07. This may be real minor-road behaviour, extrapolation, or both.</li>
-<li>Stage 2 already includes AADF-derived <code>hgv_proportion</code>. The WebTRIS HGV descriptor was only worth testing because it is a distinct traffic-composition measure; the marginal lift suggests overlap remains substantial.</li>
-<li>The leakage check found 737 held-out collision links that snap to WebTRIS sites. The primary result excluded them, but this confirms that temporal features need fold-aware handling if revisited.</li>
-<li>The conclusion applies to adding annual link-level descriptors to the current Stage 2 XGBoost model. It does not test a fully time-conditioned collision model or time-of-day-specific crash risk.</li>
-</ul>
+<section id="the-method" class="level2">
+<h2 class="anchored" data-anchor-id="the-method">The method</h2>
+<p>The method is a small pipeline of narrow AI-assisted steps feeding a structured evidence record, with human responsibility at each stage.</p>
+<section id="one-source-at-a-time" class="level3">
+<h3 class="anchored" data-anchor-id="one-source-at-a-time">One source at a time</h3>
+<p>Each extraction starts with one paper, report or technical source. The model is not asked to write a broad literature review from memory. It is asked to extract from a specific source.</p>
+<p>That matters because different stages fail in different ways. A prompt that searches, extracts, summarises and synthesises in one step can produce a clean-looking answer while hiding where the error entered. Splitting the work makes errors easier to find.</p>
+<p>The workflow is:</p>
+<ol type="1">
+<li>extract one source;</li>
+<li>record the claims and limitations;</li>
+<li>add the source to the evidence register;</li>
+<li>synthesise later, only when answering a specific question.</li>
+</ol>
 </section>
-<section id="what-is-missing-for-a-complete-revisit" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-missing-for-a-complete-revisit">What is missing for a complete revisit</h2>
-<p>The current investigation is complete for the scoped adoption decision. A future revisit would need new evidence, not just a rerun at the same threshold:</p>
+<section id="a-structured-evidence-record" class="level3">
+<h3 class="anchored" data-anchor-id="a-structured-evidence-record">A structured evidence record</h3>
+<p>Each source entry records:</p>
 <ul>
-<li>better validation of <code>core_overnight_ratio</code> predictions on minor roads, where WebTRIS has sparse coverage;</li>
-<li>fold-aligned temporal model training, so WebTRIS sites on collision-model held-out links cannot leak into descriptor predictions;</li>
-<li>a corrected or replaced corridor grouping in <code>temporal.py</code> if its corridor outputs are used directly;</li>
-<li>a decision on whether the project wants to lower the adoption threshold for small but reproducible gains;</li>
-<li>a broader design if the goal is temporal exposure conditioning rather than annual link-level descriptors.</li>
+<li>what the source studies;</li>
+<li>what methods it uses;</li>
+<li>what it claims;</li>
+<li>what evidence supports the claim;</li>
+<li>what it does not show;</li>
+<li>how transferable it is to Open Road Risk;</li>
+<li>whether the project needs to act on it.</li>
 </ul>
+<p>The limitation field is the most important part. It stops the literature record becoming a pile of positive-sounding summaries. A useful extraction does not only say “this paper supports X”. It also says whether the paper is junction-level, area-level or link-level; whether it uses open data; whether it models frequency, severity or both; whether it validates spatially; and whether its conclusions transfer to a UK road-link risk model.</p>
 </section>
-<section id="related-artefacts" class="level2">
-<h2 class="anchored" data-anchor-id="related-artefacts">Related artefacts</h2>
-<ul>
-<li><code>docs/internal/temporal_changes_plan.md</code></li>
-<li><code>reports/temporal_findings.md</code></li>
-<li><code>reports/supporting/temporal_ablation_summary.md</code></li>
-<li><code>todo/parked.md</code> (temporal entry)</li>
-</ul>
+<section id="atomic-records-late-synthesis" class="level3">
+<h3 class="anchored" data-anchor-id="atomic-records-late-synthesis">Atomic records, late synthesis</h3>
+<p>The record stays atomic: one entry per source.</p>
+<p>That is deliberately slower than asking for one neat summary. But early synthesis loses the detail needed later. If a model choice depends on whether a paper used a Poisson, negative-binomial, zero-inflated or spatial model, the original extraction needs to stay available. If a validation choice depends on whether a study used temporal holdout, spatial holdout or balanced accuracy, that detail cannot be flattened too early.</p>
+<p>The topic syntheses then draw from the source records. For example, the <a href="../literature/crash-frequency-models.html">crash-frequency model synthesis</a> sits on top of the individual paper extractions rather than replacing them.</p>
+</section>
+<section id="grounding-and-checking" class="level3">
+<h3 class="anchored" data-anchor-id="grounding-and-checking">Grounding and checking</h3>
+<p>Every important claim is grounded in a real source. Grounding does not make the model safe by itself: retrieval-augmented systems can still produce unsupported claims <a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a><a href="#fn14" class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a>. It makes the output checkable.</p>
+<p>The operating rule is simple:</p>
+<blockquote class="blockquote">
+<p>Treat unaided model claims as leads. Treat source-grounded claims as candidates. Treat checked claims as usable.</p>
+</blockquote>
+<p>For load-bearing claims, the citation has to resolve, the number has to match the source, and the interpretation has to survive re-reading. Important extractions are sometimes rerun with a second model as a second reader, but the second model is not treated as proof. It is a way to find disagreement.</p>
+<p>Verification can also be made quantitative rather than anecdotal. Holding out a small, human-checked gold-standard sample and scoring the AI extraction against it turns “I checked the important ones” into a measured agreement rate — the same move the evidence-synthesis studies above use to report extraction accuracy. But a score is not self-validating. A high number can mean the task was easy, the sample unrepresentative, or — as the modelling section shows — that something leaked. Benchmarks measure the gradeable part; they cannot tell you whether the thing being graded is the right thing. That judgement stays with the reader.</p>
+</section>
+<section id="recorded-and-disclosed" class="level3">
+<h3 class="anchored" data-anchor-id="recorded-and-disclosed">Recorded and disclosed</h3>
+<p>The prompts and AI-assisted steps are part of the project record. That matters because AI-assisted work should be auditable. It should be possible to see what was extracted, from where, and under what instruction.</p>
+<p>The disclosure is not a formality. It is part of the method. The model can assist with extraction, comparison and drafting, but the responsibility stays with the author.</p>
+</section>
+</section>
+<section id="what-changed" class="level2">
+<h2 class="anchored" data-anchor-id="what-changed">What changed</h2>
+<p>The evidence record did real work. It did not just support the project after the fact; it changed how results were interpreted.</p>
+<p>Two examples matter.</p>
+<section id="catching-a-leak" class="level3">
+<h3 class="anchored" data-anchor-id="catching-a-leak">Catching a leak</h3>
+<p>A headline model result came in implausibly high: a gradient-boosted model produced an XGBoost pseudo-R² of about <strong>0.86</strong>.</p>
+<p>That should have been suspicious. Injury-collision models at link-year grain are noisy, sparse and hard to predict. A result that high did not fit the expectations set by the literature. The evidence record made that mismatch visible.</p>
+<p>The audit found the problem: a heavy-goods-vehicle traffic feature had been joined so that it populated only the link-years that already contained collisions. That leaked the outcome into a predictor. The model was not discovering an unusually strong signal; it was being fed information it should not have had.</p>
+<p>After the join was fixed, the honest figure was about <strong>0.32</strong>. The XGBoost pseudo-R² was 0.323, and the Poisson GLM, at 0.347, slightly outperformed the boosted model once the leak was gone. The leak had been flattering the more complex model.</p>
+<p>That is exactly what a literature-backed audit should do. It gives you enough field expectation to question a result that looks too good.</p>
+<p>Details are documented on the <a href="../methodology/feature-engineering.html">feature-engineering page</a> and <a href="../analysis/model-results.html">model-results page</a>.</p>
+</section>
+<section id="avoiding-premature-model-escalation" class="level3">
+<h3 class="anchored" data-anchor-id="avoiding-premature-model-escalation">Avoiding premature model escalation</h3>
+<p>The literature record also stopped a more complex model from being adopted too early.</p>
+<p>Collision counts are often over-dispersed: they vary more than a simple Poisson model assumes. The road-safety literature has a standard response to that problem: negative-binomial models. The <a href="../literature/crash-frequency-models.html">count-model synthesis</a>, drawing on sources such as Lord and Mannering (2010) and Ver Hoef and Boveng (2007), made that clear.</p>
+<p>The project turned this into a pre-registered rule: move from a Poisson GLM to a negative-binomial GLM only if the Poisson over-dispersion ratio crossed <strong>1.5</strong>.</p>
+<p>The fitted value came in at about <strong>1.40</strong>. That is high enough to keep negative binomial on the books, but below the pre-set threshold for switching immediately. So the Poisson GLM was retained, and negative binomial was recorded as the next model-family move rather than adopted opportunistically.</p>
+<p>At the same time, empirical-Bayes shrinkage was added as a parallel ranking layer ((k )) for sparse link-level estimates, demoting high-AADT links with no observed collisions. It was adopted for that re-ranking behaviour rather than for stabilising the ranking — a cross-seed check found it did not reduce seed-induced ranking instability. A separate <a href="../investigations/zero-calibration.html">zero-calibration diagnostic</a> rejected the strict Poisson assumption, with (p ), which is why negative binomial remains the next planned escalation.</p>
+<p>The value of the evidence record here was restraint. It did not just say “the field uses negative binomial, therefore switch”. It supported a rule for when switching was justified.</p>
+</section>
+</section>
+<section id="what-the-workflow-gives-you" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-workflow-gives-you">What the workflow gives you</h2>
+<p>The workflow gives three things that a normal chatbot summary does not.</p>
+<p>First, it creates an audit trail. You can trace a modelling decision back to the sources that justify it, and to the sources that limit it.</p>
+<p>Second, it creates field expectations. That matters because model outputs are not self-interpreting. A pseudo-R² of 0.86 only looks impressive until the literature tells you it is implausible for the task.</p>
+<p>Third, it creates disciplined restraint. A model can always suggest a more complex method. The evidence record helps decide whether the complexity is justified now, justified later, or not justified at all.</p>
+</section>
+<section id="recommendations" class="level2">
+<h2 class="anchored" data-anchor-id="recommendations">Recommendations</h2>
+<p>The process is transferable beyond road-safety modelling.</p>
+<ol type="1">
+<li><strong>Set the scope yourself.</strong> The model can sort, extract and sharpen, but it should not decide what the review is for.</li>
+<li><strong>Use one narrow prompt per source.</strong> Do not ask the model to discover, extract and synthesise everything in one step.</li>
+<li><strong>Use a structured evidence record.</strong> Record claims, evidence, limitations and transferability.</li>
+<li><strong>Keep entries atomic.</strong> Synthesis should happen late, when you are answering a specific question.</li>
+<li><strong>Ground every claim in a real source.</strong> Treat unsupported model claims as leads, not facts.</li>
+<li><strong>Verify load-bearing claims manually.</strong> Check numbers, citations and interpretations against the original source.</li>
+<li><strong>Use the record as an audit tool.</strong> It should check existing work as well as inform new work.</li>
+<li><strong>Disclose the AI-assisted steps.</strong> The workflow should be visible enough that others can inspect it.</li>
+</ol>
+</section>
+<section id="the-limit" class="level2">
+<h2 class="anchored" data-anchor-id="the-limit">The limit</h2>
+<p>This is not the fastest way to use AI. It is slower than asking for a summary and pasting the answer.</p>
+<p>That is the cost of making the work defensible.</p>
+<p>The model does not provide expertise. It provides labour, pattern matching and a second pass over material that would otherwise be slow to organise. The expertise still has to be built by reading, checking, comparing and deciding what the evidence means for the project.</p>
+<p>Used this way, AI does not replace the literature review. It helps build a review that can be checked.</p>
+<p>For Open Road Risk, that was enough to make the literature record useful: it exposed a leaked result, constrained a model-family decision, and created an evidence base that the project can keep testing itself against.</p>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>AI-use disclosure
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This note, and the literature workflow it describes, used large language models for source extraction, drafting and review. The process was source-grounded and structured around per-source records, explicit limitations and human verification.</p>
+<p>All figures, claims and citations were checked by the author against the project’s source artefacts and, where relevant, against the original publications. Final responsibility for the content is the author’s.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="sources" class="level2">
+<h2 class="anchored" data-anchor-id="sources">Sources</h2>
+<p><strong>Further reading.</strong> On tools that productise parts of this workflow — including Elicit, Consensus, Undermind, Scite and SciSpace — see: <a href="https://www.buildmvpfast.com/articles/best-llms-2026-guide/scientific-research-ai" class="uri">https://www.buildmvpfast.com/articles/best-llms-2026-guide/scientific-research-ai</a></p>
+<p><strong>The project.</strong> Open Road Risk — code, pipeline and extraction prompts: <a href="https://github.com/ThomasHSimm/open-road-risk" class="uri">https://github.com/ThomasHSimm/open-road-risk</a> · literature-review pages and methodology: <a href="https://openroadrisk.org" class="uri">https://openroadrisk.org</a></p>
 
 
 </section>
 
-</main> <!-- /main -->
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Kalai, Nachum, Vempala &amp; Zhang (2025), <em>Why Language Models Hallucinate</em>, arXiv:2509.04664 (OpenAI) — argues hallucination is a predictable consequence of training and evaluation that reward confident guessing over abstaining, and that it persists in state-of-the-art models. <a href="https://arxiv.org/abs/2509.04664" class="uri">https://arxiv.org/abs/2509.04664</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Liu et al.&nbsp;(2024), <em>Lost in the Middle: How Language Models Use Long Contexts</em>, Transactions of the ACL 12:157–173 — models use information best at the start and end of the input context and degrade in the middle, even long-context models. <a href="https://aclanthology.org/2024.tacl-1.9/" class="uri">https://aclanthology.org/2024.tacl-1.9/</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Walters &amp; Wilder (2023), <em>Fabrication and errors in the bibliographic citations generated by ChatGPT</em>, Scientific Reports 13:14045 — 55% of GPT-3.5 and 18% of GPT-4 bibliographic citations fabricated. <a href="https://doi.org/10.1038/s41598-023-41032-5" class="uri">https://doi.org/10.1038/s41598-023-41032-5</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Chelli et al.&nbsp;(2024), <em>Hallucination Rates and Reference Accuracy of ChatGPT and Bard for Systematic Reviews</em>, JMIR 26:e53164 — hallucination rates 39.6% for GPT-3.5, 28.6% for GPT-4 and 91.4% for Bard when reproducing systematic-review references. <a href="https://www.jmir.org/2024/1/e53164" class="uri">https://www.jmir.org/2024/1/e53164</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Linardon et al.&nbsp;(2025), <em>Influence of Topic Familiarity and Prompt Specificity on Citation Fabrication in Mental Health Research Using Large Language Models</em>, JMIR Mental Health — fabrication worse on specialised topics. <a href="https://mental.jmir.org/2025/1/e80371" class="uri">https://mental.jmir.org/2025/1/e80371</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Mugaanyi et al.&nbsp;(2024), <em>Evaluation of Large Language Model Performance and Reliability for Citations and References in Scholarly Writing</em>, JMIR — citation and identifier accuracy varies sharply by discipline. <a href="https://www.jmir.org/2024/1/e52935" class="uri">https://www.jmir.org/2024/1/e52935</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Gartlehner et al.&nbsp;(2024), <em>Data extraction for evidence synthesis using a large language model: a proof-of-concept study</em>, Research Synthesis Methods 15(4):576–589 — Claude 2 at 96.3% extraction accuracy compared with human extraction. <a href="https://doi.org/10.1002/jrsm.1710" class="uri">https://doi.org/10.1002/jrsm.1710</a><a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Schroeder, Jaldi &amp; Zhang (2025), <em>Large Language Models with Human-In-The-Loop Validation for Systematic Review Data Extraction</em>, arXiv:2501.11840 (preprint) — 62%–72% consistency with human coding; argues for human-in-the-loop validation. <a href="https://arxiv.org/abs/2501.11840" class="uri">https://arxiv.org/abs/2501.11840</a><a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p><em>AI-Assisted Data Extraction With a Large Language Model: A Study Within Reviews</em>, Annals of Internal Medicine — AI-assisted extraction reported as 91.0% accurate while saving around 41 minutes per study; discusses the “second rater” pattern and TRIPOD-LLM reporting. <a href="https://www.acpjournals.org/doi/10.7326/ANNALS-25-00739" class="uri">https://www.acpjournals.org/doi/10.7326/ANNALS-25-00739</a><a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p><em>AI-Assisted Data Extraction With a Large Language Model: A Study Within Reviews</em>, Annals of Internal Medicine — AI-assisted extraction reported as 91.0% accurate while saving around 41 minutes per study; discusses the “second rater” pattern and TRIPOD-LLM reporting. <a href="https://www.acpjournals.org/doi/10.7326/ANNALS-25-00739" class="uri">https://www.acpjournals.org/doi/10.7326/ANNALS-25-00739</a><a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>Holst et al.&nbsp;(2025), <em>Transparent Reporting of AI in Systematic Literature Reviews: Development of the PRISMA-trAIce Checklist</em>, JMIR AI 4:e80247 — proposed checklist for reporting AI use in evidence synthesis. <a href="https://ai.jmir.org/2025/1/e80247" class="uri">https://ai.jmir.org/2025/1/e80247</a><a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p><em>Use of AI tools in the publishing process</em> (2026), Frontiers in Research Metrics and Analytics — summarises the ICMJE/COPE/WAME consensus: disclosure required, AI cannot be an author, and authors must verify output. <a href="https://www.frontiersin.org/journals/research-metrics-and-analytics/articles/10.3389/frma.2026.1740510/full" class="uri">https://www.frontiersin.org/journals/research-metrics-and-analytics/articles/10.3389/frma.2026.1740510/full</a><a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p><em>Retrieval-augmented generation</em> — overview of grounding model output in retrieved material to reduce hallucination and enable source verification. <a href="https://en.wikipedia.org/wiki/Retrieval-augmented_generation" class="uri">https://en.wikipedia.org/wiki/Retrieval-augmented_generation</a><a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p><em>Hallucination Mitigation for Retrieval-Augmented LLMs: A Review</em> (2025), Mathematics 13(5):856 — review noting that retrieval-augmented systems can still produce unsupported output. <a href="https://www.mdpi.com/2227-7390/13/5/856" class="uri">https://www.mdpi.com/2227-7390/13/5/856</a><a href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
