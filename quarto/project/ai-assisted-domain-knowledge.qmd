@@ -1,0 +1,219 @@
+---
+title: "A checkable literature review for Open Road Risk"
+subtitle: "How AI-assisted extraction, source grounding and human review were used to build an auditable evidence base."
+description: "A project note on using AI-assisted literature review without treating the model as an authority."
+date: 2026-06-04
+categories: [methods, literature-review, AI]
+toc: true
+---
+
+Open Road Risk needed a literature review that could do more than summarise papers. It needed an evidence base that could audit modelling decisions.
+
+The project estimates exposure-adjusted collision risk for around 2.17 million road links across northern and central England. That means the literature review has a practical job: establish what the road-safety modelling field already knows, identify where the project is aligned with that field, and expose where the modelling choices are weak, premature, or unsupported.
+
+AI helped with the labour of that review. It was useful for extracting, organising and comparing sources. But it was only useful when the outputs were made checkable.
+
+That is the central point of this note: AI-assisted literature review is not mainly a prompting problem. It is a domain-knowledge and verification problem.
+
+## The problem
+
+An ungrounded language model is a poor authority in a specialised field. It can summarise fluently, misread confidently and invent sources. That is not a reason to avoid AI-assisted review. It is a reason to design the review around verification.
+
+This is not a flaw that the next model removes; it is structural. A language model is trained to produce a *plausible* continuation, not a true one. OpenAI's own analysis argues that hallucination is a predictable consequence of how models are trained and scored — they are rewarded for confident guessing over admitting uncertainty — and that it persists in state-of-the-art systems [^12]. Attention over a long input is also finite and uneven: models use information best at the start and end of a document and measurably worse in the middle, even models built for long contexts [^13]. So newer models fabricate less, but they do not change the requirement to check. They lower the rate, not the risk — and they fail hardest exactly where it is hardest to notice.
+
+The measured rates illustrate the point rather than define it. On older models, Walters and Wilder (2023) found 55% of GPT-3.5 and 18% of GPT-4 bibliographic citations fabricated [^2]; Chelli et al. (2024) found hallucination rates of roughly 29%–91% across models reproducing the references of existing systematic reviews [^3]. Those specific numbers will keep falling with each generation. What does not fall is the structural tendency, and it is worst in the specialised, less-covered corner of a field: fabrication runs higher on specialised topics than well-covered ones [^1], and citation accuracy varies sharply by discipline [^4] — which is precisely the part you do not yet know well enough to check quickly.
+
+The answer is not to ask for a better summary. It is to stop treating the model as an authority. Each claim needs a source. Each extraction needs a limitation field. Each synthesis needs to remain traceable back to the source it came from.
+
+## The existing field
+
+This is not a claim of methodological novelty. AI-assisted evidence synthesis already has a formal literature, especially in medicine and systematic review work.
+
+Studies now test LLMs for screening, extraction and review support, usually with human verification. Gartlehner et al. (2024) reported 96.3% extraction accuracy against human extraction in a proof-of-concept study [^5]. Schroeder et al. (2025), by contrast, found only 62%–72% consistency with human coding across three models and argued explicitly for human-in-the-loop validation [^6]. Other work reports useful time savings while still requiring human review and accountability [^7].
+
+Reporting standards are also developing. TRIPOD-LLM and the proposed PRISMA-trAIce checklist formalise transparency, oversight and disclosure for AI-assisted reviews [^7][^8]. The publishing norm is clear: AI may assist, but it cannot be an author or carry responsibility. Human authors remain accountable for the content [^9].
+
+So the contribution here is practical rather than novel: a transparent example of applying that discipline in a small, open, non-medical data-science project.
+
+## The case
+
+Open Road Risk is built as an open project. The code, prompts, literature pages, evidence register and modelling documentation are all published alongside the work.
+
+The literature review was not treated as decoration. Its job was to check the project against the field:
+
+- Are collision counts being modelled with appropriate count methods?
+- Are exposure offsets being used correctly?
+- Are model-validation choices defensible for sparse collision data?
+- Are severe and slight collisions being handled honestly?
+- Are spatial and network effects acknowledged rather than hidden?
+- Are claims about risk calibrated to what the data can support?
+
+In this project, the review also worked retrospectively. Some modelling had already been done before the literature record was mature. That made the review useful as an audit: it tested existing choices against established practice and exposed results that were too good to trust.
+
+## The method
+
+The method is a small pipeline of narrow AI-assisted steps feeding a structured evidence record, with human responsibility at each stage.
+
+### One source at a time
+
+Each extraction starts with one paper, report or technical source. The model is not asked to write a broad literature review from memory. It is asked to extract from a specific source.
+
+That matters because different stages fail in different ways. A prompt that searches, extracts, summarises and synthesises in one step can produce a clean-looking answer while hiding where the error entered. Splitting the work makes errors easier to find.
+
+The workflow is:
+
+1. extract one source;
+2. record the claims and limitations;
+3. add the source to the evidence register;
+4. synthesise later, only when answering a specific question.
+
+### A structured evidence record
+
+Each source entry records:
+
+- what the source studies;
+- what methods it uses;
+- what it claims;
+- what evidence supports the claim;
+- what it does not show;
+- how transferable it is to Open Road Risk;
+- whether the project needs to act on it.
+
+The limitation field is the most important part. It stops the literature record becoming a pile of positive-sounding summaries. A useful extraction does not only say “this paper supports X”. It also says whether the paper is junction-level, area-level or link-level; whether it uses open data; whether it models frequency, severity or both; whether it validates spatially; and whether its conclusions transfer to a UK road-link risk model.
+
+### Atomic records, late synthesis
+
+The record stays atomic: one entry per source.
+
+That is deliberately slower than asking for one neat summary. But early synthesis loses the detail needed later. If a model choice depends on whether a paper used a Poisson, negative-binomial, zero-inflated or spatial model, the original extraction needs to stay available. If a validation choice depends on whether a study used temporal holdout, spatial holdout or balanced accuracy, that detail cannot be flattened too early.
+
+The topic syntheses then draw from the source records. For example, the [crash-frequency model synthesis](../literature/crash-frequency-models.qmd) sits on top of the individual paper extractions rather than replacing them.
+
+### Grounding and checking
+
+Every important claim is grounded in a real source. Grounding does not make the model safe by itself: retrieval-augmented systems can still produce unsupported claims [^10][^11]. It makes the output checkable.
+
+The operating rule is simple:
+
+> Treat unaided model claims as leads. Treat source-grounded claims as candidates. Treat checked claims as usable.
+
+For load-bearing claims, the citation has to resolve, the number has to match the source, and the interpretation has to survive re-reading. Important extractions are sometimes rerun with a second model as a second reader, but the second model is not treated as proof. It is a way to find disagreement.
+
+Verification can also be made quantitative rather than anecdotal. Holding out a small, human-checked gold-standard sample and scoring the AI extraction against it turns “I checked the important ones” into a measured agreement rate — the same move the evidence-synthesis studies above use to report extraction accuracy. But a score is not self-validating. A high number can mean the task was easy, the sample unrepresentative, or — as the modelling section shows — that something leaked. Benchmarks measure the gradeable part; they cannot tell you whether the thing being graded is the right thing. That judgement stays with the reader.
+
+### Recorded and disclosed
+
+The prompts and AI-assisted steps are part of the project record. That matters because AI-assisted work should be auditable. It should be possible to see what was extracted, from where, and under what instruction.
+
+The disclosure is not a formality. It is part of the method. The model can assist with extraction, comparison and drafting, but the responsibility stays with the author.
+
+## What changed
+
+The evidence record did real work. It did not just support the project after the fact; it changed how results were interpreted.
+
+Two examples matter.
+
+### Catching a leak
+
+A headline model result came in implausibly high: a gradient-boosted model produced an XGBoost pseudo-R² of about **0.86**.
+
+That should have been suspicious. Injury-collision models at link-year grain are noisy, sparse and hard to predict. A result that high did not fit the expectations set by the literature. The evidence record made that mismatch visible.
+
+The audit found the problem: a heavy-goods-vehicle traffic feature had been joined so that it populated only the link-years that already contained collisions. That leaked the outcome into a predictor. The model was not discovering an unusually strong signal; it was being fed information it should not have had.
+
+After the join was fixed, the honest figure was about **0.32**. The XGBoost pseudo-R² was 0.323, and the Poisson GLM, at 0.347, slightly outperformed the boosted model once the leak was gone. The leak had been flattering the more complex model.
+
+That is exactly what a literature-backed audit should do. It gives you enough field expectation to question a result that looks too good.
+
+Details are documented on the [feature-engineering page](../methodology/feature-engineering.qmd) and [model-results page](../analysis/model-results.qmd).
+
+### Avoiding premature model escalation
+
+The literature record also stopped a more complex model from being adopted too early.
+
+Collision counts are often over-dispersed: they vary more than a simple Poisson model assumes. The road-safety literature has a standard response to that problem: negative-binomial models. The [count-model synthesis](../literature/crash-frequency-models.qmd), drawing on sources such as Lord and Mannering (2010) and Ver Hoef and Boveng (2007), made that clear.
+
+The project turned this into a pre-registered rule: move from a Poisson GLM to a negative-binomial GLM only if the Poisson over-dispersion ratio crossed **1.5**.
+
+The fitted value came in at about **1.40**. That is high enough to keep negative binomial on the books, but below the pre-set threshold for switching immediately. So the Poisson GLM was retained, and negative binomial was recorded as the next model-family move rather than adopted opportunistically.
+
+At the same time, empirical-Bayes shrinkage was added as a parallel ranking layer (\(k \approx 3.45\)) for sparse link-level estimates, demoting high-AADT links with no observed collisions. It was adopted for that re-ranking behaviour rather than for stabilising the ranking — a cross-seed check found it did not reduce seed-induced ranking instability. A separate [zero-calibration diagnostic](../investigations/zero-calibration.qmd) rejected the strict Poisson assumption, with \(p \approx 0.000\), which is why negative binomial remains the next planned escalation.
+
+The value of the evidence record here was restraint. It did not just say “the field uses negative binomial, therefore switch”. It supported a rule for when switching was justified.
+
+## What the workflow gives you
+
+The workflow gives three things that a normal chatbot summary does not.
+
+First, it creates an audit trail. You can trace a modelling decision back to the sources that justify it, and to the sources that limit it.
+
+Second, it creates field expectations. That matters because model outputs are not self-interpreting. A pseudo-R² of 0.86 only looks impressive until the literature tells you it is implausible for the task.
+
+Third, it creates disciplined restraint. A model can always suggest a more complex method. The evidence record helps decide whether the complexity is justified now, justified later, or not justified at all.
+
+## Recommendations
+
+The process is transferable beyond road-safety modelling.
+
+1. **Set the scope yourself.** The model can sort, extract and sharpen, but it should not decide what the review is for.
+2. **Use one narrow prompt per source.** Do not ask the model to discover, extract and synthesise everything in one step.
+3. **Use a structured evidence record.** Record claims, evidence, limitations and transferability.
+4. **Keep entries atomic.** Synthesis should happen late, when you are answering a specific question.
+5. **Ground every claim in a real source.** Treat unsupported model claims as leads, not facts.
+6. **Verify load-bearing claims manually.** Check numbers, citations and interpretations against the original source.
+7. **Use the record as an audit tool.** It should check existing work as well as inform new work.
+8. **Disclose the AI-assisted steps.** The workflow should be visible enough that others can inspect it.
+
+## The limit
+
+This is not the fastest way to use AI. It is slower than asking for a summary and pasting the answer.
+
+That is the cost of making the work defensible.
+
+The model does not provide expertise. It provides labour, pattern matching and a second pass over material that would otherwise be slow to organise. The expertise still has to be built by reading, checking, comparing and deciding what the evidence means for the project.
+
+Used this way, AI does not replace the literature review. It helps build a review that can be checked.
+
+For Open Road Risk, that was enough to make the literature record useful: it exposed a leaked result, constrained a model-family decision, and created an evidence base that the project can keep testing itself against.
+
+---
+
+::: {.callout-tip collapse="true"}
+## AI-use disclosure
+
+This note, and the literature workflow it describes, used large language models for source extraction, drafting and review. The process was source-grounded and structured around per-source records, explicit limitations and human verification.
+
+All figures, claims and citations were checked by the author against the project's source artefacts and, where relevant, against the original publications. Final responsibility for the content is the author's.
+:::
+
+## Sources
+
+[^1]: Linardon et al. (2025), *Influence of Topic Familiarity and Prompt Specificity on Citation Fabrication in Mental Health Research Using Large Language Models*, JMIR Mental Health — fabrication worse on specialised topics. <https://mental.jmir.org/2025/1/e80371>
+
+[^2]: Walters & Wilder (2023), *Fabrication and errors in the bibliographic citations generated by ChatGPT*, Scientific Reports 13:14045 — 55% of GPT-3.5 and 18% of GPT-4 bibliographic citations fabricated. <https://doi.org/10.1038/s41598-023-41032-5>
+
+[^3]: Chelli et al. (2024), *Hallucination Rates and Reference Accuracy of ChatGPT and Bard for Systematic Reviews*, JMIR 26:e53164 — hallucination rates 39.6% for GPT-3.5, 28.6% for GPT-4 and 91.4% for Bard when reproducing systematic-review references. <https://www.jmir.org/2024/1/e53164>
+
+[^4]: Mugaanyi et al. (2024), *Evaluation of Large Language Model Performance and Reliability for Citations and References in Scholarly Writing*, JMIR — citation and identifier accuracy varies sharply by discipline. <https://www.jmir.org/2024/1/e52935>
+
+[^5]: Gartlehner et al. (2024), *Data extraction for evidence synthesis using a large language model: a proof-of-concept study*, Research Synthesis Methods 15(4):576–589 — Claude 2 at 96.3% extraction accuracy compared with human extraction. <https://doi.org/10.1002/jrsm.1710>
+
+[^6]: Schroeder, Jaldi & Zhang (2025), *Large Language Models with Human-In-The-Loop Validation for Systematic Review Data Extraction*, arXiv:2501.11840 (preprint) — 62%–72% consistency with human coding; argues for human-in-the-loop validation. <https://arxiv.org/abs/2501.11840>
+
+[^7]: *AI-Assisted Data Extraction With a Large Language Model: A Study Within Reviews*, Annals of Internal Medicine — AI-assisted extraction reported as 91.0% accurate while saving around 41 minutes per study; discusses the “second rater” pattern and TRIPOD-LLM reporting. <https://www.acpjournals.org/doi/10.7326/ANNALS-25-00739>
+
+[^8]: Holst et al. (2025), *Transparent Reporting of AI in Systematic Literature Reviews: Development of the PRISMA-trAIce Checklist*, JMIR AI 4:e80247 — proposed checklist for reporting AI use in evidence synthesis. <https://ai.jmir.org/2025/1/e80247>
+
+[^9]: *Use of AI tools in the publishing process* (2026), Frontiers in Research Metrics and Analytics — summarises the ICMJE/COPE/WAME consensus: disclosure required, AI cannot be an author, and authors must verify output. <https://www.frontiersin.org/journals/research-metrics-and-analytics/articles/10.3389/frma.2026.1740510/full>
+
+[^10]: *Retrieval-augmented generation* — overview of grounding model output in retrieved material to reduce hallucination and enable source verification. <https://en.wikipedia.org/wiki/Retrieval-augmented_generation>
+
+[^11]: *Hallucination Mitigation for Retrieval-Augmented LLMs: A Review* (2025), Mathematics 13(5):856 — review noting that retrieval-augmented systems can still produce unsupported output. <https://www.mdpi.com/2227-7390/13/5/856>
+
+[^12]: Kalai, Nachum, Vempala & Zhang (2025), *Why Language Models Hallucinate*, arXiv:2509.04664 (OpenAI) — argues hallucination is a predictable consequence of training and evaluation that reward confident guessing over abstaining, and that it persists in state-of-the-art models. <https://arxiv.org/abs/2509.04664>
+
+[^13]: Liu et al. (2024), *Lost in the Middle: How Language Models Use Long Contexts*, Transactions of the ACL 12:157–173 — models use information best at the start and end of the input context and degrade in the middle, even long-context models. <https://aclanthology.org/2024.tacl-1.9/>
+
+**Further reading.** On tools that productise parts of this workflow — including Elicit, Consensus, Undermind, Scite and SciSpace — see: <https://www.buildmvpfast.com/articles/best-llms-2026-guide/scientific-research-ai>
+
+**The project.** Open Road Risk — code, pipeline and extraction prompts: <https://github.com/ThomasHSimm/open-road-risk> · literature-review pages and methodology: <https://openroadrisk.org>
