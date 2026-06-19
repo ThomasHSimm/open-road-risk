@@ -151,10 +151,6 @@ background-size: cover;
     <a class="dropdown-item" href="./project/ai-assisted-development.html">
  <span class="dropdown-text">AI-assisted development</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="./project/ai-assisted-domain-knowledge.html">
- <span class="dropdown-text">AI-assisted domain knowledge</span></a>
-  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -501,7 +497,7 @@ background-size: cover;
 <p><strong>What it is:</strong> Replace all-injury collision count as the production target with severity-weighted count — fatal-only, KSI (Killed or Seriously Injured), or a social-cost weighting. Rank links by expected KSI rather than expected all-injury collisions.</p>
 <p><strong>Why it’s interesting:</strong> For intervention prioritisation, harm matters more than count. A link with many slight-injury collisions may rank below a link with one fatality under severity weighting. Relevant UK literature includes two-stage mixed multivariate frequency-severity modelling on UK motorway data (see Wang/Quddus/Ison-era work — verify specific citations before use; see note in <code>TODO.md</code> → Citation verification). FHWA/HSM methodology also treats severity-weighted screening as standard for intervention-led deployments.</p>
 <p><strong>Why not now:</strong> Unclear whether stakeholders want severity-weighted ranking. Some safety-team workflows are anchored on all-injury counts for operational reasons (council reporting, consistency with DfT summary statistics). Also: KSI counts at link grain are sparse — likely requires shrinkage or composite social-cost weighting rather than a fatal-only cut. Decision is partly user-research, not just modelling.</p>
-<p><strong>Good starting point for someone else:</strong> - Scope conversation: which severity weighting matches the end-use case (DVSA? Local authority safety teams? National Highways?). - DfT publishes a social-cost-per-casualty table alongside road safety statistics — use those weights as a defensible starting point. - Fit a parallel Stage 2 model with DfT social-cost weights as target. - Compare ranking to current all-injury ranking; identify links that shift substantially between the two.</p>
+<p><strong>Good starting point for someone else:</strong> - Scope conversation: which severity weighting matches the end-use case — local authority safety teams, strategic road operators, or wider road-safety stakeholders? - DfT publishes a social-cost-per-casualty table alongside road safety statistics — use those weights as a defensible starting point. - Fit a parallel Stage 2 model with DfT social-cost weights as target. - Compare ranking to current all-injury ranking; identify links that shift substantially between the two.</p>
 <p><strong>Related:</strong> Facility-family split (see <code>TODO.md</code> → Queued tasks) would help here — severity modelling is noisier on minor roads where KSI events are rare, and a per-family model could use different severity treatments per class.</p>
 <hr>
 </section>
