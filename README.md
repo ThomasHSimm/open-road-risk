@@ -18,6 +18,8 @@ including the large share of roads without direct traffic counters.
 
 This project was developed with substantial AI assistance under human direction and review. See the project pages for details on the [AI-assisted development methodology](https://openroadrisk.org/project/ai-assisted-development.html).
 
+Open Road Risk is an independent personal research and software project. It uses public/open datasets and is not produced by, endorsed by, or representative of DfT, National Highways, DVSA, Ordnance Survey, Office for National Statistics, or any other public body.
+
 ---
 
 ## What this builds
