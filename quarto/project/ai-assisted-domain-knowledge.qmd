@@ -1,7 +1,7 @@
 ---
 title: "A checkable literature review for Open Road Risk"
 subtitle: "How AI-assisted extraction, source grounding and human review were used to build an auditable evidence base."
-description: "A project note on using AI-assisted literature review without treating the model as an authority."
+description: "A site methods note on using AI-assisted literature review without treating the model as an authority."
 date: 2026-06-04
 categories: [methods, literature-review, AI]
 toc: true
@@ -14,6 +14,14 @@ The project estimates exposure-adjusted collision risk for around 2.17 million r
 AI helped with the labour of that review. It was useful for extracting, organising and comparing sources. But it was only useful when the outputs were made checkable.
 
 That is the central point of this note: AI-assisted literature review is not mainly a prompting problem. It is a domain-knowledge and verification problem.
+
+::: {.callout-note}
+## How to read this page
+
+This is a project methods note, not a formal systematic review and not a product review of AI research tools. It explains how Open Road Risk used AI to help build a checkable literature record, and where human judgement still had to sit in the workflow.
+
+The page is included on the project site because it only makes full sense alongside the published evidence register, extraction prompts, modelling notes and code. The aim is not to show that one AI system is reliable. It is to show how a workflow can remain inspectable even when the tools used to support it change.
+:::
 
 ## The problem
 
@@ -67,9 +75,25 @@ The workflow is:
 3. add the source to the evidence register;
 4. synthesise later, only when answering a specific question.
 
+### Human acquisition as a verification step
+
+In practice, source-grounded review did not mean that the AI could fetch everything itself. A lot of useful material was not available as clean text to a model. Some papers and reports were reachable to a person but difficult to extract automatically because of publisher pages, redirects, PDF viewers, login flows, bot checks or other access friction. That could happen even when the source was nominally open access.
+
+That friction was irritating, but it also had methodological value. It forced a human step at the point where it mattered most: deciding whether the source was real, relevant, accessible and worth adding to the evidence record. The file itself became part of the audit trail. Without a defined source file, stable URL or recorded extraction target, it is difficult to pass the same material to another model, rerun the extraction, or check whether a later summary was based on the actual source rather than a plausible description of it.
+
+So the workflow treated source acquisition as part of verification, not just administration. The human had to find the paper or report, open it, scan whether it was the right thing, and only then use AI to extract from it. That step slowed the process down, but it also reduced the chance of building an evidence record around sources that were irrelevant, misidentified, inaccessible, or did not exist.
+
+### Tools are useful, but they do not replace the workflow
+
+This workflow sits alongside a growing set of AI-assisted research tools. General research agents, such as ChatGPT Deep Research, are useful for broad discovery and synthesis because they can search across online sources, work with uploaded files and produce cited reports [^14]. Literature-specific systems, such as Elicit or Undermind, build more of the literature-review process into the product: paper search, screening, extraction, report generation, source libraries and citation-backed claims [^15][^16]. Other tools support adjacent parts of the process: Semantic Scholar and Litmaps help discover and map literature, while citation tools such as scite help inspect how papers are cited by later work [^17][^18][^19].
+
+Those tools are useful, but they do not remove the central problem. They can still return plausible but wrong answers, miss inaccessible sources, over-rely on abstracts, or summarise from material that the reviewer has not actually checked. Deep Research is a good example: it is often helpful for broad exploration, but OpenAI also notes that it can still hallucinate facts, make incorrect inferences, struggle to distinguish authoritative information from rumours, and fail to convey uncertainty accurately [^20].
+
+The distinction in this project was therefore not “which AI tool is best”. It was whether the workflow left a checkable chain: source identified, file acquired, prompt recorded, extraction kept atomic, claim linked to evidence, limitation recorded, synthesis delayed. A tool can support that chain, but it should not replace it.
+
 ### A structured evidence record
 
-Each source entry records:
+Once a source has been acquired and selected, each evidence-record entry records:
 
 - what the source studies;
 - what methods it uses;
@@ -143,7 +167,7 @@ The value of the evidence record here was restraint. It did not just say “the 
 
 ## What the workflow gives you
 
-The workflow gives three things that a normal chatbot summary does not.
+The workflow gives four things that a normal chatbot summary does not.
 
 First, it creates an audit trail. You can trace a modelling decision back to the sources that justify it, and to the sources that limit it.
 
@@ -151,28 +175,33 @@ Second, it creates field expectations. That matters because model outputs are no
 
 Third, it creates disciplined restraint. A model can always suggest a more complex method. The evidence record helps decide whether the complexity is justified now, justified later, or not justified at all.
 
+Fourth, it separates tool usefulness from evidence quality. A research agent can help find, summarise or compare sources, but the durable evidence is the source artefact, the extraction prompt, the recorded output, the limitation note and the later check against the original material.
+
 ## Recommendations
 
 The process is transferable beyond road-safety modelling.
 
 1. **Set the scope yourself.** The model can sort, extract and sharpen, but it should not decide what the review is for.
-2. **Use one narrow prompt per source.** Do not ask the model to discover, extract and synthesise everything in one step.
-3. **Use a structured evidence record.** Record claims, evidence, limitations and transferability.
-4. **Keep entries atomic.** Synthesis should happen late, when you are answering a specific question.
-5. **Ground every claim in a real source.** Treat unsupported model claims as leads, not facts.
-6. **Verify load-bearing claims manually.** Check numbers, citations and interpretations against the original source.
-7. **Use the record as an audit tool.** It should check existing work as well as inform new work.
-8. **Disclose the AI-assisted steps.** The workflow should be visible enough that others can inspect it.
+2. **Use tools for bounded jobs.** Use research agents, search tools and citation tools for discovery, screening or comparison; do not treat their final report as the evidence record.
+3. **Use one narrow prompt per source.** Do not ask the model to discover, extract and synthesise everything in one step.
+4. **Acquire the source yourself.** Treat finding, opening and sanity-checking the paper or report as part of the review, not as clerical work to avoid.
+5. **Keep the source artefact defined.** Record the file, URL or extraction target clearly enough that the same source can be passed to another model or checked by a person later.
+6. **Use a structured evidence record.** Record claims, evidence, limitations and transferability.
+7. **Keep entries atomic.** Synthesis should happen late, when you are answering a specific question.
+8. **Ground every claim in a real source.** Treat unsupported model claims as leads, not facts.
+9. **Verify load-bearing claims manually.** Check numbers, citations and interpretations against the original source.
+10. **Use the record as an audit tool.** It should check existing work as well as inform new work.
+11. **Disclose the AI-assisted steps.** The workflow should be visible enough that others can inspect it.
 
 ## The limit
 
-This is not the fastest way to use AI. It is slower than asking for a summary and pasting the answer.
+This is not the fastest way to use AI. It is slower than asking for a summary and pasting the answer. It is slower again when a person has to find the source file, check that it is the right source, and make it available as an artefact before extraction.
 
 That is the cost of making the work defensible.
 
-The model does not provide expertise. It provides labour, pattern matching and a second pass over material that would otherwise be slow to organise. The expertise still has to be built by reading, checking, comparing and deciding what the evidence means for the project.
+The model does not provide expertise. Nor does a specialised research tool, by itself. These systems provide search, labour, pattern matching and a second pass over material that would otherwise be slow to organise. The expertise still has to be built by reading, checking, comparing and deciding what the evidence means for the project.
 
-Used this way, AI does not replace the literature review. It helps build a review that can be checked.
+Used this way, AI does not replace the literature review. It helps build a review that can be checked. The point is not to find a tool that removes human judgement; it is to design the workflow so that human judgement is applied at the points where failure would matter.
 
 For Open Road Risk, that was enough to make the literature record useful: it exposed a leaked result, constrained a model-family decision, and created an evidence base that the project can keep testing itself against.
 
@@ -181,7 +210,7 @@ For Open Road Risk, that was enough to make the literature record useful: it exp
 ::: {.callout-tip collapse="true"}
 ## AI-use disclosure
 
-This note, and the literature workflow it describes, used large language models for source extraction, drafting and review. The process was source-grounded and structured around per-source records, explicit limitations and human verification.
+This note, and the literature workflow it describes, used large language models for source extraction, drafting and review. Other AI-assisted research tools were considered as context, but the project method was not built around any single product. The process was source-grounded and structured around per-source records, explicit limitations, defined source artefacts and human verification.
 
 All figures, claims and citations were checked by the author against the project's source artefacts and, where relevant, against the original publications. Final responsibility for the content is the author's.
 :::
@@ -214,6 +243,20 @@ All figures, claims and citations were checked by the author against the project
 
 [^13]: Liu et al. (2024), *Lost in the Middle: How Language Models Use Long Contexts*, Transactions of the ACL 12:157–173 — models use information best at the start and end of the input context and degrade in the middle, even long-context models. <https://aclanthology.org/2024.tacl-1.9/>
 
-**Further reading.** On tools that productise parts of this workflow — including Elicit, Consensus, Undermind, Scite and SciSpace — see: <https://www.buildmvpfast.com/articles/best-llms-2026-guide/scientific-research-ai>
+[^14]: OpenAI Help Center (2026), *Deep research in ChatGPT* — describes Deep Research as a tool for planning, researching and synthesising complex questions into a documented report using web sources, uploaded files and connected apps. <https://help.openai.com/en/articles/10500283-deep-research-faq>
+
+[^15]: Elicit (2026), *AI for Scientific Research* — describes academic search, research reports, systematic-review support, source libraries and sentence-level citations. <https://elicit.com/>
+
+[^16]: Undermind (2026), *Your AI co-researcher for the literature* — describes literature search, report iteration, full-text work, alerts and traceable inline citations. <https://www.undermind.ai/>
+
+[^17]: Semantic Scholar (2026), *AI-Powered Research Tool* — describes a free AI-powered scientific-literature search service and API. <https://www.semanticscholar.org/>
+
+[^18]: Litmaps (2026), *Literature review software for better research* — describes discovery, visualisation, collaboration and monitoring tools for scientific literature. <https://www.litmaps.com/>
+
+[^19]: Scite.ai — citation-context tool that classifies citations as supporting, contradicting or mentioning a claim. <https://scite.ai/>
+
+[^20]: OpenAI (2025), *Introducing deep research* — notes that Deep Research can still hallucinate facts, make incorrect inferences, struggle to distinguish authoritative information from rumours, and fail to convey uncertainty accurately. <https://openai.com/index/introducing-deep-research/>
+
+**Further reading.** On tools that productise parts of this workflow, start with the official product documentation for Elicit, Undermind, Semantic Scholar, Litmaps and scite rather than relying on comparison-list articles, which date quickly.
 
 **The project.** Open Road Risk — code, pipeline and extraction prompts: <https://github.com/ThomasHSimm/open-road-risk> · literature-review pages and methodology: <https://openroadrisk.org>
