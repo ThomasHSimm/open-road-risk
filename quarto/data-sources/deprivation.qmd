@@ -63,17 +63,15 @@ a judgement call rather than a guarantee of zero contamination.
 - Because deciles are a *relative* national ranking, they cannot be compared
   across editions or against the Welsh/Scottish indices.
 
-## Feature provenance
+## Provenance
 
-::: {.callout-note}
-## File 7 check
-
-`imd_living_indoor_decile` is read directly from the local MHCLG File 7 CSV:
-`File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv`. The
-feature builder requires the published `Indoors Sub-domain Decile (where 1 is
-most deprived 10% of LSOAs)` column and fails fast if it is absent. It is not
-derived locally by ranking the Indoors sub-domain score.
-:::
+All three deciles are read directly from MHCLG **File 7**
+(`File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv`), which
+carries the `Indoors Sub-domain Decile` column alongside the overall IMD and
+domain deciles — so the Indoors decile is taken as published, not re-derived from
+a sub-domain score. The feature builder (`src/road_risk/features/network.py`)
+fails fast if that column is absent, so a silently missing decile cannot pass
+through unnoticed.
 
 ## Role in the pipeline
 

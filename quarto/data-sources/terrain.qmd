@@ -1,0 +1,205 @@
+---
+title: "OS Terrain 50 — Road Gradient"
+description: "Source notes for OS Terrain 50 elevation data and the link-level grade features derived from it, including the DTM structure limitation affecting bridges, tunnels, and grade-separated slip roads."
+format:
+    html:
+        toc: true
+        toc-depth: 3
+        number-sections: true
+        code-fold: true
+        page-layout: full
+execute:
+    echo: true
+    warning: false
+    message: false
+jupyter: python3
+---
+
+## Why this matters
+
+::: {.callout-note}
+Gradient is a **contextual geometry feature**, not an outcome or exposure source.
+It pairs with the curvature features to give the model some signal on
+geometric-alignment risk, which the rest of the feature set does not capture. Its
+individual contribution is expected to be modest; this page exists mainly to be
+honest about a known limitation in how grade is currently built.
+:::
+
+Steep gradients affect stopping distance, HGV behaviour, and overtaking, so
+link-level grade is a plausible road-safety predictor. The challenge is that the
+only open national elevation product at usable resolution is a **bare-earth
+terrain model**, which does not know where roads are carried above or below the
+ground — and that creates wrong gradient values exactly on the structures where
+they would otherwise be most informative.
+
+## What OS Terrain 50 is
+
+- **Publisher:** Ordnance Survey, *OS Terrain 50* (OpenData).
+- **Licence:** Open Government Licence v3.0.
+- **Product:** a 50 m bare-earth **Digital Terrain Model** (DTM) on a regular
+  grid, distributed as ASCII grid tiles (the GeoPackage variant is the contour
+  product and is **not** used here).
+- **Accuracy:** ~4 m RMSE on heights, 50 m cell spacing. This makes derived grade
+  **rank-preserving and amplitude-conservative** — usable for relative ordering,
+  not for precise per-link gradient.
+
+## How grade is derived
+
+The grade builder (`src/road_risk/features/road_terrain.py`) samples the DTM along
+each road link and computes slope magnitudes:
+
+- A VRT is built over the Terrain 50 tiles and sampled by **bilinear
+  interpolation** (not nearest-neighbour, which produces edge artefacts on a 50 m
+  grid).
+- Heights are sampled at the same 15 m point spacing as the curvature features,
+  but slope is computed over a **45–60 m effective baseline** (3–4 sample steps),
+  because a 50 m DEM does not support 15 m-resolution slope.
+- Features are **magnitudes, not signed values** (link direction is often
+  arbitrary): `mean_grade` (length-weighted absolute), `max_grade`, and
+  `grade_change`.
+
+## The structure limitation
+
+::: {.callout-warning}
+## No structure correction is applied in the current build
+
+A bare-earth DTM reports **ground level beneath bridges and slip roads, and the
+surface above tunnels** — so any link carried over or under the ground gets a
+gradient that reflects the terrain, not the road. The builder contains a
+structure-handling path (an OSM bridge/tunnel/covered proxy with an endpoint
+fallback), but in the **current** `network_features.parquet` that path is
+inactive:
+
+- The OSM structure file the proxy depends on is **not present**, so every
+  structure flag is false and **every link falls back to the raw DTM-profile
+  method**.
+- Grade-separated **slip roads are not wired into the fallback mask at all**, even
+  when the structure file is present.
+
+The result is that grade on bridge, tunnel, and slip-road links may be physically
+wrong, with no correction currently applied to any of them. Because the method
+used is recorded per link (`grade_method`), this degradation is **auditable in the
+data** and would be corrected automatically on a future run with the structure
+file in place.
+:::
+
+The chunk below reports the as-built state directly from the feature table.
+
+```{python}
+#| label: grade-structure-status
+#| code-fold: show
+
+import pandas as pd
+from road_risk.config import _ROOT
+
+feat_path = _ROOT / "data/features/network_features.parquet"
+cols = ["grade_method", "mean_grade",
+        "is_bridge_proxy", "is_tunnel_proxy", "is_covered_proxy"]
+
+feat = pd.read_parquet(feat_path, columns=[c for c in cols if c])
+
+print(f"Links in feature table : {len(feat):,}\n")
+
+if "grade_method" in feat:
+    print("grade_method distribution:")
+    print(feat["grade_method"].value_counts(dropna=False).to_string())
+
+for flag in ["is_bridge_proxy", "is_tunnel_proxy", "is_covered_proxy"]:
+    if flag in feat:
+        print(f"\n{flag:18s}: {int(feat[flag].sum()):,} flagged")
+
+if "mean_grade" in feat:
+    n_null = feat["mean_grade"].isna().sum()
+    print(f"\nmean_grade missing      : {n_null:,} "
+          f"({100 * n_null / len(feat):.2f}%)")
+```
+
+As verified on the current local build: `grade_method` is `profile` for all
+2,167,557 links, all three structure proxies are empty, and the 12,234 OS Open
+Roads slip-road links (~0.56% of the network) likewise carry uncorrected
+profile-method grade, with `mean_grade` present on 10,325 of them.
+
+::: {.callout-note collapse="true"}
+## Implication for the risk model — measured
+
+`mean_grade` is live in Stage 2 but a **weak feature**: XGBoost gain around 0.02,
+rank 16 of 26, below the ~0.038 share it would hold if importance were uniform. It
+cannot move the overall ranking much, so this is a feature-quality caveat, not a
+project-positioning issue.
+
+Slip roads are over-represented in the top 1% risk set — roughly 2.2% of it versus
+0.56% of the network — but that enrichment is **expected regardless of the grade
+defect**: slip roads are the diverge/merge points of grade-separated junctions and
+carry genuine collision exposure. The wrong grade values are most likely riding
+along on those links rather than driving their rank. Genuine bridges and tunnels
+in the high-risk tail remain **unquantified**, because none are flagged anywhere
+(the OSM structure file is absent), so their absence from the count is blindness,
+not evidence.
+
+A direct test, if the slip-road question ever surfaces in review: null
+`mean_grade` on slip roads and re-score — few of the affected links leaving the
+top 1% means the defect is cosmetic; many leaving means grade is locally
+load-bearing on exactly the defective links. Not needed for this documentation.
+:::
+
+```{python}
+#| label: grade-impact
+#| code-fold: show
+
+import json
+import pandas as pd
+from road_risk.config import _ROOT as ROOT
+
+# Fallback, stamped to the current build, used only if artefacts are absent.
+STAMP = ("Current build: mean_grade XGBoost importance 0.0199 (rank 16/26); "
+         "slip roads 484/21,676 = 2.23% of the top 1% risk set vs 0.56% of the "
+         "network; bridge/tunnel/covered links unquantified (none flagged — OSM "
+         "structure file absent).")
+
+try:
+    with open(ROOT / "data/models/collision_metrics.json") as f:
+        xgb_feats = json.load(f)["xgb"]["features"]
+    from xgboost import XGBRegressor
+    xgb = XGBRegressor()
+    xgb.load_model(str(ROOT / "data/models/collision_xgb.json"))
+    imp = pd.Series(xgb.feature_importances_, index=xgb_feats)
+    g_imp = imp["mean_grade"]
+    g_rank = int(imp.rank(ascending=False)["mean_grade"])
+    n_feat = len(imp)
+
+    risk = pd.read_parquet(ROOT / "data/models/risk_scores.parquet",
+                           columns=["link_id", "risk_percentile"])
+    fow = pd.read_parquet(ROOT / "data/processed/shapefiles/openroads.parquet",
+                          columns=["link_id", "form_of_way"])
+    df = risk.merge(fow, on="link_id", how="left")
+    is_slip = df["form_of_way"].astype("string").str.contains("Slip", case=False, na=False)
+    top1 = df["risk_percentile"] >= 99
+
+    print(f"mean_grade XGBoost importance : {g_imp:.4f}  (rank {g_rank}/{n_feat})")
+    print(f"Uniform share if all equal    : {1 / n_feat:.4f}")
+    print(f"\nSlip roads in top 1% risk     : {int((is_slip & top1).sum()):,}"
+          f"/{int(top1.sum()):,} = {is_slip[top1].mean():.2%}")
+    print(f"Slip roads in full network    : {is_slip.mean():.2%}")
+    print(f"Enrichment                    : {is_slip[top1].mean() / is_slip.mean():.1f}x")
+    print("Bridge/tunnel/covered in top 1%: unquantified (none flagged — "
+          "OSM structure file absent)")
+except Exception as exc:
+    print(STAMP)
+    print(f"\n[live computation unavailable: {exc}]")
+```
+
+## Download
+
+**Source:** <https://osdatahub.os.uk/downloads/open/Terrain50> (ASCII Grid format)
+
+Unzip the tiles into `data/raw/terr50/`. Expect ~2,858 `.asc` tiles across the
+study area; the builder constructs the VRT over them.
+
+::: {.callout-note}
+Download the **ASCII Grid** product, not the GeoPackage — the GeoPackage is
+contours, not the elevation grid the grade builder samples.
+:::
+
+---
+
+Next: [How the sources are joined](../methodology/data-joining.qmd)

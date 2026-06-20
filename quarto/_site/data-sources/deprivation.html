@@ -210,6 +210,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
  <span class="dropdown-text">Network Model GDB</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../data-sources/terrain.html">
+ <span class="dropdown-text">OS Terrain 50 (grade)</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../data-sources/deprivation.html">
  <span class="dropdown-text">Deprivation (IoD 2025)</span></a>
   </li>  
@@ -392,7 +396,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li><a href="#features-used" id="toc-features-used" class="nav-link" data-scroll-target="#features-used">Features used</a></li>
   <li><a href="#why-the-indoors-sub-domain-not-the-full-living-environment-domain" id="toc-why-the-indoors-sub-domain-not-the-full-living-environment-domain" class="nav-link" data-scroll-target="#why-the-indoors-sub-domain-not-the-full-living-environment-domain">Why the Indoors sub-domain, not the full Living Environment domain</a></li>
   <li><a href="#coverage-and-missingness" id="toc-coverage-and-missingness" class="nav-link" data-scroll-target="#coverage-and-missingness">Coverage and missingness</a></li>
-  <li><a href="#feature-provenance" id="toc-feature-provenance" class="nav-link" data-scroll-target="#feature-provenance">Feature provenance</a></li>
+  <li><a href="#provenance" id="toc-provenance" class="nav-link" data-scroll-target="#provenance">Provenance</a></li>
   <li><a href="#role-in-the-pipeline" id="toc-role-in-the-pipeline" class="nav-link" data-scroll-target="#role-in-the-pipeline">Role in the pipeline</a></li>
   </ul>
 </nav>
@@ -496,21 +500,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <li>Because deciles are a <em>relative</em> national ranking, they cannot be compared across editions or against the Welsh/Scottish indices.</li>
 </ul>
 </section>
-<section id="feature-provenance" class="level2">
-<h2 class="anchored" data-anchor-id="feature-provenance">Feature provenance</h2>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>File 7 check
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><code>imd_living_indoor_decile</code> is read directly from the local MHCLG File 7 CSV: <code>File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv</code>. The feature builder requires the published <code>Indoors Sub-domain Decile (where 1 is most deprived 10% of LSOAs)</code> column and fails fast if it is absent. It is not derived locally by ranking the Indoors sub-domain score.</p>
-</div>
-</div>
+<section id="provenance" class="level2">
+<h2 class="anchored" data-anchor-id="provenance">Provenance</h2>
+<p>All three deciles are read directly from MHCLG <strong>File 7</strong> (<code>File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv</code>), which carries the <code>Indoors Sub-domain Decile</code> column alongside the overall IMD and domain deciles — so the Indoors decile is taken as published, not re-derived from a sub-domain score. The feature builder (<code>src/road_risk/features/network.py</code>) fails fast if that column is absent, so a silently missing decile cannot pass through unnoticed.</p>
 </section>
 <section id="role-in-the-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="role-in-the-pipeline">Role in the pipeline</h2>
