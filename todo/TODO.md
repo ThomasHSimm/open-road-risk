@@ -22,10 +22,6 @@ task.
   normally and decide whether the fallback should be a permanent path or a
   guarded workaround.
 
-- [ ] Fix `pct_attribute_snapped` in `road_link_annual` — always 0 because snap
-  method name changed to "weighted". Column is misleading, should be removed or
-  recalculated as `pct_weighted_snapped`.
-
 
 ---
 

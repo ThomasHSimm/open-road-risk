@@ -6,7 +6,8 @@
 
 Open Road Risk is an open-source road safety pipeline combining DfT STATS19
 collision data, AADF traffic counts, OS Open Roads geometry, WebTRIS sensor
-data, and OpenStreetMap attributes to produce **exposure-adjusted risk scores
+data, OpenStreetMap attributes, OS Terrain 50, ONS area context, and MHCLG
+deprivation data to produce **exposure-adjusted risk scores
 for every road link across a Northern and Central England study area** —
 including the large share of roads without direct traffic counters.
 
@@ -72,13 +73,13 @@ pip install -e ".[dev]"
 
 # 2. Download raw data into data/raw/
 #    Required: STATS19 CSV, AADF zip, OS Open Roads GeoPackage,
-#    WebTRIS data or API access, OSM pbf files, and MRDB.
+#    WebTRIS data or API access, OSM pbf files, OS Terrain 50 tiles,
+#    ONS LSOA population/RUC files, and MHCLG IMD 2025.
 
 # 3. Ingest source files
 python src/road_risk/ingest/ingest_stats19.py
 python src/road_risk/ingest/ingest_aadf.py
 python src/road_risk/ingest/ingest_webtris.py   # slow if pulling from API
-python src/road_risk/ingest/ingest_mrdb.py
 python src/road_risk/ingest/ingest_openroads.py
 
 # 4. Convert OSM pbf files (download study-area county files from Geofabrik first)
@@ -107,9 +108,12 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 | STATS19 (collisions, vehicles, casualties) | DfT | Per incident | GB 1979– |
 | AADF by direction | DfT | Count point / year | GB — major + some minor |
 | OS Open Roads | Ordnance Survey | Road link geometry | GB |
+| OS Terrain 50 | Ordnance Survey | 50 m elevation grid | GB — terrain grade features |
 | WebTRIS sensor reports | National Highways | Site / month, cleaned to site × year | National Highways network; current pull uses 2019, 2021, 2023 |
 | OpenStreetMap | OSM contributors | Road edge | GB — speed, lanes, surface |
-| LSOA population + area | ONS | LSOA 2021 | England & Wales |
+| LSOA population estimates | ONS | LSOA / year | England & Wales — population-density features |
+| 2021 Rural-Urban Classification | ONS | LSOA 2021 | England & Wales — urban/rural context |
+| English Indices of Deprivation 2025 | MHCLG | LSOA 2021 | England — deprivation deciles |
 
 Large raw files are not tracked in git.
 
@@ -120,7 +124,7 @@ Large raw files are not tracked in git.
 ```
 open-road-risk/
 ├── src/road_risk/
-│   ├── ingest/              # Source ingestion (STATS19, AADF, WebTRIS, MRDB, OS Roads)
+│   ├── ingest/              # Source ingestion (STATS19, AADF, WebTRIS, OS Roads)
 │   ├── clean_join/          # Cleaned source tables, collision snapping, annual joins
 │   │   ├── clean.py         # Coordinate validation, COVID flags, WebTRIS aggregation
 │   │   ├── snap.py          # Collision -> road link snapping (weighted multi-criteria)

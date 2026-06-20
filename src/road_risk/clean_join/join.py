@@ -606,7 +606,6 @@ def build_road_link_annual(
             casualty_count=("number_of_casualties", "sum"),
             hgv_collision_count=("involves_hgv", "sum"),
             mean_vehicles_per_collision=("number_of_vehicles", "mean"),
-            pct_attribute_snapped=("snap_method", lambda x: (x == "attribute").mean()),
             pct_dark=("_is_dark", "mean"),
             pct_urban=("_is_urban", "mean"),
             pct_junction=("_at_junction", "mean"),
@@ -776,8 +775,6 @@ def main() -> None:
     print(f"  Columns : {result.columns.tolist()}")
     if "collision_rate_per_mvkm" in result.columns:
         print(f"  Collision rate (median): {result['collision_rate_per_mvkm'].median():.4f}")
-    if "pct_attribute_snapped" in result.columns:
-        print(f"  Mean % attribute-snapped: {result['pct_attribute_snapped'].mean():.1%}")
     if "road_classification" in result.columns:
         print("\n  Road classification breakdown:")
         print(result.groupby("road_classification")["collision_count"].sum().to_string())

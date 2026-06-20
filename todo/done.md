@@ -1,5 +1,17 @@
 ## ✅ Done
 
+- [x] Remove dead `pct_attribute_snapped` from `road_link_annual` (13 Jun 2026) —
+  column was always 0 because the snap method was renamed to `weighted`.
+  Removed rather than replaced with `pct_weighted_snapped`: post-quality-filter
+  that would be ~1.0 near-constant, so no diagnostic value at link-year grain.
+  Per-collision `snap_method`/`snap_score` remain the quality signal. Dropped
+  from the `build_road_link_annual` aggregation and the `main()` summary print
+  in `src/road_risk/clean_join/join.py`, plus the bullet and Quality-tracking
+  table row in `quarto/methodology/data-joining.qmd`. Schema goes 37 → 36 cols;
+  `road_link_annual.parquet` still needs regeneration (join.py step 3) and the
+  qmd re-render. Notebook `exposure-model.ipynb` has only a stale printed
+  column list — no code dependency.
+
 - [x] Short-link neighbourhood diagnostic for top-1% outputs (8 May 2026) —
   QA diagnostic checking whether very short top-1% links are outliers relative
   to their immediate OpenRoads graph neighbours. Method: per-link z-score of
