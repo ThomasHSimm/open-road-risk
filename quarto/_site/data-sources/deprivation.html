@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>Current Model Status for Open Road Risk – Open Road Risk</title>
+<title>English Indices of Deprivation (IoD 2025) – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -82,41 +82,21 @@ gtag('js', new Date());
 gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </script>
 <style>html{ scroll-behavior: smooth; }</style>
-<style>
-
-      .quarto-title-block .quarto-title-banner h1,
-      .quarto-title-block .quarto-title-banner h2,
-      .quarto-title-block .quarto-title-banner h3,
-      .quarto-title-block .quarto-title-banner h4,
-      .quarto-title-block .quarto-title-banner h5,
-      .quarto-title-block .quarto-title-banner h6
-      {
-        color: #ffffff;
-      }
-
-      .quarto-title-block .quarto-title-banner {
-        color: #ffffff;
-background-image: url(../assets/futuremiss.jpg);
-background-size: cover;
-      }
-</style>
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Current Model Status for Open Road Risk – Open Road Risk">
-<meta property="og:description" content="Current validation metrics and provenance-backed status for the Open Road Risk traffic estimation and collision risk modelling stages.">
-<meta property="og:image" content="https://openroadrisk.org/assets/futuremiss.jpg">
+<meta property="og:title" content="English Indices of Deprivation (IoD 2025) – Open Road Risk">
+<meta property="og:description" content="MHCLG small-area deprivation deciles used as LSOA-level contextual predictors, and the sub-domain choice made to avoid outcome leakage.">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Current Model Status for Open Road Risk – Open Road Risk">
-<meta name="twitter:description" content="Current validation metrics and provenance-backed status for the Open Road Risk traffic estimation and collision risk modelling stages.">
-<meta name="twitter:image" content="https://openroadrisk.org/assets/futuremiss.jpg">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="English Indices of Deprivation (IoD 2025) – Open Road Risk">
+<meta name="twitter:description" content="MHCLG small-area deprivation deciles used as LSOA-level contextual predictors, and the sub-domain choice made to avoid outcome leakage.">
+<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -400,91 +380,146 @@ background-size: cover;
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page">
-      <h1 class="title">Current Model Status for Open Road Risk</h1>
-                  <div>
-        <div class="description">
-          Current validation metrics and provenance-backed status for the Open Road Risk traffic estimation and collision risk modelling stages.
-        </div>
-      </div>
-                </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#source" id="toc-source" class="nav-link active" data-scroll-target="#source">Source</a></li>
+  <li><a href="#features-used" id="toc-features-used" class="nav-link" data-scroll-target="#features-used">Features used</a></li>
+  <li><a href="#why-the-indoors-sub-domain-not-the-full-living-environment-domain" id="toc-why-the-indoors-sub-domain-not-the-full-living-environment-domain" class="nav-link" data-scroll-target="#why-the-indoors-sub-domain-not-the-full-living-environment-domain">Why the Indoors sub-domain, not the full Living Environment domain</a></li>
+  <li><a href="#coverage-and-missingness" id="toc-coverage-and-missingness" class="nav-link" data-scroll-target="#coverage-and-missingness">Coverage and missingness</a></li>
+  <li><a href="#feature-provenance" id="toc-feature-provenance" class="nav-link" data-scroll-target="#feature-provenance">Feature provenance</a></li>
+  <li><a href="#role-in-the-pipeline" id="toc-role-in-the-pipeline" class="nav-link" data-scroll-target="#role-in-the-pipeline">Role in the pipeline</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">English Indices of Deprivation (IoD 2025)</h1>
+</div>
+
+<div>
+  <div class="description">
+    MHCLG small-area deprivation deciles used as LSOA-level contextual predictors, and the sub-domain choice made to avoid outcome leakage.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
-<p>This section provides a live view of the modelling pipeline’s performance and status, sourced directly from the latest validation artefacts and provenance records.</p>
+
+<div class="lead">
+<p>The Indices of Deprivation provide a relative measure of small-area deprivation across England. Open Road Risk uses three deprivation deciles as <strong>contextual</strong> predictors joined at LSOA level. They describe the area a road link passes through, not the road itself, and are not interpreted causally.</p>
+</div>
+<section id="source" class="level2">
+<h2 class="anchored" data-anchor-id="source">Source</h2>
+<ul>
+<li><strong>Publisher:</strong> Ministry of Housing, Communities and Local Government (MHCLG), <em>English Indices of Deprivation 2025</em>, released 30 October 2025.</li>
+<li><strong>Licence:</strong> Open Government Licence v3.0.</li>
+<li><strong>Geography:</strong> Lower-layer Super Output Area (LSOA), 33,755 areas in England, each ~1,000–3,000 residents.</li>
+<li><strong>Edition note:</strong> IoD 2025 keeps the 2019 domain structure and weighting but refreshes indicators (e.g.&nbsp;the Indoors sub-domain now uses an EPC-based energy efficiency indicator in place of “houses without central heating”). Decile values are therefore not directly comparable to 2019.</li>
+</ul>
+</section>
+<section id="features-used" class="level2">
+<h2 class="anchored" data-anchor-id="features-used">Features used</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Component</th>
-<th>Current status</th>
-<th>Latest evidence</th>
-<th>Caveat</th>
+<th>Feature</th>
+<th>Source measure</th>
+<th>Direction</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Stage 1a: AADT model</td>
-<td>Implemented</td>
-<td>Local R²: 0.831, Spatial R²: 0.792, N=17412</td>
-<td>Estimates traffic where direct counts are unavailable</td>
+<td><code>imd_decile</code></td>
+<td>Overall Index of Multiple Deprivation decile</td>
+<td>1 = most deprived, 10 = least deprived</td>
 </tr>
 <tr class="even">
-<td>Stage 2: GLM collision-risk model</td>
-<td>Implemented</td>
-<td>Pseudo-R²: 0.347</td>
-<td>Interpretable exposure-adjusted baseline</td>
+<td><code>imd_crime_decile</code></td>
+<td>Crime domain decile</td>
+<td>as above</td>
 </tr>
 <tr class="odd">
-<td>Stage 2: XGBoost collision-risk model</td>
-<td>Implemented across 5 seeds</td>
-<td>Mean Pseudo-R²: 0.323, Seeds: [42, 43, 44, 45, 46]</td>
-<td>Flexible comparison/diagnostic model; weaker interpretability than GLM</td>
-</tr>
-<tr class="even">
-<td>Final scored output</td>
-<td>Implemented</td>
-<td>2,167,557 scored links</td>
-<td>Current scoring grain is one row per road link, not link-year</td>
+<td><code>imd_living_indoor_decile</code></td>
+<td>Living Environment <strong>Indoors</strong> sub-domain decile</td>
+<td>as above</td>
 </tr>
 </tbody>
 </table>
+<p>Deciles run 1 (most deprived) to 10 (least deprived), so a negative model coefficient means less-deprived areas have a lower predicted collision rate, holding other features fixed. Live coefficients and incidence-rate ratios are on the <a href="../analysis/model-results.html">Stage 2 collision model</a> page.</p>
+</section>
+<section id="why-the-indoors-sub-domain-not-the-full-living-environment-domain" class="level2">
+<h2 class="anchored" data-anchor-id="why-the-indoors-sub-domain-not-the-full-living-environment-domain">Why the Indoors sub-domain, not the full Living Environment domain</h2>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Outcome leakage
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Living Environment domain has two sub-domains. The <strong>Outdoors</strong> sub-domain is built from air quality <strong>and road traffic accidents involving injury to pedestrians and cyclists</strong>. Using it — or the combined domain — as a predictor of collision risk would feed a function of the outcome back in as an input, inflating apparent performance without reflecting any real predictive signal.</p>
+<p>The model therefore uses the <strong>Indoors</strong> sub-domain only (housing condition and energy efficiency), which carries no road-safety construction. The overall IMD decile is retained because road-traffic accidents are one indicator among 55 across seven domains and contribute negligibly to the headline index, but this is a judgement call rather than a guarantee of zero contamination.</p>
+</div>
+</div>
+</section>
+<section id="coverage-and-missingness" class="level2">
+<h2 class="anchored" data-anchor-id="coverage-and-missingness">Coverage and missingness</h2>
 <ul>
-<li><strong>Latest model run</strong>: 2026-05-03T13:25:09.900667+00:00</li>
-<li><strong>Git SHA</strong>: <code>301a766b</code></li>
-<li><strong>Sources read</strong>: rank_stability_provenance.json, aadt_validation_summary.parquet</li>
+<li><strong>England only.</strong> Welsh LSOAs (and the Welsh-side edges of the study area) have no IoD 2025 value. Scotland and Wales publish separate, non-comparable indices.</li>
+<li>Links that fail to join to an English LSOA — Welsh edges, unmatched geometry — receive imputed decile values, flagged with an <code>_imputed</code> suffix in the model feature set so the imputation is visible rather than silent.</li>
+<li>Because deciles are a <em>relative</em> national ranking, they cannot be compared across editions or against the Welsh/Scottish indices.</li>
 </ul>
-<p>“These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”</p>
+</section>
+<section id="feature-provenance" class="level2">
+<h2 class="anchored" data-anchor-id="feature-provenance">Feature provenance</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>File 7 check
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>imd_living_indoor_decile</code> is read directly from the local MHCLG File 7 CSV: <code>File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv</code>. The feature builder requires the published <code>Indoors Sub-domain Decile (where 1 is most deprived 10% of LSOAs)</code> column and fails fast if it is absent. It is not derived locally by ranking the Indoors sub-domain score.</p>
+</div>
+</div>
+</section>
+<section id="role-in-the-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="role-in-the-pipeline">Role in the pipeline</h2>
+<p>These are area-context predictors, in the same tier as OS Terrain 50 grade and ONS Rural-Urban Classification — they sit alongside exposure and road-geometry features in <a href="../methodology/modelling.html">Stage 2</a>, not in the exposure model. They are contextual signal at LSOA resolution, not evidence that deprivation causes road risk.</p>
+<hr>
+<p>Next: <a href="../methodology/data-joining.html">How the sources are joined</a></p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

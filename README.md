@@ -114,7 +114,7 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 | OpenStreetMap | OSM contributors | Road edge | GB — speed, lanes, surface |
 | LSOA population estimates | ONS | LSOA / year | England & Wales — population-density features |
 | 2021 Rural-Urban Classification | ONS | LSOA 2021 | England & Wales — urban/rural context |
-| English Indices of Deprivation 2025 | MHCLG | LSOA 2021 | England — deprivation deciles |
+| English Indices of Deprivation 2025 | MHCLG | LSOA 2021 | England — IMD and domain deciles; Indoors sub-domain only for Living Environment leakage control |
 
 Large raw files are not tracked in git.
 

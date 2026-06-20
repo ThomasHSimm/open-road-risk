@@ -250,6 +250,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
  <span class="dropdown-text">Network Model GDB</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/deprivation.html">
+ <span class="dropdown-text">Deprivation (IoD 2025)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -430,8 +434,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#glm-summary" id="toc-glm-summary" class="nav-link" data-scroll-target="#glm-summary"><span class="header-section-number">2.1</span> GLM summary</a></li>
   <li><a href="#glm-coefficients" id="toc-glm-coefficients" class="nav-link" data-scroll-target="#glm-coefficients"><span class="header-section-number">2.2</span> GLM coefficients</a></li>
-  <li><a href="#xgboost-feature-importance" id="toc-xgboost-feature-importance" class="nav-link" data-scroll-target="#xgboost-feature-importance"><span class="header-section-number">2.3</span> XGBoost feature importance</a></li>
-  <li><a href="#glm-vs-xgboost-agreement" id="toc-glm-vs-xgboost-agreement" class="nav-link" data-scroll-target="#glm-vs-xgboost-agreement"><span class="header-section-number">2.4</span> GLM vs XGBoost agreement</a></li>
+  <li><a href="#deprivation-signal" id="toc-deprivation-signal" class="nav-link" data-scroll-target="#deprivation-signal"><span class="header-section-number">2.3</span> Deprivation signal</a></li>
+  <li><a href="#xgboost-feature-importance" id="toc-xgboost-feature-importance" class="nav-link" data-scroll-target="#xgboost-feature-importance"><span class="header-section-number">2.4</span> XGBoost feature importance</a></li>
+  <li><a href="#glm-vs-xgboost-agreement" id="toc-glm-vs-xgboost-agreement" class="nav-link" data-scroll-target="#glm-vs-xgboost-agreement"><span class="header-section-number">2.5</span> GLM vs XGBoost agreement</a></li>
   </ul></li>
   <li><a href="#risk-score-distribution" id="toc-risk-score-distribution" class="nav-link" data-scroll-target="#risk-score-distribution"><span class="header-section-number">3</span> Risk score distribution</a>
   <ul class="collapse">
@@ -486,7 +491,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <li><strong>XGBoost Poisson</strong> — captures non-linear interactions, higher predictive power</li>
 </ul>
 <p>Both models are trained on link × year data then pooled to a single stable risk score per link. The pooled output (<code>risk_scores.parquet</code>) has one row per link with no year dimension.</p>
-<div id="b08a5ed3" class="cell" data-execution_count="1">
+<div id="6d5b0062" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -546,7 +551,7 @@ Model performance:
 <h2 data-number="2" class="anchored" data-anchor-id="model-performance"><span class="header-section-number">2</span> Model performance</h2>
 <section id="glm-summary" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="glm-summary"><span class="header-section-number">2.1</span> GLM summary</h3>
-<div id="a3e7aaeb" class="cell" data-execution_count="2">
+<div id="89c39ade" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> metrics[<span class="st">"glm"</span>]</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Training rows (downsampled for GLM) : </span><span class="sc">{</span>g[<span class="st">'n_obs'</span>]<span class="sc">:,}</span><span class="ss">"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Full dataset rows                   : </span><span class="sc">{</span>g[<span class="st">'n_full'</span>]<span class="sc">:,}</span><span class="ss">"</span>)</span>
@@ -603,7 +608,7 @@ Features (34):
 </section>
 <section id="glm-coefficients" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="glm-coefficients"><span class="header-section-number">2.2</span> GLM coefficients</h3>
-<div id="bea9e78d" class="cell" data-execution_count="3">
+<div id="88870a90" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>glm_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_glm.pkl"</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> glm_path.exists():</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
@@ -691,75 +696,103 @@ pop_density_per_km2_missing        4.9141  136.194     0.0</code></pre>
 </div>
 </div>
 </section>
-<section id="xgboost-feature-importance" class="level3" data-number="2.3">
-<h3 data-number="2.3" class="anchored" data-anchor-id="xgboost-feature-importance"><span class="header-section-number">2.3</span> XGBoost feature importance</h3>
-<div id="81c3c4e4" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>xgb_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_xgb.json"</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> xgb_path.exists():</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="im">from</span> xgboost <span class="im">import</span> XGBRegressor</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        xgb <span class="op">=</span> XGBRegressor()</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        xgb.load_model(<span class="bu">str</span>(xgb_path))</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        importance <span class="op">=</span> pd.Series(</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>            xgb.feature_importances_,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>            index<span class="op">=</span>metrics[<span class="st">"xgb"</span>][<span class="st">"features"</span>],</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        ).sort_values()</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="bu">max</span>(<span class="dv">5</span>, <span class="bu">len</span>(importance) <span class="op">*</span> <span class="fl">0.45</span>)))</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        ax.barh(importance.index, importance.values, color<span class="op">=</span><span class="st">"#457b9d"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        ax.set_xlabel(<span class="st">"Feature importance (gain, normalised)"</span>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        ax.set_title(<span class="st">"XGBoost Poisson — feature importance"</span>)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Could not load XGBoost: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"collision_xgb.json not found."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="deprivation-signal" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="deprivation-signal"><span class="header-section-number">2.3</span> Deprivation signal</h3>
+<p>The three IMD deciles run 1 (most deprived) -&gt; 10 (least deprived), so a negative coefficient means <strong>less-deprived areas have a lower predicted collision rate</strong>, holding exposure and road geometry fixed. The Living Environment <strong>Indoors</strong> sub-domain is used deliberately — the Outdoors sub-domain contains road-traffic-accident indicators and would leak the outcome. See <a href="../data-sources/deprivation.html">deprivation</a>.</p>
+<div id="d8aaf631" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>imd_terms <span class="op">=</span> [<span class="st">"imd_decile"</span>, <span class="st">"imd_crime_decile"</span>, <span class="st">"imd_living_indoor_decile"</span>]</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> []</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> base <span class="kw">in</span> imd_terms:</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> t <span class="kw">in</span> [base, <span class="ss">f"</span><span class="sc">{</span>base<span class="sc">}</span><span class="ss">_imputed"</span>]:</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> t <span class="kw">in</span> glm_result.params.index:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                rows.append((t, glm_result.params[t],</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                             np.exp(glm_result.params[t]), glm_result.pvalues[t]))</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rows:</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        imd_df <span class="op">=</span> pd.DataFrame(rows, columns<span class="op">=</span>[<span class="st">"term"</span>, <span class="st">"coef"</span>, <span class="st">"IRR"</span>, <span class="st">"pvalue"</span>])</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(imd_df.<span class="bu">round</span>(<span class="dv">4</span>).to_string(index<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"No IMD decile terms in the fitted GLM."</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">NameError</span>:</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Run the GLM coefficients cell first."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            term    coef    IRR  pvalue
+              imd_decile_imputed -0.0384 0.9623     0.0
+        imd_crime_decile_imputed -0.0066 0.9934     0.0
+imd_living_indoor_decile_imputed -0.0375 0.9632     0.0</code></pre>
+</div>
+</div>
+<p>With ~2M link-years, statistical significance is near-guaranteed; the practical effect is modest (each decile step shifts the rate a few percent) and is <strong>associational, not causal</strong> — LSOA-level context, not a road attribute.</p>
+</section>
+<section id="xgboost-feature-importance" class="level3" data-number="2.4">
+<h3 data-number="2.4" class="anchored" data-anchor-id="xgboost-feature-importance"><span class="header-section-number">2.4</span> XGBoost feature importance</h3>
+<div id="6e284d38" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>xgb_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_xgb.json"</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> xgb_path.exists():</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        <span class="im">from</span> xgboost <span class="im">import</span> XGBRegressor</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        xgb <span class="op">=</span> XGBRegressor()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        xgb.load_model(<span class="bu">str</span>(xgb_path))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        importance <span class="op">=</span> pd.Series(</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>            xgb.feature_importances_,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            index<span class="op">=</span>metrics[<span class="st">"xgb"</span>][<span class="st">"features"</span>],</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        ).sort_values()</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="bu">max</span>(<span class="dv">5</span>, <span class="bu">len</span>(importance) <span class="op">*</span> <span class="fl">0.45</span>)))</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        ax.barh(importance.index, importance.values, color<span class="op">=</span><span class="st">"#457b9d"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        ax.set_xlabel(<span class="st">"Feature importance (gain, normalised)"</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        ax.set_title(<span class="st">"XGBoost Poisson — feature importance"</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Could not load XGBoost: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"collision_xgb.json not found."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-5-output-1.png" width="758" height="1112" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-6-output-1.png" width="758" height="1112" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="glm-vs-xgboost-agreement" class="level3" data-number="2.4">
-<h3 data-number="2.4" class="anchored" data-anchor-id="glm-vs-xgboost-agreement"><span class="header-section-number">2.4</span> GLM vs XGBoost agreement</h3>
-<div id="50dc2484" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">5</span>))</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>has_both <span class="op">=</span> risk[[<span class="st">"predicted_glm"</span>, <span class="st">"predicted_xgb"</span>]].gt(<span class="dv">0</span>).<span class="bu">all</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> risk[has_both].sample(<span class="bu">min</span>(<span class="dv">50_000</span>, has_both.<span class="bu">sum</span>()), random_state<span class="op">=</span>RANDOM_STATE)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].scatter(np.log(sample[<span class="st">"predicted_glm"</span>]), np.log(sample[<span class="st">"predicted_xgb"</span>]),</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                s<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.15</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>mn <span class="op">=</span> <span class="bu">min</span>(np.log(sample[<span class="st">"predicted_glm"</span>]).<span class="bu">min</span>(), np.log(sample[<span class="st">"predicted_xgb"</span>]).<span class="bu">min</span>())</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>mx <span class="op">=</span> <span class="bu">max</span>(np.log(sample[<span class="st">"predicted_glm"</span>]).<span class="bu">max</span>(), np.log(sample[<span class="st">"predicted_xgb"</span>]).<span class="bu">max</span>())</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot([mn, mx], [mn, mx], <span class="st">"r--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>corr <span class="op">=</span> np.corrcoef(np.log(sample[<span class="st">"predicted_glm"</span>]), np.log(sample[<span class="st">"predicted_xgb"</span>]))[<span class="dv">0</span>, <span class="dv">1</span>]</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].text(<span class="fl">0.05</span>, <span class="fl">0.92</span>, <span class="ss">f"r = </span><span class="sc">{</span>corr<span class="sc">:.3f}</span><span class="ss">"</span>, transform<span class="op">=</span>axes[<span class="dv">0</span>].transAxes, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(GLM predicted rate)"</span>)</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"log(XGBoost predicted rate)"</span>)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"GLM vs XGBoost predictions (50k sample, log scale)"</span>)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>pct_data <span class="op">=</span> [risk[risk[<span class="st">"road_classification"</span>] <span class="op">==</span> c][<span class="st">"risk_percentile"</span>].values</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> c <span class="kw">in</span> cls_in_data]</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].boxplot(pct_data, labels<span class="op">=</span>cls_in_data, patch_artist<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                boxprops<span class="op">=</span><span class="bu">dict</span>(facecolor<span class="op">=</span><span class="st">"#a8dadc"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>),</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                medianprops<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="dv">2</span>))</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Risk percentile"</span>)</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Risk percentile distribution by road class"</span>)</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">30</span>)</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="glm-vs-xgboost-agreement" class="level3" data-number="2.5">
+<h3 data-number="2.5" class="anchored" data-anchor-id="glm-vs-xgboost-agreement"><span class="header-section-number">2.5</span> GLM vs XGBoost agreement</h3>
+<div id="f459401b" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">5</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>has_both <span class="op">=</span> risk[[<span class="st">"predicted_glm"</span>, <span class="st">"predicted_xgb"</span>]].gt(<span class="dv">0</span>).<span class="bu">all</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> risk[has_both].sample(<span class="bu">min</span>(<span class="dv">50_000</span>, has_both.<span class="bu">sum</span>()), random_state<span class="op">=</span>RANDOM_STATE)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].scatter(np.log(sample[<span class="st">"predicted_glm"</span>]), np.log(sample[<span class="st">"predicted_xgb"</span>]),</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                s<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.15</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>mn <span class="op">=</span> <span class="bu">min</span>(np.log(sample[<span class="st">"predicted_glm"</span>]).<span class="bu">min</span>(), np.log(sample[<span class="st">"predicted_xgb"</span>]).<span class="bu">min</span>())</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>mx <span class="op">=</span> <span class="bu">max</span>(np.log(sample[<span class="st">"predicted_glm"</span>]).<span class="bu">max</span>(), np.log(sample[<span class="st">"predicted_xgb"</span>]).<span class="bu">max</span>())</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot([mn, mx], [mn, mx], <span class="st">"r--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>corr <span class="op">=</span> np.corrcoef(np.log(sample[<span class="st">"predicted_glm"</span>]), np.log(sample[<span class="st">"predicted_xgb"</span>]))[<span class="dv">0</span>, <span class="dv">1</span>]</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].text(<span class="fl">0.05</span>, <span class="fl">0.92</span>, <span class="ss">f"r = </span><span class="sc">{</span>corr<span class="sc">:.3f}</span><span class="ss">"</span>, transform<span class="op">=</span>axes[<span class="dv">0</span>].transAxes, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(GLM predicted rate)"</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"log(XGBoost predicted rate)"</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"GLM vs XGBoost predictions (50k sample, log scale)"</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>pct_data <span class="op">=</span> [risk[risk[<span class="st">"road_classification"</span>] <span class="op">==</span> c][<span class="st">"risk_percentile"</span>].values</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> c <span class="kw">in</span> cls_in_data]</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].boxplot(pct_data, labels<span class="op">=</span>cls_in_data, patch_artist<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>                boxprops<span class="op">=</span><span class="bu">dict</span>(facecolor<span class="op">=</span><span class="st">"#a8dadc"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>),</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>                medianprops<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Risk percentile"</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Risk percentile distribution by road class"</span>)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-6-output-1.png" width="1140" height="469" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-7-output-1.png" width="1140" height="469" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -769,69 +802,69 @@ pop_density_per_km2_missing        4.9141  136.194     0.0</code></pre>
 </section>
 <section id="risk-score-distribution" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="risk-score-distribution"><span class="header-section-number">3</span> Risk score distribution</h2>
-<div id="1ac4ffc3" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> risk[risk[<span class="st">"predicted_glm"</span>] <span class="op">&gt;</span> <span class="dv">0</span>]</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].hist(np.log(pos[<span class="st">"predicted_glm"</span>]), bins<span class="op">=</span><span class="dv">60</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(predicted collisions/year)"</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Link count"</span>)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Predicted collision rate — all links (log scale)"</span>)</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].hist(risk[<span class="st">"collision_count"</span>].clip(<span class="dv">0</span>, <span class="dv">20</span>), bins<span class="op">=</span><span class="dv">21</span>,</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>             <span class="bu">range</span><span class="op">=</span>(<span class="op">-</span><span class="fl">0.5</span>, <span class="fl">20.5</span>), color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_yscale(<span class="st">"log"</span>)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Observed collisions (pooled years, capped at 20)"</span>)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Link count (log scale)"</span>)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"Observed collision counts</span><span class="ch">\n</span><span class="ss">"</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"(</span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">==</span> <span class="dv">0</span>)<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss"> of links: zero collisions)"</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="8fe1e8d7" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> risk[risk[<span class="st">"predicted_glm"</span>] <span class="op">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].hist(np.log(pos[<span class="st">"predicted_glm"</span>]), bins<span class="op">=</span><span class="dv">60</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(predicted collisions/year)"</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Link count"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Predicted collision rate — all links (log scale)"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].hist(risk[<span class="st">"collision_count"</span>].clip(<span class="dv">0</span>, <span class="dv">20</span>), bins<span class="op">=</span><span class="dv">21</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>             <span class="bu">range</span><span class="op">=</span>(<span class="op">-</span><span class="fl">0.5</span>, <span class="fl">20.5</span>), color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_yscale(<span class="st">"log"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Observed collisions (pooled years, capped at 20)"</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Link count (log scale)"</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"Observed collision counts</span><span class="ch">\n</span><span class="ss">"</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"(</span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">==</span> <span class="dv">0</span>)<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss"> of links: zero collisions)"</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-7-output-1.png" width="1141" height="373" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-8-output-1.png" width="1141" height="373" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 <section id="risk-percentile-by-road-class" class="level3" data-number="3.1">
 <h3 data-number="3.1" class="anchored" data-anchor-id="risk-percentile-by-road-class"><span class="header-section-number">3.1</span> Risk percentile by road class</h3>
-<div id="a42b8510" class="cell" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>cls_med <span class="op">=</span> (</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"risk_percentile"</span>]</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    .median()</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    .reindex(cls_in_data)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    .dropna()</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    .sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>colors <span class="op">=</span> [<span class="st">"#e63946"</span> <span class="cf">if</span> rc <span class="kw">in</span> [<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>] <span class="cf">else</span> <span class="st">"#457b9d"</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>          <span class="cf">for</span> rc <span class="kw">in</span> cls_med.index]</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>))</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>ax.bar(cls_med.index, cls_med.values, color<span class="op">=</span>colors)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">50</span>, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Median risk percentile"</span>)</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Median risk percentile by road class  (red = major roads)"</span>)</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>ax.tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">30</span>)</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Risk percentile by road class:"</span>)</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"risk_percentile"</span>]</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"count"</span>])</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">round</span>(<span class="dv">1</span>)</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    .reindex(cls_in_data)</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    .to_string()</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="718b7120" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>cls_med <span class="op">=</span> (</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"risk_percentile"</span>]</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    .median()</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    .reindex(cls_in_data)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    .dropna()</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    .sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>colors <span class="op">=</span> [<span class="st">"#e63946"</span> <span class="cf">if</span> rc <span class="kw">in</span> [<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>] <span class="cf">else</span> <span class="st">"#457b9d"</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>          <span class="cf">for</span> rc <span class="kw">in</span> cls_med.index]</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>))</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>ax.bar(cls_med.index, cls_med.values, color<span class="op">=</span>colors)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">50</span>, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Median risk percentile"</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Median risk percentile by road class  (red = major roads)"</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>ax.tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Risk percentile by road class:"</span>)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"risk_percentile"</span>]</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"count"</span>])</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">round</span>(<span class="dv">1</span>)</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    .reindex(cls_in_data)</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    .to_string()</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-8-output-1.png" width="853" height="373" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-9-output-1.png" width="853" height="373" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -854,59 +887,59 @@ Unknown                25.8    20.1   442836</code></pre>
 <section id="residual-analysis" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="residual-analysis"><span class="header-section-number">4</span> Residual analysis</h2>
 <p>Residuals (observed − predicted × n_years) identify where the model systematically under- or over-predicts. Large positive residuals flag links that had more collisions than the model expected given their traffic and road characteristics.</p>
-<div id="1767145f" class="cell" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].hist(risk[<span class="st">"residual_glm"</span>].clip(<span class="op">-</span><span class="dv">5</span>, <span class="dv">10</span>), bins<span class="op">=</span><span class="dv">80</span>,</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>             color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].axvline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_yscale(<span class="st">"log"</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"Residual (observed − predicted, pooled years)"</span>)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Link count (log scale)"</span>)</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"GLM residuals</span><span class="ch">\n</span><span class="ss">"</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"median=</span><span class="sc">{</span>risk[<span class="st">'residual_glm'</span>]<span class="sc">.</span>median()<span class="sc">:.3f}</span><span class="ss">  std=</span><span class="sc">{</span>risk[<span class="st">'residual_glm'</span>]<span class="sc">.</span>std()<span class="sc">:.2f}</span><span class="ss">"</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> risk[risk[<span class="st">"predicted_glm"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].sample(<span class="dv">50_000</span>, random_state<span class="op">=</span>RANDOM_STATE)</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].scatter(np.log(pos[<span class="st">"predicted_glm"</span>]), pos[<span class="st">"residual_glm"</span>].clip(<span class="op">-</span><span class="dv">5</span>, <span class="dv">10</span>),</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                s<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.15</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"log(predicted collision rate)"</span>)</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Residual (clipped −5 to +10)"</span>)</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Residuals vs predicted rate (overdispersion check)"</span>)</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="736eca00" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].hist(risk[<span class="st">"residual_glm"</span>].clip(<span class="op">-</span><span class="dv">5</span>, <span class="dv">10</span>), bins<span class="op">=</span><span class="dv">80</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>             color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].axvline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_yscale(<span class="st">"log"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"Residual (observed − predicted, pooled years)"</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Link count (log scale)"</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"GLM residuals</span><span class="ch">\n</span><span class="ss">"</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"median=</span><span class="sc">{</span>risk[<span class="st">'residual_glm'</span>]<span class="sc">.</span>median()<span class="sc">:.3f}</span><span class="ss">  std=</span><span class="sc">{</span>risk[<span class="st">'residual_glm'</span>]<span class="sc">.</span>std()<span class="sc">:.2f}</span><span class="ss">"</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> risk[risk[<span class="st">"predicted_glm"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].sample(<span class="dv">50_000</span>, random_state<span class="op">=</span>RANDOM_STATE)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].scatter(np.log(pos[<span class="st">"predicted_glm"</span>]), pos[<span class="st">"residual_glm"</span>].clip(<span class="op">-</span><span class="dv">5</span>, <span class="dv">10</span>),</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>                s<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.15</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"log(predicted collision rate)"</span>)</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Residual (clipped −5 to +10)"</span>)</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Residuals vs predicted rate (overdispersion check)"</span>)</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-9-output-1.png" width="1236" height="469" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-10-output-1.png" width="1236" height="469" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 <section id="residuals-by-road-class" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="residuals-by-road-class"><span class="header-section-number">4.1</span> Residuals by road class</h3>
-<div id="fa12dc5f" class="cell" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>res_by_class <span class="op">=</span> (</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"residual_glm"</span>]</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"std"</span>, <span class="st">"count"</span>])</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">round</span>(<span class="dv">3</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    .reindex(cls_in_data)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    .dropna()</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Residuals by road class:"</span>)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res_by_class.to_string())</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>))</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>ax.bar(res_by_class.index, res_by_class[<span class="st">"median"</span>], color<span class="op">=</span><span class="st">"#457b9d"</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"black"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Median residual (observed − predicted)"</span>)</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Median GLM residual by road class</span><span class="ch">\n</span><span class="st">(positive = model under-predicts risk)"</span>)</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>ax.tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">30</span>)</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="7f3fecc5" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>res_by_class <span class="op">=</span> (</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"residual_glm"</span>]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"std"</span>, <span class="st">"count"</span>])</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">round</span>(<span class="dv">3</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    .reindex(cls_in_data)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    .dropna()</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Residuals by road class:"</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res_by_class.to_string())</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>))</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>ax.bar(res_by_class.index, res_by_class[<span class="st">"median"</span>], color<span class="op">=</span><span class="st">"#457b9d"</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"black"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Median residual (observed − predicted)"</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Median GLM residual by road class</span><span class="ch">\n</span><span class="st">(positive = model under-predicts risk)"</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>ax.tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Residuals by road class:
                         mean  median    std    count
@@ -922,7 +955,7 @@ Unknown               -0.234  -0.141  0.397   442836</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-10-output-2.png" width="845" height="374" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-11-output-2.png" width="845" height="374" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -934,42 +967,42 @@ Unknown               -0.234  -0.141  0.397   442836</code></pre>
 <h2 data-number="5" class="anchored" data-anchor-id="geographic-risk-maps"><span class="header-section-number">5</span> Geographic risk maps</h2>
 <section id="full-network-risk-percentile" class="level3" data-number="5.1">
 <h3 data-number="5.1" class="anchored" data-anchor-id="full-network-risk-percentile"><span class="header-section-number">5.1</span> Full-network risk percentile</h3>
-<div id="4785a1e1" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    or_risk <span class="op">=</span> openroads[[<span class="st">"link_id"</span>, <span class="st">"road_classification"</span>, <span class="st">"geometry"</span>]].merge(</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        risk[[<span class="st">"link_id"</span>, <span class="st">"risk_percentile"</span>, <span class="st">"residual_glm"</span>, <span class="st">"collision_count"</span>]],</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"inner"</span>,</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    or_risk <span class="op">=</span> or_risk[or_risk.geometry.notna()].copy()</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    or_risk.plot(</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Risk percentile — all links"</span>)</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_risk[or_risk[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Risk percentile — Motorways &amp; A Roads"</span>)</span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Stage 2 collision risk scores"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="2ef7a6f4" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    or_risk <span class="op">=</span> openroads[[<span class="st">"link_id"</span>, <span class="st">"road_classification"</span>, <span class="st">"geometry"</span>]].merge(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        risk[[<span class="st">"link_id"</span>, <span class="st">"risk_percentile"</span>, <span class="st">"residual_glm"</span>, <span class="st">"collision_count"</span>]],</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"inner"</span>,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    or_risk <span class="op">=</span> or_risk[or_risk.geometry.notna()].copy()</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    or_risk.plot(</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Risk percentile — all links"</span>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_risk[or_risk[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Risk percentile — Motorways &amp; A Roads"</span>)</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Stage 2 collision risk scores"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-11-output-1.png" width="1491" height="797" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-12-output-1.png" width="1491" height="797" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -977,38 +1010,38 @@ Unknown               -0.234  -0.141  0.397   442836</code></pre>
 </section>
 <section id="top-1-risk-links" class="level3" data-number="5.2">
 <h3 data-number="5.2" class="anchored" data-anchor-id="top-1-risk-links"><span class="header-section-number">5.2</span> Top 1% risk links</h3>
-<div id="73771494" class="cell" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    top1 <span class="op">=</span> or_risk[or_risk[<span class="st">"risk_percentile"</span>] <span class="op">&gt;=</span> <span class="dv">99</span>].copy()</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    rng  <span class="op">=</span> np.random.default_rng(RANDOM_STATE)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    bg   <span class="op">=</span> or_risk.iloc[rng.choice(<span class="bu">len</span>(or_risk), size<span class="op">=</span><span class="bu">min</span>(<span class="dv">150_000</span>, <span class="bu">len</span>(or_risk)), replace<span class="op">=</span><span class="va">False</span>)]</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>axes[<span class="dv">0</span>], color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    top1.plot(column<span class="op">=</span><span class="st">"collision_count"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"hot_r"</span>,</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>              linewidth<span class="op">=</span><span class="fl">1.2</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>              legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Observed collisions (pooled)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="ss">f"Top 1% risk links (</span><span class="sc">{</span><span class="bu">len</span>(top1)<span class="sc">:,}</span><span class="ss">)</span><span class="ch">\n</span><span class="ss">Coloured by observed collisions"</span>)</span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>axes[<span class="dv">1</span>], color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    top1.plot(column<span class="op">=</span><span class="st">"residual_glm"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"RdBu"</span>,</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>              vmin<span class="op">=-</span><span class="dv">5</span>, vmax<span class="op">=</span><span class="dv">5</span>, linewidth<span class="op">=</span><span class="fl">1.2</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>              legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"GLM residual"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Top 1</span><span class="sc">% r</span><span class="st">isk links</span><span class="ch">\n</span><span class="st">Coloured by GLM residual"</span>)</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Highest-risk road segments"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 1% risk links by road class (</span><span class="sc">{</span><span class="bu">len</span>(top1)<span class="sc">:,}</span><span class="ss"> total):"</span>)</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(top1[<span class="st">"road_classification"</span>].value_counts().to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="e8aed1cf" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    top1 <span class="op">=</span> or_risk[or_risk[<span class="st">"risk_percentile"</span>] <span class="op">&gt;=</span> <span class="dv">99</span>].copy()</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    rng  <span class="op">=</span> np.random.default_rng(RANDOM_STATE)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    bg   <span class="op">=</span> or_risk.iloc[rng.choice(<span class="bu">len</span>(or_risk), size<span class="op">=</span><span class="bu">min</span>(<span class="dv">150_000</span>, <span class="bu">len</span>(or_risk)), replace<span class="op">=</span><span class="va">False</span>)]</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>axes[<span class="dv">0</span>], color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    top1.plot(column<span class="op">=</span><span class="st">"collision_count"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>], cmap<span class="op">=</span><span class="st">"hot_r"</span>,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>              linewidth<span class="op">=</span><span class="fl">1.2</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>              legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Observed collisions (pooled)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="ss">f"Top 1% risk links (</span><span class="sc">{</span><span class="bu">len</span>(top1)<span class="sc">:,}</span><span class="ss">)</span><span class="ch">\n</span><span class="ss">Coloured by observed collisions"</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>axes[<span class="dv">1</span>], color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    top1.plot(column<span class="op">=</span><span class="st">"residual_glm"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"RdBu"</span>,</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>              vmin<span class="op">=-</span><span class="dv">5</span>, vmax<span class="op">=</span><span class="dv">5</span>, linewidth<span class="op">=</span><span class="fl">1.2</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>              legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"GLM residual"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Top 1</span><span class="sc">% r</span><span class="st">isk links</span><span class="ch">\n</span><span class="st">Coloured by GLM residual"</span>)</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Highest-risk road segments"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 1% risk links by road class (</span><span class="sc">{</span><span class="bu">len</span>(top1)<span class="sc">:,}</span><span class="ss"> total):"</span>)</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(top1[<span class="st">"road_classification"</span>].value_counts().to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-12-output-1.png" width="1485" height="797" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-13-output-1.png" width="1485" height="797" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1028,26 +1061,26 @@ Unknown                     11</code></pre>
 <section id="excess-risk-map-residual-2" class="level3" data-number="5.3">
 <h3 data-number="5.3" class="anchored" data-anchor-id="excess-risk-map-residual-2"><span class="header-section-number">5.3</span> Excess-risk map (residual &gt; 2)</h3>
 <p>Links where observed collisions substantially exceeded the model’s prediction given traffic volume and road type — potential candidates for engineering review.</p>
-<div id="cff16e02" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    excess <span class="op">=</span> or_risk[or_risk[<span class="st">"residual_glm"</span>] <span class="op">&gt;</span> <span class="dv">2</span>].copy()</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">9</span>))</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    excess.plot(column<span class="op">=</span><span class="st">"residual_glm"</span>, ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">"Oranges"</span>,</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                linewidth<span class="op">=</span><span class="fl">1.5</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Residual (observed − predicted)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"Excess-risk links — residual &gt; 2  (</span><span class="sc">{</span><span class="bu">len</span>(excess)<span class="sc">:,}</span><span class="ss"> links)</span><span class="ch">\n</span><span class="ss">"</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Had substantially more collisions than road type and traffic predict"</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="4f6b1ac9" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    excess <span class="op">=</span> or_risk[or_risk[<span class="st">"residual_glm"</span>] <span class="op">&gt;</span> <span class="dv">2</span>].copy()</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">9</span>))</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    excess.plot(column<span class="op">=</span><span class="st">"residual_glm"</span>, ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">"Oranges"</span>,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                linewidth<span class="op">=</span><span class="fl">1.5</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Residual (observed − predicted)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"Excess-risk links — residual &gt; 2  (</span><span class="sc">{</span><span class="bu">len</span>(excess)<span class="sc">:,}</span><span class="ss"> links)</span><span class="ch">\n</span><span class="ss">"</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Had substantially more collisions than road type and traffic predict"</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-13-output-1.png" width="831" height="855" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-14-output-1.png" width="831" height="855" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1057,21 +1090,21 @@ Unknown                     11</code></pre>
 </section>
 <section id="summary" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="summary"><span class="header-section-number">6</span> Summary</h2>
-<div id="5d5f7613" class="cell" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 2 collision model summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links scored          : </span><span class="sc">{</span><span class="bu">len</span>(risk)<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links with collisions : </span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss"> "</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(</span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss">)"</span>)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Poisson GLM pseudo-R² : </span><span class="sc">{</span>metrics[<span class="st">'glm'</span>][<span class="st">'pseudo_r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"XGBoost pseudo-R²     : </span><span class="sc">{</span>XGB_POSTFIX_PR2<span class="sc">:.3f}</span><span class="ss"> (post-fix 5-seed mean)"</span>)</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 1% risk links     : </span><span class="sc">{</span>(risk[<span class="st">'risk_percentile'</span>] <span class="op">&gt;=</span> <span class="dv">99</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Excess-risk links (residual &gt; 2): </span><span class="sc">{</span>(risk[<span class="st">'residual_glm'</span>] <span class="op">&gt;</span> <span class="dv">2</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Excess-risk by road class:"</span>)</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    risk[risk[<span class="st">"residual_glm"</span>] <span class="op">&gt;</span> <span class="dv">2</span>][<span class="st">"road_classification"</span>]</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    .value_counts()</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    .to_string()</span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="c3abe412" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 2 collision model summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links scored          : </span><span class="sc">{</span><span class="bu">len</span>(risk)<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links with collisions : </span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss"> "</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(</span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss">)"</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Poisson GLM pseudo-R² : </span><span class="sc">{</span>metrics[<span class="st">'glm'</span>][<span class="st">'pseudo_r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"XGBoost pseudo-R²     : </span><span class="sc">{</span>XGB_POSTFIX_PR2<span class="sc">:.3f}</span><span class="ss"> (post-fix 5-seed mean)"</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 1% risk links     : </span><span class="sc">{</span>(risk[<span class="st">'risk_percentile'</span>] <span class="op">&gt;=</span> <span class="dv">99</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Excess-risk links (residual &gt; 2): </span><span class="sc">{</span>(risk[<span class="st">'residual_glm'</span>] <span class="op">&gt;</span> <span class="dv">2</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Excess-risk by road class:"</span>)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    risk[risk[<span class="st">"residual_glm"</span>] <span class="op">&gt;</span> <span class="dv">2</span>][<span class="st">"road_classification"</span>]</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    .value_counts()</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    .to_string()</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Stage 2 collision model summary ===
 
