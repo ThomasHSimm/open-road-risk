@@ -343,8 +343,6 @@ For each `link_id × year` group:
 - `hgv_collision_count` — collisions where any involved vehicle has
   `vehicle_type` in `{19, 20, 21}`
 - `mean_vehicles_per_collision` — proxy for collision complexity
-- `pct_attribute_snapped` — share of collisions matched via the older
-  attribute-match stage (quality indicator for the legacy path)
 
 ### Joining road attributes
 
@@ -375,7 +373,6 @@ feature table:
 | `score_spatial`, `score_class`, `score_junction`, `score_number` | Per-dimension breakdown for diagnostics |
 | `snap_method` | `weighted` / `spatial` / `unmatched` / `invalid_coords` |
 | `snap_distance_m` | Metres from collision to snapped link |
-| `pct_attribute_snapped` | Per link-year share matched via legacy attribute path |
 | `aadf_snap_distance_m` | Metres from link centroid to matched count point |
 | `aadf_join_method` | `spatial` or `name_match` |
 | `aadf_available`, `webtris_available` | Boolean flags for downstream filtering |
