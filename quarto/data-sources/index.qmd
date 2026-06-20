@@ -20,6 +20,7 @@ provide traffic or contextual predictors used by the
 | [OS Open Roads network data](openroads.qmd) | Road network geometry | Base road-link network for snapping, feature generation, and scoring | Simplified representation of real-world road layout |
 | [AADF traffic counts](aadf.qmd) | Observed traffic counts | Training data for estimating annual average daily traffic where direct counts are unavailable | Sparse coverage, especially away from major roads |
 | [WebTRIS sensor data](webtris.qmd) | Traffic timing and vehicle mix | Time-of-day profiles, traffic composition, and support for exposure features | Biased toward National Highways / major-road sensors |
+| [Network Model GDB](network-model-gdb.qmd) | Scoped SRN network reference | Source notes and candidate structural features for motorway and trunk A-road links | SRN-only; not the all-road scoring backbone |
 | OpenStreetMap | Supplementary road attributes | Additional tags such as bridge/tunnel or road context where useful | Uneven coverage and tagging consistency |
 | OS Terrain 50 | Terrain context | Link-level grade features derived from the 50 m elevation grid | Bare-earth grid; local structures and fine gradients are smoothed |
 | ONS LSOA population estimates | Area context | Population-density features around road links | Area-level proxy, not direct road use |
@@ -33,6 +34,9 @@ provide traffic or contextual predictors used by the
 
 ### Network source
 - **[OS Open Roads network data](openroads.qmd)** defines the scored road-link network.
+- **[Network Model GDB](network-model-gdb.qmd)** is retained as a scoped
+  Strategic Road Network reference and candidate structural-feature source,
+  not as the all-road backbone.
 
 ### Exposure sources
 - **[AADF traffic counts](aadf.qmd)** provide direct traffic-count training examples.
