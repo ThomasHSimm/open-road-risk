@@ -488,16 +488,28 @@ background-size: cover;
 <td>Uneven coverage and tagging consistency</td>
 </tr>
 <tr class="even">
-<td>MRDB</td>
-<td>Major-road reference data</td>
-<td>Major-road structure and classification support</td>
-<td>Mainly useful for major-road context</td>
+<td>OS Terrain 50</td>
+<td>Terrain context</td>
+<td>Link-level grade features derived from the 50 m elevation grid</td>
+<td>Bare-earth grid; local structures and fine gradients are smoothed</td>
 </tr>
 <tr class="odd">
-<td>LSOA / population data</td>
+<td>ONS LSOA population estimates</td>
 <td>Area context</td>
-<td>Population-density and local-area contextual features</td>
+<td>Population-density features around road links</td>
 <td>Area-level proxy, not direct road use</td>
+</tr>
+<tr class="even">
+<td>ONS 2021 Rural-Urban Classification</td>
+<td>Area context</td>
+<td>Urban/rural context joined at LSOA level</td>
+<td>LSOA-level classification, not road-specific land use</td>
+</tr>
+<tr class="odd">
+<td>English Indices of Deprivation 2025</td>
+<td>Deprivation context</td>
+<td>IMD and domain deciles joined at LSOA level</td>
+<td>England-only small-area index; contextual, not causal</td>
 </tr>
 </tbody>
 </table>
@@ -526,7 +538,7 @@ background-size: cover;
 <section id="context-sources" class="level3">
 <h3 class="anchored" data-anchor-id="context-sources">Context sources</h3>
 <ul>
-<li><strong>OSM</strong>, <strong>MRDB</strong>, and area-level <strong>population data</strong> provide supporting road and local-context features.</li>
+<li><strong>OSM</strong>, <strong>OS Terrain 50</strong>, <strong>ONS population estimates</strong>, <strong>ONS Rural-Urban Classification</strong>, and <strong>English Indices of Deprivation 2025</strong> provide supporting road and local-context features.</li>
 </ul>
 </section>
 </section>
