@@ -812,7 +812,6 @@ Note
 <li><code>casualty_count</code> — sum of casualties across the collisions</li>
 <li><code>hgv_collision_count</code> — collisions where any involved vehicle has <code>vehicle_type</code> in <code>{19, 20, 21}</code></li>
 <li><code>mean_vehicles_per_collision</code> — proxy for collision complexity</li>
-<li><code>pct_attribute_snapped</code> — share of collisions matched via the older attribute-match stage (quality indicator for the legacy path)</li>
 </ul>
 </section>
 <section id="joining-road-attributes" class="level3" data-number="8.3">
@@ -859,18 +858,14 @@ collision_rate_per_mvkm = collision_count / (vehicle_km / 1e6)</code></pre>
 <td>Metres from collision to snapped link</td>
 </tr>
 <tr class="odd">
-<td><code>pct_attribute_snapped</code></td>
-<td>Per link-year share matched via legacy attribute path</td>
-</tr>
-<tr class="even">
 <td><code>aadf_snap_distance_m</code></td>
 <td>Metres from link centroid to matched count point</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>aadf_join_method</code></td>
 <td><code>spatial</code> or <code>name_match</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>aadf_available</code>, <code>webtris_available</code></td>
 <td>Boolean flags for downstream filtering</td>
 </tr>
