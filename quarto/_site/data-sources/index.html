@@ -229,6 +229,14 @@ background-size: cover;
     <a class="dropdown-item" href="../data-sources/network-model-gdb.html">
  <span class="dropdown-text">Network Model GDB</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/terrain.html">
+ <span class="dropdown-text">OS Terrain 50 (grade)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../data-sources/deprivation.html">
+ <span class="dropdown-text">Deprivation (IoD 2025)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -494,10 +502,10 @@ background-size: cover;
 <td>Uneven coverage and tagging consistency</td>
 </tr>
 <tr class="odd">
-<td>OS Terrain 50</td>
+<td><a href="../data-sources/terrain.html">OS Terrain 50</a></td>
 <td>Terrain context</td>
 <td>Link-level grade features derived from the 50 m elevation grid</td>
-<td>Bare-earth grid; local structures and fine gradients are smoothed</td>
+<td>Bare-earth DTM; no structure correction currently applied, so grade on bridges/tunnels/slip roads may be physically wrong</td>
 </tr>
 <tr class="even">
 <td>ONS LSOA population estimates</td>
@@ -512,10 +520,10 @@ background-size: cover;
 <td>LSOA-level classification, not road-specific land use</td>
 </tr>
 <tr class="even">
-<td>English Indices of Deprivation 2025</td>
+<td><a href="../data-sources/deprivation.html">English Indices of Deprivation 2025</a></td>
 <td>Deprivation context</td>
 <td>IMD and domain deciles joined at LSOA level</td>
-<td>England-only small-area index; contextual, not causal</td>
+<td>England-only; Indoors sub-domain only (Outdoors carries road-accident indicators -&gt; leakage); contextual, not causal</td>
 </tr>
 </tbody>
 </table>
@@ -557,6 +565,8 @@ background-size: cover;
 <li><a href="../data-sources/aadf.html">AADF Traffic Counts</a></li>
 <li><a href="../data-sources/webtris.html">WebTRIS Sensors</a></li>
 <li><a href="../data-sources/network-model-gdb.html">Network Model GDB</a></li>
+<li><a href="../data-sources/terrain.html">OS Terrain 50</a></li>
+<li><a href="../data-sources/deprivation.html">English Indices of Deprivation</a></li>
 </ul>
 <hr>
 <p>Next: <a href="../methodology/data-joining.html">How the sources are joined</a></p>

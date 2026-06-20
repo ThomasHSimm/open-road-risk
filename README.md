@@ -114,7 +114,7 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 | OpenStreetMap | OSM contributors | Road edge | GB — speed, lanes, surface |
 | LSOA population estimates | ONS | LSOA / year | England & Wales — population-density features |
 | 2021 Rural-Urban Classification | ONS | LSOA 2021 | England & Wales — urban/rural context |
-| English Indices of Deprivation 2025 | MHCLG | LSOA 2021 | England — deprivation deciles |
+| English Indices of Deprivation 2025 | MHCLG | LSOA 2021 | England — IMD and domain deciles; Indoors sub-domain only for Living Environment leakage control |
 
 Large raw files are not tracked in git.
 
@@ -199,6 +199,13 @@ open-road-risk/
   keyed off OS road classifications provides a `speed_limit_mph_effective` coverage 
   of 91.27%. `lanes` (7.3%), `lit` (9.3%), and surface flags (16.2%) remain 
   sparse and are median-imputed where retained in the GLM.
+
+- **Grade structure handling (not yet active)** — `mean_grade` is sampled from the
+  OS Terrain 50 bare-earth DTM. Structure correction for bridges/tunnels/slip roads
+  is coded but inactive in the current build (the OSM structure file is absent and
+  slip roads are unwired), so `grade_method = profile` for all links. Grade on
+  structure-carrying links may be wrong; the per-link `grade_method` column flags
+  this for future correction.
 
 Detailed working notes are kept in `docs/internal/data-quality-notes.md`.
 

@@ -137,6 +137,37 @@ else:
     print("collision_glm.pkl not found — run: python -m road_risk.model --stage collision")
 ```
 
+### Deprivation signal
+
+The three IMD deciles run 1 (most deprived) -> 10 (least deprived), so a
+negative coefficient means **less-deprived areas have a lower predicted
+collision rate**, holding exposure and road geometry fixed. The Living
+Environment **Indoors** sub-domain is used deliberately — the Outdoors
+sub-domain contains road-traffic-accident indicators and would leak the outcome.
+See [deprivation](../data-sources/deprivation.qmd).
+
+```{python}
+imd_terms = ["imd_decile", "imd_crime_decile", "imd_living_indoor_decile"]
+try:
+    rows = []
+    for base in imd_terms:
+        for t in [base, f"{base}_imputed"]:
+            if t in glm_result.params.index:
+                rows.append((t, glm_result.params[t],
+                             np.exp(glm_result.params[t]), glm_result.pvalues[t]))
+    if rows:
+        imd_df = pd.DataFrame(rows, columns=["term", "coef", "IRR", "pvalue"])
+        print(imd_df.round(4).to_string(index=False))
+    else:
+        print("No IMD decile terms in the fitted GLM.")
+except NameError:
+    print("Run the GLM coefficients cell first.")
+```
+
+With ~2M link-years, statistical significance is near-guaranteed; the practical
+effect is modest (each decile step shifts the rate a few percent) and is
+**associational, not causal** — LSOA-level context, not a road attribute.
+
 ### XGBoost feature importance
 
 ```{python}
