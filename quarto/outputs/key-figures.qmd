@@ -1,0 +1,572 @@
+---
+title: "Road risk at a glance"
+description: "Plain-language figures summarising where collision risk is highest across the Open Road Risk study area."
+format:
+    html:
+        toc: false
+        page-layout: full
+execute:
+    echo: false
+    warning: false
+    message: false
+jupyter: python3
+---
+
+Figures summarising the main outputs of the risk model, without the modelling
+detail. The map is *exposure-adjusted*: it reflects risk given traffic, not
+simply where the most collisions happen. Full methodology and diagnostics are
+on the [Stage 2 model](../analysis/model-results.qmd) page.
+
+The map has three views: merged named reporting areas, equal-size 10 km grid
+cells, and the same grid with reporting-area boundaries.
+
+```{python}
+#| label: interactive-risk-map
+
+import geopandas as gpd
+import folium
+import branca.colormap as bcm
+from branca.element import MacroElement, Template
+import numpy as np
+import pandas as pd
+from shapely import concave_hull
+from shapely.geometry import box
+
+from road_risk.config import _ROOT as ROOT
+
+SHADES = ["#f6ddc9", "#e7b48d", "#d4844f", "#b25636", "#7c3122"]
+GRID_M = 10_000
+MIN_GRID_LINKS = 20
+
+area_paths = [
+    ROOT / "data/raw/boundaries/areas_study.geojson",
+    ROOT / "quarto/outputs/areas_study.geojson",
+]
+area_path = next((path for path in area_paths if path.exists()), None)
+if area_path is None:
+    checked = "\n".join(str(path) for path in area_paths)
+    raise FileNotFoundError(f"Could not find areas_study.geojson. Checked:\n{checked}")
+areas = gpd.read_file(area_path).to_crs(27700)
+
+REPORTING_GROUPS = {
+    "Bedford": "Bedfordshire",
+    "Central Bedfordshire": "Bedfordshire",
+    "Luton": "Bedfordshire",
+    "Blackburn with Darwen": "Lancashire and Blackpool",
+    "Blackpool": "Lancashire and Blackpool",
+    "Lancashire": "Lancashire and Blackpool",
+    "Darlington": "Tees Valley",
+    "Hartlepool": "Tees Valley",
+    "Middlesbrough": "Tees Valley",
+    "Redcar and Cleveland": "Tees Valley",
+    "Stockton-on-Tees": "Tees Valley",
+    "Derby": "Derby and Derbyshire",
+    "Derbyshire": "Derby and Derbyshire",
+    "Kingston upon Hull, City of": "Hull and East Riding",
+    "East Riding of Yorkshire": "Hull and East Riding",
+    "Leicester": "Leicester, Leicestershire and Rutland",
+    "Leicestershire": "Leicester, Leicestershire and Rutland",
+    "Rutland": "Leicester, Leicestershire and Rutland",
+    "Lincolnshire": "Greater Lincolnshire",
+    "North East Lincolnshire": "Greater Lincolnshire",
+    "North Lincolnshire": "Greater Lincolnshire",
+    "Nottingham": "Nottingham and Nottinghamshire",
+    "Nottinghamshire": "Nottingham and Nottinghamshire",
+    "Peterborough": "Cambridgeshire and Peterborough",
+    "Cambridgeshire": "Cambridgeshire and Peterborough",
+    "Shropshire": "Shropshire and Telford",
+    "Telford and Wrekin": "Shropshire and Telford",
+    "Staffordshire": "Staffordshire and Stoke-on-Trent",
+    "Stoke-on-Trent": "Staffordshire and Stoke-on-Trent",
+    "Cheshire East": "Cheshire and Warrington",
+    "Cheshire West and Chester": "Cheshire and Warrington",
+    "Halton": "Cheshire and Warrington",
+    "Warrington": "Cheshire and Warrington",
+    "North Yorkshire": "North Yorkshire and York",
+    "York": "North Yorkshire and York",
+}
+
+risk = pd.read_parquet(
+    ROOT / "data/models/risk_scores.parquet",
+    columns=["link_id", "risk_percentile", "estimated_aadt"],
+)
+roads = gpd.read_parquet(
+    ROOT / "data/processed/shapefiles/openroads.parquet",
+    columns=["link_id", "geometry"],
+)
+links = roads.merge(risk, on="link_id", how="inner")
+links = links[links.geometry.notna()].to_crs(27700)
+link_points = links.copy()
+link_points["geometry"] = link_points.geometry.representative_point()
+
+areas["reporting_area"] = areas["area_name"].map(REPORTING_GROUPS).fillna(areas["area_name"])
+
+east_anglia_gap_window = box(535000, 245000, 575000, 330000)
+source_union = areas.union_all()
+gap_points = link_points[
+    link_points.within(east_anglia_gap_window)
+    & ~link_points.within(source_union)
+].copy()
+if not gap_points.empty:
+    gap_geometry = concave_hull(gap_points.geometry.union_all(), ratio=0.18)
+    gap_geometry = gap_geometry.buffer(2_500).simplify(500).buffer(0)
+    gap_fill = gpd.GeoDataFrame(
+        {
+            "area_name": ["Boundary gap fill: Fenland"],
+            "reporting_area": ["Cambridgeshire and Peterborough"],
+        },
+        geometry=[gap_geometry],
+        crs=areas.crs,
+    )
+    areas = pd.concat([areas, gap_fill], ignore_index=True)
+
+reporting_areas = areas.dissolve(by="reporting_area", as_index=False)
+
+area_join = gpd.sjoin(
+    link_points,
+    areas[["area_name", "reporting_area", "geometry"]],
+    how="inner",
+    predicate="within",
+)
+area_stats = (
+    area_join.groupby("reporting_area")
+    .agg(
+        scored_links=("link_id", "size"),
+        median_risk=("risk_percentile", "median"),
+        median_traffic=("estimated_aadt", "median"),
+    )
+    .reset_index()
+)
+area_plot = reporting_areas.merge(
+    area_stats,
+    on="reporting_area",
+    how="left",
+)
+area_plot["median_risk"] = area_plot["median_risk"].round(1)
+area_plot["median_traffic"] = area_plot["median_traffic"].round(0)
+area_plot["scored_links"] = area_plot["scored_links"].fillna(0).astype(int)
+
+centroids = link_points.geometry
+grid_df = pd.DataFrame({
+    "grid_x": np.floor(centroids.x / GRID_M) * GRID_M,
+    "grid_y": np.floor(centroids.y / GRID_M) * GRID_M,
+    "risk_percentile": link_points["risk_percentile"].to_numpy(),
+    "estimated_aadt": link_points["estimated_aadt"].to_numpy(),
+})
+grid_stats = (
+    grid_df.groupby(["grid_x", "grid_y"])
+    .agg(
+        scored_links=("risk_percentile", "size"),
+        median_risk=("risk_percentile", "median"),
+        median_traffic=("estimated_aadt", "median"),
+    )
+    .reset_index()
+)
+grid_stats = grid_stats[grid_stats["scored_links"] >= MIN_GRID_LINKS].copy()
+grid_stats["geometry"] = [
+    box(x, y, x + GRID_M, y + GRID_M)
+    for x, y in zip(grid_stats["grid_x"], grid_stats["grid_y"])
+]
+grid_plot = gpd.GeoDataFrame(grid_stats, geometry="geometry", crs="EPSG:27700")
+grid_plot["median_risk"] = grid_plot["median_risk"].round(1)
+grid_plot["median_traffic"] = grid_plot["median_traffic"].round(0)
+grid_plot["scored_links"] = grid_plot["scored_links"].astype(int)
+
+area_values_nonnull = area_plot["median_risk"].dropna()
+area_edges = np.quantile(area_values_nonnull, np.linspace(0, 1, len(SHADES) + 1))
+if len(np.unique(area_edges)) != len(area_edges):
+    area_edges = np.linspace(area_values_nonnull.min(), area_values_nonnull.max(), len(SHADES) + 1)
+area_edges[0] -= 1e-9
+area_edges[-1] += 1e-9
+
+
+def area_colour(value):
+    if pd.isna(value):
+        return "#eeeeee"
+    index = np.searchsorted(area_edges[1:], value, side="right")
+    return SHADES[min(index, len(SHADES) - 1)]
+
+
+grid_values = grid_plot["median_risk"].dropna()
+grid_vmin, grid_vmax = grid_values.quantile([0.02, 0.98])
+if grid_vmin == grid_vmax:
+    grid_vmin, grid_vmax = grid_values.min(), grid_values.max()
+grid_colour = bcm.LinearColormap(SHADES, vmin=float(grid_vmin), vmax=float(grid_vmax))
+grid_colour.caption = "Median exposure-adjusted risk percentile"
+
+area_plot_wgs84 = area_plot.to_crs(4326)
+grid_plot_wgs84 = grid_plot.to_crs(4326)
+reporting_boundaries_wgs84 = reporting_areas.to_crs(4326)
+
+centre = grid_plot_wgs84.union_all().centroid
+risk_map = folium.Map(
+    location=[centre.y, centre.x],
+    zoom_start=7,
+    width="100%",
+    height="720px",
+    tiles=None,
+    control_scale=True,
+)
+basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
+basemap_layer.add_to(risk_map)
+
+area_layer = folium.FeatureGroup(name="Reporting areas", show=True)
+folium.GeoJson(
+    area_plot_wgs84[["reporting_area", "median_risk", "scored_links", "geometry"]],
+    name="Reporting areas",
+    style_function=lambda feature: {
+        "fillColor": area_colour(feature["properties"]["median_risk"]),
+        "color": "#ffffff",
+        "weight": 0.9,
+        "fillOpacity": 0.78,
+    },
+    highlight_function=lambda feature: {
+        "weight": 1.8,
+        "color": "#222222",
+        "fillOpacity": 0.86,
+    },
+    tooltip=folium.GeoJsonTooltip(
+        fields=["reporting_area", "median_risk", "scored_links"],
+        aliases=["Reporting area", "Median risk percentile", "Scored links"],
+        localize=True,
+        sticky=False,
+    ),
+).add_to(area_layer)
+area_layer.add_to(risk_map)
+
+grid_layer = folium.FeatureGroup(name="10 km grid", show=False)
+folium.GeoJson(
+    grid_plot_wgs84[["median_risk", "scored_links", "geometry"]],
+    name="10 km grid",
+    style_function=lambda feature: {
+        "fillColor": grid_colour(feature["properties"]["median_risk"]),
+        "color": "#6c6c6c",
+        "weight": 0.25,
+        "fillOpacity": 0.5,
+    },
+    highlight_function=lambda feature: {
+        "weight": 1.2,
+        "color": "#222222",
+        "fillOpacity": 0.68,
+    },
+    tooltip=folium.GeoJsonTooltip(
+        fields=["median_risk", "scored_links"],
+        aliases=["Median risk percentile", "Scored links"],
+        localize=True,
+        sticky=False,
+    ),
+).add_to(grid_layer)
+grid_layer.add_to(risk_map)
+
+boundary_layer = folium.FeatureGroup(name="Reporting boundaries", show=False)
+folium.GeoJson(
+    reporting_boundaries_wgs84[["reporting_area", "geometry"]],
+    name="Reporting boundaries",
+    style_function=lambda feature: {
+        "fillOpacity": 0,
+        "color": "#333333",
+        "weight": 0.8,
+    },
+    tooltip=folium.GeoJsonTooltip(fields=["reporting_area"], aliases=["Reporting area"], sticky=False),
+).add_to(boundary_layer)
+boundary_layer.add_to(risk_map)
+
+class ModeButtons(MacroElement):
+    def __init__(self, area_layer, grid_layer, boundary_layer, basemap_layer, legend_title, legend_gradient):
+        super().__init__()
+        self._name = "ModeButtons"
+        self.area_layer = area_layer.get_name()
+        self.grid_layer = grid_layer.get_name()
+        self.boundary_layer = boundary_layer.get_name()
+        self.basemap_layer = basemap_layer.get_name()
+        self.legend_title = legend_title
+        self.legend_gradient = legend_gradient
+        self._template = Template("""
+        {% macro header(this, kwargs) %}
+        <style>
+          .risk-mode-control {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid #c8d0dc;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
+            display: grid;
+            gap: 0.35rem;
+            padding: 0.55rem;
+          }
+          .risk-mode-control-title {
+            color: #405064;
+            font: 700 0.72rem/1.1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0.1rem 0 0.05rem;
+            text-transform: uppercase;
+          }
+          .risk-mode-control button {
+            background: #ffffff;
+            border: 1px solid #b8c2d0;
+            border-radius: 6px;
+            color: #17202a;
+            cursor: pointer;
+            font: 600 0.82rem/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            min-width: 9.6rem;
+            padding: 0.42rem 0.55rem;
+            text-align: left;
+          }
+          .risk-mode-control button.active {
+            background: #243447;
+            border-color: #243447;
+            color: #ffffff;
+          }
+          .risk-map-legend {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid #c8d0dc;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
+            color: #243447;
+            font: 0.78rem/1.25 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 0.55rem 0.65rem;
+            width: 13rem;
+          }
+          .risk-map-legend-gradient {
+            background: {{ this.legend_gradient }};
+            height: 0.55rem;
+            margin: 0.35rem 0;
+            width: 100%;
+          }
+          .risk-map-legend-labels {
+            display: flex;
+            justify-content: space-between;
+          }
+        </style>
+        {% endmacro %}
+        {% macro script(this, kwargs) %}
+        (function() {
+        const activeMap = {{ this._parent.get_name() }};
+        const areaLayer = {{ this.area_layer }};
+        const gridLayer = {{ this.grid_layer }};
+        const boundaryLayer = {{ this.boundary_layer }};
+        const basemapLayer = {{ this.basemap_layer }};
+        const modeControl = L.control({ position: "topright" });
+        const legendControl = L.control({ position: "bottomright" });
+
+        modeControl.onAdd = function() {
+          const div = L.DomUtil.create("div", "risk-mode-control");
+          div.innerHTML = `
+            <div class="risk-mode-control-title">Map view</div>
+            <button type="button" data-risk-mode="areas" class="active">Reporting areas</button>
+            <button type="button" data-risk-mode="grid">10 km grid</button>
+            <button type="button" data-risk-mode="grid-boundaries">Grid + boundaries</button>
+            <div class="risk-mode-control-title">Background</div>
+            <button type="button" data-base-mode="light" class="active">Light basemap</button>
+            <button type="button" data-base-mode="none">No basemap</button>
+          `;
+          L.DomEvent.disableClickPropagation(div);
+          L.DomEvent.disableScrollPropagation(div);
+          div.querySelectorAll("[data-risk-mode]").forEach((button) => {
+            L.DomEvent.on(button, "click", (event) => {
+              L.DomEvent.stop(event);
+              setRiskMode(button.dataset.riskMode, div);
+            });
+          });
+          div.querySelectorAll("[data-base-mode]").forEach((button) => {
+            L.DomEvent.on(button, "click", (event) => {
+              L.DomEvent.stop(event);
+              setBaseMode(button.dataset.baseMode, div);
+            });
+          });
+          return div;
+        };
+        modeControl.addTo(activeMap);
+
+        legendControl.onAdd = function() {
+          const div = L.DomUtil.create("div", "risk-map-legend");
+          div.innerHTML = `
+            <strong>{{ this.legend_title }}</strong>
+            <div class="risk-map-legend-gradient"></div>
+            <div class="risk-map-legend-labels"><span>Lower</span><span>Higher</span></div>
+          `;
+          L.DomEvent.disableClickPropagation(div);
+          L.DomEvent.disableScrollPropagation(div);
+          return div;
+        };
+        legendControl.addTo(activeMap);
+
+        function setRiskMode(mode, root) {
+          if (activeMap.hasLayer(areaLayer)) activeMap.removeLayer(areaLayer);
+          if (activeMap.hasLayer(gridLayer)) activeMap.removeLayer(gridLayer);
+          if (activeMap.hasLayer(boundaryLayer)) activeMap.removeLayer(boundaryLayer);
+
+          if (mode === "areas") {
+            activeMap.addLayer(areaLayer);
+          } else if (mode === "grid") {
+            activeMap.addLayer(gridLayer);
+          } else {
+            activeMap.addLayer(gridLayer);
+            activeMap.addLayer(boundaryLayer);
+          }
+
+          root.querySelectorAll("[data-risk-mode]").forEach((button) => {
+            button.classList.toggle("active", button.dataset.riskMode === mode);
+          });
+        }
+
+        function setBaseMode(mode, root) {
+          if (mode === "none" && activeMap.hasLayer(basemapLayer)) {
+            activeMap.removeLayer(basemapLayer);
+          }
+          if (mode === "light" && !activeMap.hasLayer(basemapLayer)) {
+            activeMap.addLayer(basemapLayer);
+            basemapLayer.bringToBack();
+          }
+          root.querySelectorAll("[data-base-mode]").forEach((button) => {
+            button.classList.toggle("active", button.dataset.baseMode === mode);
+          });
+        }
+        })();
+        {% endmacro %}
+        """)
+
+
+risk_map.add_child(ModeButtons(
+    area_layer,
+    grid_layer,
+    boundary_layer,
+    basemap_layer,
+    "Median risk percentile",
+    "linear-gradient(90deg, #f6ddc9, #e7b48d, #d4844f, #b25636, #7c3122)",
+))
+risk_map.fit_bounds([
+    [grid_plot_wgs84.total_bounds[1], grid_plot_wgs84.total_bounds[0]],
+    [grid_plot_wgs84.total_bounds[3], grid_plot_wgs84.total_bounds[2]],
+])
+risk_map
+```
+
+### Traffic volume
+
+The map below uses the same geography and controls, but colours areas by median
+estimated AADT rather than modelled risk.
+
+```{python}
+#| label: interactive-traffic-map
+
+TRAFFIC_SHADES = ["#edf8fb", "#b2e2e2", "#66c2a4", "#2ca25f", "#006d2c"]
+
+traffic_values_nonnull = area_plot["median_traffic"].dropna()
+traffic_area_edges = np.quantile(traffic_values_nonnull, np.linspace(0, 1, len(TRAFFIC_SHADES) + 1))
+if len(np.unique(traffic_area_edges)) != len(traffic_area_edges):
+    traffic_area_edges = np.linspace(
+        traffic_values_nonnull.min(),
+        traffic_values_nonnull.max(),
+        len(TRAFFIC_SHADES) + 1,
+    )
+traffic_area_edges[0] -= 1e-9
+traffic_area_edges[-1] += 1e-9
+
+
+def traffic_area_colour(value):
+    if pd.isna(value):
+        return "#eeeeee"
+    index = np.searchsorted(traffic_area_edges[1:], value, side="right")
+    return TRAFFIC_SHADES[min(index, len(TRAFFIC_SHADES) - 1)]
+
+
+traffic_grid_values = grid_plot["median_traffic"].dropna()
+traffic_grid_vmin, traffic_grid_vmax = traffic_grid_values.quantile([0.02, 0.98])
+if traffic_grid_vmin == traffic_grid_vmax:
+    traffic_grid_vmin, traffic_grid_vmax = traffic_grid_values.min(), traffic_grid_values.max()
+traffic_colour = bcm.LinearColormap(
+    TRAFFIC_SHADES,
+    vmin=float(traffic_grid_vmin),
+    vmax=float(traffic_grid_vmax),
+)
+
+traffic_map = folium.Map(
+    location=[centre.y, centre.x],
+    zoom_start=7,
+    width="100%",
+    height="720px",
+    tiles=None,
+    control_scale=True,
+)
+traffic_basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
+traffic_basemap_layer.add_to(traffic_map)
+
+traffic_area_layer = folium.FeatureGroup(name="Reporting areas", show=True)
+folium.GeoJson(
+    area_plot_wgs84[["reporting_area", "median_traffic", "scored_links", "geometry"]],
+    name="Reporting areas",
+    style_function=lambda feature: {
+        "fillColor": traffic_area_colour(feature["properties"]["median_traffic"]),
+        "color": "#ffffff",
+        "weight": 0.9,
+        "fillOpacity": 0.78,
+    },
+    highlight_function=lambda feature: {
+        "weight": 1.8,
+        "color": "#222222",
+        "fillOpacity": 0.86,
+    },
+    tooltip=folium.GeoJsonTooltip(
+        fields=["reporting_area", "median_traffic", "scored_links"],
+        aliases=["Reporting area", "Median estimated AADT", "Scored links"],
+        localize=True,
+        sticky=False,
+    ),
+).add_to(traffic_area_layer)
+traffic_area_layer.add_to(traffic_map)
+
+traffic_grid_layer = folium.FeatureGroup(name="10 km grid", show=False)
+folium.GeoJson(
+    grid_plot_wgs84[["median_traffic", "scored_links", "geometry"]],
+    name="10 km grid",
+    style_function=lambda feature: {
+        "fillColor": traffic_colour(feature["properties"]["median_traffic"]),
+        "color": "#6c6c6c",
+        "weight": 0.25,
+        "fillOpacity": 0.5,
+    },
+    highlight_function=lambda feature: {
+        "weight": 1.2,
+        "color": "#222222",
+        "fillOpacity": 0.68,
+    },
+    tooltip=folium.GeoJsonTooltip(
+        fields=["median_traffic", "scored_links"],
+        aliases=["Median estimated AADT", "Scored links"],
+        localize=True,
+        sticky=False,
+    ),
+).add_to(traffic_grid_layer)
+traffic_grid_layer.add_to(traffic_map)
+
+traffic_boundary_layer = folium.FeatureGroup(name="Reporting boundaries", show=False)
+folium.GeoJson(
+    reporting_boundaries_wgs84[["reporting_area", "geometry"]],
+    name="Reporting boundaries",
+    style_function=lambda feature: {
+        "fillOpacity": 0,
+        "color": "#333333",
+        "weight": 0.8,
+    },
+    tooltip=folium.GeoJsonTooltip(fields=["reporting_area"], aliases=["Reporting area"], sticky=False),
+).add_to(traffic_boundary_layer)
+traffic_boundary_layer.add_to(traffic_map)
+
+traffic_map.add_child(ModeButtons(
+    traffic_area_layer,
+    traffic_grid_layer,
+    traffic_boundary_layer,
+    traffic_basemap_layer,
+    "Median estimated AADT",
+    "linear-gradient(90deg, #edf8fb, #b2e2e2, #66c2a4, #2ca25f, #006d2c)",
+))
+traffic_map.fit_bounds([
+    [grid_plot_wgs84.total_bounds[1], grid_plot_wgs84.total_bounds[0]],
+    [grid_plot_wgs84.total_bounds[3], grid_plot_wgs84.total_bounds[2]],
+])
+traffic_map
+```
+
+The named-area view uses a merged reporting geography so compact urban
+authorities remain legible. A small Fenland boundary gap in the source polygons
+is joined into Cambridgeshire and Peterborough. The grid view uses equal-size
+10 km cells and omits cells with fewer than 20 scored links.

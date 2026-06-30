@@ -33,6 +33,12 @@
   running `pytest -x --tb=short` and `ruff check`. Do not run the full
   pipeline in CI: it is too slow and depends on raw data not stored in git.
 
+- [ ] Move Quarto site rendering to GitHub Actions / Pages — stop committing
+  generated `quarto/_site/` HTML once CI can render and deploy it. First audit
+  pages that depend on local-only model/data files and either publish the needed
+  static extracts, cache them as build artifacts, or keep those pages pre-rendered
+  until the data dependency is portable.
+
 - [ ] `config/model.yaml` migration — split model/runtime constants out of
   `config/settings.yaml`. Create `config/model.yaml`, migrate
   `RANDOM_STATE = 42` and `COVID_YEARS = {2020, 2021}`, and update
