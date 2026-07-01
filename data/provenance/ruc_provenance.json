@@ -1,23 +1,56 @@
 {
-  "script_path": "open-road-risk/src/road_risk/features/network.py",
-  "git_sha": "417e0d2c27af59afa66f90a07d3ed578a162dcc3",
-  "timestamp_utc": "2026-05-01T15:54:47.986300+00:00",
-  "ruc_source": "ONS 2021 RUC at LSOA grain, E+W, geoportal.statistics.gov.uk",
+  "script_path": "open-road-risk/src/road_risk/features/rural_urban.py",
+  "git_sha": "6b20ec94",
+  "timestamp_utc": "2026-06-30T23:36:31.509674+00:00",
+  "output_file": "open-road-risk/data/processed/context/link_rural_urban_gb.parquet",
+  "source_files": {
+    "england_wales_ruc": "open-road-risk/data/raw/urban_rural_ruc/engwal_2021/ruc_2021_lsoa_ew.csv",
+    "england_wales_boundary": "open-road-risk/data/raw/boundaries/eng_output_areas_2021/Output_Areas_2021_EW_BGC_V2_-5587136561181621407.gpkg",
+    "scotland_ruc": "open-road-risk/data/raw/urban_rural_ruc/scot_2022/SG_UrbanRural_2022.shp"
+  },
+  "assignment": "road-link centroid to GB rural-urban polygon; nearest fallback for unmatched centroids",
+  "fallback_distance_cap_m": 250,
   "n_links_total": 2167557,
-  "n_links_with_ruc": 1831865,
-  "coverage_pct": 84.51288708901312,
+  "n_links_with_ruc": 2167554,
+  "ruc_country_distribution": {
+    "England": 2002025,
+    "NaN": 3,
+    "Scotland": 64322,
+    "Wales": 101207
+  },
+  "ruc_area_type_distribution": {
+    "LSOA2021": 2103232,
+    "NaN": 3,
+    "SGUR2022_UR8": 64322
+  },
   "ruc_urban_rural_distribution": {
-    "NaN": 335692,
-    "Rural": 482541,
-    "Urban": 1349324
+    "NaN": 3,
+    "Rural": 812662,
+    "Urban": 1354892
   },
   "ruc_class_distribution": {
-    "NaN": 335692,
-    "RLF1": 85082,
-    "RLN1": 182656,
-    "RSF1": 81197,
-    "RSN1": 133606,
-    "UF1": 116582,
-    "UN1": 1232742
+    "Accessible Rural Areas": 28328,
+    "Accessible Small Towns": 6457,
+    "Large Urban Areas": 9509,
+    "Larger rural: Further from a major town or city": 88302,
+    "Larger rural: Nearer to a major town or city": 184901,
+    "NaN": 3,
+    "Other Urban Areas": 9196,
+    "Remote Rural Areas": 10579,
+    "Remote Small Towns": 253,
+    "Smaller rural: Further from a major town or city": 231614,
+    "Smaller rural: Nearer to a major town or city": 268938,
+    "Urban: Further from a major town or city": 113382,
+    "Urban: Nearer to a major town or city": 1216095
+  },
+  "ruc_assignment_method_distribution": {
+    "nearest_fallback": 160,
+    "unmatched": 3,
+    "within": 2167394
+  },
+  "fallback_distance_m": {
+    "median": 9.872964142800676,
+    "p95": 71.19067648541204,
+    "max": 244.06262522364855
   }
 }

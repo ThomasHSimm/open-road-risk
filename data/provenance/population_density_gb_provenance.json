@@ -1,0 +1,102 @@
+{
+  "script_path": "src/road_risk/features/population.py",
+  "git_sha": "6b20ec94",
+  "timestamp_utc": "2026-06-30T21:16:28.438475+00:00",
+  "output_path": "data/processed/context/oa_population_density_gb.parquet",
+  "missing_population_rate_threshold": 0.005,
+  "sources": {
+    "england_wales": {
+      "source_population_file": "data/raw/population/eng_wal/census2021-ts001-oa.csv",
+      "source_boundary_file": "data/raw/boundaries/eng_output_areas_2021/Output_Areas_2021_EW_BGC_V2_-5587136561181621407.gpkg",
+      "boundary_type": "ONS OA 2021 EW BGC V2",
+      "population_year": 2021,
+      "population_area_type": "OA2021"
+    },
+    "scotland": {
+      "source_population_file": "data/raw/population/scot/outputarea2022_usualresidentpopulation.csv",
+      "source_boundary_file": "data/raw/boundaries/scot_output_areas_2022/OutputArea2022_MHW.shp",
+      "boundary_type": "Scotland Output Area 2022 MHW",
+      "population_year": 2022,
+      "population_area_type": "OA2022"
+    }
+  },
+  "n_areas": 235243,
+  "n_missing_population": 0,
+  "n_areas_by_nation": {
+    "England": 178605,
+    "Scotland": 46363,
+    "Wales": 10275
+  },
+  "duplicate_code_checks": {
+    "oa_code_duplicates": 0
+  },
+  "area_summary_by_nation": {
+    "England": {
+      "count": 178605,
+      "min": 1.9401014850427062e-08,
+      "median": 0.06491581941026538,
+      "mean": 0.7304268542456099,
+      "max": 201.66962624602172
+    },
+    "Scotland": {
+      "count": 46363,
+      "min": 4.504423597168671e-05,
+      "median": 0.024995261269114312,
+      "mean": 1.680237554955086,
+      "max": 855.2994624841751
+    },
+    "Wales": {
+      "count": 10275,
+      "min": 0.0032855804794557,
+      "median": 0.10260423439633619,
+      "mean": 2.022589400452508,
+      "max": 137.62202359842155
+    }
+  },
+  "density_summary_by_nation": {
+    "England": {
+      "count": 178605,
+      "min": 0.927166012726174,
+      "median": 4706.008948748038,
+      "mean": 37886.11573089918,
+      "max": 5669806494.559672
+    },
+    "Scotland": {
+      "count": 46363,
+      "min": 0.13266806239266177,
+      "median": 4628.434666756182,
+      "mean": 6195.955799749848,
+      "max": 1509627.115059572
+    },
+    "Wales": {
+      "count": 10275,
+      "min": 1.7875045982307551,
+      "median": 2834.363753741904,
+      "mean": 3504.2158927228647,
+      "max": 50387.36888561564
+    }
+  },
+  "population_summary_by_nation": {
+    "England": {
+      "count": 178605,
+      "min": 98.0,
+      "median": 306.0,
+      "mean": 316.28612860782175,
+      "max": 4502.0
+    },
+    "Scotland": {
+      "count": 46363,
+      "min": 56.0,
+      "median": 111.0,
+      "mean": 117.34106938722688,
+      "max": 2991.0
+    },
+    "Wales": {
+      "count": 10275,
+      "min": 100.0,
+      "median": 293.0,
+      "mean": 302.4294890510949,
+      "max": 2153.0
+    }
+  }
+}

@@ -5,7 +5,7 @@ Loads config/settings.yaml and exposes typed accessors.
 Import this everywhere instead of hardcoding paths or constants.
 
 Usage:
-    from road_risk.config import cfg, PATHS, YEARS, FORCE_CODES
+    from road_risk.config import cfg, PATHS, YEARS, FORCE_CODES, STUDY_AREA
 """
 
 from pathlib import Path
@@ -30,7 +30,8 @@ cfg: dict = _load()
 # --- Convenience aliases ---------------------------------------------------
 
 YEARS = cfg["years"]
-FORCE_CODES = cfg["geography"]["police_force_codes"]
+STUDY_AREA = cfg["study_area"]
+FORCE_CODES = cfg.get("geography", {}).get("police_force_codes", {})
 WEBTRIS_URL = cfg["webtris"]["base_url"]
 
 # Resolve paths relative to project root

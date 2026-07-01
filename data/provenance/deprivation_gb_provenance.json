@@ -1,0 +1,323 @@
+{
+  "script_path": "src/road_risk/features/deprivation.py",
+  "git_sha": "6b20ec94",
+  "timestamp_utc": "2026-06-30T23:35:36.762465+00:00",
+  "warning": "Deciles are within-country relative deprivation measures. A value of 1 means the most deprived 10% within that country/index, not the most deprived 10% of Great Britain.",
+  "area_output": "data/processed/context/deprivation_areas_gb.parquet",
+  "link_assignment_output": "data/processed/context/link_deprivation_gb.parquet",
+  "fallback_distance_threshold_m": 250,
+  "sources": {
+    "England": {
+      "source": "IoD 2025",
+      "source_file": "data/raw/imd/eng/File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv",
+      "boundary_file": "data/raw/boundaries/eng_output_areas_2021/Output_Areas_2021_EW_BGC_V2_-5587136561181621407.gpkg",
+      "geography": "LSOA 2021",
+      "year": 2025
+    },
+    "Wales": {
+      "source": "WIMD 2019",
+      "source_file": "data/raw/imd/wal/welsh-index-multiple-deprivation-2019-index-and-domain-ranks-by-small-area.ods",
+      "boundary_file": "data/raw/boundaries/wal_lsoa_2011/lsoa_wales_2011.gpkg",
+      "geography": "LSOA 2011",
+      "year": 2019
+    },
+    "Scotland": {
+      "source": "SIMD 2020v2",
+      "source_file": "data/raw/imd/scot/SIMD+2020v2+-+datazone+lookup+-+updated+2025.xlsx",
+      "boundary_file": "data/raw/boundaries/scot_data_zones_2011/SG_DataZone_Bdry_2011.shp",
+      "geography": "Data Zone 2011",
+      "year": 2020
+    }
+  },
+  "area_build_checks": {
+    "england_lsoa2021_boundary_rows": 33755,
+    "england_attribute_rows": 33755,
+    "england_rows_missing_geometry": 0,
+    "wales_lsoa2011_boundary_rows": 1909,
+    "wales_attribute_rows": 1909,
+    "wales_rows_missing_geometry": 0,
+    "wales_boundary_rows_without_wimd": 0,
+    "scotland_dz2011_boundary_rows": 6976,
+    "scotland_attribute_rows": 6976,
+    "scotland_rows_missing_geometry": 0
+  },
+  "area_counts_by_country": {
+    "England": 33755,
+    "Scotland": 6976,
+    "Wales": 1909
+  },
+  "area_type_counts": {
+    "DZ2011": 6976,
+    "LSOA2011": 1909,
+    "LSOA2021": 33755
+  },
+  "area_decile_distributions_by_country": {
+    "overall_decile_within_country": {
+      "England": {
+        "1": 3375,
+        "2": 3376,
+        "3": 3375,
+        "4": 3376,
+        "5": 3375,
+        "6": 3376,
+        "7": 3375,
+        "8": 3376,
+        "9": 3375,
+        "10": 3376
+      },
+      "Scotland": {
+        "1": 697,
+        "2": 698,
+        "3": 697,
+        "4": 698,
+        "5": 698,
+        "6": 697,
+        "7": 698,
+        "8": 697,
+        "9": 698,
+        "10": 698
+      },
+      "Wales": {
+        "1": 190,
+        "2": 191,
+        "3": 191,
+        "4": 191,
+        "5": 191,
+        "6": 191,
+        "7": 191,
+        "8": 191,
+        "9": 191,
+        "10": 191
+      }
+    },
+    "income_decile_within_country": {
+      "England": {
+        "1": 3375,
+        "2": 3376,
+        "3": 3375,
+        "4": 3376,
+        "5": 3375,
+        "6": 3376,
+        "7": 3375,
+        "8": 3376,
+        "9": 3375,
+        "10": 3376
+      },
+      "Scotland": {
+        "1": 697,
+        "2": 698,
+        "3": 697,
+        "4": 698,
+        "5": 698,
+        "6": 697,
+        "7": 698,
+        "8": 697,
+        "9": 698,
+        "10": 698
+      },
+      "Wales": {
+        "1": 190,
+        "2": 191,
+        "3": 191,
+        "4": 191,
+        "5": 191,
+        "6": 191,
+        "7": 191,
+        "8": 191,
+        "9": 191,
+        "10": 191
+      }
+    },
+    "employment_decile_within_country": {
+      "England": {
+        "1": 3375,
+        "2": 3376,
+        "3": 3375,
+        "4": 3376,
+        "5": 3375,
+        "6": 3376,
+        "7": 3375,
+        "8": 3376,
+        "9": 3375,
+        "10": 3376
+      },
+      "Scotland": {
+        "1": 697,
+        "2": 698,
+        "3": 697,
+        "4": 698,
+        "5": 698,
+        "6": 697,
+        "7": 698,
+        "8": 697,
+        "9": 698,
+        "10": 698
+      },
+      "Wales": {
+        "1": 190,
+        "2": 191,
+        "3": 191,
+        "4": 191,
+        "5": 191,
+        "6": 191,
+        "7": 191,
+        "8": 191,
+        "9": 191,
+        "10": 191
+      }
+    }
+  },
+  "link_assignment": {
+    "method": "road-link centroid to deprivation polygon; nearest fallback for unmatched centroids",
+    "n_links_total": 2167557,
+    "n_links_with_deprivation": 2167554,
+    "assignment_method_counts": {
+      "nearest_fallback": 162,
+      "unmatched": 3,
+      "within": 2167392
+    },
+    "link_counts_by_country": {
+      "England": 2002027,
+      "NaN": 3,
+      "Scotland": 64322,
+      "Wales": 101205
+    },
+    "link_area_type_counts": {
+      "DZ2011": 64322,
+      "LSOA2011": 101205,
+      "LSOA2021": 2002027,
+      "NaN": 3
+    },
+    "unmatched_count": 3,
+    "fallback_distance_m": {
+      "median": 0.0,
+      "p95": 0.0,
+      "max": 244.06262522364855
+    },
+    "link_decile_distributions_by_country": {
+      "overall_decile_within_country": {
+        "England": {
+          "1": 229342,
+          "2": 173710,
+          "3": 162466,
+          "4": 187748,
+          "5": 220350,
+          "6": 241125,
+          "7": 233717,
+          "8": 227476,
+          "9": 184023,
+          "10": 142070
+        },
+        "Scotland": {
+          "1": 2610,
+          "2": 3153,
+          "3": 3895,
+          "4": 4952,
+          "5": 10954,
+          "6": 13941,
+          "7": 13019,
+          "8": 6914,
+          "9": 3321,
+          "10": 1563
+        },
+        "Wales": {
+          "1": 2080,
+          "2": 3260,
+          "3": 6218,
+          "4": 7874,
+          "5": 12405,
+          "6": 18347,
+          "7": 24609,
+          "8": 14159,
+          "9": 7699,
+          "10": 4554
+        },
+        "nan": {
+          "NaN": 3
+        }
+      },
+      "income_decile_within_country": {
+        "England": {
+          "1": 195263,
+          "2": 162160,
+          "3": 149494,
+          "4": 157019,
+          "5": 172940,
+          "6": 214999,
+          "7": 232753,
+          "8": 262360,
+          "9": 259916,
+          "10": 195123
+        },
+        "Scotland": {
+          "1": 2356,
+          "2": 2769,
+          "3": 4204,
+          "4": 5528,
+          "5": 7761,
+          "6": 6941,
+          "7": 15493,
+          "8": 9441,
+          "9": 6736,
+          "10": 3093
+        },
+        "Wales": {
+          "1": 1929,
+          "2": 3627,
+          "3": 6213,
+          "4": 5015,
+          "5": 8882,
+          "6": 7695,
+          "7": 18147,
+          "8": 21242,
+          "9": 20556,
+          "10": 7899
+        },
+        "nan": {
+          "NaN": 3
+        }
+      },
+      "employment_decile_within_country": {
+        "England": {
+          "1": 228493,
+          "2": 187556,
+          "3": 164893,
+          "4": 156278,
+          "5": 170655,
+          "6": 196512,
+          "7": 220917,
+          "8": 241697,
+          "9": 254958,
+          "10": 180068
+        },
+        "Scotland": {
+          "1": 2474,
+          "2": 2865,
+          "3": 4134,
+          "4": 5704,
+          "5": 6258,
+          "6": 9948,
+          "7": 10173,
+          "8": 11095,
+          "9": 7614,
+          "10": 4057
+        },
+        "Wales": {
+          "1": 1864,
+          "2": 3528,
+          "3": 6726,
+          "4": 4986,
+          "5": 6231,
+          "6": 12402,
+          "7": 11411,
+          "8": 15439,
+          "9": 21523,
+          "10": 17095
+        },
+        "nan": {
+          "NaN": 3
+        }
+      }
+    }
+  }
+}

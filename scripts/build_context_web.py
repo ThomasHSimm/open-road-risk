@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 OPENROADS_PATH = _ROOT / "data/processed/shapefiles/openroads.parquet"
 NETWORK_FEATURES_PATH = _ROOT / "data/features/network_features.parquet"
-RISK_SCORES_EB_PATH = _ROOT / "data/models/risk_scores_eb.parquet"
 RISK_SCORES_PATH = _ROOT / "data/models/risk_scores.parquet"
 DEFAULT_OUTPUT_DIR = _ROOT / "data/outputs/web/context"
 DEFAULT_QUARTO_RESOURCE_DIR = _ROOT / "quarto/data/outputs/web/context"
@@ -39,7 +38,7 @@ OPENROADS_COLUMNS = [
     "geometry",
 ]
 NETWORK_COLUMNS = ["link_id", "ruc_urban_rural"]
-RISK_COLUMNS = ["link_id", "risk_percentile_eb"]
+RISK_COLUMNS = ["link_id", "risk_percentile"]
 OUTPUT_COLUMNS = ["family", "road_function", "road_classification", "geometry"]
 
 FAMILIES = ["motorway", "trunk_a", "other_urban", "other_rural"]
@@ -58,16 +57,11 @@ def _clean_dir(path: Path) -> None:
             stale.unlink()
 
 
-def _choose_risk_path() -> Path:
-    if RISK_SCORES_EB_PATH.exists():
-        return RISK_SCORES_EB_PATH
-    if RISK_SCORES_PATH.exists():
-        return RISK_SCORES_PATH
-    raise FileNotFoundError(
-        "No risk score file found. Tried "
-        f"{RISK_SCORES_EB_PATH.relative_to(_ROOT)} and "
-        f"{RISK_SCORES_PATH.relative_to(_ROOT)}"
-    )
+def _choose_risk_path(explicit_path: Path | None = None) -> Path:
+    path = (explicit_path or RISK_SCORES_PATH).resolve()
+    if path.exists():
+        return path
+    raise FileNotFoundError(f"Risk score file not found: {path.relative_to(_ROOT)}")
 
 
 def _derive_family(df: pd.DataFrame) -> pd.Series:
@@ -221,6 +215,8 @@ def build_context_web(
     other_percentile: float = 15.0,
     max_file_size_mb: float = 5.0,
     quarto_resource_dir: Path | None = DEFAULT_QUARTO_RESOURCE_DIR,
+    risk_scores_path: Path | None = None,
+    ranking_field: str = "risk_percentile",
 ) -> dict[str, Any]:
     _clean_dir(output_dir)
     max_file_size_bytes = int(max_file_size_mb * 1024 * 1024)
@@ -233,9 +229,9 @@ def build_context_web(
     logger.info("Loading network features from %s", NETWORK_FEATURES_PATH.relative_to(_ROOT))
     network = pd.read_parquet(NETWORK_FEATURES_PATH, columns=NETWORK_COLUMNS)
 
-    risk_path = _choose_risk_path()
+    risk_path = _choose_risk_path(risk_scores_path)
     logger.info("Loading risk scores from %s", risk_path.relative_to(_ROOT))
-    risk = pd.read_parquet(risk_path, columns=RISK_COLUMNS)
+    risk = pd.read_parquet(risk_path, columns=["link_id", ranking_field])
 
     gdf = gdf.merge(network, on="link_id", how="left")
     gdf = gdf.merge(risk, on="link_id", how="left")
@@ -250,11 +246,11 @@ def build_context_web(
         "motorway": gdf["family"].eq("motorway"),
         "trunk_a": gdf["family"].eq("trunk_a"),
         "other_urban": gdf["family"].eq("other_urban")
-        & gdf["risk_percentile_eb"].notna()
-        & gdf["risk_percentile_eb"].ge(other_cutoff),
+        & gdf[ranking_field].notna()
+        & gdf[ranking_field].ge(other_cutoff),
         "other_rural": gdf["family"].eq("other_rural")
-        & gdf["risk_percentile_eb"].notna()
-        & gdf["risk_percentile_eb"].ge(other_cutoff),
+        & gdf[ranking_field].notna()
+        & gdf[ranking_field].ge(other_cutoff),
     }
 
     files: list[dict[str, Any]] = []
@@ -287,6 +283,8 @@ def build_context_web(
         "simplification_tolerance_m": FAMILY_TOLERANCE_M,
         "coordinate_precision_degrees": 0.00001,
         "other_percentile": float(other_percentile),
+        "risk_scores_file": str(risk_path.relative_to(_ROOT)),
+        "ranking_field": ranking_field,
         "families": families,
         "total_features": int(sum(record["row_count"] for record in files)),
         "total_file_size_bytes": total_file_size_bytes,
@@ -339,6 +337,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--other-percentile", type=float, default=15.0)
     parser.add_argument("--max-file-size-mb", type=float, default=5.0)
+    parser.add_argument("--risk-scores", type=Path, default=RISK_SCORES_PATH)
+    parser.add_argument("--ranking-field", default="risk_percentile")
     parser.add_argument("--no-quarto-resource-copy", action="store_true")
     return parser.parse_args()
 
@@ -353,6 +353,8 @@ def main() -> None:
         other_percentile=args.other_percentile,
         max_file_size_mb=args.max_file_size_mb,
         quarto_resource_dir=None if args.no_quarto_resource_copy else DEFAULT_QUARTO_RESOURCE_DIR,
+        risk_scores_path=args.risk_scores,
+        ranking_field=args.ranking_field,
     )
 
 

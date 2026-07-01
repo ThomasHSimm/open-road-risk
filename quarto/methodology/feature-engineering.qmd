@@ -121,8 +121,8 @@ than raw latitude/longitude.
 | `betweenness` | Approximate node betweenness centrality, averaged across the link's start and end nodes | Through-route importance; higher values mean the link sits near many shortest paths through the road graph | Stage 1a, Stage 2 |
 | `betweenness_relative` | `log1p(betweenness / mean betweenness for the same road_classification)` | Within-road-class centrality; distinguishes unusually central A-roads from ordinary A-roads, rather than just rediscovering road class | Stage 1a, Stage 2 |
 | `dist_to_major_km` | Graph distance from the link to the nearest Motorway or A-road node | Feeder-network position; lower values mean closer to the major-road network | Stage 1a, Stage 2 |
-| `pop_density_per_km2` | LSOA population density joined to the link centroid | Local demand / urbanisation proxy | Stage 1a, Stage 2 |
-| `ruc_class` | ONS 2021 Rural-Urban Classification code joined via the same nearest-LSOA-centroid assignment | Categorical settlement-context feature at LSOA grain | Speed-limit imputation and Stage 2 context |
+| `pop_density_per_km2` | GB OA population density joined by road-link centroid within the OA polygon, with a short nearest fallback | Local demand / urbanisation proxy | Stage 1a, Stage 2 |
+| `ruc_class` | GB rural-urban context joined by road-link centroid polygon assignment | Categorical settlement-context feature | Speed-limit imputation and Stage 2 context |
 | `ruc_urban_rural` | Top-level Urban/Rural split derived from `ruc_class` | Coarser settlement-context feature for simpler modelling or reporting | Speed-limit imputation and Stage 2 context |
 | `speed_limit_mph` | Raw OSM-tagged speed limit only | Sparse direct observation of signed / mapped speed limits | Retained as provenance; not modelled in current Stage 2 |
 | `speed_limit_mph_effective` | `speed_limit_mph` when present, else UK legal-default lookup by `road_classification` × `ruc_urban_rural` | Fuller-coverage speed-limit proxy | Stage 2 model feature |
@@ -133,6 +133,12 @@ but not the RUC columns. Those are listed here because they are generated in
 the broader link-level feature stack and are intended for downstream use rather
 than the current AADT estimator.
 
+The GB OA population-density polygon layer is generated at
+`data/processed/context/oa_population_density_gb.parquet` from England/Wales
+OA2021 and Scotland OA2022 population and boundary files. Link assignment
+records whether a centroid matched within an OA polygon, used nearest fallback,
+or remained unmatched.
+
 Raw `betweenness` is heavily right-skewed and strongly related to road class:
 motorways and A-roads are central partly by definition. `betweenness_relative`
 therefore exists as the safer modelling version when the question is "is this
@@ -141,11 +147,12 @@ major road?".
 
 ### Rural-Urban Classification (RUC)
 
-`ruc_class` and `ruc_urban_rural` come from the ONS 2021 Rural-Urban
-Classification at LSOA grain for **England and Wales only**. The link-level
-assignment inherits the existing `pop_density_per_km2` pipeline: each road link
-is matched to the **nearest LSOA centroid** within the same 2 km cap, then the
-RUC code is joined by `LSOA21CD`.
+`ruc_class` and `ruc_urban_rural` come from GB rural-urban context:
+England/Wales use the ONS 2021 Rural-Urban Classification at LSOA 2021 grain,
+while Scotland uses the Scottish Government Urban Rural Classification 2022
+polygon layer. Link-level assignment uses road-link centroid containment in
+the relevant polygon layer, with a short nearest fallback for unmatched
+centroids.
 
 This is a deliberate decadal-stability choice. The modelling window runs from
 2015 to 2024, but RUC is treated as structurally slow-moving, so a single 2021
@@ -350,21 +357,20 @@ surfaces links where the GLM linear assumption breaks down.
 
 ### Engineering detail: GLM zero-downsampling
 
-The full training table is ~18M rows. `statsmodels` builds a dense design
-matrix — 18M rows × 15 features × float64 ≈ 2 GB+, which OOMs on many
-machines.
+The clean GB training table is 21,675,570 link-year rows. `statsmodels` builds
+a dense design matrix, which can OOM at this scale once optional context
+features are expanded.
 
-The GLM training set downsamples zero-collision rows to 10× the number of
-positive rows. All ~391k positives are kept; ~3.9M zeros are sampled. This
-keeps the Poisson coefficient estimates stable while making the design
-matrix tractable.
+The GLM training set downsamples zero-collision rows to 3× the number of
+positive rows. All 391,308 positives are kept; 1,173,924 zeros are sampled.
+This keeps the Poisson coefficient estimates useful as a baseline while
+making the design matrix tractable at GB scale.
 
 **Consequence:** the GLM intercept is biased upward — the effective zero
-rate in training (~91% zeros instead of ~98%) implies a higher baseline
-rate than the true population. Feature coefficients are unaffected, so
-**relative** risk rankings are correct, but absolute predicted counts
-inherit the bias. XGBoost uses the full dataset and does not have this
-issue.
+rate in training (~75% zeros instead of ~98%) implies a higher baseline rate
+than the true population. Feature coefficients are still useful for direction
+and relative interpretation, but absolute predicted counts inherit the bias.
+XGBoost uses the full dataset and does not have this issue.
 
 ### Engineering detail: XGBoost `base_margin`
 
@@ -452,7 +458,7 @@ Condensed view of which columns reach the model and how they're used.
 | Road structure | `road_class_ord`, `form_of_way_ord`, 7 binary flags | GLM + XGB | Ordinals + flags for interaction capture |
 | Link length | `log_link_length_km` | GLM + XGB | Captures non-exposure length effects |
 | Temporal | `is_covid`, `year_norm` | GLM + XGB | Training-only; pooled away in scoring |
-| Network/context | `degree_mean`, `betweenness`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph_effective`, `lanes`, `is_unpaved`, IMD deciles, `mean_grade` | GLM + XGB | OSM/LSOA/terrain-enriched where present; GLM optional features use median imputation with missingness flags where needed |
+| Network/context | `degree_mean`, `betweenness`, `dist_to_major_km`, `pop_density_per_km2`, `speed_limit_mph_effective`, `lanes`, `is_unpaved`, within-country deprivation deciles, `mean_grade` | GLM + XGB | OSM/area/terrain-enriched where present; GLM optional features use median imputation with missingness flags where needed |
 | AADT raw | `estimated_aadt` | XGB only | Also in offset; XGB can use both |
 
 ---
@@ -468,20 +474,20 @@ Reported pseudo-R² reflects out-of-link performance, not in-sample fit.
 
 ### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}
 
-The current GLM pseudo-R² (0.347) and post-fix XGBoost pseudo-R² (~0.323) are computed on
+The current clean GB GLM pseudo-R² (0.566) and XGBoost pseudo-R² (0.325) are computed on
 different row subsets with different null models. **They are not directly
 comparable.**
 
 | | GLM | XGBoost |
 |---|---|---|
 | Evaluation set | In-sample (downsampled training table) | Out-of-sample (held-out 20% of links) |
-| Rows | ~4.30M (all positives + 1:10 zero sample) | ~4.34M (true link-year distribution) |
-| Zero rate in eval set | ~91% (downsampled) | ~98% (real distribution) |
+| Rows | ~1.57M (all positives + 1:3 zero sample) | ~4.34M (true held-out link-year distribution) |
+| Zero rate in eval set | ~75% (downsampled) | ~98% (real distribution) |
 | Null model | Intercept-only Poisson on downsampled set | `y_test.mean()` on the real test set |
 
 The current Stage 2 metrics reflect the state after the counted-only Stage 1a
 AADF filter, the Stage 2 post-event provenance guard, OSM network feature
-enrichment, tiered speed-limit imputation, IMD deprivation features, terrain
+enrichment, tiered speed-limit imputation, deprivation features, terrain
 grade, and the GLM optional-feature imputation refactor. These were shipped to
 improve methodological correctness and feature coverage rather than to optimise
 pseudo-R², and attribution of changes across them was not formally ablated.
@@ -491,13 +497,14 @@ using the rank-stability harness where possible.
 Because the GLM null model sees an artificially balanced zero rate, it is
 easier to beat — the true 98% zero rate would produce a higher null deviance
 and a lower pseudo-R² for the same model. Because XGBoost is evaluated on
-the real held-out distribution against that harder null, the post-fix `~0.323`
-figure is the current honest baseline. Earlier repo docs cited `~0.86`, but
-that came from a pre-fix evaluation surface that was later superseded after a
-feature-table leakage diagnosis.
+the real held-out distribution against that harder null, the clean GB `0.325`
+figure is the cleaner current comparison point. Earlier repo docs cited
+`~0.86`, but that came from a pre-fix evaluation surface that was later
+superseded after a feature-table leakage diagnosis.
 
-The practical implication: the 0.347 vs ~0.323 gap should not be read as a
-simple model horse race either, because the evaluation surfaces still differ.
+The practical implication: the 0.566 vs 0.325 gap should not be read as a
+simple model horse race, because the evaluation surfaces still differ and the
+GB GLM uses a lower 1:3 zero-collision sampling ratio for memory reasons.
 A fair comparison would require
 both models evaluated on the same held-out set against the same null model.
 This has not been done; recomputing both on a common evaluation set is a

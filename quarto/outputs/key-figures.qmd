@@ -32,11 +32,20 @@ import pandas as pd
 from shapely import concave_hull
 from shapely.geometry import box
 
-from road_risk.config import _ROOT as ROOT
+from road_risk.config import _ROOT as ROOT, cfg
 
 SHADES = ["#f6ddc9", "#e7b48d", "#d4844f", "#b25636", "#7c3122"]
 GRID_M = 10_000
 MIN_GRID_LINKS = 20
+GB_BBOX = cfg["study_area"]["bbox_wgs84"]
+GB_FIT_BOUNDS = [
+    [GB_BBOX["min_lat"], GB_BBOX["min_lon"]],
+    [GB_BBOX["max_lat"], GB_BBOX["max_lon"]],
+]
+GB_CENTRE = [
+    (GB_BBOX["min_lat"] + GB_BBOX["max_lat"]) / 2,
+    (GB_BBOX["min_lon"] + GB_BBOX["max_lon"]) / 2,
+]
 
 area_paths = [
     ROOT / "data/raw/boundaries/areas_study.geojson",
@@ -198,10 +207,9 @@ area_plot_wgs84 = area_plot.to_crs(4326)
 grid_plot_wgs84 = grid_plot.to_crs(4326)
 reporting_boundaries_wgs84 = reporting_areas.to_crs(4326)
 
-centre = grid_plot_wgs84.union_all().centroid
 risk_map = folium.Map(
-    location=[centre.y, centre.x],
-    zoom_start=7,
+    location=GB_CENTRE,
+    zoom_start=6,
     width="100%",
     height="720px",
     tiles=None,
@@ -433,10 +441,7 @@ risk_map.add_child(ModeButtons(
     "Median risk percentile",
     "linear-gradient(90deg, #f6ddc9, #e7b48d, #d4844f, #b25636, #7c3122)",
 ))
-risk_map.fit_bounds([
-    [grid_plot_wgs84.total_bounds[1], grid_plot_wgs84.total_bounds[0]],
-    [grid_plot_wgs84.total_bounds[3], grid_plot_wgs84.total_bounds[2]],
-])
+risk_map.fit_bounds(GB_FIT_BOUNDS)
 risk_map
 ```
 
@@ -480,8 +485,8 @@ traffic_colour = bcm.LinearColormap(
 )
 
 traffic_map = folium.Map(
-    location=[centre.y, centre.x],
-    zoom_start=7,
+    location=GB_CENTRE,
+    zoom_start=6,
     width="100%",
     height="720px",
     tiles=None,
@@ -559,10 +564,7 @@ traffic_map.add_child(ModeButtons(
     "Median estimated AADT",
     "linear-gradient(90deg, #edf8fb, #b2e2e2, #66c2a4, #2ca25f, #006d2c)",
 ))
-traffic_map.fit_bounds([
-    [grid_plot_wgs84.total_bounds[1], grid_plot_wgs84.total_bounds[0]],
-    [grid_plot_wgs84.total_bounds[3], grid_plot_wgs84.total_bounds[2]],
-])
+traffic_map.fit_bounds(GB_FIT_BOUNDS)
 traffic_map
 ```
 

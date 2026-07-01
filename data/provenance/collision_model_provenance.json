@@ -1,0 +1,32 @@
+{
+  "run_name": "collision_gb_clean_replay_20260701_0132",
+  "stage": "Stage 2 collision model",
+  "command": "conda run --no-capture-output -n env1 python -m road_risk.model.collision",
+  "log_file": "logs/collision_gb_clean_replay_20260701_0132.log",
+  "run_completed_local": "2026-07-01T01:45:59+01:00",
+  "link_year_rows": 21675570,
+  "links_scored": 2167557,
+  "aadt_years": "2015-2024",
+  "traffic_coverage_pct": 72.4,
+  "network_feature_join_pct": 100.0,
+  "glm_zero_sample_ratio": 3,
+  "glm_rows": 1565232,
+  "glm_positive_rows": 391308,
+  "glm_zero_rows": 1173924,
+  "glm_converged": true,
+  "glm_pseudo_r2": 0.5660379360718687,
+  "xgb_pseudo_r2": 0.32452387280219974,
+  "top_1pct_links": 21676,
+  "outputs": [
+    "data/models/collision_glm.pkl",
+    "data/models/collision_xgb.json",
+    "data/models/risk_scores.parquet",
+    "data/models/collision_metrics.json"
+  ],
+  "notes": [
+    "Clean full GB replay completed without interruption or mid-run patching.",
+    "GB population, deprivation and rural/urban context included in model feature lists.",
+    "Retired English-only IMD fields absent.",
+    "GLM pseudo-R2 is not directly comparable with earlier 1:10 zero-sampling runs because this GB run used 1:3 zero sampling for memory."
+  ]
+}

@@ -12,13 +12,13 @@ execute:
   message: false
 ---
 
-This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The ranking uses `risk_percentile_eb`, the preferred empirical-Bayes-adjusted screening ranking for this output; raw `risk_percentile` remains available in the source outputs.
+This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The current GB production export uses the XGBoost `risk_percentile` ranking from `data/models/risk_scores.parquet`.
 
-These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. This page uses global EB shrinkage, not the diagnostic family-stitched model, so motorway calibration remains unresolved for this published screening layer. Sparse collision histories should be interpreted cautiously.
+These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. Sparse collision histories should be interpreted cautiously.
 
-The refreshed outputs were reviewed in May 2026 and judged suitable for screening with caveats. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples. Family-level EB outliers are also flagged for later review.
+The refreshed GB outputs were retrained and replayed cleanly on 2026-07-01. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples.
 
-The map colours links by `log_predicted_eb = log1p(predicted_eb)` rather than by `risk_percentile_eb`, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.
+The map colours links by `log_predicted_score = log1p(predicted_xgb)` rather than by `risk_percentile`, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -182,12 +182,12 @@ The map colours links by `log_predicted_eb = log1p(predicted_eb)` rather than by
 - Web layer: `data/outputs/web/top_1pct_risk_segments.geojson`.
 - Context network layers: `data/outputs/web/context/context_manifest.json` plus split GeoJSON files.
   Motorway and trunk-A links are shown in full; `other_urban` and `other_rural`
-  show the top context percentile by `risk_percentile_eb` recorded in the manifest.
+  show the top context percentile by the ranking field recorded in the manifest.
 - Features: 21,676 road links.
-- GeoJSON size: 14,709,969 bytes.
+- GeoJSON size: 15,880,206 bytes.
 - Geometry simplification: 25 m tolerance in EPSG:3857, then written as EPSG:4326 with coordinates rounded to 0.00001 degrees.
-- Colour scaling: `log_predicted_eb = log1p(predicted_eb)`.
-- QA status: reviewed May 2026; suitable for screening with caveats. See `reports/top_risk_output_qa.md`.
+- Colour scaling: `log_predicted_score = log1p(predicted_xgb)`.
+- QA status: GB production model replayed cleanly on 2026-07-01; top-risk plausibility review still required before publication claims.
 - Background map: OpenStreetMap tiles, with static project GeoJSON files for the risk and context layers.
 
 <script>
@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function colourLimitsForFeatures(features) {
     const values = features
-      .map((feature) => Number(feature.properties.log_predicted_eb))
+      .map((feature) => Number(feature.properties.log_predicted_score ?? feature.properties.log_predicted_eb))
       .filter(Number.isFinite)
       .sort((a, b) => a - b);
 
@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function featureColor(feature) {
-    const raw = Number(feature.properties.log_predicted_eb);
+    const raw = Number(feature.properties.log_predicted_score ?? feature.properties.log_predicted_eb);
     const value = Number.isFinite(raw) ? raw : logMin;
     const t = Math.max(0, Math.min(0.9999, (value - logMin) / Math.max(logMax - logMin, 1e-9)));
     return colors[Math.floor(t * colors.length)];
@@ -421,9 +421,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ["Serious count", properties.serious_count],
       ["Estimated AADT", formatNumber(properties.estimated_aadt, 1)],
       ["Link length km", formatNumber(properties.link_length_km, 3)],
-      ["Predicted EB", formatNumber(properties.predicted_eb, 3)],
+      ["Predicted score", formatNumber(properties.predicted_xgb ?? properties.predicted_eb, 3)],
       ["Predicted XGB", formatNumber(properties.predicted_xgb, 3)],
-      ["Risk percentile EB", formatNumber(properties.risk_percentile_eb, 3)],
+      ["Risk percentile", formatNumber(properties.risk_percentile ?? properties.risk_percentile_eb, 3)],
       ["Calibration caveat", properties.calibration_caveat || "None flagged"]
     ];
 
@@ -508,8 +508,8 @@ document.addEventListener("DOMContentLoaded", () => {
     logMax = colourLimits.max;
     if (legendScaleLabel) {
       legendScaleLabel.textContent = colourLimits.count >= 5
-        ? "log1p(predicted EB), clipped to visible 2nd-98th percentile"
-        : "log1p(predicted EB), visible raw min-max";
+        ? "log1p(predicted score), clipped to visible 2nd-98th percentile"
+        : "log1p(predicted score), visible raw min-max";
     }
 
     if (currentHaloLayer) {
@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const div = L.DomUtil.create("div", "risk-legend");
     div.innerHTML = `
       <strong>Risk links</strong><br>
-      colour = <span id="risk-legend-scale-label">log1p(predicted EB), clipped to visible 2nd-98th percentile</span><br>
+      colour = <span id="risk-legend-scale-label">log1p(predicted score), clipped to visible 2nd-98th percentile</span><br>
       width = global risk rank band
       <div class="risk-legend-gradient"></div>
       <div style="display:flex;justify-content:space-between;gap:1rem">

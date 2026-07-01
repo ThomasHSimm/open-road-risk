@@ -5,9 +5,9 @@ Stage 2: Poisson GLM + XGBoost collision risk model.
 
 Architecture
 ------------
-Train on all links × AADF years (2019, 2021, 2023) using year_norm and
-is_covid as temporal features. This pools collision data across years,
-giving better statistical power for rare per-link-per-year events.
+Train on all links × available AADT estimate years using year_norm and is_covid
+as temporal features. This pools collision data across years, giving better
+statistical power for rare per-link-per-year events.
 
 Score ALL links — not just those with observed collisions. A link with
 zero collisions and valid exposure is a genuine low-risk observation.
@@ -25,6 +25,7 @@ Key design decisions
   trend and Covid anomaly — they just don't appear in the output grain.
 """
 
+import argparse
 import json
 import logging
 
@@ -43,12 +44,14 @@ logger = logging.getLogger(__name__)
 
 # GLM zero-downsampling ratio: keep all positive link-years but sample
 # zero-collision rows to this multiple. Prevents OOM on statsmodels dense
-# design matrix (18M rows × 15 features × float64 ≈ 2GB+).
+# design matrix at GB scale.
 # XGBoost is not affected — it handles full dataset via its own chunking.
-# Ratio of 10 gives ~4M rows (391k positives × ~10 zeros) — sufficient
-# for stable GLM coefficient estimation on rare-event Poisson data.
-GLM_ZERO_SAMPLE_RATIO = 10
+# Ratio of 3 gives ~1.6M rows for GB (391k positives × ~3 zeros): enough
+# for a baseline coefficient check without trying to pickle a multi-GB GLM.
+GLM_ZERO_SAMPLE_RATIO = 3
 SCORE_CHUNK_ROWS = 1_000_000
+SMOKE_POSITIVE_LINKS = 800
+SMOKE_LINKS_PER_COUNTRY = 300
 
 MODELS = _ROOT / cfg["paths"]["models"]
 OPENROADS_PATH = _ROOT / cfg["paths"]["processed"] / "shapefiles/openroads.parquet"
@@ -69,6 +72,45 @@ FORBIDDEN_POST_EVENT_COLS = {
     "mean_speed_limit",
 }
 
+GB_CONTEXT_REQUIRED_COLS = [
+    "pop_density_per_km2",
+    "population_nation",
+    "overall_decile_within_country",
+    "income_decile_within_country",
+    "employment_decile_within_country",
+    "deprivation_country_england",
+    "deprivation_country_wales",
+    "deprivation_country_scotland",
+    "ruc_class",
+    "ruc_urban_rural",
+    "ruc_country",
+]
+
+OPTIONAL_MODEL_FEATURE_COLS = [
+    "hgv_proportion",
+    "degree_mean",
+    "betweenness",
+    "betweenness_relative",
+    "dist_to_major_km",
+    "pop_density_per_km2",
+    "speed_limit_mph_effective",
+    "lanes",
+    "is_unpaved",
+    "overall_decile_within_country",
+    "income_decile_within_country",
+    "employment_decile_within_country",
+    "deprivation_country_england",
+    "deprivation_country_wales",
+    "deprivation_country_scotland",
+    "mean_grade",
+]
+
+NETWORK_FEATURE_COLS_FOR_COLLISION = [
+    "link_id",
+    "speed_limit_mph",
+    *[col for col in OPTIONAL_MODEL_FEATURE_COLS if col != "hgv_proportion"],
+]
+
 
 def _assert_no_post_event_features(feature_cols: list[str], *, context: str) -> None:
     """Fail fast if collision-derived diagnostics enter a model feature list."""
@@ -86,6 +128,7 @@ def build_collision_dataset(
     aadt_estimates: pd.DataFrame,
     rla: pd.DataFrame,
     net_features: pd.DataFrame | None = None,
+    traffic_features: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """
     Build full collision dataset for Poisson modelling.
@@ -162,7 +205,29 @@ def build_collision_dataset(
     # Join pre-collision traffic features from the all-link × year table.
     # These must not be sourced from road_link_annual, which is collision-
     # aggregate-first and therefore has no rows for zero-collision link-years.
-    if TRAFFIC_FEATURES_PATH.exists():
+    if traffic_features is not None:
+        traffic_cols = ["link_id", "year", "hgv_proportion"]
+        traffic = traffic_features[
+            [c for c in traffic_cols if c in traffic_features.columns]
+        ].copy()
+        if "hgv_proportion" in traffic.columns:
+            if traffic.duplicated(["link_id", "year"]).any():
+                raise RuntimeError("traffic_features has duplicate link_id/year rows")
+            before_rows = len(base)
+            base = base.merge(traffic, on=["link_id", "year"], how="left")
+            if len(base) != before_rows:
+                raise RuntimeError(
+                    "Traffic feature join changed Stage 2 row count; "
+                    "traffic_features must be unique by link_id/year"
+                )
+            n_hgv = base["hgv_proportion"].notna().sum()
+            logger.info(
+                f"  Traffic features joined: hgv_proportion present on "
+                f"{n_hgv:,} / {len(base):,} rows ({n_hgv / len(base):.1%})"
+            )
+        else:
+            logger.warning("  supplied traffic_features has no hgv_proportion column — skipping")
+    elif TRAFFIC_FEATURES_PATH.exists():
         traffic_cols = ["link_id", "year", "hgv_proportion"]
         traffic = pd.read_parquet(TRAFFIC_FEATURES_PATH, columns=traffic_cols)
         if "hgv_proportion" in traffic.columns:
@@ -235,6 +300,16 @@ def build_collision_dataset(
     base["log_link_length"] = np.log(base["link_length_km"].clip(lower=0.001))
 
     if net_features is not None:
+        keep_cols = [
+            col for col in NETWORK_FEATURE_COLS_FOR_COLLISION if col in net_features.columns
+        ]
+        dropped_cols = sorted(set(net_features.columns) - set(keep_cols))
+        if dropped_cols:
+            logger.info(
+                "  Trimming %s non-model network feature columns before link-year merge",
+                f"{len(dropped_cols):,}",
+            )
+        net_features = net_features[keep_cols].copy()
         base = base.merge(net_features, on="link_id", how="left")
         n_net = base["degree_mean"].notna().sum()
         logger.info(
@@ -249,7 +324,7 @@ def build_collision_dataset(
     return base
 
 
-def train_collision_glm(df: pd.DataFrame) -> tuple:
+def train_collision_glm(df: pd.DataFrame, maxiter: int = 100) -> tuple:
     """
     Fit Poisson GLM with AADT log-offset. Returns result, features, summary.
     """
@@ -294,21 +369,7 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
     # Materialisation policy: imputed/missing columns are computed on
     # the DOWNSAMPLED frame, not on the full 21.7M-row df, to keep
     # peak memory in budget.
-    network_candidates = [
-        "hgv_proportion",
-        "degree_mean",
-        "betweenness",
-        "betweenness_relative",
-        "dist_to_major_km",
-        "pop_density_per_km2",
-        "speed_limit_mph_effective",
-        "lanes",
-        "is_unpaved",
-        "imd_decile",
-        "imd_crime_decile",
-        "imd_living_indoor_decile",
-        "mean_grade",
-    ]
+    network_candidates = OPTIONAL_MODEL_FEATURE_COLS
     MIN_COVERAGE_FOR_INCLUSION = 0.05
     SKIP_MISSING_FLAG_COVERAGE = 0.99
 
@@ -391,7 +452,7 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         X,
         family=sm.families.Poisson(),
         offset=glm_df["log_offset"].astype(float),
-    ).fit(maxiter=100)
+    ).fit(maxiter=maxiter)
 
     summary = {
         "n_obs": len(glm_df),
@@ -431,6 +492,11 @@ def train_collision_glm(df: pd.DataFrame) -> tuple:
         for raw_col, _median_val, _imputed_name, missing_name in feature_specs
         if missing_name is not None
     }
+    try:
+        result.remove_data()
+        logger.info("  Removed stored GLM training data before scoring/saving")
+    except Exception as e:
+        logger.warning("  Could not remove stored GLM training data: %s", e)
 
     return result, feature_cols, summary
 
@@ -463,38 +529,20 @@ def train_collision_xgb(df: pd.DataFrame, seed: int = RANDOM_STATE) -> tuple:
         "is_covid",
         "year_norm",
     ]
-    for col in [
-        "hgv_proportion",
-        "degree_mean",
-        "betweenness",
-        "betweenness_relative",
-        "dist_to_major_km",
-        "pop_density_per_km2",
-        "speed_limit_mph_effective",
-        "lanes",
-        "is_unpaved",
-        "imd_decile",
-        "imd_crime_decile",
-        "imd_living_indoor_decile",
-        "mean_grade",
-    ]:
+    for col in OPTIONAL_MODEL_FEATURE_COLS:
         if col in df.columns:
             feature_cols.append(col)
     _assert_no_post_event_features(feature_cols, context="XGBoost")
 
-    model_df = df[feature_cols + ["collision_count", "log_offset"]].copy()
-    model_df[feature_cols] = model_df[feature_cols].fillna(0)
-    model_df["log_offset"] = model_df["log_offset"].fillna(0)
-
-    logger.info(f"  XGBoost training rows: {len(model_df):,}")
+    logger.info(f"  XGBoost training rows: {len(df):,}")
 
     # XGBoost computes in float32 internally; explicit downcast avoids
     # silent float64 copies of the 21.7M-row training matrix and resolves
     # the Int8/extension-dtype interop where pd.NA -> np.nan upcast forces
     # an additional copy.
-    X = model_df[feature_cols].astype("float32")
-    y = model_df["collision_count"].astype(int)
-    offsets = model_df["log_offset"].values.astype("float32")
+    X = df[feature_cols].fillna(0).astype("float32")
+    y = df["collision_count"].astype(int)
+    offsets = df["log_offset"].fillna(0).values.astype("float32")
 
     # XGBoost Poisson with exposure offset via base_margin.
     # base_margin sets the initial prediction in log-space so the model
@@ -675,7 +723,7 @@ def score_collision_models(
     pooled = df.groupby("link_id").agg(pool_agg).reset_index()
 
     # Diagnostic residual: observed minus GLM-predicted total.
-    # The GLM was trained on downsampled zeros (ratio 1:10), which biases
+    # The GLM was trained on downsampled zeros, which biases
     # the intercept. Use residual_glm for spatial pattern diagnosis only —
     # not as a calibrated excess-collision count.
     n_years = df["year"].nunique()
@@ -740,6 +788,168 @@ def score_and_save(
     return pooled
 
 
+def _parquet_columns(path) -> set[str]:
+    import pyarrow.parquet as pq
+
+    return set(pq.ParquetFile(path).schema_arrow.names)
+
+
+def _read_parquet_for_links(path, link_ids, columns: list[str] | None = None) -> pd.DataFrame:
+    link_ids = list(pd.Index(link_ids).astype(str).unique())
+    try:
+        return pd.read_parquet(
+            path,
+            columns=columns,
+            filters=[("link_id", "in", link_ids)],
+        )
+    except Exception as e:
+        logger.warning(
+            "Filtered parquet read failed for %s (%s); falling back to full column read.",
+            path,
+            e,
+        )
+        df = pd.read_parquet(path, columns=columns)
+        return df[df["link_id"].astype(str).isin(link_ids)].copy()
+
+
+def _assert_gb_context_schema(net_path=NET_PATH) -> None:
+    columns = _parquet_columns(net_path)
+    missing = sorted(set(GB_CONTEXT_REQUIRED_COLS).difference(columns))
+    legacy_prefix = "imd"
+    retired_present = sorted(
+        col
+        for col in columns
+        if col == f"{legacy_prefix}_decile"
+        or (col.startswith(f"{legacy_prefix}_") and col.endswith("_decile"))
+    )
+    if missing:
+        raise RuntimeError(f"network_features.parquet is missing GB context columns: {missing}")
+    if retired_present:
+        raise RuntimeError(
+            "network_features.parquet still contains retired English-only IMD fields: "
+            f"{retired_present}"
+        )
+
+
+def _sample_smoke_link_ids(
+    positive_links: int = SMOKE_POSITIVE_LINKS,
+    links_per_country: int = SMOKE_LINKS_PER_COUNTRY,
+    seed: int = RANDOM_STATE,
+) -> pd.Index:
+    rla = pd.read_parquet(RLA_PATH, columns=["link_id", "collision_count"])
+    positive = pd.Index(rla.loc[rla["collision_count"].gt(0), "link_id"].dropna().unique())
+    n_positive = min(positive_links, len(positive))
+    positive_sample = positive.to_series().sample(n=n_positive, random_state=seed)
+
+    context = pd.read_parquet(NET_PATH, columns=["link_id", "ruc_country"])
+    country_samples = []
+    for i, country in enumerate(["England", "Wales", "Scotland"], start=1):
+        candidates = context.loc[context["ruc_country"].eq(country), "link_id"].dropna()
+        n_country = min(links_per_country, len(candidates))
+        if n_country == 0:
+            raise RuntimeError(f"No {country} links found in ruc_country for smoke sample")
+        country_samples.append(candidates.sample(n=n_country, random_state=seed + i))
+
+    link_ids = pd.Index(pd.concat([positive_sample, *country_samples]).astype(str).unique())
+    logger.info(
+        "Smoke sample link_ids: %s total (%s positive-link seeds + %s per country)",
+        f"{len(link_ids):,}",
+        f"{n_positive:,}",
+        f"{links_per_country:,}",
+    )
+    return link_ids
+
+
+def run_collision_smoke(
+    positive_links: int = SMOKE_POSITIVE_LINKS,
+    links_per_country: int = SMOKE_LINKS_PER_COUNTRY,
+) -> dict:
+    """
+    Cheap Stage 2 schema/plumbing smoke test.
+
+    Loads a small link sample from the real model inputs, asserts the GB context
+    columns, builds the normal collision modelling frame for that subset, fits
+    the fast GLM baseline, and exits without writing model artefacts.
+    """
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-8s  %(message)s")
+    logger.info("=== Collision model smoke test ===")
+    _assert_gb_context_schema(NET_PATH)
+
+    link_ids = _sample_smoke_link_ids(
+        positive_links=positive_links,
+        links_per_country=links_per_country,
+    )
+
+    openroads_cols = [
+        "link_id",
+        "road_classification",
+        "form_of_way",
+        "link_length_km",
+        "is_trunk",
+        "is_primary",
+    ]
+    rla_cols = [
+        "link_id",
+        "year",
+        "collision_count",
+        "fatal_count",
+        "serious_count",
+        "slight_count",
+        "casualty_count",
+    ]
+    traffic_cols = ["link_id", "year", "hgv_proportion"]
+
+    openroads = _read_parquet_for_links(OPENROADS_PATH, link_ids, columns=openroads_cols)
+    aadt_estimates = _read_parquet_for_links(
+        AADT_PATH,
+        link_ids,
+        columns=["link_id", "year", "estimated_aadt"],
+    )
+    rla = _read_parquet_for_links(RLA_PATH, link_ids, columns=rla_cols)
+    net_features = _read_parquet_for_links(NET_PATH, link_ids)
+    context_missingness = net_features[GB_CONTEXT_REQUIRED_COLS].isna().mean().sort_index()
+    traffic_features = (
+        _read_parquet_for_links(TRAFFIC_FEATURES_PATH, link_ids, columns=traffic_cols)
+        if TRAFFIC_FEATURES_PATH.exists()
+        else None
+    )
+
+    df = build_collision_dataset(
+        openroads,
+        aadt_estimates,
+        rla,
+        net_features=net_features,
+        traffic_features=traffic_features,
+    )
+
+    glm_result, glm_features, glm_summary = train_collision_glm(df, maxiter=200)
+
+    print("\n=== Collision smoke test ===")
+    print(f"Rows: {len(df):,}")
+    print(f"Links: {df['link_id'].nunique():,}")
+    print(f"Years: {sorted(df['year'].unique().tolist())}")
+    print(f"Positive link-years: {int(df['collision_count'].gt(0).sum()):,}")
+    print("\nGB context missingness:")
+    print((context_missingness * 100).round(3).astype(str).add("%").to_string())
+    print("\nSelected GLM features:")
+    print("\n".join(f"  {col}" for col in glm_features))
+    print(
+        "\nGLM smoke fit: "
+        f"n_obs={glm_summary['n_obs']:,}, "
+        f"pseudo_r2={glm_summary['pseudo_r2']:.4f}, "
+        f"converged={glm_summary['converged']}"
+    )
+
+    return {
+        "rows": int(len(df)),
+        "links": int(df["link_id"].nunique()),
+        "positive_link_years": int(df["collision_count"].gt(0).sum()),
+        "glm_features": glm_features,
+        "glm_summary": glm_summary,
+        "glm_converged": bool(getattr(glm_result, "converged", False)),
+    }
+
+
 def run_collision_stage() -> pd.DataFrame:
     """
     Run Stage 2 end-to-end. Loads all required inputs, trains, scores, saves.
@@ -750,7 +960,14 @@ def run_collision_stage() -> pd.DataFrame:
 
     openroads = gpd.read_parquet(OPENROADS_PATH)
     rla = pd.read_parquet(RLA_PATH)
-    net_features = pd.read_parquet(NET_PATH) if NET_PATH.exists() else None
+    if NET_PATH.exists():
+        _assert_gb_context_schema(NET_PATH)
+        net_feature_columns = [
+            col for col in NETWORK_FEATURE_COLS_FOR_COLLISION if col in _parquet_columns(NET_PATH)
+        ]
+        net_features = pd.read_parquet(NET_PATH, columns=net_feature_columns)
+    else:
+        net_features = None
     if net_features is None:
         logger.warning("Network features not found — run network_features.py first")
 
@@ -796,3 +1013,38 @@ def run_collision_stage() -> pd.DataFrame:
         )
 
     return risk_scores
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Stage 2 collision model")
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="Run a cheap schema/model-plumbing smoke test instead of a full retrain",
+    )
+    parser.add_argument(
+        "--smoke-positive-links",
+        type=int,
+        default=SMOKE_POSITIVE_LINKS,
+        help=f"Positive-collision links to sample for --smoke (default: {SMOKE_POSITIVE_LINKS})",
+    )
+    parser.add_argument(
+        "--smoke-links-per-country",
+        type=int,
+        default=SMOKE_LINKS_PER_COUNTRY,
+        help=f"Links to sample per RUC country for --smoke (default: {SMOKE_LINKS_PER_COUNTRY})",
+    )
+    args = parser.parse_args()
+
+    if args.smoke:
+        run_collision_smoke(
+            positive_links=args.smoke_positive_links,
+            links_per_country=args.smoke_links_per_country,
+        )
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-8s  %(message)s")
+        run_collision_stage()
+
+
+if __name__ == "__main__":
+    main()

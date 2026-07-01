@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Open Road Risk Modelling Approach – Open Road Risk</title>
 <style>
@@ -535,10 +535,10 @@ background-size: cover;
 <ul>
 <li><strong>Stage 1a:</strong> CV R² ~0.83 on counted-only AADF rows.</li>
 <li><strong>Stage 1b:</strong> CV R² ~0.65 on <code>core_daytime_frac</code>, ~0.46 on <code>late_evening_frac</code> (weakest band).</li>
-<li><strong>Stage 2:</strong> Out-of-sample pseudo-R² about 0.32 for the post-fix XGBoost baseline (five-seed mean 0.323, with temporal features included), and 0.347 for the GLM in-sample on the downsampled training set.</li>
+<li><strong>Stage 2:</strong> The clean full GB run gives out-of-sample pseudo-R² 0.325 for XGBoost, with temporal features included, and 0.566 for the GLM in-sample on a 1:3 zero-collision downsampled training set.</li>
 </ul>
 <p><strong>The Stage 1a and Stage 2 metrics are not directly comparable</strong> — different targets, different null models, different row subsets. See <a href="../methodology/model-inventory.html">Model Inventory</a> for full performance metrics and <a href="../methodology/empirical-bayes-shrinkage.html">Empirical Bayes Shrinkage</a> for the post-modelling adjustment that handles overconfidence on zero-collision links.</p>
-<p>Earlier internal docs and site pages cited a Stage 2 XGBoost pseudo-R² around <code>0.86</code>. That number came from a pre-fix evaluation surface that was later superseded after a Stage 2 feature-table bug and leakage issue were diagnosed. For current project positioning, use the post-fix <code>~0.32</code> baseline instead.</p>
+<p>Earlier internal docs and site pages cited a Stage 2 XGBoost pseudo-R² around <code>0.86</code>. That number came from a pre-fix evaluation surface that was later superseded after a Stage 2 feature-table bug and leakage issue were diagnosed. For current project positioning, use the clean GB XGBoost pseudo-R² of <code>0.325</code> as the primary comparison point.</p>
 </section>
 <section id="what-this-section-covers" class="level2">
 <h2 class="anchored" data-anchor-id="what-this-section-covers">What this section covers</h2>

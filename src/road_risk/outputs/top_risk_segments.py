@@ -110,9 +110,18 @@ NETWORK_COLUMNS = [
     "link_id",
     "ruc_class",
     "ruc_urban_rural",
-    "imd_decile",
-    "imd_crime_decile",
-    "imd_living_indoor_decile",
+    "deprivation_area_code",
+    "deprivation_area_type",
+    "deprivation_country",
+    "deprivation_source",
+    "deprivation_assignment_method",
+    "deprivation_assignment_distance_m",
+    "overall_decile_within_country",
+    "income_decile_within_country",
+    "employment_decile_within_country",
+    "deprivation_country_england",
+    "deprivation_country_wales",
+    "deprivation_country_scotland",
     "mean_grade",
     "max_grade",
     "grade_change",
@@ -220,7 +229,7 @@ def _read_parquet_selected(
 
 def _choose_risk_path(ranking_field: str, explicit_path: Path | None) -> Path:
     if explicit_path is not None:
-        return explicit_path
+        return explicit_path.resolve()
     candidates = [DEFAULT_RISK_EB_PATH, DEFAULT_RISK_PATH]
     for path in candidates:
         if path.exists() and ranking_field in _schema_columns(path):
@@ -1261,7 +1270,7 @@ def make_context_plots(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--percentile", type=float, default=1.0)
-    parser.add_argument("--ranking-field", default="risk_percentile_eb")
+    parser.add_argument("--ranking-field", default="risk_percentile")
     parser.add_argument("--risk-scores", type=Path, default=None)
     parser.add_argument("--report", type=Path, default=REPORT_PATH)
     parser.add_argument("--csv", nargs="?", const=CSV_PATH, type=Path, default=None)

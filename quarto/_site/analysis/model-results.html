@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Stage 2: Collision Risk Model – Open Road Risk</title>
 <style>
@@ -124,13 +124,13 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <meta property="og:description" content="Analysis of Stage 2 collision risk model outputs, feature behaviour, metrics, ranking patterns, and diagnostic comparisons.">
 <meta property="og:image" content="https://openroadrisk.org/analysis/model-results_files/figure-html/cell-4-output-1.png">
 <meta property="og:site_name" content="Open Road Risk">
-<meta property="og:image:height" content="2913">
-<meta property="og:image:width" content="1515">
+<meta property="og:image:height" content="2740">
+<meta property="og:image:width" content="1513">
 <meta name="twitter:title" content="Stage 2: Collision Risk Model – Open Road Risk">
 <meta name="twitter:description" content="Analysis of Stage 2 collision risk model outputs, feature behaviour, metrics, ranking patterns, and diagnostic comparisons.">
 <meta name="twitter:image" content="https://openroadrisk.org/analysis/model-results_files/figure-html/cell-4-output-1.png">
-<meta name="twitter:image-height" content="2913">
-<meta name="twitter:image-width" content="1515">
+<meta name="twitter:image-height" content="2740">
+<meta name="twitter:image-width" content="1513">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -437,7 +437,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a>
+  <ul class="collapse">
+  <li><a href="#clean-gb-collision-retrain" id="toc-clean-gb-collision-retrain" class="nav-link" data-scroll-target="#clean-gb-collision-retrain"><span class="header-section-number">1.1</span> Clean GB collision retrain</a></li>
+  </ul></li>
   <li><a href="#model-performance" id="toc-model-performance" class="nav-link" data-scroll-target="#model-performance"><span class="header-section-number">2</span> Model performance</a>
   <ul class="collapse">
   <li><a href="#glm-summary" id="toc-glm-summary" class="nav-link" data-scroll-target="#glm-summary"><span class="header-section-number">2.1</span> GLM summary</a></li>
@@ -499,7 +502,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <li><strong>XGBoost Poisson</strong> — captures non-linear interactions, higher predictive power</li>
 </ul>
 <p>Both models are trained on link × year data then pooled to a single stable risk score per link. The pooled output (<code>risk_scores.parquet</code>) has one row per link with no year dimension.</p>
-<div id="6d5b0062" class="cell" data-execution_count="1">
+<section id="clean-gb-collision-retrain" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="clean-gb-collision-retrain"><span class="header-section-number">1.1</span> Clean GB collision retrain</h3>
+<p>A clean full GB Stage 2 collision retrain was completed on 2026-07-01 using the refreshed GB context feature table. The run built 21,675,570 link-year rows and scored all 2,167,557 road links. The model included GB population, deprivation, and rural/urban context fields, and excluded the retired English-only IMD fields.</p>
+<p>The XGBoost Poisson model achieved pseudo-R² = 0.325, broadly consistent with the previous model. The GLM baseline converged with pseudo-R² = 0.566, but this value is not directly comparable with earlier GLM runs because the GB run used a lower zero-collision sampling ratio of 1:3 for memory reasons.</p>
+<p>Outputs were written to <code>data/models/risk_scores.parquet</code>, <code>data/models/collision_glm.pkl</code>, <code>data/models/collision_xgb.json</code>, and <code>data/models/collision_metrics.json</code>.</p>
+<div id="ecce4287" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -507,9 +515,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.colors <span class="im">as</span> mcolors</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT <span class="im">as</span> ROOT</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT <span class="im">as</span> ROOT, cfg</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>RANDOM_STATE <span class="op">=</span> <span class="dv">42</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>XGB_POSTFIX_PR2 <span class="op">=</span> <span class="fl">0.323498</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>GB_BBOX <span class="op">=</span> cfg[<span class="st">"study_area"</span>][<span class="st">"bbox_wgs84"</span>]</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> geopandas <span class="im">as</span> gpd</span>
@@ -522,44 +530,53 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(ROOT <span class="op">/</span> <span class="st">"data/models/collision_metrics.json"</span>) <span class="im">as</span> f:</span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    metrics <span class="op">=</span> json.load(f)</span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD:</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> gpd.read_parquet(or_path) <span class="cf">if</span> or_path.exists() <span class="cf">else</span> <span class="va">None</span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>cls_order <span class="op">=</span> [<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>, <span class="st">"B Road"</span>, <span class="st">"Classified Unnumbered"</span>,</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Not Classified"</span>, <span class="st">"Unclassified"</span>, <span class="st">"Unknown"</span>]</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>cls_in_data <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> cls_order <span class="cf">if</span> c <span class="kw">in</span> risk[<span class="st">"road_classification"</span>].unique()]</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links scored     : </span><span class="sc">{</span><span class="bu">len</span>(risk)<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"With collisions  : </span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss"> "</span></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(</span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss"> of all links)"</span>)</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total collisions : </span><span class="sc">{</span>risk[<span class="st">'collision_count'</span>]<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total fatals     : </span><span class="sc">{</span>risk[<span class="st">'fatal_count'</span>]<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Model performance:"</span>)</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  GLM pseudo-R²  : </span><span class="sc">{</span>metrics[<span class="st">'glm'</span>][<span class="st">'pseudo_r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  XGB pseudo-R²  : </span><span class="sc">{</span>XGB_POSTFIX_PR2<span class="sc">:.3f}</span><span class="ss"> (post-fix 5-seed mean)"</span>)</span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  GLM converged  : </span><span class="sc">{</span>metrics[<span class="st">'glm'</span>][<span class="st">'converged'</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>XGB_CURRENT_PR2 <span class="op">=</span> metrics[<span class="st">"xgb"</span>][<span class="st">"pseudo_r2"</span>]</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD:</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    or_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> gpd.read_parquet(or_path) <span class="cf">if</span> or_path.exists() <span class="cf">else</span> <span class="va">None</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    openroads <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> set_gb_wgs84_extent(ax):</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Use the configured GB frame so old regional data does not silently crop maps."""</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(GB_BBOX[<span class="st">"min_lon"</span>], GB_BBOX[<span class="st">"max_lon"</span>])</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim(GB_BBOX[<span class="st">"min_lat"</span>], GB_BBOX[<span class="st">"max_lat"</span>])</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>cls_order <span class="op">=</span> [<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>, <span class="st">"B Road"</span>, <span class="st">"Classified Unnumbered"</span>,</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Not Classified"</span>, <span class="st">"Unclassified"</span>, <span class="st">"Unknown"</span>]</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>cls_in_data <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> cls_order <span class="cf">if</span> c <span class="kw">in</span> risk[<span class="st">"road_classification"</span>].unique()]</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links scored     : </span><span class="sc">{</span><span class="bu">len</span>(risk)<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"With collisions  : </span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss"> "</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(</span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss"> of all links)"</span>)</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total collisions : </span><span class="sc">{</span>risk[<span class="st">'collision_count'</span>]<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total fatals     : </span><span class="sc">{</span>risk[<span class="st">'fatal_count'</span>]<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Model performance:"</span>)</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  GLM pseudo-R²  : </span><span class="sc">{</span>metrics[<span class="st">'glm'</span>][<span class="st">'pseudo_r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  XGB pseudo-R²  : </span><span class="sc">{</span>XGB_CURRENT_PR2<span class="sc">:.3f}</span><span class="ss"> (current clean GB run)"</span>)</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  GLM converged  : </span><span class="sc">{</span>metrics[<span class="st">'glm'</span>][<span class="st">'converged'</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Links scored     : 2,167,557
-With collisions  : 233,604 (10.8% of all links)
-Total collisions : 450,992
+With collisions  : 233,745 (10.8% of all links)
+Total collisions : 450,991
 Total fatals     : 7,402
 
 Model performance:
-  GLM pseudo-R²  : 0.351
-  XGB pseudo-R²  : 0.323 (post-fix 5-seed mean)
+  GLM pseudo-R²  : 0.566
+  XGB pseudo-R²  : 0.325 (current clean GB run)
   GLM converged  : True</code></pre>
 </div>
 </div>
 <hr>
 </section>
+</section>
 <section id="model-performance" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="model-performance"><span class="header-section-number">2</span> Model performance</h2>
 <section id="glm-summary" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="glm-summary"><span class="header-section-number">2.1</span> GLM summary</h3>
-<div id="89c39ade" class="cell" data-execution_count="2">
+<div id="0c7e74a6" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> metrics[<span class="st">"glm"</span>]</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Training rows (downsampled for GLM) : </span><span class="sc">{</span>g[<span class="st">'n_obs'</span>]<span class="sc">:,}</span><span class="ss">"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Full dataset rows                   : </span><span class="sc">{</span>g[<span class="st">'n_full'</span>]<span class="sc">:,}</span><span class="ss">"</span>)</span>
@@ -570,13 +587,13 @@ Model performance:
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feat <span class="kw">in</span> g[<span class="st">"features"</span>]:</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>feat<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Training rows (downsampled for GLM) : 4,303,805
+<pre><code>Training rows (downsampled for GLM) : 1,565,232
 Full dataset rows                   : 21,675,570
-Positive link-years                 : 391,255 (1.81%)
-Pseudo-R² (1 - D/D₀)               : 0.351
-AIC                                 : 2,229,409
+Positive link-years                 : 391,308 (1.81%)
+Pseudo-R² (1 - D/D₀)               : 0.566
+AIC                                 : 1,635,651
 
-Features (34):
+Features (32):
   road_class_ord
   form_of_way_ord
   is_motorway
@@ -598,25 +615,23 @@ Features (34):
   speed_limit_mph_effective_imputed
   lanes_imputed
   is_unpaved_imputed
-  imd_decile_imputed
-  imd_crime_decile_imputed
-  imd_living_indoor_decile_imputed
+  overall_decile_within_country_imputed
+  income_decile_within_country_imputed
+  employment_decile_within_country_imputed
+  deprivation_country_england_imputed
+  deprivation_country_wales_imputed
+  deprivation_country_scotland_imputed
   mean_grade_imputed
   hgv_proportion_missing
-  pop_density_per_km2_missing
-  speed_limit_mph_effective_missing
   lanes_missing
   is_unpaved_missing
-  imd_decile_missing
-  imd_crime_decile_missing
-  imd_living_indoor_decile_missing
   mean_grade_missing</code></pre>
 </div>
 </div>
 </section>
 <section id="glm-coefficients" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="glm-coefficients"><span class="header-section-number">2.2</span> GLM coefficients</h3>
-<div id="88870a90" class="cell" data-execution_count="3">
+<div id="b0106220" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>glm_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_glm.pkl"</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> glm_path.exists():</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
@@ -660,81 +675,88 @@ Features (34):
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-4-output-1.png" width="758" height="1457" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-4-output-1.png" width="757" height="1370" class="figure-img"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Significant coefficients (p&lt;0.05) with incidence rate ratios:
-                                     coef      IRR  pvalue
-betweenness_imputed               -4.9236    0.007     0.0
-imd_living_indoor_decile_missing  -1.5819    0.206     0.0
-imd_decile_missing                -1.5819    0.206     0.0
-imd_crime_decile_missing          -1.5819    0.206     0.0
-is_motorway                       -1.1411    0.319     0.0
-is_dual                           -0.8257    0.438     0.0
-is_slip_road                      -0.7620    0.467     0.0
-hgv_proportion_imputed            -0.7220    0.486     0.0
-log_link_length                   -0.5649    0.568     0.0
-year_norm                         -0.5309    0.588     0.0
-hgv_proportion_missing            -0.5113    0.600     0.0
-is_a_road                         -0.5105    0.600     0.0
-is_unpaved_imputed                -0.4434    0.642     0.0
-speed_limit_mph_effective_missing -0.2494    0.779     0.0
-is_roundabout                     -0.1851    0.831     0.0
-is_unpaved_missing                -0.1483    0.862     0.0
-lanes_imputed                     -0.1107    0.895     0.0
-is_trunk                          -0.1021    0.903     0.0
-is_covid                          -0.0549    0.947     0.0
-dist_to_major_km_imputed          -0.0458    0.955     0.0
-imd_decile_imputed                -0.0384    0.962     0.0
-road_class_ord                    -0.0381    0.963     0.0
-imd_living_indoor_decile_imputed  -0.0375    0.963     0.0
-mean_grade_imputed                -0.0220    0.978     0.0
-imd_crime_decile_imputed          -0.0066    0.993     0.0
-pop_density_per_km2_imputed        0.0000    1.000     0.0
-mean_grade_missing                 0.0584    1.060     0.0
-lanes_missing                      0.0971    1.102     0.0
-betweenness_relative_imputed       0.1078    1.114     0.0
-is_primary                         0.1437    1.155     0.0
-form_of_way_ord                    0.2123    1.236     0.0
-degree_mean_imputed                0.5517    1.736     0.0
-pop_density_per_km2_missing        4.9141  136.194     0.0</code></pre>
+                                            coef    IRR  pvalue
+deprivation_country_wales_imputed        -5.4984  0.004     0.0
+betweenness_imputed                      -3.0299  0.048     0.0
+is_motorway                              -1.0876  0.337     0.0
+is_dual                                  -0.8328  0.435     0.0
+log_link_length                          -0.6957  0.499     0.0
+is_slip_road                             -0.6224  0.537     0.0
+is_a_road                                -0.4743  0.622     0.0
+year_norm                                -0.4622  0.630     0.0
+is_unpaved_imputed                       -0.3923  0.675     0.0
+hgv_proportion_imputed                   -0.3694  0.691     0.0
+hgv_proportion_missing                   -0.2325  0.793     0.0
+is_roundabout                            -0.1749  0.840     0.0
+lanes_imputed                            -0.1547  0.857     0.0
+road_class_ord                           -0.1433  0.866     0.0
+overall_decile_within_country_imputed    -0.1143  0.892     0.0
+is_unpaved_missing                       -0.1121  0.894     0.0
+is_trunk                                 -0.0806  0.923     0.0
+dist_to_major_km_imputed                 -0.0434  0.958     0.0
+is_covid                                 -0.0180  0.982     0.0
+mean_grade_imputed                       -0.0115  0.989     0.0
+pop_density_per_km2_imputed               0.0000  1.000     0.0
+speed_limit_mph_effective_imputed         0.0008  1.001     0.0
+income_decile_within_country_imputed      0.0248  1.025     0.0
+mean_grade_missing                        0.0329  1.033     0.0
+betweenness_relative_imputed              0.0418  1.043     0.0
+employment_decile_within_country_imputed  0.0512  1.053     0.0
+is_primary                                0.0764  1.079     0.0
+lanes_missing                             0.1401  1.150     0.0
+form_of_way_ord                           0.2086  1.232     0.0
+degree_mean_imputed                       0.4513  1.570     0.0</code></pre>
 </div>
 </div>
 </section>
 <section id="deprivation-signal" class="level3" data-number="2.3">
 <h3 data-number="2.3" class="anchored" data-anchor-id="deprivation-signal"><span class="header-section-number">2.3</span> Deprivation signal</h3>
-<p>The three IMD deciles run 1 (most deprived) -&gt; 10 (least deprived), so a negative coefficient means <strong>less-deprived areas have a lower predicted collision rate</strong>, holding exposure and road geometry fixed. The Living Environment <strong>Indoors</strong> sub-domain is used deliberately — the Outdoors sub-domain contains road-traffic-accident indicators and would leak the outcome. See <a href="../data-sources/deprivation.html">deprivation</a>.</p>
-<div id="d8aaf631" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>imd_terms <span class="op">=</span> [<span class="st">"imd_decile"</span>, <span class="st">"imd_crime_decile"</span>, <span class="st">"imd_living_indoor_decile"</span>]</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> []</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> base <span class="kw">in</span> imd_terms:</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> t <span class="kw">in</span> [base, <span class="ss">f"</span><span class="sc">{</span>base<span class="sc">}</span><span class="ss">_imputed"</span>]:</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> t <span class="kw">in</span> glm_result.params.index:</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                rows.append((t, glm_result.params[t],</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                             np.exp(glm_result.params[t]), glm_result.pvalues[t]))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rows:</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        imd_df <span class="op">=</span> pd.DataFrame(rows, columns<span class="op">=</span>[<span class="st">"term"</span>, <span class="st">"coef"</span>, <span class="st">"IRR"</span>, <span class="st">"pvalue"</span>])</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(imd_df.<span class="bu">round</span>(<span class="dv">4</span>).to_string(index<span class="op">=</span><span class="va">False</span>))</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"No IMD decile terms in the fitted GLM."</span>)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">NameError</span>:</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Run the GLM coefficients cell first."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The GB deprivation features are within-country deciles, running 1 (most deprived) to 10 (least deprived). They are contextual area features, not GB-wide absolute deprivation ranks and not road attributes. See <a href="../data-sources/deprivation.html">deprivation</a>.</p>
+<div id="e4448bce" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>deprivation_terms <span class="op">=</span> [</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"overall_decile_within_country"</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"income_decile_within_country"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"employment_decile_within_country"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"deprivation_country_england"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"deprivation_country_wales"</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"deprivation_country_scotland"</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> []</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> base <span class="kw">in</span> deprivation_terms:</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> t <span class="kw">in</span> [base, <span class="ss">f"</span><span class="sc">{</span>base<span class="sc">}</span><span class="ss">_imputed"</span>]:</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> t <span class="kw">in</span> glm_result.params.index:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                rows.append((t, glm_result.params[t],</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                             np.exp(glm_result.params[t]), glm_result.pvalues[t]))</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> rows:</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        deprivation_df <span class="op">=</span> pd.DataFrame(rows, columns<span class="op">=</span>[<span class="st">"term"</span>, <span class="st">"coef"</span>, <span class="st">"IRR"</span>, <span class="st">"pvalue"</span>])</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(deprivation_df.<span class="bu">round</span>(<span class="dv">4</span>).to_string(index<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"No GB deprivation terms in the fitted GLM."</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">NameError</span>:</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Run the GLM coefficients cell first."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                            term    coef    IRR  pvalue
-              imd_decile_imputed -0.0384 0.9623     0.0
-        imd_crime_decile_imputed -0.0066 0.9934     0.0
-imd_living_indoor_decile_imputed -0.0375 0.9632     0.0</code></pre>
+<pre><code>                                    term     coef    IRR  pvalue
+   overall_decile_within_country_imputed  -0.1143 0.8920  0.0000
+    income_decile_within_country_imputed   0.0248 1.0251  0.0000
+employment_decile_within_country_imputed   0.0512 1.0526  0.0000
+     deprivation_country_england_imputed   0.1052 1.1110  0.4198
+       deprivation_country_wales_imputed  -5.4984 0.0041  0.0000
+    deprivation_country_scotland_imputed -27.7137 0.0000  0.9984</code></pre>
 </div>
 </div>
 <p>With ~2M link-years, statistical significance is near-guaranteed; the practical effect is modest (each decile step shifts the rate a few percent) and is <strong>associational, not causal</strong> — LSOA-level context, not a road attribute.</p>
 </section>
 <section id="xgboost-feature-importance" class="level3" data-number="2.4">
 <h3 data-number="2.4" class="anchored" data-anchor-id="xgboost-feature-importance"><span class="header-section-number">2.4</span> XGBoost feature importance</h3>
-<div id="6e284d38" class="cell" data-execution_count="5">
+<div id="0bb90c26" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>xgb_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_xgb.json"</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> xgb_path.exists():</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
@@ -761,7 +783,7 @@ imd_living_indoor_decile_imputed -0.0375 0.9632     0.0</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-6-output-1.png" width="758" height="1112" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-6-output-1.png" width="757" height="1241" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -769,7 +791,7 @@ imd_living_indoor_decile_imputed -0.0375 0.9632     0.0</code></pre>
 </section>
 <section id="glm-vs-xgboost-agreement" class="level3" data-number="2.5">
 <h3 data-number="2.5" class="anchored" data-anchor-id="glm-vs-xgboost-agreement"><span class="header-section-number">2.5</span> GLM vs XGBoost agreement</h3>
-<div id="f459401b" class="cell" data-execution_count="6">
+<div id="ed80dd7c" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">5</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>has_both <span class="op">=</span> risk[[<span class="st">"predicted_glm"</span>, <span class="st">"predicted_xgb"</span>]].gt(<span class="dv">0</span>).<span class="bu">all</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
@@ -810,7 +832,7 @@ imd_living_indoor_decile_imputed -0.0375 0.9632     0.0</code></pre>
 </section>
 <section id="risk-score-distribution" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="risk-score-distribution"><span class="header-section-number">3</span> Risk score distribution</h2>
-<div id="8fe1e8d7" class="cell" data-execution_count="7">
+<div id="e476deeb" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> risk[risk[<span class="st">"predicted_glm"</span>] <span class="op">&gt;</span> <span class="dv">0</span>]</span>
@@ -841,7 +863,7 @@ imd_living_indoor_decile_imputed -0.0375 0.9632     0.0</code></pre>
 </div>
 <section id="risk-percentile-by-road-class" class="level3" data-number="3.1">
 <h3 data-number="3.1" class="anchored" data-anchor-id="risk-percentile-by-road-class"><span class="header-section-number">3.1</span> Risk percentile by road class</h3>
-<div id="718b7120" class="cell" data-execution_count="8">
+<div id="570c32c3" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>cls_med <span class="op">=</span> (</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"risk_percentile"</span>]</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    .median()</span>
@@ -880,13 +902,13 @@ imd_living_indoor_decile_imputed -0.0375 0.9632     0.0</code></pre>
 <pre><code>Risk percentile by road class:
                        mean  median    count
 road_classification                         
-Motorway               93.8    97.6     4084
-A Road                 90.0    93.7   155538
-B Road                 83.2    87.7    89286
-Classified Unnumbered  70.5    76.3   190921
-Not Classified         29.6    25.9   224878
-Unclassified           51.9    53.4  1060014
-Unknown                25.8    20.1   442836</code></pre>
+Motorway               92.2    97.6     4084
+A Road                 85.8    93.8   155538
+B Road                 78.5    88.1    89286
+Classified Unnumbered  67.8    76.6   190921
+Not Classified         31.4    27.9   224878
+Unclassified           52.3    54.2  1060014
+Unknown                27.4    22.0   442836</code></pre>
 </div>
 </div>
 <hr>
@@ -895,7 +917,7 @@ Unknown                25.8    20.1   442836</code></pre>
 <section id="residual-analysis" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="residual-analysis"><span class="header-section-number">4</span> Residual analysis</h2>
 <p>Residuals (observed − predicted × n_years) identify where the model systematically under- or over-predicts. Large positive residuals flag links that had more collisions than the model expected given their traffic and road characteristics.</p>
-<div id="736eca00" class="cell" data-execution_count="9">
+<div id="3ed36b09" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].hist(risk[<span class="st">"residual_glm"</span>].clip(<span class="op">-</span><span class="dv">5</span>, <span class="dv">10</span>), bins<span class="op">=</span><span class="dv">80</span>,</span>
@@ -929,7 +951,7 @@ Unknown                25.8    20.1   442836</code></pre>
 </div>
 <section id="residuals-by-road-class" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="residuals-by-road-class"><span class="header-section-number">4.1</span> Residuals by road class</h3>
-<div id="7f3fecc5" class="cell" data-execution_count="10">
+<div id="9599143d" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>res_by_class <span class="op">=</span> (</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    risk.groupby(<span class="st">"road_classification"</span>)[<span class="st">"residual_glm"</span>]</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"std"</span>, <span class="st">"count"</span>])</span>
@@ -952,18 +974,18 @@ Unknown                25.8    20.1   442836</code></pre>
 <pre><code>Residuals by road class:
                         mean  median    std    count
 road_classification                                 
-Motorway              -3.427  -1.918  8.293     4084
-A Road                -2.528  -2.134  2.755   155538
-B Road                -2.637  -1.930  2.794    89286
-Classified Unnumbered -0.409  -0.321  0.990   190921
-Not Classified        -0.247  -0.156  0.364   224878
-Unclassified          -0.399  -0.244  0.655  1060014
-Unknown               -0.234  -0.141  0.397   442836</code></pre>
+Motorway              -5.416  -3.605  9.102     4084
+A Road                -4.903  -4.568  3.657   155538
+B Road                -5.527  -4.784  4.527    89286
+Classified Unnumbered -1.270  -0.949  1.471   190921
+Not Classified        -0.686  -0.466  0.727   224878
+Unclassified          -1.224  -0.773  1.340  1060014
+Unknown               -0.788  -0.527  0.935   442836</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-11-output-2.png" width="845" height="374" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-11-output-2.png" width="853" height="374" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -975,42 +997,46 @@ Unknown               -0.234  -0.141  0.397   442836</code></pre>
 <h2 data-number="5" class="anchored" data-anchor-id="geographic-risk-maps"><span class="header-section-number">5</span> Geographic risk maps</h2>
 <section id="full-network-risk-percentile" class="level3" data-number="5.1">
 <h3 data-number="5.1" class="anchored" data-anchor-id="full-network-risk-percentile"><span class="header-section-number">5.1</span> Full-network risk percentile</h3>
-<div id="2ef7a6f4" class="cell" data-execution_count="11">
+<div id="560aebfa" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    or_risk <span class="op">=</span> openroads[[<span class="st">"link_id"</span>, <span class="st">"road_classification"</span>, <span class="st">"geometry"</span>]].merge(</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        risk[[<span class="st">"link_id"</span>, <span class="st">"risk_percentile"</span>, <span class="st">"residual_glm"</span>, <span class="st">"collision_count"</span>]],</span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"inner"</span>,</span>
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    or_risk <span class="op">=</span> or_risk[or_risk.geometry.notna()].copy()</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> or_risk.crs <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> or_risk.crs.to_epsg() <span class="op">!=</span> <span class="dv">4326</span>:</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        or_risk <span class="op">=</span> or_risk.to_crs(<span class="dv">4326</span>)</span>
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    or_risk.plot(</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Risk percentile — all links"</span>)</span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_risk[or_risk[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
-<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
-<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Risk percentile — Motorways &amp; A Roads"</span>)</span>
-<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
-<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Stage 2 collision risk scores"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
-<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    or_risk.plot(</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Risk percentile — all links"</span>)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    set_gb_wgs84_extent(axes[<span class="dv">0</span>])</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_risk[or_risk[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"risk_percentile"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"RdYlGn_r"</span>, vmin<span class="op">=</span><span class="dv">75</span>, vmax<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>, legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Risk percentile"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Risk percentile — Motorways &amp; A Roads"</span>)</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    set_gb_wgs84_extent(axes[<span class="dv">1</span>])</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Stage 2 collision risk scores"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-12-output-1.png" width="1491" height="797" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-12-output-1.png" width="1317" height="852" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1018,7 +1044,7 @@ Unknown               -0.234  -0.141  0.397   442836</code></pre>
 </section>
 <section id="top-1-risk-links" class="level3" data-number="5.2">
 <h3 data-number="5.2" class="anchored" data-anchor-id="top-1-risk-links"><span class="header-section-number">5.2</span> Top 1% risk links</h3>
-<div id="e8aed1cf" class="cell" data-execution_count="12">
+<div id="0b25ff15" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    top1 <span class="op">=</span> or_risk[or_risk[<span class="st">"risk_percentile"</span>] <span class="op">&gt;=</span> <span class="dv">99</span>].copy()</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    rng  <span class="op">=</span> np.random.default_rng(RANDOM_STATE)</span>
@@ -1031,25 +1057,27 @@ Unknown               -0.234  -0.141  0.397   442836</code></pre>
 <span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>              linewidth<span class="op">=</span><span class="fl">1.2</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
 <span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>              legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Observed collisions (pooled)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
 <span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="ss">f"Top 1% risk links (</span><span class="sc">{</span><span class="bu">len</span>(top1)<span class="sc">:,}</span><span class="ss">)</span><span class="ch">\n</span><span class="ss">Coloured by observed collisions"</span>)</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>axes[<span class="dv">1</span>], color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    top1.plot(column<span class="op">=</span><span class="st">"residual_glm"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"RdBu"</span>,</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>              vmin<span class="op">=-</span><span class="dv">5</span>, vmax<span class="op">=</span><span class="dv">5</span>, linewidth<span class="op">=</span><span class="fl">1.2</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>              legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"GLM residual"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Top 1</span><span class="sc">% r</span><span class="st">isk links</span><span class="ch">\n</span><span class="st">Coloured by GLM residual"</span>)</span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Highest-risk road segments"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 1% risk links by road class (</span><span class="sc">{</span><span class="bu">len</span>(top1)<span class="sc">:,}</span><span class="ss"> total):"</span>)</span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(top1[<span class="st">"road_classification"</span>].value_counts().to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    set_gb_wgs84_extent(axes[<span class="dv">0</span>])</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    bg.plot(ax<span class="op">=</span>axes[<span class="dv">1</span>], color<span class="op">=</span><span class="st">"#e0e0e0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>    top1.plot(column<span class="op">=</span><span class="st">"residual_glm"</span>, ax<span class="op">=</span>axes[<span class="dv">1</span>], cmap<span class="op">=</span><span class="st">"RdBu"</span>,</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>              vmin<span class="op">=-</span><span class="dv">5</span>, vmax<span class="op">=</span><span class="dv">5</span>, linewidth<span class="op">=</span><span class="fl">1.2</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>              legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"GLM residual"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>})</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Top 1</span><span class="sc">% r</span><span class="st">isk links</span><span class="ch">\n</span><span class="st">Coloured by GLM residual"</span>)</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    set_gb_wgs84_extent(axes[<span class="dv">1</span>])</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Highest-risk road segments"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 1% risk links by road class (</span><span class="sc">{</span><span class="bu">len</span>(top1)<span class="sc">:,}</span><span class="ss"> total):"</span>)</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(top1[<span class="st">"road_classification"</span>].value_counts().to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-13-output-1.png" width="1485" height="797" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-13-output-1.png" width="1301" height="852" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1057,19 +1085,19 @@ Unknown               -0.234  -0.141  0.397   442836</code></pre>
 <pre><code>
 Top 1% risk links by road class (21,676 total):
 road_classification
-A Road                   16030
-B Road                    2240
-Classified Unnumbered     1768
-Motorway                  1410
-Unclassified               217
-Unknown                     11</code></pre>
+A Road                   16064
+B Road                    2256
+Classified Unnumbered     1735
+Motorway                  1381
+Unclassified               232
+Unknown                      8</code></pre>
 </div>
 </div>
 </section>
 <section id="excess-risk-map-residual-2" class="level3" data-number="5.3">
 <h3 data-number="5.3" class="anchored" data-anchor-id="excess-risk-map-residual-2"><span class="header-section-number">5.3</span> Excess-risk map (residual &gt; 2)</h3>
 <p>Links where observed collisions substantially exceeded the model’s prediction given traffic volume and road type — potential candidates for engineering review.</p>
-<div id="4f6b1ac9" class="cell" data-execution_count="13">
+<div id="0b0ad0c1" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    excess <span class="op">=</span> or_risk[or_risk[<span class="st">"residual_glm"</span>] <span class="op">&gt;</span> <span class="dv">2</span>].copy()</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1082,13 +1110,14 @@ Unknown                     11</code></pre>
 <span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"Excess-risk links — residual &gt; 2  (</span><span class="sc">{</span><span class="bu">len</span>(excess)<span class="sc">:,}</span><span class="ss"> links)</span><span class="ch">\n</span><span class="ss">"</span></span>
 <span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Had substantially more collisions than road type and traffic predict"</span></span>
 <span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    set_gb_wgs84_extent(ax)</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="model-results_files/figure-html/cell-14-output-1.png" width="831" height="855" class="figure-img"></p>
+<p><img src="model-results_files/figure-html/cell-14-output-1.png" width="633" height="855" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1098,13 +1127,13 @@ Unknown                     11</code></pre>
 </section>
 <section id="summary" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="summary"><span class="header-section-number">6</span> Summary</h2>
-<div id="c3abe412" class="cell" data-execution_count="14">
+<div id="1a1dec9d" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 2 collision model summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links scored          : </span><span class="sc">{</span><span class="bu">len</span>(risk)<span class="sc">:,}</span><span class="ss">"</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Links with collisions : </span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss"> "</span></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(</span><span class="sc">{</span>(risk[<span class="st">'collision_count'</span>] <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss">)"</span>)</span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Poisson GLM pseudo-R² : </span><span class="sc">{</span>metrics[<span class="st">'glm'</span>][<span class="st">'pseudo_r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"XGBoost pseudo-R²     : </span><span class="sc">{</span>XGB_POSTFIX_PR2<span class="sc">:.3f}</span><span class="ss"> (post-fix 5-seed mean)"</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"XGBoost pseudo-R²     : </span><span class="sc">{</span>XGB_CURRENT_PR2<span class="sc">:.3f}</span><span class="ss"> (current clean GB run)"</span>)</span>
 <span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Top 1% risk links     : </span><span class="sc">{</span>(risk[<span class="st">'risk_percentile'</span>] <span class="op">&gt;=</span> <span class="dv">99</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
 <span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Excess-risk links (residual &gt; 2): </span><span class="sc">{</span>(risk[<span class="st">'residual_glm'</span>] <span class="op">&gt;</span> <span class="dv">2</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:,}</span><span class="ss">"</span>)</span>
 <span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Excess-risk by road class:"</span>)</span>
@@ -1117,28 +1146,28 @@ Unknown                     11</code></pre>
 <pre><code>=== Stage 2 collision model summary ===
 
 Links scored          : 2,167,557
-Links with collisions : 233,604 (10.8%)
+Links with collisions : 233,745 (10.8%)
 
-Poisson GLM pseudo-R² : 0.351
-XGBoost pseudo-R²     : 0.323 (post-fix 5-seed mean)
+Poisson GLM pseudo-R² : 0.566
+XGBoost pseudo-R²     : 0.325 (current clean GB run)
 
 Top 1% risk links     : 21,676
-Excess-risk links (residual &gt; 2): 11,245
+Excess-risk links (residual &gt; 2): 4,179
 
 Excess-risk by road class:
 road_classification
-A Road                   3316
-Classified Unnumbered    3275
-Unclassified             3136
-B Road                    636
-Unknown                   465
-Motorway                  296
-Not Classified            121</code></pre>
+Classified Unnumbered    1461
+A Road                   1140
+Unclassified              905
+Unknown                   236
+Motorway                  222
+B Road                    150
+Not Classified             65</code></pre>
 </div>
 </div>
 <p>Key observations:</p>
 <ul>
-<li>XGBoost’s current honest post-fix baseline is about pseudo-R² <code>0.32</code> across five seeds (<code>0.323</code> mean, with temporal features included), while the GLM sits at pseudo-R² <code>0.347</code> on its own in-sample downsampled surface. Earlier repo docs cited an XGBoost pseudo-R² around <code>0.86</code>, but that figure came from a pre-fix evaluation surface that was later superseded after a feature-table leakage diagnosis. The two current pseudo-R² values are also still computed on different row subsets and with different null models (GLM: in-sample on a downsampled training set; XGBoost: out-of-sample on the full zero-heavy test set), so the gap should not be read as pure modelling lift. These metrics are from the current run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, IMD features, terrain grade, and the GLM optional-feature imputation refactor. See <a href="../methodology/feature-engineering.html#pseudo-r-comparability">feature engineering</a> for the full caveat.</li>
+<li>XGBoost’s current clean GB run has pseudo-R² <code>0.325</code>, with temporal features included, while the GLM sits at pseudo-R² <code>0.566</code> on its own 1:3 zero-collision downsampled in-sample surface. Earlier repo docs cited an XGBoost pseudo-R² around <code>0.86</code>, but that figure came from a pre-fix evaluation surface that was later superseded after a feature-table leakage diagnosis. The two current pseudo-R² values are also still computed on different row subsets and with different null models (GLM: in-sample on a downsampled training set; XGBoost: out-of-sample on the full zero-heavy test set), so the gap should not be read as pure modelling lift. These metrics are from the current clean GB run after the counted-only Stage 1a filter, the Stage 2 post-event provenance guard, OSM feature enrichment, deprivation features, terrain grade, and the GLM optional-feature imputation refactor. See <a href="../methodology/feature-engineering.html#pseudo-r-comparability">feature engineering</a> for the full caveat.</li>
 <li>The GLM provides interpretable incidence rate ratios per feature; XGBoost predictions complement these with higher predictive power for the risk map.</li>
 <li>Residuals show where traffic volume and road geometry alone under-predict observed collisions — likely reflecting local factors not in the feature set (junction design, sight lines, speed compliance).</li>
 <li>The top 1% risk links are concentrated on high-traffic A-roads and motorways, consistent with higher exposure and absolute collision counts.</li>

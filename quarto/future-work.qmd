@@ -432,7 +432,7 @@ papers from Leeds ITS.
 ### NTS-derived active travel exposure
 
 **What it is:** Use National Travel Survey per-capita mileage by mode,
-demographic, and region, combined with LSOA population demographics, to
+demographic, and region, combined with small-area population demographics, to
 estimate pedestrian-hours and cyclist-km denominators for active travel
 risk analysis.
 
@@ -443,7 +443,7 @@ the methodology of using it as an exposure denominator is established
 in road safety literature.
 
 **Why not now:** Resolution caveat — NTS gives regional/demographic
-averages, not link-specific exposure. So it supports LSOA-level analysis
+averages, not link-specific exposure. So it supports small-area analysis
 of pedestrian/cyclist risk but not link-grain. Different output grain
 from the rest of the pipeline; would be a parallel layer not an
 integrated feature.
@@ -451,10 +451,10 @@ integrated feature.
 **Good starting point for someone else:**
 - Pull NTS data from the gov.uk archive.
 - Compute per-capita pedestrian-hours and cyclist-km by demographic.
-- Join to LSOA population data to estimate exposure per LSOA.
-- Apply as denominator for cyclist/pedestrian collision rate at LSOA
+- Join to small-area population data to estimate exposure by OA/LSOA-style area.
+- Apply as denominator for cyclist/pedestrian collision rate at small-area
   grain.
-- Compare hotspot identification at LSOA grain to motor-vehicle-AADT
+- Compare hotspot identification at small-area grain to motor-vehicle-AADT
   denominator approach.
 
 **Related:** Builds on the cyclist/pedestrian risk entries already in

@@ -132,9 +132,12 @@ def _xgb_feature_cols(df: pd.DataFrame, extra_features: list[str]) -> list[str]:
         "speed_limit_mph_effective",
         "lanes",
         "is_unpaved",
-        "imd_decile",
-        "imd_crime_decile",
-        "imd_living_indoor_decile",
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland",
         "mean_grade",
     ] + list(extra_features)
     for col in optional:

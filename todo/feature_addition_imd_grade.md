@@ -229,7 +229,7 @@ Three feature batches in this thread (RUC, IMD, grade) have moved XGBoost pseudo
 
 - `src/road_risk/features/network.py` — IMD ingest function, IMD provenance writer, IMD `.map()` join into `network_features.parquet`
 - `src/road_risk/model/collision.py` — GLM imputation policy refactor, `mean_grade` in GLM and XGBoost feature lists, chunked scoring rewrite
-- `data/raw/mhclg/` — three IoD 2025 files
+- `data/raw/imd/eng/` — three English IoD 2025 files
 - `data/provenance/imd_provenance.json` — coverage stats, decile distributions, indoor sub-domain rationale
 - `data/models/risk_scores_pre_grade.parquet` — snapshot for ranking comparison
 - `data/models/collision_metrics_pre_grade.json` — snapshot for headline metric comparison
