@@ -18,7 +18,7 @@ Status of each module in the pipeline.
 | `features/legacy.py` | ✅ Done (legacy) | Deprecated — collision.py builds its own feature table. Self-deprecates on import. |
 | `model/aadt.py` | ✅ Done | Stage 1a AADT estimator (counted-only CV R² ~0.83), GroupKFold by count_point_id, applied to 2.1M links |
 | `model/timezone_profile.py` | ✅ Done | Stage 1b time-zone fractions (peak/pre-peak/off-peak), GroupKFold by site_id |
-| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost (current XGB pseudo-R² 0.323 mean across 5 post-fix seeds, with temporal features included); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
+| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost; clean full GB retrain completed 2026-07-01 (XGB pseudo-R² 0.325, GLM pseudo-R² 0.566 with 1:3 zero-collision sampling); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
 | `model/eb_*.py` | ✅ Diagnostic | Empirical Bayes dispersion/shrinkage outputs, separate from production `risk_scores.parquet` |
 | `model/family_split.py` | ✅ Diagnostic | Facility-family XGBoost experiment and stitched ranking diagnostics |
 | `model/rank_stability.py` | ✅ Done | Multi-seed XGBoost ranking stability harness |
@@ -33,14 +33,17 @@ Status of each module in the pipeline.
 
 ```bash
 # 1. Ingest — download raw files into data/raw/ first
-python src/road_risk/ingest/ingest_stats19.py
-python src/road_risk/ingest/ingest_aadf.py
-python src/road_risk/ingest/ingest_webtris.py   # slow — ~60 mins
-python src/road_risk/ingest/ingest_mrdb.py
-python src/road_risk/ingest/ingest_openroads.py
+conda run -n env1 python scripts/download_gb_boundary.py
+conda run -n env1 python src/road_risk/ingest/ingest_stats19.py
+conda run -n env1 python src/road_risk/ingest/ingest_aadf.py
+conda run -n env1 python src/road_risk/ingest/ingest_webtris.py   # slow — ~60 mins
+conda run -n env1 python src/road_risk/ingest/ingest_mrdb.py
+conda run -n env1 python src/road_risk/ingest/ingest_openroads.py
 
-# 2. Convert OSM pbf files (download study-area county files from Geofabrik first)
-#    https://download.geofabrik.de/europe/great-britain/england/
+# 2. Convert OSM pbf files
+#    Full GB OSM PBF (~2.0 GB as of 2026-06-30):
+#    curl -L -o data/raw/osm/great-britain-latest.osm.pbf \
+#      https://download.geofabrik.de/europe/great-britain-latest.osm.pbf
 
 for f in data/raw/osm/*.osm.pbf; do
     osmium cat "$f" -o "${f%.osm.pbf}.osm"
@@ -71,10 +74,11 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 
 See `docs/internal/data-quality-notes.md` for working detail. Summary:
 
-- **STATS19 police force code bug (fixed April 2026)** — the original Yorkshire
+- **STATS19 police force code bug (fixed April 2026, retired for GB runs)** — the original Yorkshire
   pilot accidentally used codes 4–7 (Lancashire/Merseyside/GM/Cheshire) instead
   of 12, 13, 14, and 16. The current project has expanded beyond Yorkshire, and
-  `config/settings.yaml` now intentionally lists the full multi-force study area.
+  STATS19 ingest now uses valid coordinates plus the configured GB boundary
+  instead of `police_force`.
 
 - **STATS19 coordinate handling** — spatial snapping uses `latitude`/`longitude`.
   A previous notebook suspected a Yorkshire BNG grid-square error, but a direct
@@ -112,12 +116,12 @@ See `docs/internal/data-quality-notes.md` for working detail. Summary:
 
 | Value | File | Derivable from? |
 |---|---|---|
-| Police force codes 12/13/14/16 | `config/settings.yaml`, `ingest_stats19.py` | DfT data guide Excel — `police_force` field |
+| GB boundary | `config/settings.yaml`, `scripts/download_gb_boundary.py`, `ingest_stats19.py` | ONS Countries December 2023 Boundaries UK BGC |
 | HGV vehicle types {19,20,21} | `clean_join/join.py` | DfT data guide Excel — `vehicle_type` field |
 | Road class scores (1=Motorway etc) | `clean_join/snap.py` | DfT data guide Excel — `first_road_class` field |
 | Junction detail codes | `clean_join/snap.py` | DfT data guide Excel — `junction_detail` field |
 | COVID years {2020, 2021} | `clean_join/clean.py`, `model.py` | Domain knowledge — not in Excel |
-| Study-area bbox BNG | `config/settings.yaml`, `ingest_openroads.py` | Spatial — not in Excel |
+| Study-area bbox BNG | `config/settings.yaml`, `ingest_openroads.py` | Fast spatial pre-filter only |
 
 ---
 
@@ -130,8 +134,9 @@ performance metrics, and validation detail — kept there to avoid documentation
 - Counted-only AADF target CV R²: ~0.83 | Applied to 2,167,557 links × 10 years
 
 **Stage 2 — Collision Model**
-- Poisson GLM pseudo-R²: 0.3472 (verified post-fix from `data/models/collision_metrics.json` and `data/provenance/rank_stability_provenance.json`; in-sample on downsampled training set; `n_full` 21.7M)
-- XGBoost pseudo-R²: 0.323 (out-of-sample, GroupShuffleSplit by `link_id`, mean across 5 seeds, with temporal features included)
+- 2026-07-01: Clean full GB Stage 2 collision retrain completed. Scored 2,167,557 links across 2015–2024 AADT years.
+- Poisson GLM pseudo-R²: 0.566 (in-sample on downsampled training set; `n_full` 21.7M; uses 1:3 zero-collision sampling for GB-scale memory)
+- XGBoost pseudo-R²: 0.325 (out-of-sample, GroupShuffleSplit by `link_id`, with temporal features included)
 - **Not directly comparable** — different row subsets, different null models. See methodology site.
 - XGBoost drives `risk_percentile`; GLM drives `residual_glm` residual diagnostics. 
 - *Note: diagnostic runs generated `risk_scores_eb.parquet` (Empirical Bayes) and `risk_scores_family.parquet` (Facility-Family split). Production app uses the current `risk_scores.parquet`.*
@@ -143,13 +148,15 @@ performance metrics, and validation detail — kept there to avoid documentation
 
 | Source | Location | Coverage |
 |---|---|---|
-| STATS19 collisions | `data/raw/stats19/` | Northern/Central England 2015–2024 |
+| STATS19 collisions | `data/raw/stats19/` | Great Britain 2015–2024 after GB boundary filtering |
 | AADF traffic counts | `data/raw/aadf/` | Study area 2015–2024 |
 | WebTRIS sensor data | `data/raw/webtris/` | National Highways sensors, target years 2019, 2021, 2023 |
 | OS Open Roads | `data/raw/shapefiles/oproad_gb.gpkg` | Study area + 20km buffer |
 | MRDB | `data/raw/shapefiles/MRDB_2024_published.shp` | Study area major roads |
 | OSM pbf files | `data/raw/osm/*.osm` | County files from Geofabrik (see `data/raw/osm/`) |
-| LSOA population + area | `data/raw/stats19/lsoa_*.csv` | England & Wales 2021 |
+| GB OA population density | `data/processed/context/oa_population_density_gb.parquet` | England/Wales OA2021 + Scotland OA2022; assigned in `network.py` by OA polygon containment with nearest fallback |
+| GB deprivation context | `data/processed/context/deprivation_areas_gb.parquet` | England IoD 2025, Wales WIMD 2019, Scotland SIMD 2020v2; within-country deciles only |
+| GB rural-urban context | `data/processed/context/link_rural_urban_gb.parquet` | England/Wales ONS 2021 RUC + Scotland Urban Rural Classification 2022; link centroid polygon assignment with nearest fallback |
 | DfT data guide Excel | `data/raw/stats19/dft-road-casualty-*-data-guide-2024.xlsx` | Code lookups |
 
 ### Provenance convention

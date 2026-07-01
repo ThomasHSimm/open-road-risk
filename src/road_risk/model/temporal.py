@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 from road_risk.config import _ROOT
+from road_risk.geography import filter_points_to_study_area
 from road_risk.model.constants import MONTH_ORDER
 
 logger = logging.getLogger(__name__)
@@ -45,31 +46,8 @@ def build_temporal_profiles(
     if not chunks:
         raise FileNotFoundError(f"No WebTRIS chunks in {raw_folder}")
 
-    # Filter to study area — read from config if available, else use full dataset
-    try:
-        import yaml
-
-        from road_risk.config import _ROOT
-
-        cfg_path = _ROOT / "config/settings.yaml"
-        if cfg_path.exists():
-            cfg = yaml.safe_load(cfg_path.read_text())
-            bbox = cfg.get("study_area", {}).get("bbox_wgs84", {})
-            lat_min = bbox.get("min_lat", None)
-            lat_max = bbox.get("max_lat", None)
-            lon_min = bbox.get("min_lon", None)
-            lon_max = bbox.get("max_lon", None)
-
-    except Exception as e:
-        logger.error("Error loading study area from config, check file")
-        raise ValueError("Invalid study area config — check config/settings.yaml") from e
-
-    study_sites = set(
-        sites[
-            sites["latitude"].between(lat_min, lat_max)
-            & sites["longitude"].between(lon_min, lon_max)
-        ]["site_id"]
-    )
+    sites = filter_points_to_study_area(sites, lat_col="latitude", lon_col="longitude")
+    study_sites = set(sites["site_id"].astype(str))
 
     frames = []
     for chunk in chunks:

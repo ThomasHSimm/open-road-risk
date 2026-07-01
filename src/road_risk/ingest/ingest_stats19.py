@@ -6,7 +6,7 @@ Loader for DfT STATS19 road casualty statistics.
 Handles:
   - Large combined CSV files (spanning 1979–latest year, not split by year)
   - All three tables: collisions, vehicles, casualties
-  - Filtering by police_force code (default: Yorkshire region)
+  - Filtering collisions to the configured study area by valid coordinates and boundary
   - Year-range filtering via 'year' column in data
 
 Source:
@@ -25,6 +25,7 @@ from pathlib import Path
 import pandas as pd
 
 from road_risk.config import _ROOT, cfg
+from road_risk.geography import STUDY_AREA_NAME, filter_points_to_study_area
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +33,8 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-# Study area police force codes — loaded from config/settings.yaml.
-# settings.yaml stores {snake_case_name: int_code}; we invert to {int_code: name}
-# for lookup and backwards-compatibility with callers that use the dict directly.
+# Legacy police-force mappings are kept for diagnostics/backwards compatibility.
+# GB ingest does not use police_force as a geography filter.
 STUDY_AREA_FORCE_CODES: dict[int, str] = {
     int(code): name.replace("_", " ").title()
     for name, code in cfg["geography"]["police_force_codes"].items()
@@ -123,7 +123,7 @@ def _find_file(folder: Path, table: str) -> Path | None:
 def _load_single(
     path: Path,
     table: str,
-    force_codes: set[int],
+    force_codes: set[int] | None = None,
     years: list[int] | None = None,
     valid_indices: set | None = None,
 ) -> pd.DataFrame:
@@ -155,22 +155,33 @@ def _load_single(
         df = df[df[year_col].isin(years)]
         logger.info(f"    Filtered {before:,} → {len(df):,} rows (year in {years})")
 
-    # Pre-filter vehicle/casualty to Yorkshire collision indices
-    # This avoids holding the full GB dataset in memory
+    # Pre-filter vehicle/casualty to spatially selected collision indices.
+    # This avoids carrying the full GB vehicle/casualty tables forward.
     if table in ("vehicle", "casualty") and valid_indices is not None:
         before = len(df)
         df = df[df["collision_index"].isin(valid_indices)]
         logger.info(
-            f"    Filtered {before:,} → {len(df):,} rows (collision_index in Yorkshire set)"
+            f"    Filtered {before:,} → {len(df):,} rows "
+            f"(collision_index in {STUDY_AREA_NAME.upper()} set)"
         )
 
-    # Filter to region of interest (collision table has police_force)
-    if table == "collision" and force_codes:
+    # GB mode: use coordinates and boundary, not police_force.
+    if table == "collision":
         before = len(df)
-        df = df[df["police_force"].isin(force_codes)]
+        df = filter_points_to_study_area(df, lat_col="latitude", lon_col="longitude")
         logger.info(
-            f"    Filtered {before:,} → {len(df):,} rows (police_force in {sorted(force_codes)})"
+            f"    Filtered {before:,} → {len(df):,} rows "
+            f"(valid coordinates within {STUDY_AREA_NAME.upper()} boundary)"
         )
+
+        # Optional legacy override for non-GB experiments only.
+        if STUDY_AREA_NAME != "gb" and force_codes:
+            before = len(df)
+            df = df[df["police_force"].isin(force_codes)]
+            logger.info(
+                f"    Filtered {before:,} → {len(df):,} rows "
+                f"(police_force in {sorted(force_codes)})"
+            )
 
     # Validate expected columns are present
     missing = [c for c in EXPECTED_COLS[table] if c not in df.columns]
@@ -192,17 +203,17 @@ def load_stats19(
     tables: list[str] | None = None,
 ) -> dict[str, pd.DataFrame]:
     """
-    Load STATS19 data from combined CSV files, optionally filtered by
-    year and police force codes.
+    Load STATS19 data from combined CSV files, filtered by year and study-area
+    geography.
 
     Parameters
     ----------
     raw_folder : path to data/raw/stats19/
     years : list of years to filter by (e.g. cfg["years"]["full_range"])
             Defaults to None (all years in the data). Only applied if 'year' column exists.
-    police_force_codes : STATS19 police_force integers to keep.
-                         Defaults to Yorkshire region (4, 5, 6, 7).
-                         Pass an empty list [] to skip filtering.
+    police_force_codes : optional legacy STATS19 police_force integers to keep.
+                         Ignored for study_area.name=gb, where spatial filtering
+                         is used instead.
     tables : which tables to load — any subset of
              ['collision', 'vehicle', 'casualty'].
              Defaults to all three.
@@ -223,7 +234,9 @@ def load_stats19(
     if not folder.exists():
         raise FileNotFoundError(f"Raw folder not found: {folder}")
 
-    if police_force_codes is None:
+    if STUDY_AREA_NAME == "gb":
+        police_force_codes = []
+    elif police_force_codes is None:
         police_force_codes = list(STUDY_AREA_FORCE_CODES.keys())
     force_set = set(police_force_codes)
 
@@ -233,7 +246,7 @@ def load_stats19(
     results: dict[str, pd.DataFrame] = {}
 
     # Always load collision first so we can pre-filter vehicle/casualty
-    # to Yorkshire collision indices — avoids loading full GB data into memory
+    # to spatially selected collision indices.
     load_order = ["collision"] + [t for t in tables if t != "collision"]
     valid_indices: set | None = None
 
@@ -249,11 +262,12 @@ def load_stats19(
         results[table] = df
         logger.info(f"'{table}' total rows loaded: {len(df):,}")
 
-        # After loading collision, capture the Yorkshire index set
+        # After loading collision, capture the selected collision index set.
         if table == "collision" and "collision_index" in df.columns:
             valid_indices = set(df["collision_index"])
             logger.info(
-                f"  Captured {len(valid_indices):,} Yorkshire collision indices for pre-filtering"
+                f"  Captured {len(valid_indices):,} {STUDY_AREA_NAME.upper()} "
+                "collision indices for pre-filtering"
             )
 
     return results
@@ -266,9 +280,8 @@ def join_stats19(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
     The result is casualty-level (one row per casualty), with vehicle
     and collision attributes denormalised in.
 
-    Note: vehicle and casualty tables are NOT pre-filtered by police_force;
-    they are joined against the already-filtered collision table, so only
-    Yorkshire incidents are retained.
+    Note: vehicle and casualty tables are joined against the already-filtered
+    collision table, so only study-area incidents are retained.
 
     Parameters
     ----------
@@ -355,7 +368,8 @@ def main(
     raw_folder : path to data/raw/stats19; defaults to _ROOT / "data/raw/stats19"
     output_folder : path to save processed data; defaults to _ROOT / "data/processed/stats19"
     years : years to filter by; defaults to 2015–2024
-    police_force_codes : police force codes to filter; defaults to Yorkshire
+    police_force_codes : optional legacy police-force filter for non-GB experiments.
+                         Ignored when study_area.name is "gb".
     """
     if raw_folder is None:
         raw_folder = _ROOT / cfg["paths"]["raw"]["stats19"]

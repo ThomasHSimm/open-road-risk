@@ -5,7 +5,7 @@ This is the Step 3 prep check for the temporal plan. It asks whether
 `core_overnight_ratio` is mostly recoverable from the existing post-grade
 Stage 2 feature surface before adding temporal descriptors to the collision
 model. If so, temporal ablation needs a higher bar because apparent lift may
-be urban-character signal already represented by IMD, grade, road class,
+be urban-character signal already represented by deprivation, grade, road class,
 centrality, population density, speed, lanes, AADT, and vehicle mix.
 """
 
@@ -76,9 +76,12 @@ def _build_feature_frame() -> pd.DataFrame:
         "dist_to_major_km",
         "pop_density_per_km2",
         "ruc_urban_rural",
-        "imd_decile",
-        "imd_crime_decile",
-        "imd_living_indoor_decile",
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland",
         "lanes",
         "is_unpaved",
         "mean_grade",
@@ -142,26 +145,32 @@ def _feature_sets() -> dict[str, list[str]]:
         "speed_limit_mph_effective",
         "lanes",
         "is_unpaved",
-        "imd_decile",
-        "imd_crime_decile",
-        "imd_living_indoor_decile",
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland",
         "mean_grade",
         "is_urban",
     ]
-    urban_imd_grade = [
+    urban_deprivation_grade = [
         "road_class_ord",
         "form_of_way_ord",
         "log_estimated_aadt",
         "pop_density_per_km2",
-        "imd_decile",
-        "imd_crime_decile",
-        "imd_living_indoor_decile",
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland",
         "mean_grade",
         "is_urban",
     ]
     return {
         "road_context": road_context,
-        "urban_imd_grade": urban_imd_grade,
+        "urban_deprivation_grade": urban_deprivation_grade,
         "post_grade_stage2_feature_surface": post_grade,
     }
 

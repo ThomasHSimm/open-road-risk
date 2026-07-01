@@ -3,13 +3,14 @@ title: "A checkable literature review for Open Road Risk"
 subtitle: "How AI-assisted extraction, source grounding and human review were used to build an auditable evidence base."
 description: "A site methods note on using AI-assisted literature review without treating the model as an authority."
 date: 2026-06-04
+date-modified: 2026-07-01
 categories: [methods, literature-review, AI]
 toc: true
 ---
 
 Open Road Risk needed a literature review that could do more than summarise papers. It needed an evidence base that could audit modelling decisions.
 
-The project estimates exposure-adjusted collision risk for around 2.17 million road links across northern and central England. That means the literature review has a practical job: establish what the road-safety modelling field already knows, identify where the project is aligned with that field, and expose where the modelling choices are weak, premature, or unsupported.
+The project estimates exposure-adjusted collision risk for around 2.17 million road links across Great Britain. That means the literature review has a practical job: establish what the road-safety modelling field already knows, identify where the project is aligned with that field, and expose where the modelling choices are weak, premature, or unsupported.
 
 AI helped with the labour of that review. It was useful for extracting, organising and comparing sources. But it was only useful when the outputs were made checkable.
 
@@ -131,6 +132,44 @@ The prompts and AI-assisted steps are part of the project record. That matters b
 
 The disclosure is not a formality. It is part of the method. The model can assist with extraction, comparison and drafting, but the responsibility stays with the author.
 
+
+## A small prompt-ablation case study
+
+The workflow above can sound cleaner than the practice. To make the claim more inspectable, I ran a small prompt-ablation case study using one representative road-safety paper: Retallack and Ostendorf (2020), *Relationship Between Traffic Volume and Accident Frequency at Intersections* [^21].
+
+This was not a benchmark of ChatGPT and not proof that one prompt is optimal. It was a worked example. The question was narrower: when the paper, project context and extraction constraints are changed, how does the output change?
+
+The paper was deliberately useful but imperfect for Open Road Risk. It is close enough to matter — traffic volume, accident frequency, Poisson and negative-binomial count models, rainfall risk and severity appear in the study — but it is not a direct match. It studies 120 urban intersections in Adelaide using hourly SCATS traffic-volume data and 1,629 matched motor-vehicle accidents. That makes it a good test case because a useful extraction should preserve both the relevance and the limits: intersection-level evidence is not link-year evidence, and dense hourly monitored traffic counts are not the same as sparse AADF-style national exposure estimates.
+
+The runs used fresh temporary ChatGPT chats. The model setting was kept constant rather than optimised separately for each condition. The point was to test the input condition, not to compare models. A current medium-reasoning model was chosen because it was strong enough to be a realistic workplace tool, but not chosen to make the task artificially easy. This also kept the exercise closer to the kind of AI-assisted document work now appearing in Microsoft 365 Copilot and Copilot Studio [^22].
+
+The prompt protocol is published as a supporting artefact: [open-road-risk-prompt-ablation-case-study.md](lit_review/open-road-risk-prompt-ablation-case-study.md).
+
+| Run | Inputs given | Prompt condition | Output artefact | What it tested |
+|---|---|---|---|---|
+| A | Paper PDF + full Open Road Risk extraction prompt and project dossier | Full structured prompt | [A extraction](lit_review/A_paper-extraction-retallack-2020-traffic-volume-accident-frequency-intersections.md) | Best-case extraction under the project workflow |
+| B | Paper PDF only | Generic project-aware extraction prompt | [B extraction](lit_review/B_road_safety_paper_methodological_extraction.md) | Whether a lighter project prompt still captures the useful methods |
+| C | Paper reference only, no PDF | Reference-only extraction prompt | [C extraction](lit_review/C_reference_only_methodological_extraction_retallack_ostendorf_2020.md) | Whether the model refuses unsupported specificity |
+| D | Paper reference + Open Road Risk context, no PDF | Conservative extraction with project context | [D extraction](lit_review/D_retallack_ostendorf_2020_conservative_extraction.md) | Whether project context creates useful focus or false confidence |
+| E | Paper PDF only | Vague summary prompt | [E extraction](lit_review/E_retallack_ostendorf_2020_for_open_road_risk.md) | What happens when the task asks for usefulness before structured extraction |
+| F | Paper PDF only | Structured extraction fields, but no Open Road Risk dossier | [F extraction](lit_review/F_road_safety_methodological_extraction.md) | What structure alone adds without project-specific transferability rules |
+
+The results were useful, but not in a laboratory-clean way. Run C behaved as intended: it was conservative and treated the output as suitable for screening, not full evidence extraction. Run D was more complicated. Although no PDF was attached, the model reported that it could see article or index-level information. That made the output stronger than a pure reference-only extraction, but it also changed what the condition meant. I kept it because the messiness is part of the lesson: in practical AI-assisted review, the reviewer needs to record not just the prompt, but what the model could actually access.
+
+The comparison showed three practical things.
+
+First, source access matters. Without the paper, the safest output is a screening note: title, likely topic, broad relevance and a list of details that cannot be known. If the output contains sample sizes, model families, coefficients or page references without access to the source, those details should be treated as unsupported.
+
+Second, structure matters even without the full project dossier. Run F was not just filler. It captured a usable paper-level record: citation metadata, response variable, exposure handling, SCATS traffic counts, spatial unit, temporal unit, engineered congestion index, Poisson and negative-binomial handling, model-selection results and limitations. That suggests the extraction schema itself does useful work before any project-specific judgement is added.
+
+Third, the project dossier matters most for transferability and restraint. The full Open Road Risk prompt did not merely ask for more detail. It told the model what kind of detail mattered: link-year compatibility, exposure offsets, sparse AADF transferability, grouped validation, post-event leakage, severity handling and least-disruptive repo actions. That is where domain knowledge enters the prompt. It does not guarantee correctness, but it makes the failure modes easier to spot.
+
+The vague run was the cautionary example. It produced a readable summary and some reasonable project implications, but it was less useful as evidence. It moved quickly toward synthesis: what the paper means, why it matters, and what the project should do. That is often what the reader wants, but it is not the same as an auditable extraction. Once methods, limitations and transferability are flattened into a narrative, it becomes harder to see which claims came from the source and which came from the model's generalisation.
+
+The case study does not prove that the workflow is accurate. It shows why the workflow is inspectable. The published artefacts let a reader compare the same source under different evidence conditions and judge whether the structured prompt, source file and project context changed the output in useful ways.
+
+The main lesson is therefore modest: prompt design is not just wording. A good extraction prompt defines the task boundary, the project context, the fields to preserve, the claims not to make, the limits to record, and the action discipline to apply. That does not replace verification. It gives verification something solid to work on.
+
 ## What changed
 
 The evidence record did real work. It did not just support the project after the fact; it changed how results were interpreted.
@@ -145,7 +184,7 @@ That should have been suspicious. Injury-collision models at link-year grain are
 
 The audit found the problem: a heavy-goods-vehicle traffic feature had been joined so that it populated only the link-years that already contained collisions. That leaked the outcome into a predictor. The model was not discovering an unusually strong signal; it was being fed information it should not have had.
 
-After the join was fixed, the honest figure was about **0.32**. The XGBoost pseudo-R² was 0.323, and the Poisson GLM, at 0.347, slightly outperformed the boosted model once the leak was gone. The leak had been flattering the more complex model.
+After the join was fixed, the honest XGBoost figure was about **0.32**. The clean GB retrain later produced XGBoost pseudo-R² 0.325, while the Poisson GLM reached 0.566 on its own downsampled in-sample surface. Those figures are not a direct horse race, but the leak diagnosis still changed how the boosted model was interpreted: the earlier 0.86 result had been flattering the more complex model.
 
 That is exactly what a literature-backed audit should do. It gives you enough field expectation to question a result that looks too good.
 
@@ -192,6 +231,7 @@ The process is transferable beyond road-safety modelling.
 9. **Verify load-bearing claims manually.** Check numbers, citations and interpretations against the original source.
 10. **Use the record as an audit tool.** It should check existing work as well as inform new work.
 11. **Disclose the AI-assisted steps.** The workflow should be visible enough that others can inspect it.
+12. **Publish one prompt-ablation example.** Run the same source under a few input conditions — full paper, reference only, structured prompt, vague prompt — and publish the outputs so readers can inspect the difference.
 
 ## The limit
 
@@ -256,6 +296,11 @@ All figures, claims and citations were checked by the author against the project
 [^19]: Scite.ai — citation-context tool that classifies citations as supporting, contradicting or mentioning a claim. <https://scite.ai/>
 
 [^20]: OpenAI (2025), *Introducing deep research* — notes that Deep Research can still hallucinate facts, make incorrect inferences, struggle to distinguish authoritative information from rumours, and fail to convey uncertainty accurately. <https://openai.com/index/introducing-deep-research/>
+
+
+[^21]: Retallack & Ostendorf (2020), *Relationship Between Traffic Volume and Accident Frequency at Intersections*, International Journal of Environmental Research and Public Health 17(4):1393 — open-access road-safety paper used for the prompt-ablation case study. <https://doi.org/10.3390/ijerph17041393>
+
+[^22]: Microsoft 365 Copilot Blog (2026), *Available today: GPT-5.4 Thinking in Microsoft 365 Copilot* — states that GPT-5.4 Thinking was available in Copilot Chat and Copilot Studio. <https://techcommunity.microsoft.com/blog/microsoft365copilotblog/available-today-gpt-5-4-thinking-in-microsoft-365-copilot/4499746>
 
 **Further reading.** On tools that productise parts of this workflow, start with the official product documentation for Elicit, Undermind, Semantic Scholar, Litmaps and scite rather than relying on comparison-list articles, which date quickly.
 

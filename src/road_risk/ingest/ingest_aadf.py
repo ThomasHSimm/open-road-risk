@@ -40,6 +40,7 @@ from pathlib import Path
 import pandas as pd
 
 from road_risk.config import _ROOT, cfg
+from road_risk.geography import STUDY_AREA_NAME, filter_points_to_study_area
 
 logger = logging.getLogger(__name__)
 
@@ -205,17 +206,16 @@ def load_aadf(
             Defaults to full_range from config/settings.yaml.
     region_name : DfT region string filter. Defaults to None (no region filter).
                   Use lat_bounds/lon_bounds for geographic filtering instead.
-    lat_bounds : (lat_min, lat_max) to filter count points. Covers Yorkshire +
-                 NW England corridor by default. Pass None to load all GB.
+    lat_bounds : (lat_min, lat_max) to pre-filter count points. Defaults to the
+                 configured study-area bbox. Pass None to skip bbox filtering.
     lon_bounds : (lon_min, lon_max) to filter count points.
     road_types : list of road_type values to keep, e.g. ['Major'].
                  Defaults to all road types.
     directions : direction_of_travel values to keep.
                  Options: N, S, E, W (directional) or C (combined).
                  Defaults to all.
-    cache_parquet : if True, save filtered result to
-                    data/raw/aadf/aadf_filtered.parquet so subsequent
-                    loads are fast (avoids re-reading the large zip).
+    cache_parquet : if True, save filtered result to a study-area-specific
+                    parquet cache so subsequent loads are fast.
 
     Returns
     -------
@@ -229,7 +229,7 @@ def load_aadf(
     """
     folder = Path(raw_folder)
     zip_path = folder / "dft_traffic_counts_aadf_by_direction.zip"
-    parquet_path = folder / "aadf_filtered.parquet"
+    parquet_path = folder / f"aadf_filtered_{STUDY_AREA_NAME}.parquet"
 
     if years is None:
         years = _DEFAULT_YEARS
@@ -243,6 +243,7 @@ def load_aadf(
         df = df[df["year"].isin(years)]
         if directions:
             df = df[df["direction_of_travel"].isin(directions)]
+        df = filter_points_to_study_area(df, lat_col="latitude", lon_col="longitude")
         logger.info(f"  {len(df):,} rows after cache filters")
         return df
 
@@ -280,6 +281,8 @@ def load_aadf(
         before = len(df)
         df = df[df["longitude"].between(*lon_bounds)]
         logger.info(f"  Lon filter {lon_bounds}: {before:,} → {len(df):,} rows")
+
+    df = filter_points_to_study_area(df, lat_col="latitude", lon_col="longitude")
 
     if road_types:
         before = len(df)
@@ -442,7 +445,7 @@ def main(
     raw_folder : path to data/raw/aadf; defaults to config
     output_folder : path to save processed data; defaults to data/processed/aadf
     years : years to filter by; defaults to config years
-    region_name : region to filter; defaults to 'Yorkshire and the Humber'
+    region_name : optional DfT region filter; defaults to None.
     """
     if raw_folder is None:
         raw_folder = _DEFAULT_RAW_FOLDER

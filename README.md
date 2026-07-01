@@ -8,10 +8,11 @@ Open Road Risk is an open-source road safety pipeline combining DfT STATS19
 collision data, AADF traffic counts, OS Open Roads geometry, WebTRIS sensor
 data, OpenStreetMap attributes, OS Terrain 50, ONS area context, and MHCLG
 deprivation data to produce **exposure-adjusted risk scores
-for every road link across a Northern and Central England study area** —
+for every road link across Great Britain (England, Scotland, and Wales; not
+Northern Ireland)** —
 including the large share of roads without direct traffic counters.
 
-- **Current geography:** Yorkshire, NW England, North East, Midlands, and parts of East England
+- **Current geography:** Great Britain (GB)
 - **Time range:** 2015–2024
 - **Network size:** 2,167,557 OS Open Roads links; model stages expand this to link × year rows
 
@@ -47,16 +48,17 @@ not part of the current Stage 2 collision feature set.
 Uses `log(AADT × length_km × 365 / 1e6)` as exposure offset so the model learns
 *which roads are dangerous given their traffic* — not just which are busy.
 XGBoost drives the final risk percentile ranking (`risk_scores.parquet`).
-The current honest post-fix baseline is pseudo-R² `0.323` out of sample,
-measured as the mean across five seeds with temporal features included
-(`0.321-0.327` range). Earlier repo
+The clean full GB retrain completed on 2026-07-01 with XGBoost pseudo-R²
+`0.325` out of sample. Earlier repo
 documentation cited `~0.86`, but that figure came from a pre-fix evaluation
 surface that was later found to be contaminated by feature-table leakage and
 should not be used for current project positioning.
-The GLM (pseudo-R² 0.3472, in-sample on downsampled training set) provides
-interpretable coefficients and diagnostic residuals. Features include a tiered
-speed limit imputation (`speed_limit_mph_effective`), IMD deprivation deciles,
-and `mean_grade`, with GLM optional-feature imputation keeping the training
+The GLM (pseudo-R² `0.566`, in-sample on a 1:3 zero-collision downsampled
+training set) provides interpretable coefficients and diagnostic residuals.
+Features include a tiered
+speed limit imputation (`speed_limit_mph_effective`), GB within-country
+deprivation deciles, GB rural/urban context, population density, and
+`mean_grade`, with GLM optional-feature imputation keeping the training
 population stable across feature additions.
 
 *Experimental variants for Empirical Bayes (EB) shrinkage (`risk_scores_eb.parquet`) and a Facility-Family split (`risk_scores_family.parquet`) are also generated for diagnostic comparison.*
@@ -73,16 +75,21 @@ pip install -e ".[dev]"
 
 # 2. Download raw data into data/raw/
 #    Required: STATS19 CSV, AADF zip, OS Open Roads GeoPackage,
-#    WebTRIS data or API access, OSM pbf files, OS Terrain 50 tiles,
-#    ONS LSOA population/RUC files, and MHCLG IMD 2025.
+#    GB boundary, WebTRIS data or API access, OSM pbf files,
+#    OS Terrain 50 tiles, ONS population/RUC files, and IMD/WIMD/SIMD inputs.
+conda run -n env1 python scripts/download_gb_boundary.py
+
+# Full GB OSM is large (~2.0 GB as of 2026-06-30); download only when needed.
+curl -L -o data/raw/osm/great-britain-latest.osm.pbf \
+  https://download.geofabrik.de/europe/great-britain-latest.osm.pbf
 
 # 3. Ingest source files
-python src/road_risk/ingest/ingest_stats19.py
-python src/road_risk/ingest/ingest_aadf.py
-python src/road_risk/ingest/ingest_webtris.py   # slow if pulling from API
-python src/road_risk/ingest/ingest_openroads.py
+conda run -n env1 python src/road_risk/ingest/ingest_stats19.py
+conda run -n env1 python src/road_risk/ingest/ingest_aadf.py
+conda run -n env1 python src/road_risk/ingest/ingest_webtris.py   # slow if pulling from API
+conda run -n env1 python src/road_risk/ingest/ingest_openroads.py
 
-# 4. Convert OSM pbf files (download study-area county files from Geofabrik first)
+# 4. Convert OSM pbf files
 sudo apt install osmium-tool
 for f in data/raw/osm/*.osm.pbf; do
     osmium cat "$f" -o "${f%.osm.pbf}.osm"
@@ -107,14 +114,15 @@ python -m road_risk.model --stage collision   # Stage 2: Poisson risk model
 |---|---|---|---|
 | STATS19 (collisions, vehicles, casualties) | DfT | Per incident | GB 1979– |
 | AADF by direction | DfT | Count point / year | GB — major + some minor |
+| GB boundary | ONS Open Geography Portal | Country polygon | England, Scotland, Wales |
 | OS Open Roads | Ordnance Survey | Road link geometry | GB |
 | Network Model GDB | National Highways | Link + related tables | Strategic Road Network only; source notes and scoped structural-feature candidate |
 | OS Terrain 50 | Ordnance Survey | 50 m elevation grid | GB — terrain grade features |
 | WebTRIS sensor reports | National Highways | Site / month, cleaned to site × year | National Highways network; current pull uses 2019, 2021, 2023 |
 | OpenStreetMap | OSM contributors | Road edge | GB — speed, lanes, surface |
-| LSOA population estimates | ONS | LSOA / year | England & Wales — population-density features |
-| 2021 Rural-Urban Classification | ONS | LSOA 2021 | England & Wales — urban/rural context |
-| English Indices of Deprivation 2025 | MHCLG | LSOA 2021 | England — IMD and domain deciles; Indoors sub-domain only for Living Environment leakage control |
+| OA population density context | ONS / National Records of Scotland | OA polygon | GB — `data/processed/context/oa_population_density_gb.parquet`; assigned by road-link centroid with a short nearest fallback |
+| GB rural-urban context | ONS / Scottish Government | LSOA 2021 / SGUR 2022 polygon | England/Wales ONS 2021 RUC + Scotland Urban Rural Classification 2022 |
+| GB deprivation context | MHCLG / Welsh Government / Scottish Government | LSOA / Data Zone polygon | England IoD 2025, Wales WIMD 2019, Scotland SIMD 2020v2; deciles are within-country only |
 
 Large raw files are not tracked in git.
 
@@ -172,19 +180,19 @@ open-road-risk/
 | Mean snap score | 0.860 |
 | Road links scored (full network) | 2,167,557 |
 | AADT estimator CV R² | ~0.83 (counted-only AADF rows) |
-| Poisson GLM pseudo-R² | 0.3472 (verified post-fix; in-sample, downsampled training set; not directly comparable to XGBoost) |
-| XGBoost pseudo-R² | 0.3235 mean across 5 post-fix seeds with temporal features included (range 0.3214-0.3265) |
+| Poisson GLM pseudo-R² | 0.566 (clean full GB run; in-sample on 1:3 zero-collision downsampled training set; not directly comparable to XGBoost or earlier 1:10 runs) |
+| XGBoost pseudo-R² | 0.325 (clean full GB run; out-of-sample with temporal features included) |
 
 ---
 
 ## Key Data Quality Notes
 
-- **STATS19 force-code selection bug (fixed April 2026)** — the original
+- **STATS19 force-code selection bug (fixed April 2026, retired for GB runs)** — the original
   Yorkshire pilot accidentally used police-force codes 4–7
   (Lancashire, Merseyside, Greater Manchester, Cheshire) instead of the
   Yorkshire codes 12, 13, 14, and 16. The current project has since expanded
-  beyond Yorkshire, and `config/settings.yaml` now intentionally lists the full
-  multi-force study area.
+  beyond police-force geography. `ingest_stats19.py` now selects GB collisions
+  by valid lat/lon plus the configured GB boundary, not by `police_force`.
 
 - **Snap rate ~99.8%** — achieved in the current full-area run after the force
   code fix and weighted snap. Previous 40.6% ceiling was because NW England
@@ -236,7 +244,7 @@ Compatible with ESRI/ArcGIS workflows via GeoPackage output. PostGIS backend for
 ## How to cite
 
 Simm, T. H. (2026). *Open Road Risk: an open-data pipeline for exposure-adjusted
-collision risk across the road network of Northern and Central England.*
+collision risk across the Great Britain road network.*
 Zenodo. https://doi.org/10.5281/zenodo.20451731
 
 ---

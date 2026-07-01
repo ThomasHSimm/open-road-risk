@@ -30,6 +30,7 @@ import pandas as pd
 import pyproj
 
 from road_risk.config import _ROOT, cfg
+from road_risk.geography import STUDY_AREA_BBOX_WGS84
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +54,10 @@ ROAD_CLASS_PREFIX = {
     6: "",  # Unclassified
 }
 
-# GB bounding box for coordinate validation
-GB_LAT = (49.9, 60.9)
-GB_LON = (-8.2, 2.0)
+# Study-area bbox for coordinate validation. Ingest has already applied the
+# precise boundary; this flag only catches invalid/suspect coordinates.
+GB_LAT = (STUDY_AREA_BBOX_WGS84["min_lat"], STUDY_AREA_BBOX_WGS84["max_lat"])
+GB_LON = (STUDY_AREA_BBOX_WGS84["min_lon"], STUDY_AREA_BBOX_WGS84["max_lon"])
 
 # COVID years flag
 COVID_YEARS: set[int] = set(cfg["years"]["covid"])

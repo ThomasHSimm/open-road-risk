@@ -44,6 +44,7 @@ WEB_COLUMNS = [
     "predicted_eb",
     "predicted_xgb",
     "risk_percentile_eb",
+    "risk_percentile",
     "calibration_caveat",
     "geometry",
 ]
@@ -54,15 +55,25 @@ ROUNDING = {
     "predicted_eb": 3,
     "predicted_xgb": 3,
     "risk_percentile_eb": 3,
+    "risk_percentile": 3,
     "log_predicted_eb": 4,
     "eb_visual_quantile_global": 2,
+    "log_predicted_score": 4,
+    "visual_quantile_global": 2,
+}
+
+OPTIONAL_WEB_COLUMNS = {
+    "predicted_eb",
+    "risk_percentile_eb",
+    "risk_percentile",
+    "calibration_caveat",
 }
 
 
 def _existing_columns(path: Path, wanted: list[str]) -> list[str]:
     available = set(pq.ParquetFile(path).schema_arrow.names)
     missing = [col for col in wanted if col not in available]
-    required_missing = [col for col in missing if col != "calibration_caveat"]
+    required_missing = [col for col in missing if col not in OPTIONAL_WEB_COLUMNS]
     if required_missing:
         raise KeyError(f"Missing required web export columns in {path}: {required_missing}")
     return [col for col in wanted if col in available]
@@ -148,10 +159,17 @@ def build_web_geojson(
         gdf = gdf.to_crs(4326)
     gdf = gdf.set_crs("EPSG:4326", allow_override=True)
 
-    gdf["log_predicted_eb"] = np.log1p(pd.to_numeric(gdf["predicted_eb"], errors="coerce"))
-    gdf["eb_visual_quantile_global"] = (
-        pd.to_numeric(gdf["predicted_eb"], errors="coerce").rank(pct=True, method="average") * 100
+    score_col = "predicted_eb" if "predicted_eb" in gdf.columns else "predicted_xgb"
+    percentile_col = (
+        "risk_percentile_eb" if "risk_percentile_eb" in gdf.columns else "risk_percentile"
     )
+    score = pd.to_numeric(gdf[score_col], errors="coerce")
+    gdf["log_predicted_score"] = np.log1p(score)
+    gdf["visual_quantile_global"] = score.rank(pct=True, method="average") * 100
+    if "log_predicted_eb" not in gdf.columns:
+        gdf["log_predicted_eb"] = gdf["log_predicted_score"]
+    if "eb_visual_quantile_global" not in gdf.columns:
+        gdf["eb_visual_quantile_global"] = gdf["visual_quantile_global"]
 
     gdf = _simplify_geometry(gdf, simplify_tolerance_m)
     gdf = _round_properties(gdf)
@@ -173,14 +191,14 @@ def build_web_geojson(
         "geometry_simplification_tolerance_m": simplify_tolerance_m,
         "geometry_simplification_crs": "EPSG:3857",
         "coordinate_precision_degrees": 0.00001,
-        "colour_scaling": "log_predicted_eb = log1p(predicted_eb)",
+        "ranking_field": percentile_col,
+        "score_field": score_col,
+        "colour_scaling": f"log_predicted_score = log1p({score_col})",
         "file_size_bytes": geojson_path.stat().st_size,
         "count_by_family": _summary_counts(gdf, "family"),
         "count_by_road_classification": _summary_counts(gdf, "road_classification"),
         "count_by_road_archetype": _summary_counts(gdf, "road_archetype"),
-        "numeric_summary": _numeric_summary(
-            gdf, ["estimated_aadt", "collision_count", "predicted_eb"]
-        ),
+        "numeric_summary": _numeric_summary(gdf, ["estimated_aadt", "collision_count", score_col]),
     }
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)

@@ -17,9 +17,10 @@ Last reviewed: 2026-04-28.
   `analysis/osm-coverage.qmd`, but the source itself is not described in
   Data Sources. No `ingest_osm.py` exists; loading happens via `osmnx` and
   `osmium` per the README. Drafting requires pointer to actual loading code.
-- **LSOA population + area** (ONS) is listed in the README data sources table
-  but has no site page. Lower priority — population density features are
-  derived from this, but the source description would be brief.
+- **GB OA population density** has no site page. The generated context layer is
+  `data/processed/context/oa_population_density_gb.parquet`; current
+  `network.py` still uses the legacy E/W LSOA-centroid population-density path
+  until the link-level OA assignment migration lands.
 
 ## Validation content — potential new subsection
 

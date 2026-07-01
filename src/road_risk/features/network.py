@@ -23,18 +23,15 @@ Feature 3 — Distance to nearest major road (node)
     Small = feeder road, close to trunk network.
     Large = genuinely isolated local road.
 
-Feature 4 — Population density (LSOA join)
-    Population per km² of the LSOA whose centroid is nearest to the road link
-    centroid, within 2km. Proxy for local demand.
-    Requires: data/raw/stats19/lsoa_population.csv
-    Download from: https://www.ons.gov.uk/peoplepopulationandcommunity/
-                   populationandmigration/populationestimates/datasets/
-                   lowersuperoutputareamidyearpopulationestimates
+Feature 4 — Population density (GB OA polygon join)
+    Population per km² of the Output Area polygon containing the road-link
+    centroid, with a short nearest-polygon fallback for clipped-boundary edge
+    cases. Proxy for local demand.
+    Requires: data/processed/context/oa_population_density_gb.parquet
 
 Feature 5 — Rural-Urban Classification (LSOA join)
-    ONS 2021 Rural-Urban Classification attached via the same nearest-centroid
-    LSOA assignment used for population density. Adds the raw class code and a
-    derived Urban/Rural split.
+    GB road-link centroid assignment to E/W LSOA2021 RUC polygons and
+    Scottish Government Urban Rural Classification 2022 polygons.
 
 Usage
 -----
@@ -62,6 +59,14 @@ import pandas as pd
 from scipy.spatial import cKDTree
 
 from road_risk.config import _ROOT
+from road_risk.features.deprivation import assign_deprivation_to_links, write_deprivation_provenance
+from road_risk.features.population import build_gb_oa_population_density, build_lsoa_population
+from road_risk.features.rural_urban import (
+    load_or_build_link_rural_urban,
+)
+from road_risk.features.rural_urban import (
+    write_ruc_provenance as write_gb_ruc_provenance,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -113,41 +118,25 @@ class _Heartbeat:
 PROCESSED = _ROOT / "data/processed"
 OPENROADS_PATH = PROCESSED / "shapefiles/openroads.parquet"
 LSOA_CENT_PATH = _ROOT / "data/raw/stats19/lsoa_centroids.csv"
-LSOA_POP_PATH = _ROOT / "data/raw/stats19/lsoa_population.csv"
-RUC_PATH = _ROOT / "data/raw/ons/ruc_2021_lsoa_ew.csv"
-IMD_PATH = (
-    _ROOT / "data/raw/mhclg/File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv"
-)
+LSOA_POP_PATH = _ROOT / "data/raw/population/lsoa_population.csv"
+GB_OA_DENSITY_PATH = _ROOT / "data/processed/context/oa_population_density_gb.parquet"
+RUC_PATH = _ROOT / "data/raw/urban_rural_ruc/engwal_2021/ruc_2021_lsoa_ew.csv"
 OUTPUT_PATH = _ROOT / "data/features/network_features.parquet"
 RUC_PROV_PATH = _ROOT / "data/provenance/ruc_provenance.json"
-IMD_PROV_PATH = _ROOT / "data/provenance/imd_provenance.json"
 SPEED_LIMIT_PROV_PATH = _ROOT / "data/provenance/speed_limit_effective_provenance.json"
+POPULATION_ASSIGNMENT_PROV_PATH = _ROOT / "data/provenance/population_assignment_gb_provenance.json"
 
 # Betweenness centrality sample size — higher = more accurate, slower
-# 500 gives a good approximation in ~2-3 minutes for Yorkshire
+# 500 gives a stronger approximation but is too slow for routine GB-scale runs.
 BETWEENNESS_K = 200
 
 # Max distance for population density join (metres)
 POP_JOIN_CAP_M = 2000
+POPULATION_ASSIGNMENT_FALLBACK_M = 250
 
 # Road classifications that count as "major"
 MAJOR_CLASSES = {"Motorway", "A Road"}
 RUC_REQUIRED_COLUMNS = ["LSOA21CD", "RUC21CD", "RUC21NM"]
-
-# IoD 2025 column names — exact strings from MHCLG File 7.
-# See: https://www.gov.uk/government/statistics/english-indices-of-deprivation-2025
-IMD_LSOA_COL = "LSOA code (2021)"
-IMD_OVERALL_DECILE_COL = (
-    "Index of Multiple Deprivation (IMD) Decile (where 1 is most deprived 10% of LSOAs)"
-)
-IMD_CRIME_DECILE_COL = "Crime Decile (where 1 is most deprived 10% of LSOAs)"
-IMD_INDOOR_DECILE_COL = "Indoors Sub-domain Decile (where 1 is most deprived 10% of LSOAs)"
-IMD_REQUIRED_COLUMNS = [
-    IMD_LSOA_COL,
-    IMD_OVERALL_DECILE_COL,
-    IMD_CRIME_DECILE_COL,
-    IMD_INDOOR_DECILE_COL,
-]
 MINOR_ROAD_CLASSES = {
     "Unclassified",
     "Not Classified",
@@ -302,82 +291,6 @@ def load_ruc_lookup(ruc_path: Path = RUC_PATH) -> pd.DataFrame:
     return ruc
 
 
-def load_imd_lookup(imd_path: Path = IMD_PATH) -> pd.DataFrame:
-    """
-    Load the IoD 2025 deprivation lookup keyed by LSOA21CD.
-
-    Returns a frame with columns:
-        LSOA21CD, imd_decile, imd_crime_decile, imd_living_indoor_decile
-
-    Why these three:
-      - IMD overall decile: headline deprivation signal.
-      - Crime decile: enforcement / antisocial behaviour proxy; mechanism-
-        relevant to road risk.
-      - Indoors Sub-domain decile: housing-quality signal. Used INSTEAD of
-        the full Living Environment domain because the Outdoors sub-domain
-        contains road traffic accidents as an indicator (leakage).
-
-    Deciles are integer 1–10 (1 = most deprived). The model uses deciles
-    rather than scores because IoD scores are rank-transformed exponentials
-    and not on a meaningful absolute scale.
-
-    Fails fast if the source file is missing or required columns are absent.
-    """
-    if not imd_path.exists():
-        raise FileNotFoundError(
-            f"IMD CSV not found at {imd_path}. "
-            f"Download File 7 from "
-            f"https://www.gov.uk/government/statistics/english-indices-of-deprivation-2025"
-        )
-
-    header = pd.read_csv(imd_path, nrows=0, encoding="utf-8-sig")
-    missing = [col for col in IMD_REQUIRED_COLUMNS if col not in header.columns]
-    if missing:
-        raise ValueError(
-            f"IMD CSV at {imd_path} is missing required columns: {missing}. "
-            f"Found columns: {header.columns.tolist()}."
-        )
-
-    imd = pd.read_csv(
-        imd_path,
-        usecols=IMD_REQUIRED_COLUMNS,
-        encoding="utf-8-sig",
-    ).rename(
-        columns={
-            IMD_LSOA_COL: "LSOA21CD",
-            IMD_OVERALL_DECILE_COL: "imd_decile",
-            IMD_CRIME_DECILE_COL: "imd_crime_decile",
-            IMD_INDOOR_DECILE_COL: "imd_living_indoor_decile",
-        }
-    )
-    imd["LSOA21CD"] = imd["LSOA21CD"].astype("string").str.strip()
-
-    # Coerce deciles to nullable Int8 — saves memory and makes intent explicit.
-    # Any non-numeric value becomes <NA>; this is correct (the source uses
-    # blanks for excluded LSOAs).
-    for col in ["imd_decile", "imd_crime_decile", "imd_living_indoor_decile"]:
-        imd[col] = pd.to_numeric(imd[col], errors="coerce").astype("Int8")
-
-    dupes = int(imd["LSOA21CD"].duplicated().sum())
-    if dupes:
-        raise ValueError(
-            f"IMD CSV at {imd_path} contains {dupes:,} duplicate LSOA21CD rows; "
-            "expected one row per LSOA."
-        )
-
-    n_imd = int(imd["imd_decile"].notna().sum())
-    n_crime = int(imd["imd_crime_decile"].notna().sum())
-    n_indoor = int(imd["imd_living_indoor_decile"].notna().sum())
-    logger.info(
-        "  Loaded %s IMD rows (decile coverage: imd=%s, crime=%s, indoor=%s)",
-        f"{len(imd):,}",
-        f"{n_imd:,}",
-        f"{n_crime:,}",
-        f"{n_indoor:,}",
-    )
-    return imd
-
-
 def derive_ruc_urban_rural(ruc_class: pd.Series) -> pd.Series:
     """
     Collapse detailed RUC codes into an Urban/Rural top-level split.
@@ -433,49 +346,83 @@ def write_ruc_provenance(features: pd.DataFrame) -> None:
     logger.info(f"Wrote RUC provenance to {RUC_PROV_PATH}")
 
 
-def write_imd_provenance(features: pd.DataFrame) -> None:
-    """Write IMD coverage stats and decile distributions to JSON."""
+def write_population_assignment_provenance(features: pd.DataFrame) -> None:
+    """Write GB OA population-assignment coverage and audit stats to JSON."""
+    required = {
+        "pop_density_per_km2",
+        "population_assignment_method",
+        "population_nation",
+        "population_area_type",
+        "population_assignment_distance_m",
+    }
+    missing = required.difference(features.columns)
+    if missing:
+        logger.warning(
+            "Skipping population assignment provenance; missing columns: %s",
+            sorted(missing),
+        )
+        return
 
-    def _decile_counts(series: pd.Series) -> dict[str, int]:
-        counts = series.value_counts(dropna=True).sort_index()
-        result = {str(k): int(v) for k, v in counts.items()}
-        missing = int(series.isna().sum())
-        if missing:
-            result["NaN"] = missing
-        return result
-
-    n_links_total = int(len(features))
-    n_links_with_imd = int(features["imd_decile"].notna().sum())
-    coverage_pct = (100.0 * n_links_with_imd / n_links_total) if n_links_total else 0.0
+    distances = pd.to_numeric(
+        features["population_assignment_distance_m"],
+        errors="coerce",
+    ).dropna()
+    if distances.empty:
+        distance_summary = {"median": None, "p95": None, "max": None}
+    else:
+        distance_summary = {
+            "median": float(distances.median()),
+            "p95": float(distances.quantile(0.95)),
+            "max": float(distances.max()),
+        }
 
     provenance = {
         "script_path": repo_display_path(Path(__file__)),
         "git_sha": get_script_git_sha(),
         "timestamp_utc": datetime.now(UTC).isoformat(),
-        "imd_source": (
-            "MHCLG English Indices of Deprivation 2025, File 7 (LSOA21 grain), "
-            "https://www.gov.uk/government/statistics/english-indices-of-deprivation-2025"
+        "population_source": repo_display_path(GB_OA_DENSITY_PATH),
+        "assignment": (
+            "road-link centroid to OA polygon; nearest fallback for unmatched centroids"
         ),
-        "imd_vintage": "IoD 2025 (published 30 Oct 2025, v2 corrected 17 Nov 2025)",
-        "indoor_subdomain_rationale": (
-            "Indoors Sub-domain used instead of full Living Environment domain "
-            "because the Outdoors sub-domain contains road traffic accidents "
-            "as an indicator (leakage risk for a road-risk model)."
-        ),
-        "n_links_total": n_links_total,
-        "n_links_with_imd": n_links_with_imd,
-        "coverage_pct": coverage_pct,
-        "imd_decile_distribution": _decile_counts(features["imd_decile"]),
-        "imd_crime_decile_distribution": _decile_counts(features["imd_crime_decile"]),
-        "imd_living_indoor_decile_distribution": _decile_counts(
-            features["imd_living_indoor_decile"]
-        ),
+        "fallback_distance_threshold_m": POPULATION_ASSIGNMENT_FALLBACK_M,
+        "n_links_total": int(len(features)),
+        "n_links_with_population": int(features["pop_density_per_km2"].notna().sum()),
+        "assignment_method_counts": {
+            str(k): int(v)
+            for k, v in features["population_assignment_method"]
+            .value_counts(dropna=False)
+            .sort_index()
+            .items()
+        },
+        "population_nation_counts": {
+            str(k): int(v)
+            for k, v in features["population_nation"]
+            .astype("object")
+            .where(features["population_nation"].notna(), "NaN")
+            .value_counts(dropna=False)
+            .sort_index()
+            .items()
+        },
+        "population_area_type_counts": {
+            str(k): int(v)
+            for k, v in features["population_area_type"]
+            .astype("object")
+            .where(features["population_area_type"].notna(), "NaN")
+            .value_counts(dropna=False)
+            .sort_index()
+            .items()
+        },
+        "fallback_distance_m": distance_summary,
     }
 
-    IMD_PROV_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(IMD_PROV_PATH, "w", encoding="utf-8") as f:
+    POPULATION_ASSIGNMENT_PROV_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(POPULATION_ASSIGNMENT_PROV_PATH, "w", encoding="utf-8") as f:
         json.dump(provenance, f, indent=2)
-    logger.info(f"Wrote IMD provenance to {IMD_PROV_PATH}")
+
+    logger.info(
+        "Wrote population assignment provenance to %s",
+        POPULATION_ASSIGNMENT_PROV_PATH,
+    )
 
 
 def _speed_limit_source_counts(series: pd.Series) -> dict[str, int]:
@@ -814,6 +761,189 @@ def compute_dist_to_major(
 # ---------------------------------------------------------------------------
 
 
+def compute_population_density_oa(
+    openroads: gpd.GeoDataFrame,
+    oa_density_path: Path = GB_OA_DENSITY_PATH,
+    fallback_m: float = POPULATION_ASSIGNMENT_FALLBACK_M,
+) -> pd.DataFrame:
+    """
+    Assign GB OA population density to road links.
+
+    Primary assignment:
+      road centroid within OA polygon.
+
+    Fallback:
+      nearest OA polygon/centroid within fallback_m metres.
+
+    Returns one row per link_id with:
+      link_id, pop_density_per_km2, population_area_code,
+      population_area_type, population_nation, population_assignment_method,
+      population_assignment_distance_m.
+    """
+    if not oa_density_path.exists():
+        logger.info(
+            "GB OA population-density layer not found at %s; building it.",
+            oa_density_path,
+        )
+        build_gb_oa_population_density(output_path=oa_density_path)
+
+    oa = gpd.read_parquet(oa_density_path).to_crs("EPSG:27700")
+    roads = openroads[["link_id", "geometry"]].copy().to_crs("EPSG:27700")
+    road_centroids = gpd.GeoDataFrame(
+        roads[["link_id"]],
+        geometry=roads.geometry.centroid,
+        crs="EPSG:27700",
+    )
+
+    oa_slim = oa[
+        [
+            "oa_code",
+            "nation",
+            "population_area_type",
+            "pop_density_per_km2",
+            "geometry",
+        ]
+    ].copy()
+
+    within = gpd.sjoin(
+        road_centroids,
+        oa_slim,
+        how="left",
+        predicate="within",
+    )
+    matched = within["oa_code"].notna()
+    matched_link_ids = set(within.loc[matched, "link_id"])
+    unmatched = road_centroids.loc[~road_centroids["link_id"].isin(matched_link_ids)]
+
+    within = within.loc[matched].copy()
+    within["population_assignment_method"] = "within"
+    within["population_assignment_distance_m"] = 0.0
+
+    if not unmatched.empty:
+        nearest = gpd.sjoin_nearest(
+            unmatched,
+            oa_slim,
+            how="left",
+            max_distance=fallback_m,
+            distance_col="population_assignment_distance_m",
+        )
+        nearest["population_assignment_method"] = np.where(
+            nearest["oa_code"].notna(),
+            "nearest_fallback",
+            pd.NA,
+        )
+    else:
+        nearest = gpd.GeoDataFrame(
+            columns=list(within.columns),
+            crs="EPSG:27700",
+        )
+
+    assigned = within if nearest.empty else pd.concat([within, nearest], ignore_index=True)
+    if not assigned.empty:
+        assigned = assigned.sort_values(
+            ["link_id", "population_assignment_distance_m"], na_position="last"
+        ).drop_duplicates(subset="link_id", keep="first")
+
+    result = road_centroids[["link_id"]].merge(
+        assigned[
+            [
+                "link_id",
+                "oa_code",
+                "nation",
+                "population_area_type",
+                "pop_density_per_km2",
+                "population_assignment_method",
+                "population_assignment_distance_m",
+            ]
+        ],
+        on="link_id",
+        how="left",
+        validate="one_to_one",
+    )
+    result = result.rename(
+        columns={
+            "oa_code": "population_area_code",
+            "nation": "population_nation",
+        }
+    )
+    result["population_assignment_method"] = result["population_assignment_method"].fillna(
+        "unmatched"
+    )
+
+    logger.info(
+        "  OA population density matched for %s / %s links",
+        f"{result['pop_density_per_km2'].notna().sum():,}",
+        f"{len(result):,}",
+    )
+    logger.info(
+        "  Population assignment methods: %s",
+        result["population_assignment_method"].value_counts(dropna=False).to_dict(),
+    )
+    n_unmatched = int((result["population_assignment_method"] == "unmatched").sum())
+    n_fallback = int((result["population_assignment_method"] == "nearest_fallback").sum())
+    if n_unmatched:
+        logger.warning(
+            "  Population OA assignment left %s / %s links unmatched",
+            f"{n_unmatched:,}",
+            f"{len(result):,}",
+        )
+    if len(result) and n_fallback / len(result) > 0.05:
+        logger.warning(
+            "  Population OA assignment used nearest fallback for %.1f%% of links; "
+            "check CRS/boundary coverage.",
+            100 * n_fallback / len(result),
+        )
+    return pd.DataFrame(result.drop(columns="geometry", errors="ignore"))
+
+
+def assign_lsoa_by_nearest_centroid(
+    openroads: gpd.GeoDataFrame,
+    lsoa_cent_path: Path = LSOA_CENT_PATH,
+    cap_m: float = POP_JOIN_CAP_M,
+) -> pd.Series:
+    """
+    Temporary E/W LSOA assignment for legacy RUC and English IoD features.
+
+    Do not use this for GB population density.
+    """
+    if not lsoa_cent_path.exists():
+        return pd.Series(
+            pd.array([pd.NA] * len(openroads), dtype="string"),
+            index=openroads["link_id"],
+            name="lsoa21cd_assigned",
+        )
+
+    lsoa_cent = pd.read_csv(
+        lsoa_cent_path,
+        usecols=["LSOA21CD", "x", "y"],
+        encoding="utf-8-sig",
+    )
+    lsoa_xy = lsoa_cent[["x", "y"]].values
+
+    or_bng = openroads.to_crs("EPSG:27700").copy()
+    road_xy = np.column_stack([or_bng.geometry.centroid.x, or_bng.geometry.centroid.y])
+
+    tree = cKDTree(lsoa_xy)
+    dists, indices = tree.query(road_xy, k=1, distance_upper_bound=cap_m)
+    valid = dists < cap_m
+
+    assigned_codes = np.full(len(road_xy), pd.NA, dtype=object)
+    assigned_codes[valid] = lsoa_cent["LSOA21CD"].values[indices[valid]]
+
+    assignment = pd.Series(
+        assigned_codes,
+        index=openroads["link_id"],
+        name="lsoa21cd_assigned",
+        dtype="string",
+    )
+    logger.info(
+        "  Legacy LSOA assignment matched for %s / %s links",
+        f"{assignment.notna().sum():,}",
+        f"{len(assignment):,}",
+    )
+    return assignment
+
+
 def compute_population_density(
     openroads: gpd.GeoDataFrame,
     lsoa_cent_path: Path = LSOA_CENT_PATH,
@@ -822,17 +952,19 @@ def compute_population_density(
     return_lsoa_assignment: bool = False,
 ):
     """
+    Legacy E/W LSOA-centroid population-density assignment.
+
+    The active GB population-density path is compute_population_density_oa().
+    This function remains temporarily for backwards compatibility and should not
+    be used for new GB population features.
+
     Compute population density (people/km²) for each road link by joining
     to the nearest LSOA centroid within cap_m metres.
 
     Requires two files:
       lsoa_centroids.csv  — LSOA21CD, x, y (BNG) — already downloaded
-      lsoa_population.*   — ONS LSOA mid-year population estimates
-                            Excel: "Mid-2024 LSOA 2021" sheet, data from row 4
-                            Columns: LAD 2023 Code, LAD 2023 Name,
-                                     LSOA 2021 Code, LSOA 2021 Name, Total, ...
-                            Save as data/raw/stats19/lsoa_population.xlsx
-                            or      data/raw/stats19/lsoa_population.csv
+      lsoa_population.csv — built from data/raw/population OA Census 2021 files
+                            by road_risk.features.population.
 
     Returns
     -------
@@ -868,6 +1000,16 @@ def compute_population_density(
     )
 
     # --- Load population ----------------------------------------------------
+    if not lsoa_pop_path.exists():
+        logger.info(
+            "  Population lookup not found at %s; building from data/raw/population",
+            lsoa_pop_path,
+        )
+        try:
+            build_lsoa_population(output_path=lsoa_pop_path)
+        except Exception as e:
+            logger.warning("  Failed to build population lookup: %s", e)
+
     # Try Excel first, then CSV fallback
     pop_loaded = False
     lsoa_pop = None
@@ -963,8 +1105,8 @@ def compute_population_density(
             f"  {xl_path}\n"
             f"  {lsoa_pop_path.with_suffix('.csv')}\n"
             f"Falling back to LSOA count proxy.\n"
-            f"Download ONS LSOA mid-year estimates Excel and save as:\n"
-            f"  {xl_path}"
+            f"Build the lookup with:\n"
+            f"  conda run -n env1 python -m road_risk.features.population"
         )
         use_density = False
 
@@ -1356,17 +1498,46 @@ def build_network_features(
     DataFrame with columns:
         degree_mean, betweenness, betweenness_relative,
         dist_to_major_km, pop_density_per_km2,
-        ruc_class, ruc_urban_rural,
+        population_area_code, population_area_type, population_nation,
+        population_assignment_method, population_assignment_distance_m,
+        ruc_country, ruc_source, ruc_area_code, ruc_area_type,
+        ruc_class, ruc_urban_rural, ruc_assignment_method,
+        ruc_assignment_distance_m,
+        deprivation_area_code, deprivation_area_type, deprivation_country,
+        deprivation_source, deprivation_assignment_method,
+        deprivation_assignment_distance_m, overall_decile_within_country,
+        income_decile_within_country, employment_decile_within_country,
         [speed_limit_mph, speed_limit_mph_effective,
          speed_limit_mph_imputed, speed_limit_source,
          lanes, lit, is_unpaved]  ← if include_osm=True
     """
     required_cols = {
+        "population_area_code",
+        "population_area_type",
+        "population_nation",
+        "population_assignment_method",
+        "population_assignment_distance_m",
+        "pop_density_per_km2",
+        "ruc_country",
+        "ruc_source",
+        "ruc_area_code",
+        "ruc_area_type",
         "ruc_class",
         "ruc_urban_rural",
-        "imd_decile",
-        "imd_crime_decile",
-        "imd_living_indoor_decile",
+        "ruc_assignment_method",
+        "ruc_assignment_distance_m",
+        "deprivation_area_code",
+        "deprivation_area_type",
+        "deprivation_country",
+        "deprivation_source",
+        "deprivation_assignment_method",
+        "deprivation_assignment_distance_m",
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland",
     }
     if output_path.exists() and not force_recompute:
         cached = pd.read_parquet(output_path)
@@ -1396,8 +1567,9 @@ def build_network_features(
             cached = apply_speed_limit_effective_lookup(cached, openroads_meta)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             cached.to_parquet(output_path, index=False)
-            write_ruc_provenance(cached)
-            write_imd_provenance(cached)
+            write_population_assignment_provenance(cached)
+            write_gb_ruc_provenance(cached)
+            write_deprivation_provenance(cached)
             write_speed_limit_effective_provenance(cached)
             return cached
         else:
@@ -1409,14 +1581,6 @@ def build_network_features(
         openroads = gpd.read_parquet(openroads_path)
         logger.info(f"  {len(openroads):,} links loaded")
 
-    logger.info(f"Loading RUC lookup from {RUC_PATH}")
-    ruc_lookup = load_ruc_lookup()
-    ruc_by_lsoa = ruc_lookup.set_index("LSOA21CD")["RUC21CD"]
-
-    logger.info(f"Loading IMD lookup from {IMD_PATH}")
-    imd_lookup = load_imd_lookup()
-    imd_by_lsoa = imd_lookup.set_index("LSOA21CD")
-
     # Build graph
     G = build_graph(openroads)
 
@@ -1424,17 +1588,9 @@ def build_network_features(
     degree = compute_node_degree(G, openroads)
     betweenness = compute_betweenness(G, openroads, k=betweenness_k)
     dist_major = compute_dist_to_major(G, openroads)
-    pop_density, lsoa_assignment = compute_population_density(
-        openroads,
-        return_lsoa_assignment=True,
-    )
-    ruc_class = lsoa_assignment.map(ruc_by_lsoa).astype("string")
-    ruc_urban_rural = derive_ruc_urban_rural(ruc_class)
-    imd_decile = lsoa_assignment.map(imd_by_lsoa["imd_decile"]).astype("Int8")
-    imd_crime_decile = lsoa_assignment.map(imd_by_lsoa["imd_crime_decile"]).astype("Int8")
-    imd_living_indoor_decile = lsoa_assignment.map(imd_by_lsoa["imd_living_indoor_decile"]).astype(
-        "Int8"
-    )
+    population = compute_population_density_oa(openroads)
+    deprivation = assign_deprivation_to_links(openroads)
+    ruc = load_or_build_link_rural_urban(openroads)
 
     # Combine base features
     features = pd.DataFrame(
@@ -1443,14 +1599,11 @@ def build_network_features(
             "degree_mean": degree.values,
             "betweenness": betweenness.values,
             "dist_to_major_km": dist_major.values,
-            "pop_density_per_km2": pop_density.values,
-            "ruc_class": ruc_class.values,
-            "ruc_urban_rural": ruc_urban_rural.values,
-            "imd_decile": imd_decile.values,
-            "imd_crime_decile": imd_crime_decile.values,
-            "imd_living_indoor_decile": imd_living_indoor_decile.values,
         }
     )
+    features = features.merge(population, on="link_id", how="left", validate="one_to_one")
+    features = features.merge(deprivation, on="link_id", how="left", validate="one_to_one")
+    features = features.merge(ruc, on="link_id", how="left", validate="one_to_one")
 
     # Betweenness relative to road class
     bc_rel = compute_betweenness_relative(features, openroads)
@@ -1496,8 +1649,9 @@ def build_network_features(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     features.to_parquet(output_path, index=False)
     logger.info(f"Saved network features to {output_path} ({len(features):,} rows)")
-    write_ruc_provenance(features)
-    write_imd_provenance(features)
+    write_population_assignment_provenance(features)
+    write_gb_ruc_provenance(features)
+    write_deprivation_provenance(features)
     write_speed_limit_effective_provenance(features)
 
     return features

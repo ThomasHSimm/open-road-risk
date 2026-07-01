@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
 
-<title>English Indices of Deprivation (IoD 2025) – Open Road Risk</title>
+<title>GB Deprivation Context – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -85,11 +85,11 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="English Indices of Deprivation (IoD 2025) – Open Road Risk">
-<meta property="og:description" content="MHCLG small-area deprivation deciles used as LSOA-level contextual predictors, and the sub-domain choice made to avoid outcome leakage.">
+<meta property="og:title" content="GB Deprivation Context – Open Road Risk">
+<meta property="og:description" content="Within-country deprivation deciles from England IoD, Wales WIMD, and Scotland SIMD used as contextual predictors.">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="English Indices of Deprivation (IoD 2025) – Open Road Risk">
-<meta name="twitter:description" content="MHCLG small-area deprivation deciles used as LSOA-level contextual predictors, and the sub-domain choice made to avoid outcome leakage.">
+<meta name="twitter:title" content="GB Deprivation Context – Open Road Risk">
+<meta name="twitter:description" content="Within-country deprivation deciles from England IoD, Wales WIMD, and Scotland SIMD used as contextual predictors.">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -396,11 +396,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#source" id="toc-source" class="nav-link active" data-scroll-target="#source">Source</a></li>
+  <li><a href="#sources" id="toc-sources" class="nav-link active" data-scroll-target="#sources">Sources</a></li>
   <li><a href="#features-used" id="toc-features-used" class="nav-link" data-scroll-target="#features-used">Features used</a></li>
-  <li><a href="#why-the-indoors-sub-domain-not-the-full-living-environment-domain" id="toc-why-the-indoors-sub-domain-not-the-full-living-environment-domain" class="nav-link" data-scroll-target="#why-the-indoors-sub-domain-not-the-full-living-environment-domain">Why the Indoors sub-domain, not the full Living Environment domain</a></li>
-  <li><a href="#coverage-and-missingness" id="toc-coverage-and-missingness" class="nav-link" data-scroll-target="#coverage-and-missingness">Coverage and missingness</a></li>
-  <li><a href="#provenance" id="toc-provenance" class="nav-link" data-scroll-target="#provenance">Provenance</a></li>
+  <li><a href="#join-and-coverage-notes" id="toc-join-and-coverage-notes" class="nav-link" data-scroll-target="#join-and-coverage-notes">Join and coverage notes</a></li>
   <li><a href="#role-in-the-pipeline" id="toc-role-in-the-pipeline" class="nav-link" data-scroll-target="#role-in-the-pipeline">Role in the pipeline</a></li>
   </ul>
 </nav>
@@ -410,12 +408,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">English Indices of Deprivation (IoD 2025)</h1>
+<h1 class="title">GB Deprivation Context</h1>
 </div>
 
 <div>
   <div class="description">
-    MHCLG small-area deprivation deciles used as LSOA-level contextual predictors, and the sub-domain choice made to avoid outcome leakage.
+    Within-country deprivation deciles from England IoD, Wales WIMD, and Scotland SIMD used as contextual predictors.
   </div>
 </div>
 
@@ -433,84 +431,111 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 
 <div class="lead">
-<p>The Indices of Deprivation provide a relative measure of small-area deprivation across England. Open Road Risk uses three deprivation deciles as <strong>contextual</strong> predictors joined at LSOA level. They describe the area a road link passes through, not the road itself, and are not interpreted causally.</p>
+<p>Open Road Risk uses small-area deprivation as a contextual predictor, not as a road attribute and not as a causal explanation. For GB coverage the pipeline keeps the three national indices separate, then exposes shared within-country decile columns to the model.</p>
 </div>
-<section id="source" class="level2">
-<h2 class="anchored" data-anchor-id="source">Source</h2>
-<ul>
-<li><strong>Publisher:</strong> Ministry of Housing, Communities and Local Government (MHCLG), <em>English Indices of Deprivation 2025</em>, released 30 October 2025.</li>
-<li><strong>Licence:</strong> Open Government Licence v3.0.</li>
-<li><strong>Geography:</strong> Lower-layer Super Output Area (LSOA), 33,755 areas in England, each ~1,000–3,000 residents.</li>
-<li><strong>Edition note:</strong> IoD 2025 keeps the 2019 domain structure and weighting but refreshes indicators (e.g.&nbsp;the Indoors sub-domain now uses an EPC-based energy efficiency indicator in place of “houses without central heating”). Decile values are therefore not directly comparable to 2019.</li>
-</ul>
+<section id="sources" class="level2">
+<h2 class="anchored" data-anchor-id="sources">Sources</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Country</th>
+<th>Source</th>
+<th>Geography</th>
+<th>Year</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>England</td>
+<td>Indices of Deprivation (IoD)</td>
+<td>LSOA 2021</td>
+<td>2025</td>
+<td>MHCLG File 7 deciles</td>
+</tr>
+<tr class="even">
+<td>Wales</td>
+<td>Welsh Index of Multiple Deprivation (WIMD)</td>
+<td>LSOA 2011</td>
+<td>2019</td>
+<td>Ranks converted to within-Wales deciles</td>
+</tr>
+<tr class="odd">
+<td>Scotland</td>
+<td>Scottish Index of Multiple Deprivation (SIMD)</td>
+<td>Data Zone 2011</td>
+<td>2020</td>
+<td>Overall decile from SIMD; income and employment ranks converted to within-Scotland deciles</td>
+</tr>
+</tbody>
+</table>
+<p>The processed polygon layer is <code>data/processed/context/deprivation_areas_gb.parquet</code>. Link-level assignment is by road-link centroid within the deprivation polygon, with a short nearest fallback for boundary-edge cases. Assignment provenance is written to <code>data/provenance/deprivation_gb_provenance.json</code>.</p>
 </section>
 <section id="features-used" class="level2">
 <h2 class="anchored" data-anchor-id="features-used">Features used</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 50%">
+<col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Feature</th>
-<th>Source measure</th>
-<th>Direction</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>imd_decile</code></td>
-<td>Overall Index of Multiple Deprivation decile</td>
-<td>1 = most deprived, 10 = least deprived</td>
+<td><code>deprivation_country</code></td>
+<td>Country/index used for the assigned area</td>
 </tr>
 <tr class="even">
-<td><code>imd_crime_decile</code></td>
-<td>Crime domain decile</td>
-<td>as above</td>
+<td><code>deprivation_source</code></td>
+<td>IoD 2025, WIMD 2019, or SIMD 2020v2</td>
 </tr>
 <tr class="odd">
-<td><code>imd_living_indoor_decile</code></td>
-<td>Living Environment <strong>Indoors</strong> sub-domain decile</td>
-<td>as above</td>
+<td><code>deprivation_area_code</code></td>
+<td>LSOA/Data Zone code assigned to the road link</td>
+</tr>
+<tr class="even">
+<td><code>deprivation_area_type</code></td>
+<td><code>LSOA2021</code>, <code>LSOA2011</code>, or <code>DZ2011</code></td>
+</tr>
+<tr class="odd">
+<td><code>overall_decile_within_country</code></td>
+<td>Overall deprivation decile within the source country</td>
+</tr>
+<tr class="even">
+<td><code>income_decile_within_country</code></td>
+<td>Income-domain decile within the source country</td>
+</tr>
+<tr class="odd">
+<td><code>employment_decile_within_country</code></td>
+<td>Employment-domain decile within the source country</td>
 </tr>
 </tbody>
 </table>
-<p>Deciles run 1 (most deprived) to 10 (least deprived), so a negative model coefficient means less-deprived areas have a lower predicted collision rate, holding other features fixed. Live coefficients and incidence-rate ratios are on the <a href="../analysis/model-results.html">Stage 2 collision model</a> page.</p>
+<p>Deciles run from 1 (most deprived) to 10 (least deprived), but only within the source country/index. A Scottish decile 1, Welsh decile 1, and English decile 1 are not a single GB-wide most-deprived tenth.</p>
 </section>
-<section id="why-the-indoors-sub-domain-not-the-full-living-environment-domain" class="level2">
-<h2 class="anchored" data-anchor-id="why-the-indoors-sub-domain-not-the-full-living-environment-domain">Why the Indoors sub-domain, not the full Living Environment domain</h2>
-<div class="callout callout-style-default callout-important callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Outcome leakage
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The Living Environment domain has two sub-domains. The <strong>Outdoors</strong> sub-domain is built from air quality <strong>and road traffic accidents involving injury to pedestrians and cyclists</strong>. Using it — or the combined domain — as a predictor of collision risk would feed a function of the outcome back in as an input, inflating apparent performance without reflecting any real predictive signal.</p>
-<p>The model therefore uses the <strong>Indoors</strong> sub-domain only (housing condition and energy efficiency), which carries no road-safety construction. The overall IMD decile is retained because road-traffic accidents are one indicator among 55 across seven domains and contribute negligibly to the headline index, but this is a judgement call rather than a guarantee of zero contamination.</p>
-</div>
-</div>
-</section>
-<section id="coverage-and-missingness" class="level2">
-<h2 class="anchored" data-anchor-id="coverage-and-missingness">Coverage and missingness</h2>
+<section id="join-and-coverage-notes" class="level2">
+<h2 class="anchored" data-anchor-id="join-and-coverage-notes">Join and coverage notes</h2>
 <ul>
-<li><strong>England only.</strong> Welsh LSOAs (and the Welsh-side edges of the study area) have no IoD 2025 value. Scotland and Wales publish separate, non-comparable indices.</li>
-<li>Links that fail to join to an English LSOA — Welsh edges, unmatched geometry — receive imputed decile values, flagged with an <code>_imputed</code> suffix in the model feature set so the imputation is visible rather than silent.</li>
-<li>Because deciles are a <em>relative</em> national ranking, they cannot be compared across editions or against the Welsh/Scottish indices.</li>
+<li>England uses IoD 2025 LSOA 2021 codes and the England/Wales OA 2021 boundary file dissolved to LSOA 2021.</li>
+<li>Wales uses WIMD 2019 attributes and Welsh LSOA 2011 polygons.</li>
+<li>Scotland uses SIMD 2020v2 attributes and 2011 Data Zone polygons.</li>
+<li><code>deprivation_assignment_method</code> records whether a link was assigned by polygon containment, nearest fallback, or left unmatched.</li>
 </ul>
-</section>
-<section id="provenance" class="level2">
-<h2 class="anchored" data-anchor-id="provenance">Provenance</h2>
-<p>All three deciles are read directly from MHCLG <strong>File 7</strong> (<code>File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv</code>), which carries the <code>Indoors Sub-domain Decile</code> column alongside the overall IMD and domain deciles — so the Indoors decile is taken as published, not re-derived from a sub-domain score. The feature builder (<code>src/road_risk/features/network.py</code>) fails fast if that column is absent, so a silently missing decile cannot pass through unnoticed.</p>
 </section>
 <section id="role-in-the-pipeline" class="level2">
 <h2 class="anchored" data-anchor-id="role-in-the-pipeline">Role in the pipeline</h2>
-<p>These are area-context predictors, in the same tier as OS Terrain 50 grade and ONS Rural-Urban Classification — they sit alongside exposure and road-geometry features in <a href="../methodology/modelling.html">Stage 2</a>, not in the exposure model. They are contextual signal at LSOA resolution, not evidence that deprivation causes road risk.</p>
+<p>These features sit alongside population density, rural/urban context, terrain grade, and road-network features in Stage 2. The first GB pass deliberately uses only country dummies plus overall, income, and employment deciles. Source-specific domains such as crime, housing, community safety, or access to services are left out until there is a deliberate modelling reason to add them.</p>
 <hr>
 <p>Next: <a href="../methodology/data-joining.html">How the sources are joined</a></p>
 

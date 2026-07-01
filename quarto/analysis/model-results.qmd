@@ -30,6 +30,23 @@ Both models are trained on link × year data then pooled to a single stable
 risk score per link. The pooled output (`risk_scores.parquet`) has one row per
 link with no year dimension.
 
+### Clean GB collision retrain
+
+A clean full GB Stage 2 collision retrain was completed on 2026-07-01 using
+the refreshed GB context feature table. The run built 21,675,570 link-year rows
+and scored all 2,167,557 road links. The model included GB population,
+deprivation, and rural/urban context fields, and excluded the retired
+English-only IMD fields.
+
+The XGBoost Poisson model achieved pseudo-R² = 0.325, broadly consistent with
+the previous model. The GLM baseline converged with pseudo-R² = 0.566, but this
+value is not directly comparable with earlier GLM runs because the GB run used
+a lower zero-collision sampling ratio of 1:3 for memory reasons.
+
+Outputs were written to `data/models/risk_scores.parquet`,
+`data/models/collision_glm.pkl`, `data/models/collision_xgb.json`, and
+`data/models/collision_metrics.json`.
+
 ```{python}
 from pathlib import Path
 import json
@@ -38,9 +55,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-from road_risk.config import _ROOT as ROOT
+from road_risk.config import _ROOT as ROOT, cfg
 RANDOM_STATE = 42
-XGB_POSTFIX_PR2 = 0.323498
+GB_BBOX = cfg["study_area"]["bbox_wgs84"]
 
 try:
     import geopandas as gpd
@@ -53,11 +70,19 @@ risk = pd.read_parquet(ROOT / "data/models/risk_scores.parquet")
 with open(ROOT / "data/models/collision_metrics.json") as f:
     metrics = json.load(f)
 
+XGB_CURRENT_PR2 = metrics["xgb"]["pseudo_r2"]
+
 if HAS_GPD:
     or_path = ROOT / "data/processed/shapefiles/openroads.parquet"
     openroads = gpd.read_parquet(or_path) if or_path.exists() else None
 else:
     openroads = None
+
+
+def set_gb_wgs84_extent(ax):
+    """Use the configured GB frame so old regional data does not silently crop maps."""
+    ax.set_xlim(GB_BBOX["min_lon"], GB_BBOX["max_lon"])
+    ax.set_ylim(GB_BBOX["min_lat"], GB_BBOX["max_lat"])
 
 cls_order = ["Motorway", "A Road", "B Road", "Classified Unnumbered",
              "Not Classified", "Unclassified", "Unknown"]
@@ -70,7 +95,7 @@ print(f"Total collisions : {risk['collision_count'].sum():,}")
 print(f"Total fatals     : {risk['fatal_count'].sum():,}")
 print(f"\nModel performance:")
 print(f"  GLM pseudo-R²  : {metrics['glm']['pseudo_r2']:.3f}")
-print(f"  XGB pseudo-R²  : {XGB_POSTFIX_PR2:.3f} (post-fix 5-seed mean)")
+print(f"  XGB pseudo-R²  : {XGB_CURRENT_PR2:.3f} (current clean GB run)")
 print(f"  GLM converged  : {metrics['glm']['converged']}")
 ```
 
@@ -139,27 +164,32 @@ else:
 
 ### Deprivation signal
 
-The three IMD deciles run 1 (most deprived) -> 10 (least deprived), so a
-negative coefficient means **less-deprived areas have a lower predicted
-collision rate**, holding exposure and road geometry fixed. The Living
-Environment **Indoors** sub-domain is used deliberately — the Outdoors
-sub-domain contains road-traffic-accident indicators and would leak the outcome.
-See [deprivation](../data-sources/deprivation.qmd).
+The GB deprivation features are within-country deciles, running 1 (most
+deprived) to 10 (least deprived). They are contextual area features, not
+GB-wide absolute deprivation ranks and not road attributes. See
+[deprivation](../data-sources/deprivation.qmd).
 
 ```{python}
-imd_terms = ["imd_decile", "imd_crime_decile", "imd_living_indoor_decile"]
+deprivation_terms = [
+    "overall_decile_within_country",
+    "income_decile_within_country",
+    "employment_decile_within_country",
+    "deprivation_country_england",
+    "deprivation_country_wales",
+    "deprivation_country_scotland",
+]
 try:
     rows = []
-    for base in imd_terms:
+    for base in deprivation_terms:
         for t in [base, f"{base}_imputed"]:
             if t in glm_result.params.index:
                 rows.append((t, glm_result.params[t],
                              np.exp(glm_result.params[t]), glm_result.pvalues[t]))
     if rows:
-        imd_df = pd.DataFrame(rows, columns=["term", "coef", "IRR", "pvalue"])
-        print(imd_df.round(4).to_string(index=False))
+        deprivation_df = pd.DataFrame(rows, columns=["term", "coef", "IRR", "pvalue"])
+        print(deprivation_df.round(4).to_string(index=False))
     else:
-        print("No IMD decile terms in the fitted GLM.")
+        print("No GB deprivation terms in the fitted GLM.")
 except NameError:
     print("Run the GLM coefficients cell first.")
 ```
@@ -358,6 +388,8 @@ if HAS_GPD and openroads is not None:
         on="link_id", how="inner",
     )
     or_risk = or_risk[or_risk.geometry.notna()].copy()
+    if or_risk.crs is not None and or_risk.crs.to_epsg() != 4326:
+        or_risk = or_risk.to_crs(4326)
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 9))
 
@@ -368,6 +400,7 @@ if HAS_GPD and openroads is not None:
         legend_kwds={"label": "Risk percentile", "shrink": 0.6},
     )
     axes[0].set_title("Risk percentile — all links")
+    set_gb_wgs84_extent(axes[0])
     axes[0].set_axis_off()
 
     major = or_risk[or_risk["road_classification"].isin(["Motorway", "A Road"])].copy()
@@ -378,6 +411,7 @@ if HAS_GPD and openroads is not None:
         legend_kwds={"label": "Risk percentile", "shrink": 0.6},
     )
     axes[1].set_title("Risk percentile — Motorways & A Roads")
+    set_gb_wgs84_extent(axes[1])
     axes[1].set_axis_off()
 
     plt.suptitle("Stage 2 collision risk scores", fontsize=13)
@@ -400,6 +434,7 @@ if HAS_GPD and openroads is not None:
               linewidth=1.2, legend=True, zorder=2,
               legend_kwds={"label": "Observed collisions (pooled)", "shrink": 0.6})
     axes[0].set_title(f"Top 1% risk links ({len(top1):,})\nColoured by observed collisions")
+    set_gb_wgs84_extent(axes[0])
     axes[0].set_axis_off()
 
     bg.plot(ax=axes[1], color="#e0e0e0", linewidth=0.2, zorder=1)
@@ -407,6 +442,7 @@ if HAS_GPD and openroads is not None:
               vmin=-5, vmax=5, linewidth=1.2, legend=True, zorder=2,
               legend_kwds={"label": "GLM residual", "shrink": 0.6})
     axes[1].set_title("Top 1% risk links\nColoured by GLM residual")
+    set_gb_wgs84_extent(axes[1])
     axes[1].set_axis_off()
 
     plt.suptitle("Highest-risk road segments", fontsize=13)
@@ -435,6 +471,7 @@ if HAS_GPD and openroads is not None:
         f"Excess-risk links — residual > 2  ({len(excess):,} links)\n"
         "Had substantially more collisions than road type and traffic predict"
     )
+    set_gb_wgs84_extent(ax)
     ax.set_axis_off()
     plt.tight_layout()
     plt.show()
@@ -450,7 +487,7 @@ print(f"Links scored          : {len(risk):,}")
 print(f"Links with collisions : {(risk['collision_count'] > 0).sum():,} "
       f"({(risk['collision_count'] > 0).mean():.1%})")
 print(f"\nPoisson GLM pseudo-R² : {metrics['glm']['pseudo_r2']:.3f}")
-print(f"XGBoost pseudo-R²     : {XGB_POSTFIX_PR2:.3f} (post-fix 5-seed mean)")
+print(f"XGBoost pseudo-R²     : {XGB_CURRENT_PR2:.3f} (current clean GB run)")
 print(f"\nTop 1% risk links     : {(risk['risk_percentile'] >= 99).sum():,}")
 print(f"Excess-risk links (residual > 2): {(risk['residual_glm'] > 2).sum():,}")
 print(f"\nExcess-risk by road class:")
@@ -463,18 +500,19 @@ print(
 
 Key observations:
 
-- XGBoost's current honest post-fix baseline is about pseudo-R² `0.32`
-  across five seeds (`0.323` mean, with temporal features included), while the
-  GLM sits at pseudo-R² `0.347` on its own in-sample downsampled surface.
+- XGBoost's current clean GB run has pseudo-R² `0.325`, with temporal features
+  included, while the GLM sits at pseudo-R² `0.566` on its own 1:3
+  zero-collision downsampled in-sample surface.
   Earlier repo docs cited an XGBoost pseudo-R² around `0.86`, but that figure
   came from a pre-fix evaluation surface that was later superseded after a
   feature-table leakage diagnosis. The two current pseudo-R² values are also
   still computed on different row subsets and with different null models
   (GLM: in-sample on a downsampled training set; XGBoost: out-of-sample on the
   full zero-heavy test set), so the gap should not be read as pure modelling
-  lift. These metrics are from the current run after the counted-only Stage 1a
-  filter, the Stage 2 post-event provenance guard, OSM feature enrichment, IMD
-  features, terrain grade, and the GLM optional-feature imputation refactor.
+  lift. These metrics are from the current clean GB run after the counted-only Stage 1a
+  filter, the Stage 2 post-event provenance guard, OSM feature enrichment,
+  deprivation features, terrain grade, and the GLM optional-feature imputation
+  refactor.
   See
   [feature engineering](../methodology/feature-engineering.qmd#pseudo-r-comparability)
   for the full caveat.

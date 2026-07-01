@@ -23,9 +23,9 @@ provide traffic or contextual predictors used by the
 | [Network Model GDB](network-model-gdb.qmd) | Scoped SRN network reference | Source notes and candidate structural features for motorway and trunk A-road links | SRN-only; not the all-road scoring backbone |
 | OpenStreetMap | Supplementary road attributes | Additional tags such as bridge/tunnel or road context where useful | Uneven coverage and tagging consistency |
 | [OS Terrain 50](terrain.qmd) | Terrain context | Link-level grade features derived from the 50 m elevation grid | Bare-earth DTM; no structure correction currently applied, so grade on bridges/tunnels/slip roads may be physically wrong |
-| ONS LSOA population estimates | Area context | Population-density features around road links | Area-level proxy, not direct road use |
+| GB OA population density | Area context | OA-level population-density polygons assigned to road links by centroid | Area-level proxy, not direct road use |
 | ONS 2021 Rural-Urban Classification | Area context | Urban/rural context joined at LSOA level | LSOA-level classification, not road-specific land use |
-| [English Indices of Deprivation 2025](deprivation.qmd) | Deprivation context | IMD and domain deciles joined at LSOA level | England-only; Indoors sub-domain only (Outdoors carries road-accident indicators -> leakage); contextual, not causal |
+| [GB deprivation context](deprivation.qmd) | Deprivation context | Within-country overall, income, and employment deciles joined by LSOA/Data Zone polygons | England/Wales/Scotland indices are separate relative rankings; contextual, not causal |
 
 ## Source roles in the model
 
@@ -43,7 +43,7 @@ provide traffic or contextual predictors used by the
 - **[WebTRIS sensor data](webtris.qmd)** provides time-profile and vehicle-mix information.
 
 ### Context sources
-- **OSM**, **OS Terrain 50**, **ONS population estimates**, **ONS Rural-Urban Classification**, and **English Indices of Deprivation 2025** provide supporting road and local-context features.
+- **OSM**, **OS Terrain 50**, **ONS/NRS population context**, **ONS Rural-Urban Classification**, and **GB deprivation context** provide supporting road and local-context features.
 
 ## Detailed pages
 
@@ -53,7 +53,7 @@ provide traffic or contextual predictors used by the
 - [WebTRIS Sensors](webtris.qmd)
 - [Network Model GDB](network-model-gdb.qmd)
 - [OS Terrain 50](terrain.qmd)
-- [English Indices of Deprivation](deprivation.qmd)
+- [GB Deprivation Context](deprivation.qmd)
 
 ---
 

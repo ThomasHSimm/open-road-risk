@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
+
+<title>b_road_safety_paper_methodological_extraction – Open Road Risk</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-61737856611e025524b03b0d840573db.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-WD8T0TPHC5"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
+</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Open Road Risk">
+<meta property="og:description" content="Exposure-adjusted road collision risk modelling for Great Britain">
+<meta property="og:site_name" content="Open Road Risk">
+<meta name="twitter:title" content="Open Road Risk">
+<meta name="twitter:description" content="Exposure-adjusted road collision risk modelling for Great Britain">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Open Road Risk</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Project</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-project">    
+        <li>
+    <a class="dropdown-item" href="../../project/project-overview.html">
+ <span class="dropdown-text">Project overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../project/model-status.html">
+ <span class="dropdown-text">Current model status</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../project/ai-assisted-development.html">
+ <span class="dropdown-text">AI-assisted development</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-literature" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Literature</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-literature">    
+        <li>
+    <a class="dropdown-item" href="../../literature/literature-index.html">
+ <span class="dropdown-text">Literature overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/literature-evidence-register.html">
+ <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/literature-pipeline-alignment.html">
+ <span class="dropdown-text">Literature-pipeline alignment</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/crash-frequency-models.html">
+ <span class="dropdown-text">Crash frequency models</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/exposure-and-traffic-volume.html">
+ <span class="dropdown-text">Exposure and traffic volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/spatial-methods-and-network-risk.html">
+ <span class="dropdown-text">Spatial methods and network risk</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/junctions-and-conflict-structure.html">
+ <span class="dropdown-text">Junctions and conflict structure</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/severity-modelling.html">
+ <span class="dropdown-text">Severity modelling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/validation-and-metrics.html">
+ <span class="dropdown-text">Validation and metrics</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../literature/transferability-and-open-data-limits.html">
+ <span class="dropdown-text">Transferability and open data limits</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-data-sources" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Data Sources</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-data-sources">    
+        <li>
+    <a class="dropdown-item" href="../../data-sources/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../data-sources/stats19.html">
+ <span class="dropdown-text">STATS19 Collisions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../data-sources/openroads.html">
+ <span class="dropdown-text">OS Open Roads</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../data-sources/aadf.html">
+ <span class="dropdown-text">AADF Traffic Counts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../data-sources/webtris.html">
+ <span class="dropdown-text">WebTRIS Sensors</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../data-sources/network-model-gdb.html">
+ <span class="dropdown-text">Network Model GDB</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../data-sources/terrain.html">
+ <span class="dropdown-text">OS Terrain 50 (grade)</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../data-sources/deprivation.html">
+ <span class="dropdown-text">Deprivation (IoD 2025)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-methodology" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Methodology</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-methodology">    
+        <li>
+    <a class="dropdown-item" href="../../methodology/methodology-index.html">
+ <span class="dropdown-text">Methodology Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../methodology/data-joining.html">
+ <span class="dropdown-text">Joining the Datasets</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../methodology/feature-engineering.html">
+ <span class="dropdown-text">Feature Engineering</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../methodology/empirical-bayes-shrinkage.html">
+ <span class="dropdown-text">Empirical Bayes Shrinkage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-exploratory-data-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-exploratory-data-analysis">    
+        <li>
+    <a class="dropdown-item" href="../../analysis/eda-collisions.html">
+ <span class="dropdown-text">Collision EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../analysis/collision-exposure-behaviour.html">
+ <span class="dropdown-text">Collision-Exposure Behaviour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../analysis/vehicle-mix.html">
+ <span class="dropdown-text">Vehicle Mix Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../analysis/road-curvature.html">
+ <span class="dropdown-text">Road Curvature</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../analysis/temporal-exploration.html">
+ <span class="dropdown-text">Months and Days of Week</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../analysis/eda-traffic.html">
+ <span class="dropdown-text">Traffic Volume EDA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../analysis/osm-coverage.html">
+ <span class="dropdown-text">OSM Coverage</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-models" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Models</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-models">    
+        <li>
+    <a class="dropdown-item" href="../../methodology/modelling.html">
+ <span class="dropdown-text">Modelling Approach</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../methodology/exposure-model.html">
+ <span class="dropdown-text">Stage 1a: Traffic Volume</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../methodology/timezone-profile.html">
+ <span class="dropdown-text">Stage 1b: Time-Zone Profiles</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../analysis/model-results.html">
+ <span class="dropdown-text">Stage 2: Collision Risk Model</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../methodology/facility-family-split.html">
+ <span class="dropdown-text">Facility Family Split</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../methodology/model-inventory.html">
+ <span class="dropdown-text">Model Inventory</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-investigations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Investigations</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-investigations">    
+        <li>
+    <a class="dropdown-item" href="../../investigations/index.html">
+ <span class="dropdown-text">Investigations overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../investigations/ksi-atlas.html">
+ <span class="dropdown-text">KSI atlas diagnostic</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../investigations/staffordshire-data-quality.html">
+ <span class="dropdown-text">Staffordshire data quality</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../investigations/temporal-descriptors.html">
+ <span class="dropdown-text">Temporal descriptors evaluation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../investigations/aadf-counted-only-filter.html">
+ <span class="dropdown-text">AADF counted-only filter</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../investigations/rank-stability.html">
+ <span class="dropdown-text">Rank stability harness</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../investigations/zero-calibration.html">
+ <span class="dropdown-text">Zero-calibration diagnostic</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outputs" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outputs</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outputs">    
+        <li>
+    <a class="dropdown-item" href="../../outputs/key-figures.html">
+ <span class="dropdown-text">Key figures</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../outputs/top-risk-map.html">
+ <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-tools" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Tools</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-tools">    
+        <li>
+    <a class="dropdown-item" href="../../tools/ukgeo.html">
+ <span class="dropdown-text">ukgeo — UK Geocoder</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../future-work.html"> 
+<span class="menu-text">Future Work</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/thomashsimm/open-road-risk"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#methodological-extraction-for-road-link-injury-collision-risk-modelling" id="toc-methodological-extraction-for-road-link-injury-collision-risk-modelling" class="nav-link active" data-scroll-target="#methodological-extraction-for-road-link-injury-collision-risk-modelling">Methodological extraction for road-link injury-collision risk modelling</a>
+  <ul class="collapse">
+  <li><a href="#what-the-paper-models" id="toc-what-the-paper-models" class="nav-link" data-scroll-target="#what-the-paper-models">1. What the paper models</a></li>
+  <li><a href="#response-variable" id="toc-response-variable" class="nav-link" data-scroll-target="#response-variable">2. Response variable</a>
+  <ul class="collapse">
+  <li><a href="#main-accident-frequency-model" id="toc-main-accident-frequency-model" class="nav-link" data-scroll-target="#main-accident-frequency-model">Main accident-frequency model</a></li>
+  <li><a href="#severity-analysis" id="toc-severity-analysis" class="nav-link" data-scroll-target="#severity-analysis">Severity analysis</a></li>
+  <li><a href="#rainfall-analysis" id="toc-rainfall-analysis" class="nav-link" data-scroll-target="#rainfall-analysis">Rainfall analysis</a></li>
+  <li><a href="#injury-only-response" id="toc-injury-only-response" class="nav-link" data-scroll-target="#injury-only-response">Injury-only response?</a></li>
+  </ul></li>
+  <li><a href="#spatial-unit" id="toc-spatial-unit" class="nav-link" data-scroll-target="#spatial-unit">3. Spatial unit</a>
+  <ul class="collapse">
+  <li><a href="#transferability-issue-for-your-project" id="toc-transferability-issue-for-your-project" class="nav-link" data-scroll-target="#transferability-issue-for-your-project">Transferability issue for your project</a></li>
+  </ul></li>
+  <li><a href="#temporal-unit" id="toc-temporal-unit" class="nav-link" data-scroll-target="#temporal-unit">4. Temporal unit</a>
+  <ul class="collapse">
+  <li><a href="#implication-for-aadf-style-projects" id="toc-implication-for-aadf-style-projects" class="nav-link" data-scroll-target="#implication-for-aadf-style-projects">Implication for AADF-style projects</a></li>
+  </ul></li>
+  <li><a href="#how-traffic-exposure-is-handled" id="toc-how-traffic-exposure-is-handled" class="nav-link" data-scroll-target="#how-traffic-exposure-is-handled">5. How traffic exposure is handled</a>
+  <ul class="collapse">
+  <li><a href="#hourly-traffic-volume-as-explanatory-variable" id="toc-hourly-traffic-volume-as-explanatory-variable" class="nav-link" data-scroll-target="#hourly-traffic-volume-as-explanatory-variable">5.1 Hourly traffic volume as explanatory variable</a></li>
+  <li><a href="#site-normalised-congestion-index" id="toc-site-normalised-congestion-index" class="nav-link" data-scroll-target="#site-normalised-congestion-index">5.2 Site-normalised congestion index</a></li>
+  <li><a href="#median-traffic-volume-per-congestion-bin" id="toc-median-traffic-volume-per-congestion-bin" class="nav-link" data-scroll-target="#median-traffic-volume-per-congestion-bin">5.3 Median traffic volume per congestion bin</a></li>
+  <li><a href="#no-explicit-log-exposure-offset" id="toc-no-explicit-log-exposure-offset" class="nav-link" data-scroll-target="#no-explicit-log-exposure-offset">5.4 No explicit log-exposure offset</a></li>
+  </ul></li>
+  <li><a href="#accident-data-processing" id="toc-accident-data-processing" class="nav-link" data-scroll-target="#accident-data-processing">6. Accident-data processing</a></li>
+  <li><a href="#traffic-data-processing" id="toc-traffic-data-processing" class="nav-link" data-scroll-target="#traffic-data-processing">7. Traffic-data processing</a></li>
+  <li><a href="#model-types" id="toc-model-types" class="nav-link" data-scroll-target="#model-types">8. Model types</a>
+  <ul class="collapse">
+  <li><a href="#main-count-models" id="toc-main-count-models" class="nav-link" data-scroll-target="#main-count-models">8.1 Main count models</a></li>
+  <li><a href="#overdispersion-handling" id="toc-overdispersion-handling" class="nav-link" data-scroll-target="#overdispersion-handling">8.2 Overdispersion handling</a></li>
+  <li><a href="#model-selection" id="toc-model-selection" class="nav-link" data-scroll-target="#model-selection">8.3 Model selection</a></li>
+  <li><a href="#machine-learning-models" id="toc-machine-learning-models" class="nav-link" data-scroll-target="#machine-learning-models">8.4 Machine-learning models</a></li>
+  <li><a href="#spatial-random-effects-hierarchical-models-empirical-bayes-or-residual-ranking" id="toc-spatial-random-effects-hierarchical-models-empirical-bayes-or-residual-ranking" class="nav-link" data-scroll-target="#spatial-random-effects-hierarchical-models-empirical-bayes-or-residual-ranking">8.5 Spatial random effects, hierarchical models, empirical Bayes, or residual ranking</a></li>
+  </ul></li>
+  <li><a href="#quantitative-results" id="toc-quantitative-results" class="nav-link" data-scroll-target="#quantitative-results">9. Quantitative results</a>
+  <ul class="collapse">
+  <li><a href="#sample-sizes" id="toc-sample-sizes" class="nav-link" data-scroll-target="#sample-sizes">9.1 Sample sizes</a></li>
+  <li><a href="#traffic-volume-and-accident-frequency" id="toc-traffic-volume-and-accident-frequency" class="nav-link" data-scroll-target="#traffic-volume-and-accident-frequency">9.2 Traffic volume and accident frequency</a></li>
+  <li><a href="#rainfall" id="toc-rainfall" class="nav-link" data-scroll-target="#rainfall">9.3 Rainfall</a></li>
+  <li><a href="#severity" id="toc-severity" class="nav-link" data-scroll-target="#severity">9.4 Severity</a></li>
+  </ul></li>
+  <li><a href="#validation-approach" id="toc-validation-approach" class="nav-link" data-scroll-target="#validation-approach">10. Validation approach</a></li>
+  <li><a href="#limitations-stated-or-evident-from-the-method" id="toc-limitations-stated-or-evident-from-the-method" class="nav-link" data-scroll-target="#limitations-stated-or-evident-from-the-method">11. Limitations stated or evident from the method</a>
+  <ul class="collapse">
+  <li><a href="#spatial-unit-limitation" id="toc-spatial-unit-limitation" class="nav-link" data-scroll-target="#spatial-unit-limitation">11.1 Spatial-unit limitation</a></li>
+  <li><a href="#geographic-limitation" id="toc-geographic-limitation" class="nav-link" data-scroll-target="#geographic-limitation">11.2 Geographic limitation</a></li>
+  <li><a href="#exposure-limitation" id="toc-exposure-limitation" class="nav-link" data-scroll-target="#exposure-limitation">11.3 Exposure limitation</a></li>
+  <li><a href="#capacity-limitation" id="toc-capacity-limitation" class="nav-link" data-scroll-target="#capacity-limitation">11.4 Capacity limitation</a></li>
+  <li><a href="#directionality-limitation" id="toc-directionality-limitation" class="nav-link" data-scroll-target="#directionality-limitation">11.5 Directionality limitation</a></li>
+  <li><a href="#accident-type-limitation" id="toc-accident-type-limitation" class="nav-link" data-scroll-target="#accident-type-limitation">11.6 Accident-type limitation</a></li>
+  <li><a href="#severity-limitation" id="toc-severity-limitation" class="nav-link" data-scroll-target="#severity-limitation">11.7 Severity limitation</a></li>
+  <li><a href="#covariate-limitation" id="toc-covariate-limitation" class="nav-link" data-scroll-target="#covariate-limitation">11.8 Covariate limitation</a></li>
+  <li><a href="#validation-limitation" id="toc-validation-limitation" class="nav-link" data-scroll-target="#validation-limitation">11.9 Validation limitation</a></li>
+  <li><a href="#causality-limitation" id="toc-causality-limitation" class="nav-link" data-scroll-target="#causality-limitation">11.10 Causality limitation</a></li>
+  </ul></li>
+  <li><a href="#transferability-to-a-large-open-data-uk-road-link-risk-model" id="toc-transferability-to-a-large-open-data-uk-road-link-risk-model" class="nav-link" data-scroll-target="#transferability-to-a-large-open-data-uk-road-link-risk-model">12. Transferability to a large open-data UK road-link risk model</a>
+  <ul class="collapse">
+  <li><a href="#useful-and-transferable" id="toc-useful-and-transferable" class="nav-link" data-scroll-target="#useful-and-transferable">Useful and transferable</a></li>
+  <li><a href="#weakly-transferable-or-not-directly-transferable" id="toc-weakly-transferable-or-not-directly-transferable" class="nav-link" data-scroll-target="#weakly-transferable-or-not-directly-transferable">Weakly transferable or not directly transferable</a></li>
+  </ul></li>
+  <li><a href="#practical-actions-you-might-take" id="toc-practical-actions-you-might-take" class="nav-link" data-scroll-target="#practical-actions-you-might-take">13. Practical actions you might take</a>
+  <ul class="collapse">
+  <li><a href="#in-the-modelling-specification" id="toc-in-the-modelling-specification" class="nav-link" data-scroll-target="#in-the-modelling-specification">13.1 In the modelling specification</a></li>
+  <li><a href="#in-exposure-engineering" id="toc-in-exposure-engineering" class="nav-link" data-scroll-target="#in-exposure-engineering">13.2 In exposure engineering</a></li>
+  <li><a href="#in-spatial-assignment" id="toc-in-spatial-assignment" class="nav-link" data-scroll-target="#in-spatial-assignment">13.3 In spatial assignment</a></li>
+  <li><a href="#in-response-variable-design" id="toc-in-response-variable-design" class="nav-link" data-scroll-target="#in-response-variable-design">13.4 In response-variable design</a></li>
+  <li><a href="#in-validation" id="toc-in-validation" class="nav-link" data-scroll-target="#in-validation">13.5 In validation</a></li>
+  <li><a href="#in-interpretation" id="toc-in-interpretation" class="nav-link" data-scroll-target="#in-interpretation">13.6 In interpretation</a></li>
+  </ul></li>
+  <li><a href="#direct-mapping-to-your-project" id="toc-direct-mapping-to-your-project" class="nav-link" data-scroll-target="#direct-mapping-to-your-project">14. Direct mapping to your project</a></li>
+  <li><a href="#bottom-line-methodological-takeaways" id="toc-bottom-line-methodological-takeaways" class="nav-link" data-scroll-target="#bottom-line-methodological-takeaways">15. Bottom-line methodological takeaways</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="methodological-extraction-for-road-link-injury-collision-risk-modelling" class="level1">
+<h1>Methodological extraction for road-link injury-collision risk modelling</h1>
+<p><strong>Paper:</strong> Retallack, A. E. and Ostendorf, B. (2020), <em>Relationship Between Traffic Volume and Accident Frequency at Intersections</em>, International Journal of Environmental Research and Public Health, 17(4), 1393.<br>
+<strong>Source file:</strong> <code>ijerph-17-01393.pdf</code><br>
+<strong>Relevance to your project:</strong> Moderate. The paper is useful for thinking about exposure normalisation, congestion/non-linearity, rainfall interaction, and sparse-event modelling. It is less directly transferable because it models <strong>urban intersections in Adelaide</strong>, not UK road links, and uses <strong>hourly SCATS intersection counts</strong>, not AADF-style link exposure.</p>
+<hr>
+<section id="what-the-paper-models" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-paper-models">1. What the paper models</h2>
+<p>The paper models the relationship between <strong>traffic volume / congestion</strong> and <strong>motor-vehicle accident frequency</strong> at urban intersections.</p>
+<p>It has three linked analyses:</p>
+<ol type="1">
+<li><strong>Accident frequency vs traffic volume / congestion</strong>
+<ul>
+<li>Main analysis.</li>
+<li>Tests whether accident frequency rises linearly or non-linearly with traffic volume.</li>
+<li>Separate models are fitted for low-, middle-, and high-volume intersections.</li>
+</ul></li>
+<li><strong>Accident severity vs congestion</strong>
+<ul>
+<li>Compares property-damage-only and minor-injury accidents across congestion levels.</li>
+<li>Serious injury and fatal accidents are not modelled because of low or zero counts.</li>
+</ul></li>
+<li><strong>Rainfall risk vs congestion</strong>
+<ul>
+<li>Estimates accident risk during raining and not-raining periods.</li>
+<li>Calculates relative risk of rainfall at each congestion level.</li>
+</ul></li>
+</ol>
+<p>The paper is not a network screening or road-risk ranking study. It does not estimate “unusually high observed collisions relative to exposure” for individual sites in the way your project does. It is more of an exposure-response study focused on how accident frequency changes with short-term traffic volume and rain.</p>
+<hr>
+</section>
+<section id="response-variable" class="level2">
+<h2 class="anchored" data-anchor-id="response-variable">2. Response variable</h2>
+<section id="main-accident-frequency-model" class="level3">
+<h3 class="anchored" data-anchor-id="main-accident-frequency-model">Main accident-frequency model</h3>
+<p><strong>Response variable:</strong> accident frequency.</p>
+<p>More specifically:</p>
+<ul>
+<li>accidents are counted after grouping by:
+<ul>
+<li>intersection size rank: low-, middle-, or high-volume intersections;</li>
+<li>congestion index level: 1 to 15.</li>
+</ul></li>
+<li>This gives <strong>45 grouped observations</strong>:
+<ul>
+<li>3 intersection volume ranks × 15 congestion levels.</li>
+</ul></li>
+<li>The count in each group is the dependent variable in the Poisson / negative-binomial models.</li>
+</ul>
+<p>The paper uses <strong>all eligible motor-vehicle accidents</strong> for the main frequency analysis.</p>
+</section>
+<section id="severity-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="severity-analysis">Severity analysis</h3>
+<p>The severity analysis uses counts or normalised counts for:</p>
+<ul>
+<li><strong>PDO:</strong> property damage only;</li>
+<li><strong>MI:</strong> minor injury.</li>
+</ul>
+<p><strong>Serious injury accidents:</strong> excluded from the severity comparison because only 20 serious-injury accidents had matched traffic-volume data.<br>
+<strong>Fatal accidents:</strong> none occurred at the studied intersections during the study period.</p>
+</section>
+<section id="rainfall-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="rainfall-analysis">Rainfall analysis</h3>
+<p>The rainfall analysis uses accident counts and accident risks split by:</p>
+<ul>
+<li>raining;</li>
+<li>not raining;</li>
+<li>congestion index level.</li>
+</ul>
+<p>Risk is defined as:</p>
+<pre class="text"><code>accident risk = number of accidents in condition / number of hourly periods in condition</code></pre>
+<p>Relative risk is defined as:</p>
+<pre class="text"><code>RR = raining accident risk / not-raining accident risk</code></pre>
+</section>
+<section id="injury-only-response" class="level3">
+<h3 class="anchored" data-anchor-id="injury-only-response">Injury-only response?</h3>
+<p>Not used as the main response. The main model includes motor-vehicle accidents generally, including property-damage-only and minor-injury accidents. For your injury-collision project, that is a limitation because the paper’s main count model is not injury-collision-specific.</p>
+<hr>
+</section>
+</section>
+<section id="spatial-unit" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-unit">3. Spatial unit</h2>
+<p><strong>Spatial unit:</strong> intersection.</p>
+<p>Details:</p>
+<ul>
+<li>Study area: Adelaide City Council area, South Australia.</li>
+<li>Initial traffic dataset: 122 intersections.</li>
+<li>Final processed traffic dataset: 120 intersections after removing two problematic sites with unrealistic zero-volume patterns.</li>
+<li>Accident records were spatially joined to intersections using a <strong>20 m distance parameter</strong>.</li>
+<li>The paper does not model road links, carriageway sections, approaches, arms, or route segments.</li>
+</ul>
+<section id="transferability-issue-for-your-project" class="level3">
+<h3 class="anchored" data-anchor-id="transferability-issue-for-your-project">Transferability issue for your project</h3>
+<p>Your project uses road-network links in Great Britain. This paper’s spatial unit is therefore not directly aligned. The strongest transferable idea is not the intersection unit itself, but the exposure-normalisation logic: comparing traffic levels relative to each site’s own traffic distribution when absolute traffic volume is not directly comparable across sites.</p>
+<hr>
+</section>
+</section>
+<section id="temporal-unit" class="level2">
+<h2 class="anchored" data-anchor-id="temporal-unit">4. Temporal unit</h2>
+<p><strong>Temporal unit:</strong> one hour.</p>
+<p>Details:</p>
+<ul>
+<li>Traffic volumes are hourly SCATS measurements.</li>
+<li>Accident times are rounded <strong>down to the nearest hour</strong> before matching to traffic volume.</li>
+<li>Rounding down is used so the traffic volume measurement is less likely to be affected by the accident itself.</li>
+<li>Study period: 2010–2014.</li>
+<li>Accident data originally available for South Australia from 2010–2017, but filtered to Adelaide City Council and 2010–2014 to match traffic-volume coverage.</li>
+<li>Rainfall data has 30-minute resolution and is joined to hourly traffic periods.</li>
+</ul>
+<section id="implication-for-aadf-style-projects" class="level3">
+<h3 class="anchored" data-anchor-id="implication-for-aadf-style-projects">Implication for AADF-style projects</h3>
+<p>The paper uses short-term hourly exposure, not annualised exposure. Its findings about congestion and rainfall are therefore about within-site, within-hour variation. AADF-style exposure is much coarser and may not capture the high-congestion tail that drives the paper’s non-linear result.</p>
+<hr>
+</section>
+</section>
+<section id="how-traffic-exposure-is-handled" class="level2">
+<h2 class="anchored" data-anchor-id="how-traffic-exposure-is-handled">5. How traffic exposure is handled</h2>
+<p>The paper does <strong>not</strong> use AADT or AADF as a conventional model offset.</p>
+<p>Instead, it handles exposure in two ways:</p>
+<section id="hourly-traffic-volume-as-explanatory-variable" class="level3">
+<h3 class="anchored" data-anchor-id="hourly-traffic-volume-as-explanatory-variable">5.1 Hourly traffic volume as explanatory variable</h3>
+<p>Traffic volume is the main explanatory variable in the accident-frequency models.</p>
+<ul>
+<li>Data source: City of Adelaide traffic intersection volumes.</li>
+<li>Measurement: total number of vehicles passing through an intersection in each hour.</li>
+<li>Directional traffic counts were not available.</li>
+<li>Each hourly traffic count is corrected using a provided error ratio / valid ratio.</li>
+</ul>
+</section>
+<section id="site-normalised-congestion-index" class="level3">
+<h3 class="anchored" data-anchor-id="site-normalised-congestion-index">5.2 Site-normalised congestion index</h3>
+<p>Because intersections have different capacities, absolute traffic volumes are not assumed to be comparable across sites.</p>
+<p>The authors avoid formal volume/capacity ratios because they lacked:</p>
+<ul>
+<li>signal timing data;</li>
+<li>detailed intersection geometry;</li>
+<li>directional traffic counts;</li>
+<li>lane-group-level data.</li>
+</ul>
+<p>Instead, they create a <strong>congestion index</strong>:</p>
+<ul>
+<li>for each intersection, all hourly traffic-volume observations are divided into <strong>15 quantile bins</strong>;</li>
+<li>bin 1 represents the lowest traffic-volume periods at that intersection;</li>
+<li>bin 15 represents the highest traffic-volume periods at that intersection;</li>
+<li>the bin is interpreted as a relative congestion level.</li>
+</ul>
+<p>This is a pragmatic normalisation strategy when site capacity is hard to measure.</p>
+</section>
+<section id="median-traffic-volume-per-congestion-bin" class="level3">
+<h3 class="anchored" data-anchor-id="median-traffic-volume-per-congestion-bin">5.3 Median traffic volume per congestion bin</h3>
+<p>The paper notes that plotting accident frequency directly against bin number can distort the exposure-response curve because quantile bins are not evenly spaced in actual vehicle/hour terms.</p>
+<p>To avoid this, the authors:</p>
+<ul>
+<li>calculate the <strong>median traffic volume</strong> for each congestion level;</li>
+<li>do this separately for low-, middle-, and high-volume intersection groups;</li>
+<li>plot/model accident frequency against these median traffic volumes.</li>
+</ul>
+</section>
+<section id="no-explicit-log-exposure-offset" class="level3">
+<h3 class="anchored" data-anchor-id="no-explicit-log-exposure-offset">5.4 No explicit log-exposure offset</h3>
+<p>The paper does not state that it uses a log traffic-volume offset, vehicle-kilometre offset, vehicle-entering-intersection offset, or exposure-adjusted expected collision framework.</p>
+<p>For your project, this is important: the paper models accident frequency as a function of volume/congestion, but it is not a direct template for an exposure-adjusted empirical-Bayes or residual-risk ranking model.</p>
+<hr>
+</section>
+</section>
+<section id="accident-data-processing" class="level2">
+<h2 class="anchored" data-anchor-id="accident-data-processing">6. Accident-data processing</h2>
+<p>The accident data came from South Australia’s Department of Planning, Transport and Infrastructure road crash dataset.</p>
+<p>Key processing steps:</p>
+<ul>
+<li>accidents outside Adelaide City Council were removed;</li>
+<li>accidents outside 2010–2014 were removed;</li>
+<li>accident records were matched to traffic volumes by location and hour;</li>
+<li>accidents involving cyclists, pedestrians, wheelchairs, and animals were removed;</li>
+<li>accident times were rounded down to the previous hour;</li>
+<li>spatial join used a 20 m radius around intersections;</li>
+<li>final matched accident-volume dataset contained <strong>1,629 accidents</strong>.</li>
+</ul>
+<p>The exclusion of pedestrians and cyclists is a major transferability limitation for a UK injury-risk model if your response includes all police-reported injury collisions involving vulnerable road users.</p>
+<hr>
+</section>
+<section id="traffic-data-processing" class="level2">
+<h2 class="anchored" data-anchor-id="traffic-data-processing">7. Traffic-data processing</h2>
+<p>Traffic-volume data:</p>
+<ul>
+<li>source: City of Adelaide traffic intersection volumes;</li>
+<li>technology: Sydney Coordinated Adaptive Traffic System;</li>
+<li>period: 2010–2014;</li>
+<li>raw observations: 5,369,323 hourly traffic-volume measurements;</li>
+<li>processed observations: 5,213,580;</li>
+<li>raw intersections: 122;</li>
+<li>processed intersections: 120.</li>
+</ul>
+<p>Cleaning steps:</p>
+<ul>
+<li>two intersections with unrealistic median traffic volumes of zero were removed;</li>
+<li>groups of traffic-volume measurements that stayed identical for more than five consecutive hourly periods were removed;</li>
+<li>hourly counts were adjusted using the valid ratio derived from the error ratio.</li>
+</ul>
+<p>This is relevant to your project because AADF-style open traffic data may also contain implausible zeros, flatlined observations, or inconsistent estimates. The paper gives a concrete example of pre-model exposure cleaning, but the exact rule is specific to high-frequency SCATS data and should not be copied blindly into AADF processing.</p>
+<hr>
+</section>
+<section id="model-types" class="level2">
+<h2 class="anchored" data-anchor-id="model-types">8. Model types</h2>
+<section id="main-count-models" class="level3">
+<h3 class="anchored" data-anchor-id="main-count-models">8.1 Main count models</h3>
+<p>The paper fits count models to accident frequency:</p>
+<ol type="1">
+<li><strong>Poisson GLM</strong></li>
+<li><strong>Negative binomial model</strong></li>
+<li>Candidate functional forms:
+<ul>
+<li><p>linear:</p>
+<pre class="text"><code>accident frequency ~ traffic volume</code></pre></li>
+<li><p>quadratic:</p>
+<pre class="text"><code>accident frequency ~ traffic volume + traffic volume²</code></pre></li>
+<li><p>natural spline:</p>
+<pre class="text"><code>accident frequency ~ natural spline(traffic volume, 4 d.f.)</code></pre></li>
+</ul></li>
+</ol>
+</section>
+<section id="overdispersion-handling" class="level3">
+<h3 class="anchored" data-anchor-id="overdispersion-handling">8.2 Overdispersion handling</h3>
+<p>The authors first fit Poisson models and test for overdispersion.</p>
+<p>Results:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 28%">
+<col style="width: 28%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Intersection group</th>
+<th style="text-align: right;">Dispersion ratio</th>
+<th style="text-align: right;">Pearson chi-square p-value</th>
+<th>Model implication</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Low-volume</td>
+<td style="text-align: right;">1.37</td>
+<td style="text-align: right;">0.164</td>
+<td>Poisson considered acceptable</td>
+</tr>
+<tr class="even">
+<td>Middle-volume</td>
+<td style="text-align: right;">3.77</td>
+<td style="text-align: right;">&lt;0.001</td>
+<td>Overdispersed; negative binomial used</td>
+</tr>
+<tr class="odd">
+<td>High-volume</td>
+<td style="text-align: right;">3.25</td>
+<td style="text-align: right;">&lt;0.001</td>
+<td>Overdispersed; negative binomial used</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="model-selection" class="level3">
+<h3 class="anchored" data-anchor-id="model-selection">8.3 Model selection</h3>
+<p>Model selection uses <strong>AICc</strong>.</p>
+<p>Reported model-selection results:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Intersection group</th>
+<th>Best-supported model</th>
+<th>Key result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Low-volume</td>
+<td>Quadratic Poisson</td>
+<td>AICc 69.3; evidence ratio 17.7 over next model</td>
+</tr>
+<tr class="even">
+<td>Middle-volume</td>
+<td>Quadratic negative binomial</td>
+<td>AICc 108.1; evidence ratio 11.5 over next model</td>
+</tr>
+<tr class="odd">
+<td>High-volume</td>
+<td>Quadratic negative binomial narrowly ahead of natural spline</td>
+<td>quadratic AICc 119.1; natural spline AICc 120.3; linear much worse</td>
+</tr>
+</tbody>
+</table>
+<p>The practical modelling message is that the paper found little support for a purely linear volume-frequency relationship once high-congestion observations were included.</p>
+</section>
+<section id="machine-learning-models" class="level3">
+<h3 class="anchored" data-anchor-id="machine-learning-models">8.4 Machine-learning models</h3>
+<p>Not used.</p>
+</section>
+<section id="spatial-random-effects-hierarchical-models-empirical-bayes-or-residual-ranking" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-random-effects-hierarchical-models-empirical-bayes-or-residual-ranking">8.5 Spatial random effects, hierarchical models, empirical Bayes, or residual ranking</h3>
+<p>Not stated / not used.</p>
+<p>The paper does not appear to estimate intersection-specific random effects, spatial autocorrelation, empirical Bayes expected counts, excess-risk residuals, or ranked high-risk locations.</p>
+<hr>
+</section>
+</section>
+<section id="quantitative-results" class="level2">
+<h2 class="anchored" data-anchor-id="quantitative-results">9. Quantitative results</h2>
+<section id="sample-sizes" class="level3">
+<h3 class="anchored" data-anchor-id="sample-sizes">9.1 Sample sizes</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th style="text-align: right;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Raw accident records</td>
+<td style="text-align: right;">146,718</td>
+</tr>
+<tr class="even">
+<td>Processed accidents in ACC, 2010–2014</td>
+<td style="text-align: right;">2,336</td>
+</tr>
+<tr class="odd">
+<td>Accidents matched to traffic-volume data</td>
+<td style="text-align: right;">1,629</td>
+</tr>
+<tr class="even">
+<td>Raw traffic-volume observations</td>
+<td style="text-align: right;">5,369,323</td>
+</tr>
+<tr class="odd">
+<td>Processed traffic-volume observations</td>
+<td style="text-align: right;">5,213,580</td>
+</tr>
+<tr class="even">
+<td>Raw intersections</td>
+<td style="text-align: right;">122</td>
+</tr>
+<tr class="odd">
+<td>Processed intersections</td>
+<td style="text-align: right;">120</td>
+</tr>
+<tr class="even">
+<td>Serious-injury accidents with traffic-volume data</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr class="odd">
+<td>Fatal accidents at studied intersections</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="traffic-volume-and-accident-frequency" class="level3">
+<h3 class="anchored" data-anchor-id="traffic-volume-and-accident-frequency">9.2 Traffic volume and accident frequency</h3>
+<p>Main finding:</p>
+<ul>
+<li>accident frequency increases with traffic volume;</li>
+<li>the relationship is approximately linear at lower and middle traffic volumes;</li>
+<li>accident frequency increases faster at the highest congestion levels;</li>
+<li>quadratic terms are supported over linear-only models.</li>
+</ul>
+<p>The paper says the relationship is approximately linear until:</p>
+<ul>
+<li>congestion level 12 for low-volume intersections;</li>
+<li>congestion level 13 for middle- and high-volume intersections.</li>
+</ul>
+<p>After that, accident frequency rises more sharply.</p>
+</section>
+<section id="rainfall" class="level3">
+<h3 class="anchored" data-anchor-id="rainfall">9.3 Rainfall</h3>
+<p>Key rainfall results:</p>
+<ul>
+<li>accident risk increases with congestion under both raining and not-raining conditions;</li>
+<li>raining-period risk is higher than not-raining risk at most congestion levels;</li>
+<li>rainfall relative risk declines as congestion increases;</li>
+<li>at congestion level 1, accident risk is approximately <strong>five times greater</strong> when raining than when not raining;</li>
+<li>by congestion level 15, relative risk approaches <strong>1</strong>, meaning rainfall no longer appears to elevate risk relative to not-raining periods at the highest congestion level.</li>
+</ul>
+</section>
+<section id="severity" class="level3">
+<h3 class="anchored" data-anchor-id="severity">9.4 Severity</h3>
+<p>Key severity result:</p>
+<ul>
+<li>no clear relationship was found between congestion and accident severity.</li>
+<li>The ratio of minor-injury to property-damage-only accidents does not show a meaningful change across congestion levels.</li>
+<li>Serious-injury and fatal severity modelling was not possible due to sparse counts.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="validation-approach" class="level2">
+<h2 class="anchored" data-anchor-id="validation-approach">10. Validation approach</h2>
+<p><strong>Formal predictive validation:</strong> Not stated.</p>
+<p>The paper does not report:</p>
+<ul>
+<li>train/test split;</li>
+<li>cross-validation;</li>
+<li>out-of-sample predictive performance;</li>
+<li>calibration plots;</li>
+<li>holdout-year validation;</li>
+<li>site-level ranking validation;</li>
+<li>comparison against observed future collisions;</li>
+<li>ROC / precision-recall / top-decile capture metrics;</li>
+<li>spatial transfer validation.</li>
+</ul>
+<p>What it does include:</p>
+<ul>
+<li>overdispersion checks for Poisson models;</li>
+<li>AICc-based model comparison;</li>
+<li>loess curves and confidence bands for visual assessment;</li>
+<li>comparison of linear, quadratic, and natural-spline functional forms;</li>
+<li>sensitivity-style reasoning in Appendix A for choosing 15 congestion bins.</li>
+</ul>
+<p>For your road-risk modelling project, this means the paper is more useful for feature/exposure design than for validation design.</p>
+<hr>
+</section>
+<section id="limitations-stated-or-evident-from-the-method" class="level2">
+<h2 class="anchored" data-anchor-id="limitations-stated-or-evident-from-the-method">11. Limitations stated or evident from the method</h2>
+<section id="spatial-unit-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="spatial-unit-limitation">11.1 Spatial-unit limitation</h3>
+<p>The analysis is intersection-based, not link-based. Transfer to road links is not direct.</p>
+</section>
+<section id="geographic-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="geographic-limitation">11.2 Geographic limitation</h3>
+<p>The study area is small and highly urban: Adelaide City Council. It may be more homogeneous than a large Great Britain model covering urban, suburban, rural, A-road, B-road, motorway, and local-road contexts.</p>
+</section>
+<section id="exposure-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="exposure-limitation">11.3 Exposure limitation</h3>
+<p>The paper has high-resolution hourly traffic volume. Your project uses AADF-style exposure, which cannot observe hourly congestion states unless supplemented with time-of-day profiles or speed/congestion data.</p>
+</section>
+<section id="capacity-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="capacity-limitation">11.4 Capacity limitation</h3>
+<p>The congestion index is a workaround for missing capacity data. It is useful, but it is not a formal volume/capacity ratio.</p>
+</section>
+<section id="directionality-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="directionality-limitation">11.5 Directionality limitation</h3>
+<p>Directional traffic data was unavailable. The paper uses total intersection volume per hour.</p>
+</section>
+<section id="accident-type-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="accident-type-limitation">11.6 Accident-type limitation</h3>
+<p>Pedestrians, cyclists, wheelchairs, and animals were removed. That limits relevance to injury-risk models that include vulnerable road users.</p>
+</section>
+<section id="severity-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="severity-limitation">11.7 Severity limitation</h3>
+<p>The paper could not model fatal or serious-injury outcomes meaningfully because there were no fatal crashes and only 20 serious-injury crashes with matched traffic data.</p>
+</section>
+<section id="covariate-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="covariate-limitation">11.8 Covariate limitation</h3>
+<p>The main models are intentionally parsimonious. They do not include many variables that may matter for your project, such as:</p>
+<ul>
+<li>road geometry;</li>
+<li>speed limit, except discussed indirectly;</li>
+<li>road class;</li>
+<li>junction form beyond being intersections;</li>
+<li>land use;</li>
+<li>deprivation;</li>
+<li>lighting;</li>
+<li>traffic control;</li>
+<li>turning flows;</li>
+<li>vulnerable road-user exposure;</li>
+<li>speed variation;</li>
+<li>enforcement;</li>
+<li>temporal seasonality;</li>
+<li>spatial correlation.</li>
+</ul>
+</section>
+<section id="validation-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="validation-limitation">11.9 Validation limitation</h3>
+<p>No out-of-sample validation is reported.</p>
+</section>
+<section id="causality-limitation" class="level3">
+<h3 class="anchored" data-anchor-id="causality-limitation">11.10 Causality limitation</h3>
+<p>The study shows associations between traffic volume/congestion, rain, and accident frequency. It should not be treated as proving that reducing congestion will necessarily reduce collisions everywhere.</p>
+<hr>
+</section>
+</section>
+<section id="transferability-to-a-large-open-data-uk-road-link-risk-model" class="level2">
+<h2 class="anchored" data-anchor-id="transferability-to-a-large-open-data-uk-road-link-risk-model">12. Transferability to a large open-data UK road-link risk model</h2>
+<section id="useful-and-transferable" class="level3">
+<h3 class="anchored" data-anchor-id="useful-and-transferable">Useful and transferable</h3>
+<section id="a.-exposure-response-may-be-non-linear" class="level4">
+<h4 class="anchored" data-anchor-id="a.-exposure-response-may-be-non-linear">A. Exposure-response may be non-linear</h4>
+<p>The paper supports testing non-linear exposure effects rather than assuming a simple linear relationship between traffic volume and collision count.</p>
+<p>For your project, this suggests that when modelling collision counts against AADF or vehicle-km exposure, it may be worth comparing:</p>
+<ul>
+<li>log-linear exposure offset only;</li>
+<li>exposure as an offset plus flexible AADF terms;</li>
+<li>splines for AADF;</li>
+<li>road-class-specific exposure effects;</li>
+<li>interactions between exposure and junction density / urbanicity.</li>
+</ul>
+<p>This is a modelling consideration, not a production recommendation from this paper alone.</p>
+</section>
+<section id="b.-check-overdispersion-explicitly" class="level4">
+<h4 class="anchored" data-anchor-id="b.-check-overdispersion-explicitly">B. Check overdispersion explicitly</h4>
+<p>The paper’s low-volume group was acceptable under Poisson, while middle- and high-volume groups were overdispersed and needed negative binomial models. This is directly relevant to injury-collision count modelling, where overdispersion is common.</p>
+</section>
+<section id="c.-avoid-assuming-traffic-exposure-is-comparable-across-site-types" class="level4">
+<h4 class="anchored" data-anchor-id="c.-avoid-assuming-traffic-exposure-is-comparable-across-site-types">C. Avoid assuming traffic exposure is comparable across site types</h4>
+<p>The paper normalises traffic relative to each intersection because absolute volume means different things at different sites. For UK links, this maps to a broader point: AADF on a motorway, rural A-road, urban distributor, and minor urban link does not imply the same operational condition or risk mechanism.</p>
+</section>
+<section id="d.-consider-rainfall-weather-as-an-interaction-not-only-a-main-effect" class="level4">
+<h4 class="anchored" data-anchor-id="d.-consider-rainfall-weather-as-an-interaction-not-only-a-main-effect">D. Consider rainfall / weather as an interaction, not only a main effect</h4>
+<p>The paper finds rainfall relative risk is highest at low congestion and declines at high congestion. This suggests weather effects may interact with traffic state. With AADF data alone, that exact interaction may be hard to model, but weather-region or wet-day exposure adjustments could be explored in research mode.</p>
+</section>
+<section id="e.-clean-exposure-data-before-modelling" class="level4">
+<h4 class="anchored" data-anchor-id="e.-clean-exposure-data-before-modelling">E. Clean exposure data before modelling</h4>
+<p>The paper removed impossible or suspicious traffic-volume patterns before modelling. For your project, analogous checks are important for AADF and network exposure joins.</p>
+</section>
+</section>
+<section id="weakly-transferable-or-not-directly-transferable" class="level3">
+<h3 class="anchored" data-anchor-id="weakly-transferable-or-not-directly-transferable">Weakly transferable or not directly transferable</h3>
+<section id="a.-hourly-congestion-index" class="level4">
+<h4 class="anchored" data-anchor-id="a.-hourly-congestion-index">A. Hourly congestion index</h4>
+<p>The paper’s 15-bin within-site congestion index requires repeated traffic observations per site. A single AADF value per link does not support the same method.</p>
+<p>Possible analogue:</p>
+<ul>
+<li>percentile-rank AADF within road class, local authority, urban/rural class, or functional road class.</li>
+</ul>
+<p>But that would measure relative annual traffic intensity, not hourly congestion.</p>
+</section>
+<section id="b.-intersection-accident-matching" class="level4">
+<h4 class="anchored" data-anchor-id="b.-intersection-accident-matching">B. Intersection accident matching</h4>
+<p>The 20 m spatial join to intersections is not directly applicable to links. A link model needs collision-to-link assignment rules, junction handling, and treatment of collisions near nodes.</p>
+</section>
+<section id="c.-exclusion-of-vulnerable-road-users" class="level4">
+<h4 class="anchored" data-anchor-id="c.-exclusion-of-vulnerable-road-users">C. Exclusion of vulnerable road users</h4>
+<p>If your project’s police-reported injury collisions include pedestrians and cyclists, the paper’s vehicle-only filtering makes its response population narrower than yours.</p>
+</section>
+<section id="d.-adelaide-specific-operating-conditions" class="level4">
+<h4 class="anchored" data-anchor-id="d.-adelaide-specific-operating-conditions">D. Adelaide-specific operating conditions</h4>
+<p>The study area has a dense urban intersection network and mostly low speeds around 50 km/h. This does not cover many UK link contexts.</p>
+</section>
+<section id="e.-no-site-ranking" class="level4">
+<h4 class="anchored" data-anchor-id="e.-no-site-ranking">E. No site ranking</h4>
+<p>The paper does not evaluate methods for ranking unusually risky sites. It cannot tell you whether a given UK road-link ranking method is best.</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="practical-actions-you-might-take" class="level2">
+<h2 class="anchored" data-anchor-id="practical-actions-you-might-take">13. Practical actions you might take</h2>
+<p>These are research/design actions suggested by the paper’s methods. They are not production changes justified by this paper alone.</p>
+<section id="in-the-modelling-specification" class="level3">
+<h3 class="anchored" data-anchor-id="in-the-modelling-specification">13.1 In the modelling specification</h3>
+<ul>
+<li>Test whether collision counts are overdispersed relative to Poisson expectations.</li>
+<li>Include negative binomial models as a baseline candidate, especially for grouped or high-flow links.</li>
+<li>Test non-linear exposure terms rather than assuming traffic volume has only a proportional log-offset relationship.</li>
+<li>Compare linear, quadratic, and spline forms for AADF or log-AADF.</li>
+<li>Consider interactions between traffic exposure and road type, urban/rural context, junction density, or speed environment.</li>
+<li>Keep a pure exposure-offset model as a benchmark so you can see whether flexible exposure terms materially improve validation.</li>
+</ul>
+</section>
+<section id="in-exposure-engineering" class="level3">
+<h3 class="anchored" data-anchor-id="in-exposure-engineering">13.2 In exposure engineering</h3>
+<ul>
+<li>Audit AADF values for implausible zeros, missingness, sharp discontinuities, and inconsistent values across adjacent links.</li>
+<li>Distinguish “traffic exposure” from “congestion.” AADF gives exposure but not necessarily congestion.</li>
+<li>Consider deriving relative exposure ranks within comparable strata, such as road class and urban/rural category, as an exploratory feature.</li>
+<li>Avoid interpreting a high AADF percentile as equivalent to the paper’s hourly congestion index unless you have repeated traffic observations or speed/congestion data.</li>
+</ul>
+</section>
+<section id="in-spatial-assignment" class="level3">
+<h3 class="anchored" data-anchor-id="in-spatial-assignment">13.3 In spatial assignment</h3>
+<ul>
+<li>Treat junction and near-junction collisions carefully. This paper is intersection-only; a link model needs explicit rules for node-proximate collisions.</li>
+<li>Consider whether to build separate features for junction density, signalised junction proximity, or intersection influence zones.</li>
+</ul>
+</section>
+<section id="in-response-variable-design" class="level3">
+<h3 class="anchored" data-anchor-id="in-response-variable-design">13.4 In response-variable design</h3>
+<ul>
+<li>Be clear whether your response includes:
+<ul>
+<li>all injury collisions;</li>
+<li>killed or seriously injured only;</li>
+<li>slight injury only;</li>
+<li>vehicle-only injury collisions;</li>
+<li>pedestrian/cyclist collisions.</li>
+</ul></li>
+<li>Do not transfer this paper’s vehicle-only exclusions unless they match your research question.</li>
+</ul>
+</section>
+<section id="in-validation" class="level3">
+<h3 class="anchored" data-anchor-id="in-validation">13.5 In validation</h3>
+<ul>
+<li>Add validation procedures that the paper does not provide:
+<ul>
+<li>temporal holdout;</li>
+<li>spatial holdout;</li>
+<li>calibration by exposure band;</li>
+<li>top-ranked-link capture rate;</li>
+<li>comparison of observed vs expected collisions by road class;</li>
+<li>sensitivity to collision-to-link matching choices.</li>
+</ul></li>
+</ul>
+</section>
+<section id="in-interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="in-interpretation">13.6 In interpretation</h3>
+<ul>
+<li>If your model finds high risk on high-flow roads, separate:
+<ul>
+<li>high collision counts because of high exposure;</li>
+<li>unusually high collision counts after exposure adjustment;</li>
+<li>high congestion or operational stress, if measured.</li>
+</ul></li>
+<li>Avoid using this paper alone to justify intervention priorities. It supports testing certain model forms, not deciding production policy.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="direct-mapping-to-your-project" class="level2">
+<h2 class="anchored" data-anchor-id="direct-mapping-to-your-project">14. Direct mapping to your project</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Your project component</th>
+<th>What this paper contributes</th>
+<th>Caveat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Police-reported injury collisions</td>
+<td>Uses police-style crash records with time, location, weather, severity</td>
+<td>Main model is not injury-only; vulnerable road users removed</td>
+</tr>
+<tr class="even">
+<td>Road-network links</td>
+<td>Not directly applicable</td>
+<td>Paper uses intersections, not links</td>
+</tr>
+<tr class="odd">
+<td>AADF-style traffic exposure</td>
+<td>Strong conceptual relevance on exposure-response</td>
+<td>Paper uses hourly traffic counts, not annual average exposure</td>
+</tr>
+<tr class="even">
+<td>Road/context features</td>
+<td>Limited</td>
+<td>Few context covariates included</td>
+</tr>
+<tr class="odd">
+<td>Count models</td>
+<td>Directly relevant</td>
+<td>Uses grouped counts, not link-level expected-risk ranking</td>
+</tr>
+<tr class="even">
+<td>Machine learning</td>
+<td>Not applicable</td>
+<td>No ML models used</td>
+</tr>
+<tr class="odd">
+<td>Ranking unusually risky links</td>
+<td>Indirect only</td>
+<td>No ranking or empirical-Bayes framework</td>
+</tr>
+<tr class="even">
+<td>Validation</td>
+<td>Limited</td>
+<td>No out-of-sample validation reported</td>
+</tr>
+<tr class="odd">
+<td>Great Britain transfer</td>
+<td>Methodological ideas only</td>
+<td>Different country, unit, traffic data, road environment</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="bottom-line-methodological-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="bottom-line-methodological-takeaways">15. Bottom-line methodological takeaways</h2>
+<ol type="1">
+<li>The most useful idea is to <strong>test non-linear exposure-risk relationships</strong>, especially at high traffic volumes.</li>
+<li>The paper supports checking <strong>Poisson vs negative-binomial</strong> behaviour rather than assuming equidispersion.</li>
+<li>The site-normalised congestion index is a clever workaround for missing capacity data, but it depends on repeated traffic observations and is not directly available from single-value AADF.</li>
+<li>The rainfall analysis is useful because it treats weather risk as varying by traffic state, but the exact method needs hourly exposure and weather periods.</li>
+<li>The paper does not provide a validation or ranking framework for open-data UK road-link risk modelling.</li>
+<li>For your project, use this paper as support for exploratory model specification and exposure diagnostics, not as a basis for production changes on its own.</li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/openroadrisk\.org\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Open Road Risk</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

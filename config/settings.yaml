@@ -10,28 +10,35 @@
 # Study area — single source of truth for all geographic filters
 # ---------------------------------------------------------------------------
 study_area:
+  name: gb
+  boundary: data/raw/boundaries/gb_boundary.gpkg
+  boundary_layer: gb_boundary
+  nation_codes:
+    - E92000001  # England
+    - S92000003  # Scotland
+    - W92000004  # Wales
+
   # WGS84 bounding box — used by AADF and WebTRIS (lat/lon data)
-  # Extends from south of Birmingham north through Yorkshire.
-  # lat 52.00 ≈ south of Birmingham; lat 55.20 ≈ north of North Yorkshire
+  # GB-wide fast pre-filter. Final filtering uses the boundary polygon above.
   bbox_wgs84:
-    min_lat: 52.00
-    max_lat: 55.20
-    min_lon: -3.40
-    max_lon:  1.90
+    min_lat: 49.8
+    max_lat: 60.9
+    min_lon: -8.7
+    max_lon:  2.1
 
   # British National Grid bbox (metres) — used by OS Open Roads (BNG data)
-  # Derived from WGS84 corners above with a 20 km buffer.
-  # SW corner (52.0, -3.4) → BNG ≈ (285000, 233000)
-  # NE corner (55.2,  1.9) → BNG ≈ (664000, 636000)
+  # GB-wide fast pre-filter. Final filtering uses the boundary polygon above.
   bbox_bng:
-    min_easting:  260000
-    min_northing: 210000
-    max_easting:  690000
-    max_northing: 660000
+    min_easting:  0
+    min_northing: 0
+    max_easting:  700000
+    max_northing: 1250000
 
 geography:
   # TODO 29-Apr-2026: appears unused, delete after one full pipeline run if no breakage
   # pilot_region: midlands_to_yorkshire
+  # Legacy pilot-area force list. STATS19 ingest no longer uses this for GB runs;
+  # collisions are selected by valid coordinates plus the study-area boundary.
   # Police force codes as used in the STATS19 collision CSV (police_force field).
   # Source: DfT data guide Excel, sheet '2024_code_list', filter field name = 'police_force'
   # Keys are snake_case labels; values are integer STATS19 codes.
@@ -75,6 +82,7 @@ paths:
   raw:
     stats19:    data/raw/stats19/
     aadf:       data/raw/aadf/
+    boundaries: data/raw/boundaries/
     shapefiles: data/raw/shapefiles/
     webtris:    data/raw/webtris/
   processed:    data/processed/

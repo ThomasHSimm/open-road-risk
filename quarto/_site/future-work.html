@@ -596,10 +596,10 @@ background-size: cover;
 </section>
 <section id="nts-derived-active-travel-exposure" class="level3">
 <h3 class="anchored" data-anchor-id="nts-derived-active-travel-exposure">NTS-derived active travel exposure</h3>
-<p><strong>What it is:</strong> Use National Travel Survey per-capita mileage by mode, demographic, and region, combined with LSOA population demographics, to estimate pedestrian-hours and cyclist-km denominators for active travel risk analysis.</p>
+<p><strong>What it is:</strong> Use National Travel Survey per-capita mileage by mode, demographic, and region, combined with small-area population demographics, to estimate pedestrian-hours and cyclist-km denominators for active travel risk analysis.</p>
 <p><strong>Why it’s interesting:</strong> The cyclist/pedestrian risk entries in this doc note that motor-vehicle AADT is an imperfect denominator for active travel. Strava Metro is parked on licensing grounds. NTS is open and the methodology of using it as an exposure denominator is established in road safety literature.</p>
-<p><strong>Why not now:</strong> Resolution caveat — NTS gives regional/demographic averages, not link-specific exposure. So it supports LSOA-level analysis of pedestrian/cyclist risk but not link-grain. Different output grain from the rest of the pipeline; would be a parallel layer not an integrated feature.</p>
-<p><strong>Good starting point for someone else:</strong> - Pull NTS data from the gov.uk archive. - Compute per-capita pedestrian-hours and cyclist-km by demographic. - Join to LSOA population data to estimate exposure per LSOA. - Apply as denominator for cyclist/pedestrian collision rate at LSOA grain. - Compare hotspot identification at LSOA grain to motor-vehicle-AADT denominator approach.</p>
+<p><strong>Why not now:</strong> Resolution caveat — NTS gives regional/demographic averages, not link-specific exposure. So it supports small-area analysis of pedestrian/cyclist risk but not link-grain. Different output grain from the rest of the pipeline; would be a parallel layer not an integrated feature.</p>
+<p><strong>Good starting point for someone else:</strong> - Pull NTS data from the gov.uk archive. - Compute per-capita pedestrian-hours and cyclist-km by demographic. - Join to small-area population data to estimate exposure by OA/LSOA-style area. - Apply as denominator for cyclist/pedestrian collision rate at small-area grain. - Compare hotspot identification at small-area grain to motor-vehicle-AADT denominator approach.</p>
 <p><strong>Related:</strong> Builds on the cyclist/pedestrian risk entries already in this doc.</p>
 <hr>
 </section>

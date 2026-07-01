@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Open Road Risk Model Inventory – Open Road Risk</title>
 <style>
@@ -433,8 +433,8 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<p><strong>Date:</strong> May 2026<br>
-<strong>Status:</strong> Refreshed against the current post-fix Stage 2 artefacts, including the completed temporal-ablation run.<br>
+<p><strong>Date:</strong> July 2026<br>
+<strong>Status:</strong> Refreshed against the clean full GB Stage 2 collision retrain.<br>
 <strong>Canonical metrics source:</strong> <code>data/models/collision_metrics.json</code></p>
 <hr>
 <section id="stage-2-collision-risk-model-srcroad_riskmodelcollision.py" class="level2" data-number="1">
@@ -609,6 +609,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p><strong>Not in current trained GLM:</strong> <code>hgv_proportion</code> and <code>lit</code>. The current <code>network_features.parquet</code> is OSM-enriched: <code>speed_limit_mph_effective</code> is the modelled speed-limit feature, while raw <code>speed_limit_mph</code> is retained only as provenance. Lower-coverage <code>lanes</code> and <code>is_unpaved</code> enter as median-imputed GLM features.</p>
 <p><strong>Metrics:</strong></p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Metric</th>
@@ -618,19 +622,19 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Pseudo-R²</td>
-<td>0.3472 (in-sample on downsampled training set)</td>
+<td>0.566 (clean full GB run; in-sample on 1:3 zero-collision downsampled training set)</td>
 </tr>
 <tr class="even">
 <td>Deviance</td>
-<td>1,423,147</td>
+<td>821,217</td>
 </tr>
 <tr class="odd">
 <td>Null deviance</td>
-<td>2,180,048</td>
+<td>1,892,370</td>
 </tr>
 <tr class="even">
 <td>AIC</td>
-<td>2,237,488</td>
+<td>1,635,651</td>
 </tr>
 <tr class="odd">
 <td>Converged</td>
@@ -796,13 +800,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </tr>
 </tbody>
 </table>
-<p>XGBoost receives <code>estimated_aadt</code> as a raw feature in addition to the log-offset (XGBoost can exploit non-linear interactions with exposure that the offset constrains in the GLM). <code>hgv_proportion</code> was included in XGBoost because its coverage threshold is simply <code>if col in df.columns</code> (no percentage check); it was present at training time. The current XGBoost run includes effective speed, lanes, and unpaved/surface flag features. Raw <code>speed_limit_mph</code> is retained as provenance but is not in the trained feature list. <code>lit</code> is present in <code>network_features.parquet</code> but is not currently in the trained feature list.</p>
+<p>XGBoost receives <code>estimated_aadt</code> as a raw feature in addition to the log-offset (XGBoost can exploit non-linear interactions with exposure that the offset constrains in the GLM). <code>hgv_proportion</code> was included in XGBoost because its coverage threshold is simply <code>if col in df.columns</code> (no percentage check); it was present at training time. The current XGBoost run includes effective speed, lanes, unpaved/surface, GB population density, within-country deprivation deciles, country indicators, and terrain grade features. Raw <code>speed_limit_mph</code> is retained as provenance but is not in the trained feature list. <code>lit</code> is present in <code>network_features.parquet</code> but is not currently in the trained feature list.</p>
 <p><strong>Metrics:</strong></p>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Metric</th>
@@ -812,15 +812,15 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Pseudo-R²</td>
-<td>0.3235 mean across 5 post-fix seeds with temporal features included (range 0.3214-0.3265)</td>
+<td>0.325 (clean full GB run; temporal features included)</td>
 </tr>
 <tr class="even">
 <td>Test deviance</td>
-<td>497,289 mean across 5 post-fix seeds</td>
+<td>495,172</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Comparability caveat:</strong> GLM pseudo-R² is in-sample on a downsampled set (~91% zeros); XGBoost is out-of-sample on the true distribution (~98% zeros). The gap should not be read as a clean model horse race — the two metrics are not computed on a common evaluation set or against a common null model. Earlier docs cited XGBoost pseudo-R² around <code>0.86</code>, but that number came from a pre-fix evaluation surface that was later superseded after a Stage 2 leakage diagnosis. For current project positioning, use the post-fix <code>~0.32</code> baseline instead.</p>
+<p><strong>Comparability caveat:</strong> GLM pseudo-R² is in-sample on a 1:3 zero-collision downsampled set; XGBoost is out-of-sample on the true distribution. The gap should not be read as a clean model horse race — the two metrics are not computed on a common evaluation set or against a common null model. Earlier docs cited XGBoost pseudo-R² around <code>0.86</code>, but that number came from a pre-fix evaluation surface that was later superseded after a Stage 2 leakage diagnosis. For current project positioning, use the clean GB XGBoost pseudo-R² of <code>0.325</code> as the primary comparison point.</p>
 </section>
 <section id="output" class="level3" data-number="1.4">
 <h3 data-number="1.4" class="anchored" data-anchor-id="output"><span class="header-section-number">1.4</span> Output</h3>

@@ -38,6 +38,7 @@ from pathlib import Path
 import geopandas as gpd
 
 from road_risk.config import _ROOT, cfg
+from road_risk.geography import STUDY_AREA_BBOX_BNG, filter_geodataframe_to_study_area
 
 logger = logging.getLogger(__name__)
 
@@ -51,15 +52,6 @@ _DEFAULT_OUTPUT_FOLDER = _ROOT / cfg["paths"]["processed"] / "shapefiles"
 TARGET_CRS = "EPSG:4326"
 SOURCE_CRS = "EPSG:27700"
 
-# Study area bbox in BNG (metres) — read from config/settings.yaml.
-# Covers the WGS84 bbox (study_area.bbox_wgs84) with a 20 km buffer.
-_bng = cfg["study_area"]["bbox_bng"]
-STUDY_AREA_BBOX_BNG = (
-    _bng["min_easting"],
-    _bng["min_northing"],
-    _bng["max_easting"],
-    _bng["max_northing"],
-)  # minx, miny, maxx, maxy
 YORKSHIRE_BBOX_BNG = STUDY_AREA_BBOX_BNG  # backwards-compat alias
 
 # Columns to keep
@@ -234,6 +226,8 @@ def load_openroads(
     if str(gdf.crs).upper() != target_crs.upper():
         gdf = gdf.to_crs(target_crs)
         logger.info(f"  Reprojected to {target_crs}")
+
+    gdf = filter_geodataframe_to_study_area(gdf, predicate="intersects")
 
     # Trim to known columns
     cols_present = [c for c in KEEP_COLS if c in gdf.columns]

@@ -7,7 +7,7 @@ Install:
   pip install pyTRIS
 
 Usage:
-  from road_risk.ingest.ingest_webtris import get_yorkshire_sites, pull_yorkshire
+  from road_risk.ingest.ingest_webtris import get_study_area_sites, pull_study_area
 
 The pytris API object is the entry point for all requests:
   from pytris import API
@@ -19,8 +19,8 @@ The pytris API object is the entry point for all requests:
 
 Coverage note:
   WebTRIS covers the National Highways network only — motorways and major
-  trunk roads. In Yorkshire this is mainly M1, M62, M18, M621, A1(M), A64(M).
-  Non-National Highways roads (most of rural Yorkshire) are not covered.
+  trunk roads. It is useful as a sparse sensor source, not as full-network
+  coverage.
 
 Vehicle length bands returned by WebTRIS daily reports:
   0 - 520 cm    motorcycles / very short
@@ -39,6 +39,7 @@ import pandas as pd
 from pytris import API
 
 from road_risk.config import _ROOT, cfg
+from road_risk.geography import STUDY_AREA_BBOX_WGS84, STUDY_AREA_NAME, filter_points_to_study_area
 
 logger = logging.getLogger(__name__)
 
@@ -51,13 +52,8 @@ _DEFAULT_OUTPUT_FOLDER = _ROOT / cfg["paths"]["processed"] / "webtris"
 _DEFAULT_YEARS = cfg["years"]["full_range"]
 
 # Study area bounding box — read from config/settings.yaml
-_bbox = cfg["study_area"]["bbox_wgs84"]
-YORKSHIRE_BBOX = {
-    "min_lat": _bbox["min_lat"],
-    "max_lat": _bbox["max_lat"],
-    "min_lon": _bbox["min_lon"],
-    "max_lon": _bbox["max_lon"],
-}
+STUDY_AREA_BBOX = STUDY_AREA_BBOX_WGS84
+YORKSHIRE_BBOX = STUDY_AREA_BBOX  # backwards-compat alias
 
 # Years to pull — sparse sampling to limit API cost; set in settings.yaml
 TARGET_YEARS: list[int] = cfg["webtris"]["target_years"]
@@ -80,11 +76,15 @@ LENGTH_BAND_COLS = [
 # ---------------------------------------------------------------------------
 
 
-def _in_yorkshire_bbox(lat: float, lon: float) -> bool:
+def _in_study_area_bbox(lat: float, lon: float) -> bool:
     return (
-        YORKSHIRE_BBOX["min_lat"] <= lat <= YORKSHIRE_BBOX["max_lat"]
-        and YORKSHIRE_BBOX["min_lon"] <= lon <= YORKSHIRE_BBOX["max_lon"]
+        STUDY_AREA_BBOX["min_lat"] <= lat <= STUDY_AREA_BBOX["max_lat"]
+        and STUDY_AREA_BBOX["min_lon"] <= lon <= STUDY_AREA_BBOX["max_lon"]
     )
+
+
+def _in_yorkshire_bbox(lat: float, lon: float) -> bool:
+    return _in_study_area_bbox(lat, lon)
 
 
 def _year_date_range(year: int) -> tuple[str, str]:
@@ -188,22 +188,28 @@ def get_all_sites(cache_folder: Path | None = None) -> pd.DataFrame:
     return df
 
 
-def get_yorkshire_sites(cache_folder: Path | None = None) -> pd.DataFrame:
-    """Return WebTRIS sites within the Yorkshire bounding box."""
+def get_study_area_sites(cache_folder: Path | None = None) -> pd.DataFrame:
+    """Return active WebTRIS sites within the configured study area."""
     all_sites = get_all_sites(cache_folder=cache_folder)
 
     has_coords = all_sites["latitude"].notna() & all_sites["longitude"].notna()
     is_active = all_sites["status"].str.strip().str.lower() == "active"
     in_bbox = all_sites[has_coords & is_active].apply(
-        lambda r: _in_yorkshire_bbox(float(r["latitude"]), float(r["longitude"])),
+        lambda r: _in_study_area_bbox(float(r["latitude"]), float(r["longitude"])),
         axis=1,
     )
-    yorkshire = all_sites[has_coords & is_active][in_bbox].copy().reset_index(drop=True)
+    sites = all_sites[has_coords & is_active][in_bbox].copy().reset_index(drop=True)
+    sites = filter_points_to_study_area(sites, lat_col="latitude", lon_col="longitude")
     logger.info(
-        f"Yorkshire active sites: {len(yorkshire)} / {len(all_sites)} total "
+        f"{STUDY_AREA_NAME.upper()} active sites: {len(sites)} / {len(all_sites)} total "
         f"({(~is_active).sum()} inactive filtered out)"
     )
-    return yorkshire
+    return sites
+
+
+def get_yorkshire_sites(cache_folder: Path | None = None) -> pd.DataFrame:
+    """Backwards-compatible alias for get_study_area_sites()."""
+    return get_study_area_sites(cache_folder=cache_folder)
 
 
 # ---------------------------------------------------------------------------
@@ -346,14 +352,14 @@ def pull_temporal_sample(
     return combined
 
 
-def pull_yorkshire(
+def pull_study_area(
     years: list[int] | None = None,
     raw_folder: str | Path = _DEFAULT_RAW_FOLDER,
     output_folder: str | Path = _DEFAULT_OUTPUT_FOLDER,
     cache_per_site: bool = True,
 ) -> pd.DataFrame:
     """
-    Pull WebTRIS daily report data for all Yorkshire sites across multiple years.
+    Pull WebTRIS report data for all study-area sites across multiple years.
 
     Caches per-site parquet files as it goes — safe to interrupt and resume.
 
@@ -366,7 +372,7 @@ def pull_yorkshire(
 
     Returns
     -------
-    Combined DataFrame for all Yorkshire sites × years,
+    Combined DataFrame for all study-area sites × years,
     with vehicle length proportion columns added.
     """
     if years is None:
@@ -377,11 +383,11 @@ def pull_yorkshire(
     raw_folder.mkdir(parents=True, exist_ok=True)
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    sites = get_yorkshire_sites(cache_folder=raw_folder)
+    sites = get_study_area_sites(cache_folder=raw_folder)
     if sites.empty:
-        raise RuntimeError("No Yorkshire sites found — check API connectivity")
+        raise RuntimeError(f"No {STUDY_AREA_NAME.upper()} sites found — check API connectivity")
 
-    logger.info(f"Pulling {len(sites)} Yorkshire sites × {len(years)} years")
+    logger.info(f"Pulling {len(sites)} {STUDY_AREA_NAME.upper()} sites × {len(years)} years")
 
     api = API()
     all_frames: list[pd.DataFrame] = []
@@ -429,10 +435,25 @@ def pull_yorkshire(
         all_frames.append(site_df)
 
     if not all_frames:
-        raise RuntimeError("No data retrieved for any Yorkshire site")
+        raise RuntimeError(f"No data retrieved for any {STUDY_AREA_NAME.upper()} site")
 
     combined = pd.concat(all_frames, ignore_index=True)
     return combined
+
+
+def pull_yorkshire(
+    years: list[int] | None = None,
+    raw_folder: str | Path = _DEFAULT_RAW_FOLDER,
+    output_folder: str | Path = _DEFAULT_OUTPUT_FOLDER,
+    cache_per_site: bool = True,
+) -> pd.DataFrame:
+    """Backwards-compatible alias for pull_study_area()."""
+    return pull_study_area(
+        years=years,
+        raw_folder=raw_folder,
+        output_folder=output_folder,
+        cache_per_site=cache_per_site,
+    )
 
 
 def combine_raw(
@@ -458,17 +479,23 @@ def combine_raw(
     if not chunks:
         raise FileNotFoundError(f"No chunk parquets found in {raw_folder}")
 
-    # Load Yorkshire active site IDs to exclude old GB-wide chunks
+    # Load current study-area active site IDs to exclude stale chunks.
     sites_cache = raw_folder / "sites.parquet"
-    yorkshire_ids: set | None = None
+    study_area_ids: set | None = None
     if sites_cache.exists():
         all_sites = pd.read_parquet(sites_cache)
         is_active = all_sites["status"].str.strip().str.lower() == "active"
         in_bbox = all_sites["latitude"].between(
-            YORKSHIRE_BBOX["min_lat"], YORKSHIRE_BBOX["max_lat"]
-        ) & all_sites["longitude"].between(YORKSHIRE_BBOX["min_lon"], YORKSHIRE_BBOX["max_lon"])
-        yorkshire_ids = set(all_sites[is_active & in_bbox]["site_id"].astype(str))
-        logger.info(f"Filtering to {len(yorkshire_ids)} Yorkshire active sites")
+            STUDY_AREA_BBOX["min_lat"], STUDY_AREA_BBOX["max_lat"]
+        ) & all_sites["longitude"].between(STUDY_AREA_BBOX["min_lon"], STUDY_AREA_BBOX["max_lon"])
+        current_sites = all_sites[is_active & in_bbox].copy()
+        current_sites = filter_points_to_study_area(
+            current_sites,
+            lat_col="latitude",
+            lon_col="longitude",
+        )
+        study_area_ids = set(current_sites["site_id"].astype(str))
+        logger.info(f"Filtering to {len(study_area_ids)} {STUDY_AREA_NAME.upper()} active sites")
 
     logger.info(f"Combining {len(chunks)} chunk files from {raw_folder}")
     frames = []
@@ -476,13 +503,13 @@ def combine_raw(
     for c in chunks:
         # Extract site_id from filename: site_12345_2019.parquet
         site_id_str = c.stem.split("_")[1]
-        if yorkshire_ids is not None and site_id_str not in yorkshire_ids:
+        if study_area_ids is not None and site_id_str not in study_area_ids:
             skipped += 1
             continue
         frames.append(pd.read_parquet(c))
 
     if skipped:
-        logger.info(f"  Skipped {skipped} non-Yorkshire chunks")
+        logger.info(f"  Skipped {skipped} non-{STUDY_AREA_NAME.upper()} chunks")
     combined = pd.concat(frames, ignore_index=True)
     combined = _add_length_proportions(combined)
     logger.info(
@@ -503,13 +530,13 @@ def save_webtris(
 
     Parameters
     ----------
-    df : DataFrame from pull_yorkshire()
+    df : DataFrame from pull_study_area()
     output_folder : defaults to data/processed/webtris/
     years : used to name the file; inferred from df if not provided
 
     Example
     -------
-    >>> df = pull_yorkshire()
+    >>> df = pull_study_area()
     >>> save_webtris(df)
     """
     output_folder = Path(output_folder)
@@ -518,7 +545,7 @@ def save_webtris(
     if years is None:
         years = sorted(df["_pull_year"].unique()) if "_pull_year" in df.columns else []
     suffix = f"_{min(years)}_{max(years)}" if years else ""
-    out_path = output_folder / f"webtris_yorkshire{suffix}.parquet"
+    out_path = output_folder / f"webtris_{STUDY_AREA_NAME}{suffix}.parquet"
 
     df.to_parquet(out_path, index=False)
     logger.info(f"Saved WebTRIS data to {out_path}")
@@ -541,12 +568,12 @@ def main(
         output_folder = _DEFAULT_OUTPUT_FOLDER
 
     if sites_only:
-        sites = get_yorkshire_sites(cache_folder=Path(raw_folder))
-        print(f"\n=== Yorkshire WebTRIS sites ({len(sites)}) ===")
+        sites = get_study_area_sites(cache_folder=Path(raw_folder))
+        print(f"\n=== {STUDY_AREA_NAME.upper()} WebTRIS sites ({len(sites)}) ===")
         print(sites[["site_id", "description", "latitude", "longitude"]].to_string(index=False))
         return
 
-    df = pull_yorkshire(years=years, raw_folder=raw_folder, output_folder=output_folder)
+    df = pull_study_area(years=years, raw_folder=raw_folder, output_folder=output_folder)
 
     print("\n=== WebTRIS pull complete ===")
     print(f"  Rows  : {len(df):,}")
