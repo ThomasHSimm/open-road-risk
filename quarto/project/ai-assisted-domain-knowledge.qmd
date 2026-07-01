@@ -8,7 +8,9 @@ categories: [methods, literature-review, AI]
 toc: true
 ---
 
+::: {.lead}
 Open Road Risk needed a literature review that could do more than summarise papers. It needed an evidence base that could audit modelling decisions.
+:::
 
 The project estimates exposure-adjusted collision risk for around 2.17 million road links across Great Britain. That means the literature review has a practical job: establish what the road-safety modelling field already knows, identify where the project is aligned with that field, and expose where the modelling choices are weak, premature, or unsupported.
 
@@ -141,7 +143,7 @@ This was not a benchmark of ChatGPT and not proof that one prompt is optimal. It
 
 The paper was deliberately useful but imperfect for Open Road Risk. It is close enough to matter — traffic volume, accident frequency, Poisson and negative-binomial count models, rainfall risk and severity appear in the study — but it is not a direct match. It studies 120 urban intersections in Adelaide using hourly SCATS traffic-volume data and 1,629 matched motor-vehicle accidents. That makes it a good test case because a useful extraction should preserve both the relevance and the limits: intersection-level evidence is not link-year evidence, and dense hourly monitored traffic counts are not the same as sparse AADF-style national exposure estimates.
 
-The runs used fresh temporary ChatGPT chats. The model setting was kept constant rather than optimised separately for each condition. The point was to test the input condition, not to compare models. A current medium-reasoning model was chosen because it was strong enough to be a realistic workplace tool, but not chosen to make the task artificially easy. This also kept the exercise closer to the kind of AI-assisted document work now appearing in Microsoft 365 Copilot and Copilot Studio [^22].
+The runs used fresh temporary ChatGPT chats. The model setting was kept constant rather than optimised separately for each condition. The point was to test the input condition, not to compare models. A current medium-reasoning model was chosen because it was strong enough to be a realistic workplace tool, but not chosen to make the task artificially easy. This also kept the exercise closer to the kind of AI-assisted document work now appearing in workplace tools such as Microsoft 365 Copilot, rather than a best-case benchmark setting.
 
 The prompt protocol is published as a supporting artefact: [open-road-risk-prompt-ablation-case-study.md](lit_review/open-road-risk-prompt-ablation-case-study.md).
 
@@ -196,7 +198,7 @@ The literature record also stopped a more complex model from being adopted too e
 
 Collision counts are often over-dispersed: they vary more than a simple Poisson model assumes. The road-safety literature has a standard response to that problem: negative-binomial models. The [count-model synthesis](../literature/crash-frequency-models.qmd), drawing on sources such as Lord and Mannering (2010) and Ver Hoef and Boveng (2007), made that clear.
 
-The project turned this into a pre-registered rule: move from a Poisson GLM to a negative-binomial GLM only if the Poisson over-dispersion ratio crossed **1.5**.
+The project turned this into a pre-specified rule: move from a Poisson GLM to a negative-binomial GLM only if the Poisson over-dispersion ratio crossed **1.5**.
 
 The fitted value came in at about **1.40**. That is high enough to keep negative binomial on the books, but below the pre-set threshold for switching immediately. So the Poisson GLM was retained, and negative binomial was recorded as the next model-family move rather than adopted opportunistically.
 
@@ -275,7 +277,7 @@ All figures, claims and citations were checked by the author against the project
 
 [^9]: *Use of AI tools in the publishing process* (2026), Frontiers in Research Metrics and Analytics — summarises the ICMJE/COPE/WAME consensus: disclosure required, AI cannot be an author, and authors must verify output. <https://www.frontiersin.org/journals/research-metrics-and-analytics/articles/10.3389/frma.2026.1740510/full>
 
-[^10]: *Retrieval-augmented generation* — overview of grounding model output in retrieved material to reduce hallucination and enable source verification. <https://en.wikipedia.org/wiki/Retrieval-augmented_generation>
+[^10]: Lewis et al. (2020), *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*, NeurIPS 2020 — introduces RAG models that combine parametric sequence-to-sequence generation with retrieved non-parametric memory for knowledge-intensive tasks. <https://arxiv.org/abs/2005.11401>
 
 [^11]: *Hallucination Mitigation for Retrieval-Augmented LLMs: A Review* (2025), Mathematics 13(5):856 — review noting that retrieval-augmented systems can still produce unsupported output. <https://www.mdpi.com/2227-7390/13/5/856>
 
@@ -299,8 +301,6 @@ All figures, claims and citations were checked by the author against the project
 
 
 [^21]: Retallack & Ostendorf (2020), *Relationship Between Traffic Volume and Accident Frequency at Intersections*, International Journal of Environmental Research and Public Health 17(4):1393 — open-access road-safety paper used for the prompt-ablation case study. <https://doi.org/10.3390/ijerph17041393>
-
-[^22]: Microsoft 365 Copilot Blog (2026), *Available today: GPT-5.4 Thinking in Microsoft 365 Copilot* — states that GPT-5.4 Thinking was available in Copilot Chat and Copilot Studio. <https://techcommunity.microsoft.com/blog/microsoft365copilotblog/available-today-gpt-5-4-thinking-in-microsoft-365-copilot/4499746>
 
 **Further reading.** On tools that productise parts of this workflow, start with the official product documentation for Elicit, Undermind, Semantic Scholar, Litmaps and scite rather than relying on comparison-list articles, which date quickly.
 
