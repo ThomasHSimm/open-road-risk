@@ -28,17 +28,20 @@ Coordinate system:
   Raw: EPSG:27700 (British National Grid)
   Output: EPSG:4326 (WGS84) to match STATS19 and AADF
 
-Study-area spatial filter:
-  Applied at read time via bbox — avoids loading full GB (~4M links) into memory.
+GB ingest strategy:
+  Read source rows in small chunks and reproject each chunk. OS Open Roads is
+  already a GB source, so this ingest does not apply a study-area polygon clip.
 """
 
 import logging
+import math
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 
 from road_risk.config import _ROOT, cfg
-from road_risk.geography import STUDY_AREA_BBOX_BNG, filter_geodataframe_to_study_area
+from road_risk.geography import STUDY_AREA_BBOX_BNG
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +54,9 @@ _DEFAULT_OUTPUT_FOLDER = _ROOT / cfg["paths"]["processed"] / "shapefiles"
 
 TARGET_CRS = "EPSG:4326"
 SOURCE_CRS = "EPSG:27700"
+CHUNK_SIZE = 10_000
+EXPECTED_GB_ROWS = 3_941_299
+ROW_TOLERANCE_FRACTION = 0.01
 
 YORKSHIRE_BBOX_BNG = STUDY_AREA_BBOX_BNG  # backwards-compat alias
 
@@ -94,6 +100,24 @@ COL_RENAMES = {
     "start_node": "start_node",
     "end_node": "end_node",
 }
+
+OUTPUT_COLUMNS = [
+    "link_id",
+    "road_classification",
+    "road_function",
+    "form_of_way",
+    "road_number",
+    "road_name",
+    "link_length_m",
+    "is_trunk",
+    "is_primary",
+    "start_node",
+    "end_node",
+    "geometry",
+    "link_length_km",
+    "road_name_clean",
+    "street_name_clean",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -177,6 +201,167 @@ def _build_road_name_clean(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return gdf
 
 
+def _finite_bounds(bounds) -> bool:
+    return len(bounds) == 4 and all(math.isfinite(float(value)) for value in bounds)
+
+
+def _crs_is(gdf: gpd.GeoDataFrame, expected_crs: str) -> bool:
+    if gdf.crs is None:
+        return False
+    expected = expected_crs.upper()
+    if str(gdf.crs).upper() == expected:
+        return True
+    epsg = gdf.crs.to_epsg() if hasattr(gdf.crs, "to_epsg") else None
+    return expected == f"EPSG:{epsg}"
+
+
+def _format_bounds(gdf: gpd.GeoDataFrame) -> list[float]:
+    return [round(float(value), 6) for value in gdf.total_bounds]
+
+
+def _fail_chunk(chunk: gpd.GeoDataFrame, start: int, end: int, reason: str) -> None:
+    message = (
+        f"Open Roads chunk rows {start:,}-{end:,} failed validation: {reason}. "
+        f"rows={len(chunk):,}, crs={chunk.crs}, bounds={chunk.total_bounds.tolist()}, "
+        f"geom_types={chunk.geometry.geom_type.value_counts(dropna=False).to_dict()}"
+    )
+    if "id" in chunk.columns:
+        message += f", first_ids={chunk['id'].head(10).astype(str).tolist()}"
+    raise ValueError(message)
+
+
+def _validate_raw_chunk(chunk: gpd.GeoDataFrame, start: int, end: int) -> None:
+    if chunk.empty:
+        _fail_chunk(chunk, start, end, "chunk is empty")
+    if not _crs_is(chunk, SOURCE_CRS):
+        _fail_chunk(chunk, start, end, f"expected CRS {SOURCE_CRS}")
+    if chunk.geometry.isna().any():
+        _fail_chunk(chunk, start, end, "null geometries present")
+    if chunk.geometry.is_empty.any():
+        _fail_chunk(chunk, start, end, "empty geometries present")
+    geom_types = set(chunk.geometry.geom_type.unique())
+    if geom_types != {"LineString"}:
+        _fail_chunk(chunk, start, end, f"expected only LineString geometries, got {geom_types}")
+    if not _finite_bounds(chunk.total_bounds):
+        _fail_chunk(chunk, start, end, "raw bounds are not finite")
+
+
+def _read_total_rows(gpkg_path: Path, layer: str) -> int:
+    rows = gpd.read_file(gpkg_path, layer=layer, columns=["id"], ignore_geometry=True)
+    return len(rows)
+
+
+def _normalise_openroads_chunk(chunk: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    cols_present = [c for c in KEEP_COLS if c in chunk.columns]
+    out = chunk[cols_present].copy()
+
+    out = out.rename(columns={k: v for k, v in COL_RENAMES.items() if k in out.columns})
+
+    if "link_length_m" in out.columns:
+        out["link_length_km"] = out["link_length_m"] / 1000
+
+    for col in ["road_name", "road_classification", "road_function", "form_of_way"]:
+        if col in out.columns:
+            out[col] = out[col].fillna("").astype(str).str.strip()
+
+    if "road_number" in out.columns:
+        out["road_number"] = (
+            out["road_number"]
+            .fillna("")
+            .astype(str)
+            .str.replace(r"\.0$", "", regex=True)
+            .str.strip()
+        )
+
+    out = _build_road_name_clean(out)
+    return out[OUTPUT_COLUMNS]
+
+
+def _read_openroads_chunked(
+    gpkg_path: Path,
+    target_crs: str,
+    layer: str,
+    chunk_size: int = CHUNK_SIZE,
+) -> gpd.GeoDataFrame:
+    total_rows = _read_total_rows(gpkg_path, layer)
+    logger.info("  Source road_link rows: %s", f"{total_rows:,}")
+    logger.info("  Reading and reprojecting in %s-row chunks", f"{chunk_size:,}")
+
+    chunks: list[gpd.GeoDataFrame] = []
+    for start in range(0, total_rows, chunk_size):
+        end = min(start + chunk_size, total_rows)
+        if start == 0 or start % 100_000 == 0 or end == total_rows:
+            logger.info("  Processing Open Roads rows %s-%s", f"{start:,}", f"{end:,}")
+
+        chunk = gpd.read_file(gpkg_path, layer=layer, rows=slice(start, end))
+        _validate_raw_chunk(chunk, start, end)
+
+        chunk = chunk.to_crs(target_crs)
+        if not _finite_bounds(chunk.total_bounds):
+            _fail_chunk(chunk, start, end, "WGS84 bounds are not finite")
+
+        chunks.append(_normalise_openroads_chunk(chunk))
+
+    gdf = gpd.GeoDataFrame(
+        pd.concat(chunks, ignore_index=True),
+        geometry="geometry",
+        crs=target_crs,
+    )
+    logger.info("  Chunked Open Roads ingest assembled %s links", f"{len(gdf):,}")
+    return gdf
+
+
+def validate_openroads_gb(gdf: gpd.GeoDataFrame) -> None:
+    if gdf.empty:
+        raise ValueError("Open Roads ingest produced zero links.")
+
+    min_expected = int(EXPECTED_GB_ROWS * (1 - ROW_TOLERANCE_FRACTION))
+    max_expected = int(EXPECTED_GB_ROWS * (1 + ROW_TOLERANCE_FRACTION))
+    if not min_expected <= len(gdf) <= max_expected:
+        raise ValueError(
+            "Open Roads row count is outside expected GB range: "
+            f"{len(gdf):,} not in [{min_expected:,}, {max_expected:,}]"
+        )
+
+    if not _crs_is(gdf, TARGET_CRS):
+        raise ValueError(f"Open Roads output CRS is {gdf.crs}; expected {TARGET_CRS}.")
+
+    if not _finite_bounds(gdf.total_bounds):
+        raise ValueError(f"Open Roads output bounds are not finite: {gdf.total_bounds.tolist()}")
+
+    min_lon, min_lat, max_lon, max_lat = [float(value) for value in gdf.total_bounds]
+    if min_lat > 50.5 or max_lat < 60.0 or min_lon > -5.0 or max_lon < 1.0:
+        raise ValueError(f"Open Roads output does not look GB-wide: bounds={_format_bounds(gdf)}")
+
+    geom_counts = gdf.geometry.geom_type.value_counts(dropna=False).to_dict()
+    if set(geom_counts) != {"LineString"}:
+        raise ValueError(f"Open Roads output contains non-LineString geometries: {geom_counts}")
+
+    null_count = int(gdf.geometry.isna().sum())
+    empty_count = int(gdf.geometry.is_empty.sum())
+    invalid_count = int((~gdf.geometry.is_valid).sum())
+    if null_count or empty_count or invalid_count:
+        raise ValueError(
+            "Open Roads output geometry validation failed: "
+            f"null={null_count}, empty={empty_count}, invalid={invalid_count}"
+        )
+
+    if "link_id" not in gdf.columns:
+        raise ValueError("Open Roads output is missing link_id.")
+    unique_links = int(gdf["link_id"].nunique())
+    if unique_links != len(gdf):
+        raise ValueError(
+            f"Open Roads link_id values are not unique: {unique_links:,} unique / {len(gdf):,} rows"
+        )
+
+    logger.info(
+        "  Validated Open Roads GB output: rows=%s bounds=%s unique_link_id=%s",
+        f"{len(gdf):,}",
+        _format_bounds(gdf),
+        f"{unique_links:,}",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -195,8 +380,8 @@ def load_openroads(
     ----------
     raw_folder : folder containing oproad_gb.gpkg
     bbox_bng   : (minx, miny, maxx, maxy) in BNG metres for spatial filter.
-                 Applied at read time so full GB is never loaded into memory.
-                 Defaults to configured study-area bounds.
+                 Retained for backwards-compatible function signature; GB
+                 Open Roads ingest reads source row chunks instead.
     target_crs : output CRS, defaults to EPSG:4326 (WGS84)
     layer      : GeoPackage layer name, defaults to 'road_link'
 
@@ -213,63 +398,9 @@ def load_openroads(
     gpkg_path = _find_gpkg(folder)
     logger.info(f"Loading OS Open Roads from {gpkg_path.name} (layer='{layer}') ...")
 
-    # bbox filter at read time — avoids loading ~4M GB links
-    gdf = gpd.read_file(gpkg_path, layer=layer, bbox=bbox_bng)
-    logger.info(f"  Loaded {len(gdf):,} road links within study-area bbox")
-
-    # Set CRS if not already set
-    if gdf.crs is None:
-        logger.warning(f"No CRS — assuming {SOURCE_CRS}")
-        gdf = gdf.set_crs(SOURCE_CRS)
-
-    # Reproject to WGS84
-    if str(gdf.crs).upper() != target_crs.upper():
-        gdf = gdf.to_crs(target_crs)
-        logger.info(f"  Reprojected to {target_crs}")
-
-    gdf = filter_geodataframe_to_study_area(gdf, predicate="intersects")
-
-    # Trim to known columns
-    cols_present = [c for c in KEEP_COLS if c in gdf.columns]
-    gdf = gdf[cols_present]
-
-    # Rename to project standard names
-    gdf = gdf.rename(columns={k: v for k, v in COL_RENAMES.items() if k in gdf.columns})
-
-    # Derive link_length_km
-    if "link_length_m" in gdf.columns:
-        gdf["link_length_km"] = gdf["link_length_m"] / 1000
-
-    # Normalise string columns
-    for col in ["road_name", "road_classification", "road_function", "form_of_way"]:
-        if col in gdf.columns:
-            gdf[col] = gdf[col].fillna("").str.strip()
-
-    # road_number — strip decimal if it came as float
-    if "road_number" in gdf.columns:
-        gdf["road_number"] = (
-            gdf["road_number"]
-            .fillna("")
-            .astype(str)
-            .str.replace(r"\.0$", "", regex=True)
-            .str.strip()
-        )
-
-    # Build road_name_clean for Stage 1 snap
-    gdf = _build_road_name_clean(gdf)
-
-    # Validate geometry
-    null_geom = gdf.geometry.isna()
-    if null_geom.any():
-        logger.warning(f"  {null_geom.sum()} null geometries — dropping")
-        gdf = gdf[~null_geom]
-
-    invalid_geom = ~gdf.geometry.is_valid
-    if invalid_geom.any():
-        logger.info(f"  Fixing {invalid_geom.sum()} invalid geometries")
-        gdf.loc[invalid_geom, "geometry"] = gdf.loc[invalid_geom, "geometry"].buffer(0)
-
+    gdf = _read_openroads_chunked(gpkg_path, target_crs, layer)
     gdf = gdf.reset_index(drop=True)
+    validate_openroads_gb(gdf)
 
     logger.info(
         f"OS Open Roads loaded: {len(gdf):,} links | "
@@ -286,8 +417,21 @@ def save_openroads(
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
     out_path = output_folder / "openroads.parquet"
-    gdf.to_parquet(out_path, index=False)
-    logger.info(f"Saved OS Open Roads to {out_path} ({len(gdf):,} links)")
+    tmp_path = output_folder / "openroads.tmp.parquet"
+
+    validate_openroads_gb(gdf)
+    gdf.to_parquet(tmp_path, index=False)
+    readback = gpd.read_parquet(tmp_path)
+    validate_openroads_gb(readback)
+    tmp_path.replace(out_path)
+
+    size_mb = out_path.stat().st_size / 1024 / 1024
+    logger.info(
+        "Saved OS Open Roads to %s (%s links, %.1f MB)",
+        out_path,
+        f"{len(gdf):,}",
+        size_mb,
+    )
 
 
 def main(
