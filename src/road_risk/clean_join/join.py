@@ -37,6 +37,7 @@ AADF      lat/lon          -> OpenRoads link centroid  (spatial, nearest)
 AADF      lat/lon          -> WebTRIS lat/lon          (spatial, nearest)
 """
 
+import argparse
 import logging
 from pathlib import Path
 
@@ -110,6 +111,14 @@ WEBTRIS_FEATURE_COLS = [
     # Derived ratio
     "core_overnight_ratio",
 ]
+
+ROAD_FEATURE_AUDIT_COLS = [
+    "aadf_snap_distance_m",
+    "aadf_join_method",
+    "webtris_snap_distance_m",
+]
+
+EXPECTED_MODEL_YEARS = list(range(2015, 2025))
 
 
 # ---------------------------------------------------------------------------
@@ -523,8 +532,9 @@ def _attach_webtris_to_aadf(
 
 def build_road_link_annual(
     collisions_snapped: gpd.GeoDataFrame,
-    road_features: pd.DataFrame,
+    road_features: pd.DataFrame | None,
     openroads: gpd.GeoDataFrame,
+    road_features_path: str | Path | None = None,
 ) -> pd.DataFrame:
     """
     Aggregate snapped collisions onto OS Open Roads links per year,
@@ -621,10 +631,14 @@ def build_road_link_annual(
     )
 
     # --- Join road features -------------------------------------------------
-    road_feat = road_features.copy()
-    road_feat["link_id"] = road_feat["link_id"].astype(agg["link_id"].dtype)
+    if road_features is None:
+        if road_features_path is None:
+            raise ValueError("road_features or road_features_path is required")
+        road_feat = _load_road_features_for_annual_keys(road_features_path, agg)
+    else:
+        road_feat = _filter_road_features_for_annual(road_features, agg)
 
-    result = agg.merge(road_feat, on=["link_id", "year"], how="left")
+    result = agg.merge(road_feat, on=["link_id", "year"], how="left", validate="one_to_one")
 
     # Attach OpenRoads road metadata — single road_name, no duplicates
     or_meta = openroads[
@@ -669,7 +683,177 @@ def build_road_link_annual(
         median_rate = result["collision_rate_per_mvkm"].median()
         logger.info(f"  Collision rate (median): {median_rate:.4f} per M veh-km")
 
+    _validate_road_link_annual(result, snapped, openroads)
+
     return result
+
+
+def _road_feature_columns_for_annual(columns: pd.Index | list[str]) -> list[str]:
+    """Columns from the all-link traffic table needed by road_link_annual."""
+    desired = ["link_id", "year"]
+    for col in AADF_FEATURE_COLS + WEBTRIS_FEATURE_COLS + ROAD_FEATURE_AUDIT_COLS:
+        if col not in desired:
+            desired.append(col)
+    return [col for col in desired if col in columns]
+
+
+def _filter_road_features_for_annual(
+    road_features: pd.DataFrame,
+    agg: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Keep only traffic rows needed by positive collision link-years.
+
+    ``road_features`` is the all Open Roads × year table. At full GB scale this
+    is ~39M rows, while ``agg`` is only positive collision link-years. Avoid a
+    full-frame copy before the merge.
+    """
+    keep_cols = _road_feature_columns_for_annual(road_features.columns)
+    missing = {"link_id", "year"}.difference(keep_cols)
+    if missing:
+        raise ValueError(f"road_features is missing required join columns: {sorted(missing)}")
+
+    keys = agg[["link_id", "year"]].drop_duplicates().copy()
+    try:
+        keys["link_id"] = keys["link_id"].astype(road_features["link_id"].dtype)
+    except (TypeError, ValueError):
+        logger.warning("Could not cast annual keys to road_features link_id dtype")
+
+    logger.info(
+        "  Filtering road features to %s positive collision link-years",
+        f"{len(keys):,}",
+    )
+    filtered = road_features[keep_cols].merge(keys, on=["link_id", "year"], how="inner")
+
+    if filtered.duplicated(["link_id", "year"]).any():
+        dupes = filtered.loc[filtered.duplicated(["link_id", "year"], keep=False)]
+        raise ValueError(
+            "Filtered road_features has duplicate link_id/year rows; first examples:\n"
+            f"{dupes[['link_id', 'year']].head(10).to_string(index=False)}"
+        )
+
+    logger.info(
+        "  Road features retained for annual table: %s / %s rows",
+        f"{len(filtered):,}",
+        f"{len(road_features):,}",
+    )
+    return filtered
+
+
+def _load_road_features_for_annual_keys(
+    path: str | Path,
+    agg: pd.DataFrame,
+) -> pd.DataFrame:
+    """Read cached road traffic features one year at a time for annual keys."""
+    path = Path(path)
+    import pyarrow.parquet as pq
+
+    parquet = pq.ParquetFile(path)
+    keep_cols = _road_feature_columns_for_annual(parquet.schema_arrow.names)
+    missing = {"link_id", "year"}.difference(keep_cols)
+    if missing:
+        raise ValueError(f"{path} is missing required road traffic columns: {sorted(missing)}")
+
+    keys = agg[["link_id", "year"]].drop_duplicates().copy()
+    years = sorted(int(y) for y in keys["year"].dropna().unique())
+    frames = []
+
+    logger.info(
+        "  Loading cached road features for annual keys from %s by year",
+        path,
+    )
+    for year in years:
+        keys_yr = keys[keys["year"] == year].copy()
+        traffic_yr = pd.read_parquet(
+            path,
+            columns=keep_cols,
+            filters=[("year", "=", year)],
+        )
+        try:
+            keys_yr["link_id"] = keys_yr["link_id"].astype(traffic_yr["link_id"].dtype)
+        except (TypeError, ValueError):
+            logger.warning("Could not cast %s annual keys to road traffic link_id dtype", year)
+
+        if traffic_yr.duplicated(["link_id", "year"]).any():
+            dupes = traffic_yr.loc[traffic_yr.duplicated(["link_id", "year"], keep=False)]
+            raise ValueError(
+                f"{path} has duplicate link_id/year rows for {year}; first examples:\n"
+                f"{dupes[['link_id', 'year']].head(10).to_string(index=False)}"
+            )
+
+        matched = keys_yr.merge(traffic_yr, on=["link_id", "year"], how="left")
+        if len(matched) != len(keys_yr):
+            raise ValueError(
+                f"Road traffic key merge changed row count for {year}: "
+                f"{len(keys_yr):,} -> {len(matched):,}"
+            )
+
+        frames.append(matched)
+        logger.info(
+            "    %s: retained %s annual road-feature rows from %s cached rows",
+            year,
+            f"{len(matched):,}",
+            f"{len(traffic_yr):,}",
+        )
+        del traffic_yr, matched, keys_yr
+
+    filtered = pd.concat(frames, ignore_index=True)
+    if filtered.duplicated(["link_id", "year"]).any():
+        raise ValueError("Filtered cached road features has duplicate link_id/year rows")
+
+    logger.info(
+        "  Cached road features retained for annual table: %s rows",
+        f"{len(filtered):,}",
+    )
+    return filtered
+
+
+def _validate_road_link_annual(
+    result: pd.DataFrame,
+    retained_snapped: pd.DataFrame,
+    openroads: gpd.GeoDataFrame,
+) -> None:
+    """Validate the positive-only road_link_annual contract."""
+    if result.empty:
+        raise ValueError("road_link_annual is empty")
+
+    if result.duplicated(["link_id", "year"]).any():
+        dupes = result.loc[result.duplicated(["link_id", "year"], keep=False)]
+        raise ValueError(
+            "road_link_annual has duplicate link_id/year rows; first examples:\n"
+            f"{dupes[['link_id', 'year']].head(10).to_string(index=False)}"
+        )
+
+    years = sorted(int(y) for y in result["year"].dropna().unique())
+    if years != EXPECTED_MODEL_YEARS:
+        raise ValueError(f"road_link_annual years are {years}; expected {EXPECTED_MODEL_YEARS}")
+
+    if (result["collision_count"] < MIN_COLLISIONS).any():
+        raise ValueError("road_link_annual must be positive-only by design")
+
+    expected_collision_sum = int(len(retained_snapped))
+    actual_collision_sum = int(result["collision_count"].sum())
+    if actual_collision_sum != expected_collision_sum:
+        raise ValueError(
+            "road_link_annual collision_count sum does not match retained snapped "
+            f"collisions: {actual_collision_sum:,} != {expected_collision_sum:,}"
+        )
+
+    openroad_links = pd.Index(openroads["link_id"].dropna().astype(str).unique())
+    annual_links = pd.Index(result["link_id"].dropna().astype(str).unique())
+    outside = annual_links.difference(openroad_links)
+    if len(outside):
+        raise ValueError(
+            "road_link_annual contains link_ids outside Open Roads; first examples: "
+            f"{outside[:10].tolist()}"
+        )
+
+    logger.info(
+        "  road_link_annual validation passed: %s rows, %s links, collision_count sum %s",
+        f"{len(result):,}",
+        f"{result['link_id'].nunique():,}",
+        f"{actual_collision_sum:,}",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -705,12 +889,47 @@ def save_road_traffic_features(
     logger.info(f"Saved road_traffic_features to {path} ({len(df):,} rows)")
 
 
+def validate_existing_road_traffic_features(
+    path: str | Path,
+    openroads: gpd.GeoDataFrame,
+    aadf: pd.DataFrame,
+) -> None:
+    """Validate metadata for an existing all-link traffic table."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(path)
+
+    import pyarrow.parquet as pq
+
+    parquet = pq.ParquetFile(path)
+    available_cols = parquet.schema_arrow.names
+    keep_cols = _road_feature_columns_for_annual(available_cols)
+    missing = {"link_id", "year"}.difference(keep_cols)
+    if missing:
+        raise ValueError(f"{path} is missing required road traffic columns: {sorted(missing)}")
+
+    expected_years = sorted(int(y) for y in aadf["year"].dropna().unique())
+    expected_rows = len(openroads) * len(expected_years)
+    if parquet.metadata.num_rows != expected_rows:
+        raise ValueError(
+            f"{path} has {parquet.metadata.num_rows:,} rows; expected {expected_rows:,}"
+        )
+
+    logger.info(
+        "Existing road_traffic_features metadata validation passed: %s rows, "
+        "%s Open Roads links, expected years %s",
+        f"{parquet.metadata.num_rows:,}",
+        f"{len(openroads):,}",
+        expected_years,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 
-def main() -> None:
+def main(skip_road_features_if_valid: bool = False) -> None:
     """
     Load all cleaned parquets, run the full join pipeline, and save
     the road_link × year feature table to data/features/.
@@ -760,12 +979,37 @@ def main() -> None:
         logger.info("Step 1: Snapping collisions to OS Open Roads links ...")
         collisions_snapped = snap_collisions_to_roads(collisions, openroads)
 
-    logger.info("Step 2: Building road features ...")
-    road_features = build_road_features(openroads, aadf, webtris)
-    save_road_traffic_features(road_features)
+    traffic_features_path = _ROOT / cfg["paths"]["features"] / "road_traffic_features.parquet"
+    road_features = None
+    road_features_path = None
+    if skip_road_features_if_valid:
+        try:
+            logger.info("Step 2: Validating existing road features ...")
+            validate_existing_road_traffic_features(
+                traffic_features_path,
+                openroads,
+                aadf,
+            )
+            road_features_path = traffic_features_path
+            logger.info("Step 2: Reusing existing road features")
+        except Exception as e:
+            logger.warning(
+                "Existing road_traffic_features could not be reused (%s); rebuilding",
+                e,
+            )
+
+    if road_features is None and road_features_path is None:
+        logger.info("Step 2: Building road features ...")
+        road_features = build_road_features(openroads, aadf, webtris)
+        save_road_traffic_features(road_features)
 
     logger.info("Step 3: Building road_link × year table ...")
-    result = build_road_link_annual(collisions_snapped, road_features, openroads)
+    result = build_road_link_annual(
+        collisions_snapped,
+        road_features,
+        openroads,
+        road_features_path=road_features_path,
+    )
 
     # --- Summary ------------------------------------------------------------
     print("\n=== road_link_annual ===")
@@ -783,4 +1027,14 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Build clean joined road-risk features")
+    parser.add_argument(
+        "--skip-road-features-if-valid",
+        action="store_true",
+        help=(
+            "Reuse an existing validated road_traffic_features.parquet and rebuild only "
+            "road_link_annual.parquet. Falls back to rebuilding road features if invalid."
+        ),
+    )
+    args = parser.parse_args()
+    main(skip_road_features_if_valid=args.skip_road_features_if_valid)
