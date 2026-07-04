@@ -7,6 +7,8 @@ format:
     toc-depth: 3
     number-sections: true
     page-layout: full
+    code-fold: true
+    code-summary: "Show code"
 execute:
   echo: true
   warning: false
@@ -57,10 +59,17 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from IPython.display import HTML, display
 
 from road_risk.config import _ROOT as ROOT, cfg
 RANDOM_STATE = 42
 GB_BBOX = cfg["study_area"]["bbox_wgs84"]
+GB_MAP_EXTENT = {
+    "min_lon": min(GB_BBOX["min_lon"], -8.7),
+    "max_lon": max(GB_BBOX["max_lon"], 2.1),
+    "min_lat": min(GB_BBOX["min_lat"], 49.8),
+    "max_lat": max(GB_BBOX["max_lat"], 60.9),
+}
 
 try:
     import geopandas as gpd
@@ -83,23 +92,73 @@ else:
 
 
 def set_gb_wgs84_extent(ax):
-    """Use the configured GB frame so old regional data does not silently crop maps."""
-    ax.set_xlim(GB_BBOX["min_lon"], GB_BBOX["max_lon"])
-    ax.set_ylim(GB_BBOX["min_lat"], GB_BBOX["max_lat"])
+    """Use a stable GB frame and latitude-aware WGS84 aspect."""
+    ax.set_xlim(GB_MAP_EXTENT["min_lon"], GB_MAP_EXTENT["max_lon"])
+    ax.set_ylim(GB_MAP_EXTENT["min_lat"], GB_MAP_EXTENT["max_lat"])
+    mid_lat = (GB_MAP_EXTENT["min_lat"] + GB_MAP_EXTENT["max_lat"]) / 2
+    ax.set_aspect(1 / np.cos(np.deg2rad(mid_lat)), adjustable="box")
+    ax.set_anchor("C")
+
+
+MAP_FIGSIZE = (7.4, 9.6)
+MAP_DPI = 170
+MAP_LEGEND_KWDS = {
+    "shrink": 0.58,
+    "fraction": 0.035,
+    "pad": 0.015,
+}
+RISK_CMAP = mcolors.LinearSegmentedColormap.from_list(
+    "orr_risk_percentile",
+    ["#2166ac", "#67a9cf", "#fddbc7", "#ef8a62", "#b2182b"],
+)
+
+
+def clipped_upper(series, q=0.99, fallback=None):
+    value = series.dropna().quantile(q)
+    if pd.isna(value) or value <= 0:
+        return fallback
+    return float(value)
+
+
+def show_table(df, caption=None, formats=None, index=True):
+    """Render compact reader-facing tables instead of plain console strings."""
+    table = df.copy()
+    if formats:
+        for col, fmt in formats.items():
+            if col in table.columns:
+                table[col] = table[col].map(
+                    lambda x, fmt=fmt: "" if pd.isna(x) else fmt.format(x)
+                )
+    html = table.to_html(
+        classes="orr-table",
+        border=0,
+        escape=False,
+        index=index,
+    )
+    if caption:
+        html = html.replace(">", f"><caption>{caption}</caption>", 1)
+    display(HTML(html))
+
+
+def show_metric_table(rows, caption=None):
+    show_table(pd.DataFrame(rows, columns=["Metric", "Value"]), caption=caption, index=False)
 
 cls_order = ["Motorway", "A Road", "B Road", "Classified Unnumbered",
              "Not Classified", "Unclassified", "Unknown"]
 cls_in_data = [c for c in cls_order if c in risk["road_classification"].unique()]
 
-print(f"Links scored     : {len(risk):,}")
-print(f"With collisions  : {(risk['collision_count'] > 0).sum():,} "
-      f"({(risk['collision_count'] > 0).mean():.1%} of all links)")
-print(f"Total collisions : {risk['collision_count'].sum():,}")
-print(f"Total fatals     : {risk['fatal_count'].sum():,}")
-print(f"\nModel performance:")
-print(f"  GLM pseudo-R²  : {metrics['glm']['pseudo_r2']:.3f}")
-print(f"  XGB pseudo-R²  : {XGB_CURRENT_PR2:.3f} (current clean GB run)")
-print(f"  GLM converged  : {metrics['glm']['converged']}")
+show_metric_table(
+    [
+        ("Links scored", f"{len(risk):,}"),
+        ("Links with collisions", f"{(risk['collision_count'] > 0).sum():,} ({(risk['collision_count'] > 0).mean():.1%})"),
+        ("Total collisions", f"{risk['collision_count'].sum():,}"),
+        ("Total fatals", f"{risk['fatal_count'].sum():,}"),
+        ("GLM pseudo-R²", f"{metrics['glm']['pseudo_r2']:.3f}"),
+        ("XGB pseudo-R²", f"{XGB_CURRENT_PR2:.3f} (current clean GB run)"),
+        ("GLM converged", metrics["glm"]["converged"]),
+    ],
+    caption="Current Stage 2 model outputs",
+)
 ```
 
 ---
@@ -110,14 +169,144 @@ print(f"  GLM converged  : {metrics['glm']['converged']}")
 
 ```{python}
 g = metrics["glm"]
-print(f"Training rows (downsampled for GLM) : {g['n_obs']:,}")
-print(f"Full dataset rows                   : {g['n_full']:,}")
-print(f"Positive link-years                 : {g['n_pos']:,} ({g['n_pos']/g['n_full']:.2%})")
-print(f"Pseudo-R² (1 - D/D₀)               : {g['pseudo_r2']:.3f}")
-print(f"AIC                                 : {g['aic']:,.0f}")
-print(f"\nFeatures ({len(g['features'])}):")
-for feat in g["features"]:
-    print(f"  {feat}")
+show_metric_table(
+    [
+        ("Training rows (downsampled for GLM)", f"{g['n_obs']:,}"),
+        ("Full dataset rows", f"{g['n_full']:,}"),
+        ("Positive link-years", f"{g['n_pos']:,} ({g['n_pos']/g['n_full']:.2%})"),
+        ("Pseudo-R² (1 - D/D₀)", f"{g['pseudo_r2']:.3f}"),
+        ("AIC", f"{g['aic']:,.0f}"),
+        ("Features", f"{len(g['features'])}"),
+    ],
+    caption="GLM training surface",
+)
+GLM_FEATURE_DETAILS = {
+    "road_class_ord": (
+        "Ordinal road-class code, with motorways highest and unknown lowest.",
+        "OS Open Roads `road_classification`; encoded in `road_risk.model.constants`.",
+    ),
+    "form_of_way_ord": (
+        "Ordinal carriageway/form code distinguishing duals, slips, roundabouts, and single carriageways.",
+        "OS Open Roads `form_of_way`; encoded in `road_risk.model.constants`.",
+    ),
+    "is_motorway": (
+        "Binary flag for motorway links.",
+        "Derived from OS Open Roads `road_classification`.",
+    ),
+    "is_a_road": (
+        "Binary flag for A-road links.",
+        "Derived from OS Open Roads `road_classification`.",
+    ),
+    "is_slip_road": (
+        "Binary flag for slip roads.",
+        "Derived from OS Open Roads `form_of_way`.",
+    ),
+    "is_roundabout": (
+        "Binary flag for roundabout links.",
+        "Derived from OS Open Roads `form_of_way`.",
+    ),
+    "is_dual": (
+        "Binary flag for dual or collapsed-dual carriageway links.",
+        "Derived from OS Open Roads `form_of_way`.",
+    ),
+    "is_trunk": (
+        "Binary flag for trunk-road links.",
+        "OS Open Roads `is_trunk`.",
+    ),
+    "is_primary": (
+        "Binary flag for primary-route links.",
+        "OS Open Roads `is_primary`.",
+    ),
+    "log_link_length": (
+        "Natural log of link length in kilometres; separate from the exposure offset so length can depart from a strict linear effect.",
+        "OS Open Roads `link_length_km`.",
+    ),
+    "is_covid": (
+        "Binary flag for Covid-period years.",
+        "AADF/model year; 2020 and 2021 in `road_risk.model.constants`.",
+    ),
+    "year_norm": (
+        "Training year scaled from 0 to 1 across the model period.",
+        "AADF/model year in the Stage 2 link-year table.",
+    ),
+    "hgv_proportion": (
+        "Heavy-goods-vehicle share of traffic.",
+        "`data/features/road_traffic_features.parquet`, derived from AADF traffic composition.",
+    ),
+    "degree_mean": (
+        "Mean graph degree of the link's start and end nodes; a junction-complexity proxy.",
+        "`data/features/network_features.parquet`, built from the OS Open Roads graph.",
+    ),
+    "betweenness": (
+        "Approximate betweenness centrality averaged across the link endpoints.",
+        "`data/features/network_features.parquet`, built with NetworkX on OS Open Roads.",
+    ),
+    "betweenness_relative": (
+        "Log centrality relative to the mean for the same road class.",
+        "`data/features/network_features.parquet`, derived from `betweenness` and road class.",
+    ),
+    "dist_to_major_km": (
+        "Graph distance to the nearest motorway or A-road node.",
+        "`data/features/network_features.parquet`, built from the OS Open Roads graph.",
+    ),
+    "pop_density_per_km2": (
+        "Population density at the road-link centroid.",
+        "GB OA population-density context joined to road-link centroids.",
+    ),
+    "overall_decile_within_country": (
+        "Overall deprivation decile within each nation; 1 is most deprived, 10 least deprived.",
+        "England IoD 2025, Wales WIMD 2019, Scotland SIMD 2020v2; joined by link centroid.",
+    ),
+    "income_decile_within_country": (
+        "Income deprivation decile within each nation; 1 is most deprived, 10 least deprived.",
+        "England/Wales/Scotland deprivation context where available; joined by link centroid.",
+    ),
+    "employment_decile_within_country": (
+        "Employment deprivation decile within each nation; 1 is most deprived, 10 least deprived.",
+        "England/Wales/Scotland deprivation context where available; joined by link centroid.",
+    ),
+    "deprivation_country_england": (
+        "Country indicator for England deprivation assignments.",
+        "GB deprivation assignment provenance.",
+    ),
+    "deprivation_country_wales": (
+        "Country indicator for Wales deprivation assignments.",
+        "GB deprivation assignment provenance.",
+    ),
+    "deprivation_country_scotland": (
+        "Country indicator for Scotland deprivation assignments.",
+        "GB deprivation assignment provenance.",
+    ),
+}
+
+
+def describe_glm_feature(feature):
+    if feature.endswith("_missing"):
+        base = feature.removesuffix("_missing")
+        treatment = "Missingness indicator: 1 where the raw feature was unavailable."
+    elif feature.endswith("_imputed"):
+        base = feature.removesuffix("_imputed")
+        treatment = "Median-imputed numeric value used by the GLM."
+    else:
+        base = feature
+        treatment = "Core model feature."
+    description, source = GLM_FEATURE_DETAILS.get(
+        base,
+        ("Model input from the Stage 2 training table.", "Stage 2 modelling dataset."),
+    )
+    return {
+        "Feature": feature,
+        "Description": description,
+        "Source / construction": source,
+        "GLM treatment": treatment,
+    }
+
+
+show_table(
+    pd.DataFrame([describe_glm_feature(feature) for feature in g["features"]]),
+    caption="GLM feature list with source and treatment",
+    index=False,
+)
 ```
 
 ### GLM coefficients
@@ -138,14 +327,22 @@ if glm_path.exists():
 
         bar_colors = ["#e63946" if p < 0.05 else "#adb5bd" for p in coef["pvalue"]]
 
-        fig, ax = plt.subplots(figsize=(8, max(5, len(coef) * 0.45)))
+        ci_extent = np.nanmax(np.abs(coef[["ci_low", "ci_high"]].to_numpy()))
+        coef_extent = np.nanmax(np.abs(coef["coef"].to_numpy()))
+        x_extent = min(max(ci_extent, coef_extent) * 1.12, 3.0)
+
+        fig, ax = plt.subplots(figsize=(11, max(6, len(coef) * 0.48)))
         ax.barh(coef.index, coef["coef"], color=bar_colors, alpha=0.85)
+        xerr_low = (coef["coef"] - coef["ci_low"]).clip(lower=0)
+        xerr_high = (coef["ci_high"] - coef["coef"]).clip(lower=0)
         ax.errorbar(
             coef["coef"], range(len(coef)),
-            xerr=[coef["coef"] - coef["ci_low"], coef["ci_high"] - coef["coef"]],
+            xerr=[xerr_low, xerr_high],
             fmt="none", color="black", linewidth=0.8, capsize=3,
         )
         ax.axvline(0, color="black", linewidth=0.8, linestyle="--")
+        ax.set_xlim(-x_extent, x_extent)
+        ax.grid(axis="x", color="#e5e7eb", linewidth=0.8)
         ax.set_xlabel("Coefficient (log-rate scale)\nRed = significant p<0.05")
         ax.set_title(
             "Poisson GLM coefficients\n"
@@ -155,9 +352,12 @@ if glm_path.exists():
         plt.show()
 
         sig = coef[coef["pvalue"] < 0.05].copy()
-        sig["IRR"] = np.exp(sig["coef"]).round(3)
-        print("\nSignificant coefficients (p<0.05) with incidence rate ratios:")
-        print(sig[["coef", "IRR", "pvalue"]].round(4).to_string())
+        sig["IRR"] = np.exp(sig["coef"])
+        show_table(
+            sig[["coef", "IRR", "pvalue"]],
+            caption="Significant coefficients (p<0.05) with incidence rate ratios",
+            formats={"coef": "{:.4f}", "IRR": "{:.3f}", "pvalue": "{:.2e}"},
+        )
 
     except Exception as e:
         print(f"Could not load GLM: {e}")
@@ -190,7 +390,12 @@ try:
                              np.exp(glm_result.params[t]), glm_result.pvalues[t]))
     if rows:
         deprivation_df = pd.DataFrame(rows, columns=["term", "coef", "IRR", "pvalue"])
-        print(deprivation_df.round(4).to_string(index=False))
+        show_table(
+            deprivation_df,
+            caption="GB deprivation terms in the fitted GLM",
+            formats={"coef": "{:.4f}", "IRR": "{:.3f}", "pvalue": "{:.2e}"},
+            index=False,
+        )
     else:
         print("No GB deprivation terms in the fitted GLM.")
 except NameError:
@@ -310,13 +515,12 @@ ax.tick_params(axis="x", rotation=30)
 plt.tight_layout()
 plt.show()
 
-print("Risk percentile by road class:")
-print(
+show_table(
     risk.groupby("road_classification")["risk_percentile"]
     .agg(["mean", "median", "count"])
-    .round(1)
-    .reindex(cls_in_data)
-    .to_string()
+    .reindex(cls_in_data),
+    caption="Risk percentile by road class",
+    formats={"mean": "{:.1f}", "median": "{:.1f}", "count": "{:,.0f}"},
 )
 ```
 
@@ -365,8 +569,11 @@ res_by_class = (
     .reindex(cls_in_data)
     .dropna()
 )
-print("Residuals by road class:")
-print(res_by_class.to_string())
+show_table(
+    res_by_class,
+    caption="GLM residuals by road class",
+    formats={"mean": "{:.3f}", "median": "{:.3f}", "std": "{:.3f}", "count": "{:,.0f}"},
+)
 
 fig, ax = plt.subplots(figsize=(9, 4))
 ax.bar(res_by_class.index, res_by_class["median"], color="#457b9d")
@@ -385,6 +592,10 @@ plt.show()
 ### Full-network risk percentile
 
 ```{python}
+#| fig-width: 7.4
+#| fig-height: 9.6
+#| out-width: 72%
+#| fig-align: center
 if HAS_GPD and openroads is not None:
     or_risk = openroads[["link_id", "road_classification", "geometry"]].merge(
         risk[["link_id", "risk_percentile", "residual_glm", "collision_count"]],
@@ -394,30 +605,31 @@ if HAS_GPD and openroads is not None:
     if or_risk.crs is not None and or_risk.crs.to_epsg() != 4326:
         or_risk = or_risk.to_crs(4326)
 
-    fig, axes = plt.subplots(1, 2, figsize=(16, 9))
-
+    fig, ax = plt.subplots(figsize=MAP_FIGSIZE, dpi=MAP_DPI)
     or_risk.plot(
-        column="risk_percentile", ax=axes[0],
-        cmap="RdYlGn_r", vmin=75, vmax=100,
-        linewidth=0.3, legend=True,
-        legend_kwds={"label": "Risk percentile", "shrink": 0.6},
+        column="risk_percentile", ax=ax,
+        cmap=RISK_CMAP, vmin=0, vmax=100,
+        linewidth=0.12, alpha=0.88, legend=True, rasterized=True,
+        legend_kwds={**MAP_LEGEND_KWDS, "label": "Risk percentile"},
     )
-    axes[0].set_title("Risk percentile — all links")
-    set_gb_wgs84_extent(axes[0])
-    axes[0].set_axis_off()
+    ax.set_title("Risk percentile — all scored GB links")
+    set_gb_wgs84_extent(ax)
+    ax.set_axis_off()
+    plt.tight_layout()
+    plt.show()
 
     major = or_risk[or_risk["road_classification"].isin(["Motorway", "A Road"])].copy()
+    major["risk_percentile_within_major_roads"] = major["risk_percentile"].rank(pct=True) * 100
+    fig, ax = plt.subplots(figsize=MAP_FIGSIZE, dpi=MAP_DPI)
     major.plot(
-        column="risk_percentile", ax=axes[1],
-        cmap="RdYlGn_r", vmin=75, vmax=100,
-        linewidth=0.8, legend=True,
-        legend_kwds={"label": "Risk percentile", "shrink": 0.6},
+        column="risk_percentile_within_major_roads", ax=ax,
+        cmap=RISK_CMAP, vmin=0, vmax=100,
+        linewidth=0.55, alpha=0.95, legend=True, rasterized=True,
+        legend_kwds={**MAP_LEGEND_KWDS, "label": "Percentile within motorways and A roads"},
     )
-    axes[1].set_title("Risk percentile — Motorways & A Roads")
-    set_gb_wgs84_extent(axes[1])
-    axes[1].set_axis_off()
-
-    plt.suptitle("Stage 2 collision risk scores", fontsize=13)
+    ax.set_title("Relative risk percentile — Motorways and A Roads")
+    set_gb_wgs84_extent(ax)
+    ax.set_axis_off()
     plt.tight_layout()
     plt.show()
 ```
@@ -425,35 +637,62 @@ if HAS_GPD and openroads is not None:
 ### Top 1% risk links
 
 ```{python}
+#| fig-width: 7.4
+#| fig-height: 9.6
+#| out-width: 72%
+#| fig-align: center
 if HAS_GPD and openroads is not None:
     top1 = or_risk[or_risk["risk_percentile"] >= 99].copy()
     rng  = np.random.default_rng(RANDOM_STATE)
     bg   = or_risk.iloc[rng.choice(len(or_risk), size=min(150_000, len(or_risk)), replace=False)]
+    collision_cap = clipped_upper(top1["collision_count"], q=0.99, fallback=30)
+    residual_low = float(top1["residual_glm"].quantile(0.02))
+    residual_high = float(top1["residual_glm"].quantile(0.98))
+    residual_limit = max(abs(residual_low), abs(residual_high), 5)
+    top1["collision_count_capped"] = top1["collision_count"].clip(upper=collision_cap)
+    top1["residual_glm_capped"] = top1["residual_glm"].clip(
+        lower=-residual_limit, upper=residual_limit
+    )
 
-    fig, axes = plt.subplots(1, 2, figsize=(16, 9))
-
-    bg.plot(ax=axes[0], color="#e0e0e0", linewidth=0.2, zorder=1)
-    top1.plot(column="collision_count", ax=axes[0], cmap="hot_r",
-              linewidth=1.2, legend=True, zorder=2,
-              legend_kwds={"label": "Observed collisions (pooled)", "shrink": 0.6})
-    axes[0].set_title(f"Top 1% risk links ({len(top1):,})\nColoured by observed collisions")
-    set_gb_wgs84_extent(axes[0])
-    axes[0].set_axis_off()
-
-    bg.plot(ax=axes[1], color="#e0e0e0", linewidth=0.2, zorder=1)
-    top1.plot(column="residual_glm", ax=axes[1], cmap="RdBu",
-              vmin=-5, vmax=5, linewidth=1.2, legend=True, zorder=2,
-              legend_kwds={"label": "GLM residual", "shrink": 0.6})
-    axes[1].set_title("Top 1% risk links\nColoured by GLM residual")
-    set_gb_wgs84_extent(axes[1])
-    axes[1].set_axis_off()
-
-    plt.suptitle("Highest-risk road segments", fontsize=13)
+    fig, ax = plt.subplots(figsize=MAP_FIGSIZE, dpi=MAP_DPI)
+    bg.plot(ax=ax, color="#94a3b8", linewidth=0.2, alpha=0.55, zorder=1)
+    top1.plot(
+        column="collision_count_capped", ax=ax, cmap="OrRd",
+        vmin=0, vmax=collision_cap, linewidth=1.15, alpha=1.0, legend=True, zorder=2,
+        legend_kwds={
+            **MAP_LEGEND_KWDS,
+            "label": f"Observed collisions (pooled, capped at {collision_cap:.0f})",
+        },
+    )
+    ax.set_title(f"Top 1% risk links ({len(top1):,}) — observed collisions")
+    set_gb_wgs84_extent(ax)
+    ax.set_axis_off()
     plt.tight_layout()
     plt.show()
 
-    print(f"\nTop 1% risk links by road class ({len(top1):,} total):")
-    print(top1["road_classification"].value_counts().to_string())
+    fig, ax = plt.subplots(figsize=MAP_FIGSIZE, dpi=MAP_DPI)
+    bg.plot(ax=ax, color="#94a3b8", linewidth=0.2, alpha=0.55, zorder=1)
+    top1.plot(
+        column="residual_glm_capped", ax=ax, cmap="RdBu_r",
+        norm=mcolors.TwoSlopeNorm(vmin=-residual_limit, vcenter=0, vmax=residual_limit),
+        linewidth=1.15, alpha=1.0, legend=True, zorder=2,
+        legend_kwds={
+            **MAP_LEGEND_KWDS,
+            "label": f"GLM residual (capped +/-{residual_limit:.0f})",
+        },
+    )
+    ax.set_title("Top 1% risk links — GLM residual")
+    set_gb_wgs84_extent(ax)
+    ax.set_axis_off()
+    plt.tight_layout()
+    plt.show()
+
+    show_table(
+        top1["road_classification"].value_counts().rename_axis("road_classification").reset_index(name="links"),
+        caption=f"Top 1% risk links by road class ({len(top1):,} total)",
+        formats={"links": "{:,.0f}"},
+        index=False,
+    )
 ```
 
 ### Excess-risk map (residual > 2)
@@ -462,14 +701,26 @@ Links where observed collisions substantially exceeded the model's prediction
 given traffic volume and road type — potential candidates for engineering review.
 
 ```{python}
+#| fig-width: 7.4
+#| fig-height: 9.6
+#| out-width: 72%
+#| fig-align: center
 if HAS_GPD and openroads is not None:
     excess = or_risk[or_risk["residual_glm"] > 2].copy()
+    excess_cap = clipped_upper(excess["residual_glm"], q=0.99, fallback=40)
+    excess["residual_glm_capped"] = excess["residual_glm"].clip(upper=excess_cap)
+    if "bg" not in globals():
+        rng = np.random.default_rng(RANDOM_STATE)
+        bg = or_risk.iloc[rng.choice(len(or_risk), size=min(150_000, len(or_risk)), replace=False)]
 
-    fig, ax = plt.subplots(figsize=(10, 9))
-    bg.plot(ax=ax, color="#e0e0e0", linewidth=0.2, zorder=1)
-    excess.plot(column="residual_glm", ax=ax, cmap="Oranges",
-                linewidth=1.5, legend=True, zorder=2,
-                legend_kwds={"label": "Residual (observed − predicted)", "shrink": 0.6})
+    fig, ax = plt.subplots(figsize=MAP_FIGSIZE, dpi=MAP_DPI)
+    bg.plot(ax=ax, color="#94a3b8", linewidth=0.2, alpha=0.55, zorder=1)
+    excess.plot(column="residual_glm_capped", ax=ax, cmap="PuRd",
+                vmin=2, vmax=excess_cap, linewidth=1.25, alpha=1.0, legend=True,
+                zorder=2, legend_kwds={
+                    **MAP_LEGEND_KWDS,
+                    "label": f"Residual (observed - predicted, capped at {excess_cap:.0f})",
+                })
     ax.set_title(
         f"Excess-risk links — residual > 2  ({len(excess):,} links)\n"
         "Had substantially more collisions than road type and traffic predict"
@@ -485,19 +736,25 @@ if HAS_GPD and openroads is not None:
 ## Summary
 
 ```{python}
-print("=== Stage 2 collision model summary ===\n")
-print(f"Links scored          : {len(risk):,}")
-print(f"Links with collisions : {(risk['collision_count'] > 0).sum():,} "
-      f"({(risk['collision_count'] > 0).mean():.1%})")
-print(f"\nPoisson GLM pseudo-R² : {metrics['glm']['pseudo_r2']:.3f}")
-print(f"XGBoost pseudo-R²     : {XGB_CURRENT_PR2:.3f} (current clean GB run)")
-print(f"\nTop 1% risk links     : {(risk['risk_percentile'] >= 99).sum():,}")
-print(f"Excess-risk links (residual > 2): {(risk['residual_glm'] > 2).sum():,}")
-print(f"\nExcess-risk by road class:")
-print(
+show_metric_table(
+    [
+        ("Links scored", f"{len(risk):,}"),
+        ("Links with collisions", f"{(risk['collision_count'] > 0).sum():,} ({(risk['collision_count'] > 0).mean():.1%})"),
+        ("Poisson GLM pseudo-R²", f"{metrics['glm']['pseudo_r2']:.3f}"),
+        ("XGBoost pseudo-R²", f"{XGB_CURRENT_PR2:.3f} (current clean GB run)"),
+        ("Top 1% risk links", f"{(risk['risk_percentile'] >= 99).sum():,}"),
+        ("Excess-risk links (residual > 2)", f"{(risk['residual_glm'] > 2).sum():,}"),
+    ],
+    caption="Stage 2 collision model summary",
+)
+show_table(
     risk[risk["residual_glm"] > 2]["road_classification"]
     .value_counts()
-    .to_string()
+    .rename_axis("road_classification")
+    .reset_index(name="links"),
+    caption="Excess-risk links by road class",
+    formats={"links": "{:,.0f}"},
+    index=False,
 )
 ```
 
