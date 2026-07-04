@@ -1,5 +1,6 @@
 ---
 title: "Top-Risk Road Segments Map"
+date-modified: 2026-07-04
 description: "Interactive screening map for the top 1% highest-risk road links identified by the current Open Road Risk model output."
 format:
   html:
@@ -11,6 +12,10 @@ execute:
   warning: false
   message: false
 ---
+
+::: {.small .text-muted}
+Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.
+:::
 
 This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The current GB production export uses the XGBoost `risk_percentile` ranking from `data/models/risk_scores.parquet`.
 
@@ -247,13 +252,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const CONTEXT_MANIFEST_URL = "../data/outputs/web/context/context_manifest.json";
   const CONTEXT_BASE_URL = "../data/outputs/web/context/";
   const CONTEXT_FAMILIES = new Set(["motorway", "trunk_a", "other_urban", "other_rural"]);
+  const FULL_GB_ROAD_BOUNDS = L.latLngBounds(
+    [[49.89091, -8.58617], [60.82770, 1.76234]]
+  );
   const renderer = L.canvas({ padding: 0.35 });
   const map = L.map(elements["top-risk-map"], {
     renderer,
     zoomControl: true,
     preferCanvas: true,
     attributionControl: true
-  }).setView([53.35, -1.3], 7);
+  }).setView([55.4, -3.4], 6);
 
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
@@ -285,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let allFeatures = [];
   let currentHaloLayer = null;
   let currentLayer = null;
+  let mapFitBounds = FULL_GB_ROAD_BOUNDS;
   let logMin = 0;
   let logMax = 1;
   let legendScaleLabel = null;
@@ -548,14 +557,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     ).addTo(map);
 
-    if (features.length > 0) {
-      map.fitBounds(currentLayer.getBounds(), { padding: [18, 18], maxZoom: 13 });
-    }
+    map.fitBounds(mapFitBounds, { padding: [18, 18] });
 
     status.textContent = [
       `${features.length.toLocaleString()} of ${allFeatures.length.toLocaleString()} links shown`,
       activeFilterText(),
-      `colour scale: ${formatNumber(logMin, 3)}-${formatNumber(logMax, 3)} (${colourLimits.mode})`
+      `colour scale: ${formatNumber(logMin, 3)}-${formatNumber(logMax, 3)} (${colourLimits.mode})`,
+      "map extent: full GB road context"
     ].join(" | ");
   }
 
@@ -632,6 +640,7 @@ document.addEventListener("DOMContentLoaded", () => {
   legend.addTo(map);
 
   function loadContextLayers() {
+    let contextBounds = null;
     return fetch(CONTEXT_MANIFEST_URL)
       .then((response) => {
         if (!response.ok) {
@@ -656,12 +665,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderer,
                 style: contextStyle,
                 interactive: false
+              }).eachLayer((layer) => {
+                const bounds = layer.getBounds ? layer.getBounds() : null;
+                if (bounds && bounds.isValid()) {
+                  contextBounds = contextBounds ? contextBounds.extend(bounds) : bounds;
+                }
               }).addTo(map);
             })
             .catch((error) => {
               console.warn(`Skipping context layer ${url}: ${error.message}`);
             });
-        }));
+        })).then(() => {
+          if (contextBounds && contextBounds.isValid()) {
+            mapFitBounds = contextBounds;
+          }
+        });
       })
       .catch((error) => {
         console.warn(`Context network unavailable: ${error.message}`);

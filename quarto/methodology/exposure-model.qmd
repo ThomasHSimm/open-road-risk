@@ -7,6 +7,8 @@ format:
     toc-depth: 3
     number-sections: true
     page-layout: full
+    code-fold: true
+    code-summary: "Show code"
 execute:
   echo: true
   warning: false
@@ -32,17 +34,24 @@ the directly counted subset as training data.
 ## Data and model setup
 
 ```{python}
+#| label: setup
+#| include: false
+
 from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+from matplotlib.lines import Line2D
 from road_risk.config import _ROOT as ROOT
 from road_risk.model.constants import RANDOM_STATE
 
 try:
     import geopandas as gpd
+    HAS_GPD = True
 except Exception:
     gpd = None
+    HAS_GPD = False
 
 road = pd.read_parquet(ROOT / "data" / "features" / "road_link_annual.parquet")
 road_class_col = next(
@@ -55,9 +64,54 @@ aadt = pd.read_parquet(aadt_path) if aadt_path.exists() else pd.DataFrame()
 net_path = ROOT / "data" / "features" / "network_features.parquet"
 net = pd.read_parquet(net_path) if net_path.exists() else pd.DataFrame()
 
+if HAS_GPD:
+    openroads_path = ROOT / "data" / "processed" / "shapefiles" / "openroads.parquet"
+    openroads = gpd.read_parquet(openroads_path) if openroads_path.exists() else None
+else:
+    openroads = None
+
+GB_MAP_EXTENT = {
+    "min_lon": -8.7,
+    "max_lon": 2.1,
+    "min_lat": 49.8,
+    "max_lat": 60.9,
+}
+MAP_FIGSIZE = (7.4, 9.6)
+MAP_DPI = 170
+MAP_LEGEND_KWDS = {
+    "shrink": 0.58,
+    "fraction": 0.035,
+    "pad": 0.015,
+}
+EXPOSURE_CMAP = mcolors.LinearSegmentedColormap.from_list(
+    "orr_exposure",
+    ["#243b53", "#2a9d8f", "#e9c46a", "#f4a261", "#9d0208"],
+)
+
+
+def set_gb_wgs84_extent(ax):
+    ax.set_xlim(GB_MAP_EXTENT["min_lon"], GB_MAP_EXTENT["max_lon"])
+    ax.set_ylim(GB_MAP_EXTENT["min_lat"], GB_MAP_EXTENT["max_lat"])
+    mid_lat = (GB_MAP_EXTENT["min_lat"] + GB_MAP_EXTENT["max_lat"]) / 2
+    ax.set_aspect(1 / np.cos(np.deg2rad(mid_lat)), adjustable="box")
+    ax.set_anchor("C")
+
+
+def exposure_norm(series):
+    positive = series.dropna()
+    positive = positive[positive > 0]
+    return mcolors.LogNorm(
+        vmin=max(1, positive.quantile(0.05)),
+        vmax=positive.quantile(0.99),
+    )
+```
+
+```{python}
 print(f"road_link_annual : {road.shape[0]:,} rows × {road.shape[1]} cols")
 print(f"aadt_estimates   : {aadt.shape[0]:,} rows" if not aadt.empty else "aadt_estimates   : not found")
 print(f"network_features : {net.shape[0]:,} links" if not net.empty else "network_features : not found")
+if openroads is not None:
+    print(f"openroads        : {openroads.shape[0]:,} links")
 ```
 
 ## Measured AADF coverage
@@ -355,6 +409,168 @@ if not aadt.empty:
     plt.xlabel("log(estimated AADT vehicles/day)")
     plt.ylabel("Count")
     plt.title("Estimated AADT distribution — full network")
+    plt.tight_layout()
+    plt.show()
+```
+
+## Geographic exposure maps
+
+The national map shows the final Stage 1a exposure layer across the full OS Open
+Roads network. The local map zooms into Leeds to show the grain of the link-level
+estimates and the measured AADF count points that anchor the model in that area.
+
+```{python}
+#| fig-width: 7.4
+#| fig-height: 9.6
+#| out-width: 72%
+#| fig-align: center
+if HAS_GPD and openroads is not None and not aadt.empty:
+    latest_year = int(aadt["year"].max())
+    latest_aadt = aadt.loc[
+        aadt["year"] == latest_year, ["link_id", "estimated_aadt"]
+    ].copy()
+    or_exposure = openroads[["link_id", "road_classification", "geometry"]].merge(
+        latest_aadt, on="link_id", how="inner"
+    )
+    or_exposure = or_exposure[or_exposure.geometry.notna()].copy()
+    if or_exposure.crs is not None and or_exposure.crs.to_epsg() != 4326:
+        or_exposure = or_exposure.to_crs(4326)
+
+    fig, ax = plt.subplots(figsize=MAP_FIGSIZE, dpi=MAP_DPI)
+    or_exposure.plot(
+        column="estimated_aadt",
+        ax=ax,
+        cmap=EXPOSURE_CMAP,
+        norm=exposure_norm(or_exposure["estimated_aadt"]),
+        linewidth=0.12,
+        alpha=0.9,
+        legend=True,
+        rasterized=True,
+        legend_kwds={**MAP_LEGEND_KWDS, "label": "Estimated AADT (vehicles/day, log scale)"},
+    )
+    ax.set_title(f"Estimated AADT exposure — all GB links ({latest_year})")
+    set_gb_wgs84_extent(ax)
+    ax.set_axis_off()
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+#| fig-width: 9
+#| fig-height: 8
+#| out-width: 82%
+#| fig-align: center
+if HAS_GPD and openroads is not None and not aadt.empty:
+    latest_year = int(aadt["year"].max())
+    if "or_exposure" not in globals():
+        latest_aadt = aadt.loc[
+            aadt["year"] == latest_year, ["link_id", "estimated_aadt"]
+        ].copy()
+        or_exposure = openroads[["link_id", "road_classification", "geometry"]].merge(
+            latest_aadt, on="link_id", how="inner"
+        )
+        or_exposure = or_exposure[or_exposure.geometry.notna()].copy()
+        if or_exposure.crs is not None and or_exposure.crs.to_epsg() != 4326:
+            or_exposure = or_exposure.to_crs(4326)
+
+    leeds_bbox = {
+        "min_lon": -1.64,
+        "max_lon": -1.42,
+        "min_lat": 53.74,
+        "max_lat": 53.87,
+    }
+    leeds_links = or_exposure.cx[
+        leeds_bbox["min_lon"]:leeds_bbox["max_lon"],
+        leeds_bbox["min_lat"]:leeds_bbox["max_lat"],
+    ].copy()
+
+    aadf = pd.read_parquet(ROOT / "data" / "processed" / "aadf" / "aadf_clean.parquet")
+    aadf_latest = aadf[
+        (aadf["year"] == latest_year)
+        & aadf["longitude"].between(leeds_bbox["min_lon"], leeds_bbox["max_lon"])
+        & aadf["latitude"].between(leeds_bbox["min_lat"], leeds_bbox["max_lat"])
+        & aadf["all_motor_vehicles"].notna()
+    ].copy()
+    aadf_points = gpd.GeoDataFrame(
+        aadf_latest,
+        geometry=gpd.points_from_xy(aadf_latest["longitude"], aadf_latest["latitude"]),
+        crs="EPSG:4326",
+    )
+    aadf_points["method_group"] = np.where(
+        aadf_points["estimation_method"].eq("Counted"), "Counted", "Estimated"
+    )
+    traffic_norm = exposure_norm(
+        pd.concat(
+            [
+                leeds_links["estimated_aadt"],
+                aadf_points["all_motor_vehicles"],
+            ],
+            ignore_index=True,
+        )
+    )
+
+    fig, ax = plt.subplots(figsize=(9, 8), dpi=160)
+    leeds_links.plot(
+        column="estimated_aadt",
+        ax=ax,
+        cmap=EXPOSURE_CMAP,
+        norm=traffic_norm,
+        linewidth=1.0,
+        alpha=0.9,
+        legend=True,
+        legend_kwds={"label": "Traffic volume (vehicles/day, log scale)", "shrink": 0.72},
+        zorder=1,
+    )
+    if not aadf_points.empty:
+        sizes = 36 + 130 * (
+            np.log1p(aadf_points["all_motor_vehicles"])
+            - np.log1p(aadf_points["all_motor_vehicles"]).min()
+        ) / (
+            np.log1p(aadf_points["all_motor_vehicles"]).max()
+            - np.log1p(aadf_points["all_motor_vehicles"]).min()
+            + 1e-9
+        )
+        marker_specs = {
+            "Counted": {"marker": "s", "label": "AADF Counted"},
+            "Estimated": {"marker": "o", "label": "AADF Estimated"},
+        }
+        for method_group, spec in marker_specs.items():
+            point_subset = aadf_points[aadf_points["method_group"].eq(method_group)]
+            if point_subset.empty:
+                continue
+            ax.scatter(
+                point_subset.geometry.x,
+                point_subset.geometry.y,
+                s=sizes.loc[point_subset.index],
+                c=point_subset["all_motor_vehicles"],
+                cmap=EXPOSURE_CMAP,
+                norm=traffic_norm,
+                marker=spec["marker"],
+                edgecolor="#111827",
+                linewidth=0.75,
+                alpha=0.95,
+                zorder=3,
+            )
+        shape_handles = [
+            Line2D(
+                [0],
+                [0],
+                marker=spec["marker"],
+                color="none",
+                label=spec["label"],
+                markerfacecolor="#d1d5db",
+                markeredgecolor="#111827",
+                markersize=8,
+            )
+            for spec in marker_specs.values()
+        ]
+        ax.legend(handles=shape_handles, loc="lower left", frameon=True, framealpha=0.9)
+
+    ax.set_xlim(leeds_bbox["min_lon"], leeds_bbox["max_lon"])
+    ax.set_ylim(leeds_bbox["min_lat"], leeds_bbox["max_lat"])
+    ax.set_aspect(1 / np.cos(np.deg2rad(53.80)), adjustable="box")
+    ax.set_title(f"Estimated AADT and AADF count points — Leeds detail ({latest_year})")
+    ax.set_axis_off()
     plt.tight_layout()
     plt.show()
 ```

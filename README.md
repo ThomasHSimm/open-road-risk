@@ -47,16 +47,17 @@ not part of the current Stage 2 collision feature set.
 **Stage 2 — Collision risk model** Poisson GLM + XGBoost predicting collision counts per link per year.
 Uses `log(AADT × length_km × 365 / 1e6)` as exposure offset so the model learns
 *which roads are dangerous given their traffic* — not just which are busy.
-XGBoost drives the final risk percentile ranking (`risk_scores.parquet`).
+XGBoost drives the final risk percentile ranking (`risk_scores.parquet`);
+public-facing outputs should use risk percentiles/deciles rather than raw
+predicted counts unless calibration diagnostics support count interpretation.
 The current full-GB retrain scores 3,941,299 road links. XGBoost trains on the
-full zero-heavy link-year population by default (39,412,990 rows; 391,323
-positive link-years; 39,021,667 zero link-years) and achieved pseudo-R²
-`0.387` out of sample. Earlier repo
+full zero-heavy link-year population by default (39,412,990 rows; 945,373
+positive link-years; 38,467,617 zero link-years) and achieved pseudo-R²
+`0.360` out of sample. Earlier repo
 documentation cited `~0.86`, but that figure came from a pre-fix evaluation
 surface that was later found to be contaminated by feature-table leakage and
 should not be used for current project positioning.
-The GLM (pseudo-R² `0.602`, in-sample on 1,565,292 rows with explicit 1:3
-zero-collision downsampling) provides interpretable coefficients and diagnostic
+The GLM (pseudo-R² `0.505`) provides interpretable coefficients and diagnostic
 residuals. Sampled-zero XGBoost is retained only as an explicit fallback for
 memory-constrained runs; it is not the default reported production result.
 Features include a tiered
@@ -179,14 +180,16 @@ open-road-risk/
 
 | Metric | Value |
 |---|---|
-| Collisions snapped to road links | 452,897 collisions; 452,283 weighted matches |
-| Mean snap score | 0.860 |
+| Processed STATS19 collision rows | 1,148,857 |
+| Snapped/retained collisions used in road-link annual table | 1,145,198 |
 | Road links scored (full network) | 3,941,299 |
 | Link-years modelled | 39,412,990 (2015-2024) |
+| Positive road-link × year rows | 945,373 |
+| Unique links with observed retained collisions | 531,442 |
 | AADT estimator local holdout R² | 0.821 |
 | AADT estimator spatial holdout R² | 0.777 |
-| Poisson GLM pseudo-R² | 0.602 (interpretable baseline; in-sample on 1:3 zero-collision downsampled training set) |
-| XGBoost pseudo-R² | 0.387 (full-zero training; out-of-sample with temporal features included) |
+| Poisson GLM pseudo-R² | 0.505 (interpretable baseline) |
+| XGBoost pseudo-R² | 0.360 (full-zero training) |
 | Top 1% risk links | 39,413 |
 
 ---

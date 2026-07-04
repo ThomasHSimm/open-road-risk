@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Traffic Volume EDA for AADF and WebTRIS – Open Road Risk</title>
 <style>
@@ -121,16 +121,16 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Traffic Volume EDA for AADF and WebTRIS – Open Road Risk">
-<meta property="og:description" content="Exploratory analysis of traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.">
+<meta property="og:description" content="Exploratory analysis of full-GB traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.">
 <meta property="og:image" content="https://openroadrisk.org/analysis/eda-traffic_files/figure-html/cell-3-output-1.png">
 <meta property="og:site_name" content="Open Road Risk">
 <meta property="og:image:height" content="1517">
-<meta property="og:image:width" content="1260">
+<meta property="og:image:width" content="1239">
 <meta name="twitter:title" content="Traffic Volume EDA for AADF and WebTRIS – Open Road Risk">
-<meta name="twitter:description" content="Exploratory analysis of traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.">
+<meta name="twitter:description" content="Exploratory analysis of full-GB traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.">
 <meta name="twitter:image" content="https://openroadrisk.org/analysis/eda-traffic_files/figure-html/cell-3-output-1.png">
 <meta name="twitter:image-height" content="1517">
-<meta name="twitter:image-width" content="1260">
+<meta name="twitter:image-width" content="1239">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -186,6 +186,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -437,7 +441,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a>
+  <ul class="collapse">
+  <li><a href="#current-full-gb-traffic-layer" id="toc-current-full-gb-traffic-layer" class="nav-link" data-scroll-target="#current-full-gb-traffic-layer"><span class="header-section-number">1.1</span> Current full-GB traffic layer</a></li>
+  </ul></li>
   <li><a href="#measured-aadf-training-data" id="toc-measured-aadf-training-data" class="nav-link" data-scroll-target="#measured-aadf-training-data"><span class="header-section-number">2</span> Measured AADF — training data</a>
   <ul class="collapse">
   <li><a href="#spatial-coverage-of-count-points" id="toc-spatial-coverage-of-count-points" class="nav-link" data-scroll-target="#spatial-coverage-of-count-points"><span class="header-section-number">2.1</span> Spatial coverage of count points</a></li>
@@ -472,7 +479,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <div>
   <div class="description">
-    Exploratory analysis of traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.
+    Exploratory analysis of full-GB traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.
   </div>
 </div>
 
@@ -491,14 +498,73 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <section id="overview" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
-<p>Stage 1a estimates Annual Average Daily Traffic (AADT) for every OS Open Roads link in the study area. Directly measured AADF count points cover only a minority of road links — particularly minor and unclassified roads — so a gradient-boosted regressor is trained on those measured points and applied to the full 2.1M-link network.</p>
+<p>Stage 1a estimates Annual Average Daily Traffic (AADT) for every OS Open Roads link across full Great Britain. Directly measured AADF count points cover only a minority of road links, especially minor and unclassified roads, so a gradient-boosted regressor is trained on measured count sites and applied to the full 3.94M-link network.</p>
+<p>The resulting AADT layer is an exposure input to the collision model. It is not just another predictor: Stage 2 turns each link-year estimate into annual vehicle-kilometre exposure using <code>AADT × link length × 365</code>, then models collisions relative to that exposure and the surrounding road context. AADT is estimated where direct counts are unavailable, and the estimates are validated against held-out count sites.</p>
 <p>This page covers:</p>
 <ul>
 <li>The measured AADF count-point data used for training</li>
 <li>How the model was built and validated</li>
 <li>The resulting full-network AADT estimates and their geographic pattern</li>
 </ul>
-<div id="f7523c89" class="cell" data-execution_count="1">
+<section id="current-full-gb-traffic-layer" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="current-full-gb-traffic-layer"><span class="header-section-number">1.1</span> Current full-GB traffic layer</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Measure</th>
+<th style="text-align: right;">Current value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Open Roads links</td>
+<td style="text-align: right;">3,941,299</td>
+</tr>
+<tr class="even">
+<td>Link-years</td>
+<td style="text-align: right;">39,412,990</td>
+</tr>
+<tr class="odd">
+<td>Years</td>
+<td style="text-align: right;">2015-2024</td>
+</tr>
+<tr class="even">
+<td>AADT estimate rows</td>
+<td style="text-align: right;">39,412,990</td>
+</tr>
+<tr class="odd">
+<td>Unique AADT links</td>
+<td style="text-align: right;">3,941,299</td>
+</tr>
+<tr class="even">
+<td>AADT local holdout R²</td>
+<td style="text-align: right;">0.821</td>
+</tr>
+<tr class="odd">
+<td>AADT spatial holdout R²</td>
+<td style="text-align: right;">0.777</td>
+</tr>
+<tr class="even">
+<td>AADT CV R²</td>
+<td style="text-align: right;">0.824 ± 0.008</td>
+</tr>
+<tr class="odd">
+<td>Risk-score rows using this exposure layer</td>
+<td style="text-align: right;">3,941,299</td>
+</tr>
+<tr class="even">
+<td>Collision model XGBoost pseudo-R²</td>
+<td style="text-align: right;">0.360</td>
+</tr>
+<tr class="odd">
+<td>Collision model GLM pseudo-R²</td>
+<td style="text-align: right;">0.505</td>
+</tr>
+</tbody>
+</table>
+<div id="41f81e93" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -533,19 +599,23 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"AADT estimates    : </span><span class="sc">{</span>aadt[<span class="st">'link_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss"> links × </span><span class="sc">{</span>aadt[<span class="st">'year'</span>]<span class="sc">.</span>nunique()<span class="sc">}</span><span class="ss"> years (</span><span class="sc">{</span><span class="bu">len</span>(aadt)<span class="sc">:,}</span><span class="ss"> rows)"</span>)</span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"OS Open Roads     : </span><span class="sc">{</span><span class="bu">len</span>(openroads)<span class="sc">:,}</span><span class="ss"> links"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>AADF count points : 14,193 count points × 10 years (105,661 rows)
-AADT estimates    : 2,167,557 links × 10 years (21,675,570 rows)
-OS Open Roads     : 2,167,557 links</code></pre>
+AADT estimates    : 3,941,299 links × 10 years (39,412,990 rows)
+OS Open Roads     : 3,941,299 links</code></pre>
 </div>
 </div>
 <hr>
+</section>
 </section>
 <section id="measured-aadf-training-data" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="measured-aadf-training-data"><span class="header-section-number">2</span> Measured AADF — training data</h2>
 <section id="spatial-coverage-of-count-points" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="spatial-coverage-of-count-points"><span class="header-section-number">2.1</span> Spatial coverage of count points</h3>
-<div id="1b7124bb" class="cell" data-execution_count="2">
+<div id="0732140c" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">8</span>))</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -572,10 +642,11 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
 <span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-3-output-1.png" width="630" height="759" class="figure-img"></p>
+<p><img src="eda-traffic_files/figure-html/cell-3-output-1.png" width="620" height="759" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -583,7 +654,9 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="aadf-distribution-by-road-type" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="aadf-distribution-by-road-type"><span class="header-section-number">2.2</span> AADF distribution by road type</h3>
-<div id="0aa51a13" class="cell" data-execution_count="3">
+<div id="003ae6ef" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>measured <span class="op">=</span> aadf[aadf[<span class="st">"all_motor_vehicles"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
@@ -606,6 +679,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -617,7 +691,9 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="annual-trends-including-covid" class="level3" data-number="2.3">
 <h3 data-number="2.3" class="anchored" data-anchor-id="annual-trends-including-covid"><span class="header-section-number">2.3</span> Annual trends including COVID</h3>
-<div id="501a6b47" class="cell" data-execution_count="4">
+<div id="2b95d8c5" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>year_stats <span class="op">=</span> (</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    measured.groupby(<span class="st">"year"</span>)[<span class="st">"all_motor_vehicles"</span>]</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"median"</span>, <span class="st">"count"</span>])</span>
@@ -647,6 +723,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -658,7 +735,9 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="hgv-proportion-by-road-type" class="level3" data-number="2.4">
 <h3 data-number="2.4" class="anchored" data-anchor-id="hgv-proportion-by-road-type"><span class="header-section-number">2.4</span> HGV proportion by road type</h3>
-<div id="2ffaa9a8" class="cell" data-execution_count="5">
+<div id="d75091e1" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hgv_data <span class="op">=</span> measured.dropna(subset<span class="op">=</span>[<span class="st">"hgv_proportion"</span>, <span class="st">"road_type"</span>])</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
@@ -671,6 +750,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"HGV proportion by road type"</span>)</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -688,7 +768,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <h3 data-number="3.1" class="anchored" data-anchor-id="design-summary"><span class="header-section-number">3.1</span> Design summary</h3>
 <p>The model is a <code>HistGradientBoostingRegressor</code> (sklearn) with native missing-value handling. The target is log1p(AADF) <strong>de-meaned by year</strong> so the model learns road-level deviation from the network-wide annual average. Year means are stored separately and added back at inference — this prevents the year feature from dominating importance and collapsing full-network predictions near the annual mean.</p>
 <p>GroupKFold CV grouped by <code>count_point_id</code> ensures the same station cannot appear in both train and test folds across years.</p>
-<p>WebTRIS flow features are excluded from Stage 1a: they are unavailable for the 2.1M-link network at inference and their absence would need to be imputed with zeros, which corrupts predictions because HistGBR routes NaN and zero through different tree branches.</p>
+<p>WebTRIS flow features are excluded from Stage 1a: they are unavailable for the 3.94M-link network at inference and their absence would need to be imputed with zeros, which corrupts predictions because HistGBR routes NaN and zero through different tree branches.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -730,7 +810,9 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </section>
 <section id="cross-validation-results" class="level3" data-number="3.2">
 <h3 data-number="3.2" class="anchored" data-anchor-id="cross-validation-results"><span class="header-section-number">3.2</span> Cross-validation results</h3>
-<div id="8858c047" class="cell" data-execution_count="6">
+<div id="2e505bd3" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>metrics_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_metrics.json"</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> metrics_path.exists():</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(metrics_path) <span class="im">as</span> f:</span>
@@ -744,6 +826,7 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"No 'aadt' key in collision_metrics.json."</span>)</span>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"collision_metrics.json not found — run: python -m road_risk.model --stage traffic"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>No 'aadt' key in collision_metrics.json.</code></pre>
 </div>
@@ -756,7 +839,9 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <li><strong>Local holdout</strong> — 20% of count-point IDs withheld at random. Tests gap-filling.</li>
 <li><strong>Spatial block</strong> — all points north of the 75th-percentile latitude withheld. Tests generalisation to a region with no measured support.</li>
 </ul>
-<div id="af650bef" class="cell" data-execution_count="7">
+<div id="bf9e7640" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> val_summary.empty:</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, row <span class="kw">in</span> val_summary.iterrows():</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>row[<span class="st">'scheme'</span>]<span class="sc">:10s}</span><span class="ss">: R²=</span><span class="sc">{</span>row[<span class="st">'r2'</span>]<span class="sc">:.3f}</span><span class="ss"> | "</span></span>
@@ -766,20 +851,22 @@ OS Open Roads     : 2,167,557 links</code></pre>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    colors <span class="op">=</span> [<span class="st">"#457b9d"</span>, <span class="st">"#e63946"</span>]</span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    bars <span class="op">=</span> ax.barh(val_summary[<span class="st">"scheme"</span>], val_summary[<span class="st">"r2"</span>], color<span class="op">=</span>colors)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    ax.axvline(<span class="fl">0.72</span>, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="st">"GroupKFold CV R²≈0.72"</span>)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"R² (log scale)"</span>)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"External validation R² by holdout scheme"</span>)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> bar, val <span class="kw">in</span> <span class="bu">zip</span>(bars, val_summary[<span class="st">"r2"</span>]):</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        ax.text(val <span class="op">+</span> <span class="fl">0.005</span>, bar.get_y() <span class="op">+</span> bar.get_height() <span class="op">/</span> <span class="dv">2</span>,</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                <span class="ss">f"</span><span class="sc">{</span>val<span class="sc">:.3f}</span><span class="ss">"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    cv_r2 <span class="op">=</span> aadt_metrics.get(<span class="st">"cv_r2_mean"</span>, <span class="fl">0.824</span>) <span class="cf">if</span> <span class="st">"aadt_metrics"</span> <span class="kw">in</span> <span class="bu">globals</span>() <span class="cf">else</span> <span class="fl">0.824</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    ax.axvline(cv_r2, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f"GroupKFold CV R²≈</span><span class="sc">{</span>cv_r2<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"R² (log scale)"</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"External validation R² by holdout scheme"</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> bar, val <span class="kw">in</span> <span class="bu">zip</span>(bars, val_summary[<span class="st">"r2"</span>]):</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        ax.text(val <span class="op">+</span> <span class="fl">0.005</span>, bar.get_y() <span class="op">+</span> bar.get_height() <span class="op">/</span> <span class="dv">2</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                <span class="ss">f"</span><span class="sc">{</span>val<span class="sc">:.3f}</span><span class="ss">"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>  local     : R²=0.831 | MAE=0.565 | RMSE=0.750 (n=7,639)
-  spatial   : R²=0.792 | MAE=0.650 | RMSE=0.839 (n=9,773)</code></pre>
+<pre><code>  local     : R²=0.821 | MAE=0.584 | RMSE=0.770 (n=7,639)
+  spatial   : R²=0.777 | MAE=0.676 | RMSE=0.869 (n=9,773)</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -789,18 +876,21 @@ OS Open Roads     : 2,167,557 links</code></pre>
 </div>
 </div>
 </div>
-<div id="50790716" class="cell" data-execution_count="8">
+<div id="a39374c1" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>val_local_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/aadt_validation_local.parquet"</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> val_local_path.exists():</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    val_local <span class="op">=</span> pd.read_parquet(val_local_path)</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Local holdout — metrics by road type:</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(val_local[[<span class="st">"road_type"</span>, <span class="st">"r2"</span>, <span class="st">"mae"</span>, <span class="st">"rmse"</span>, <span class="st">"n"</span>]].to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Local holdout — metrics by road type:
 
 road_type       r2      mae     rmse      n
-    Major 0.600410 0.454266 0.593950 3861.0
-    Minor 0.558783 0.677618 0.880564 3778.0</code></pre>
+    Major 0.587299 0.465580 0.603615 3861.0
+    Minor 0.529895 0.704221 0.908934 3778.0</code></pre>
 </div>
 </div>
 <hr>
@@ -808,9 +898,12 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="full-network-aadt-estimates" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="full-network-aadt-estimates"><span class="header-section-number">4</span> Full-network AADT estimates</h2>
+<p>The estimates cover every OS Open Roads link in Great Britain for each AADF year from 2015 to 2024. They provide a consistent exposure layer for Stage 2, including links that have no directly observed count point.</p>
 <section id="distribution-by-road-classification" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="distribution-by-road-classification"><span class="header-section-number">4.1</span> Distribution by road classification</h3>
-<div id="7ab03c5d" class="cell" data-execution_count="9">
+<div id="e462ccc2" class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>].copy()</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> est_2023.merge(</span>
@@ -823,7 +916,7 @@ road_type       r2      mae     rmse      n
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                 color<span class="op">=</span><span class="st">"#1d3557"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>, alpha<span class="op">=</span><span class="fl">0.8</span>)</span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(estimated AADT vehicles/day)"</span>)</span>
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Link count"</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Estimated AADT — all 2.1M links (2023, log scale)"</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Estimated AADT — all 3.94M links (2023, log scale)"</span>)</span>
 <span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    cls_order <span class="op">=</span> [<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>, <span class="st">"B Road"</span>, <span class="st">"Classified Unnumbered"</span>,</span>
 <span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Not Classified"</span>, <span class="st">"Unclassified"</span>, <span class="st">"Unknown"</span>]</span>
@@ -841,6 +934,7 @@ road_type       r2      mae     rmse      n
 <span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
 <span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -852,7 +946,9 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="year-on-year-trends" class="level3" data-number="4.2">
 <h3 data-number="4.2" class="anchored" data-anchor-id="year-on-year-trends"><span class="header-section-number">4.2</span> Year-on-year trends</h3>
-<div id="32140b9d" class="cell" data-execution_count="10">
+<div id="d4ae72d4" class="cell" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty:</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    yr_med <span class="op">=</span> aadt.groupby(<span class="st">"year"</span>)[<span class="st">"estimated_aadt"</span>].median()</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -870,6 +966,7 @@ road_type       r2      mae     rmse      n
 <span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span>
 <span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
 <span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -881,7 +978,9 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="geographic-distribution-all-links-2023" class="level3" data-number="4.3">
 <h3 data-number="4.3" class="anchored" data-anchor-id="geographic-distribution-all-links-2023"><span class="header-section-number">4.3</span> Geographic distribution — all links (2023)</h3>
-<div id="990dfe7e" class="cell" data-execution_count="11">
+<div id="1affb685" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>][[<span class="st">"link_id"</span>, <span class="st">"estimated_aadt"</span>]].copy()</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    or_plot <span class="op">=</span> openroads.merge(est_2023, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"inner"</span>)</span>
@@ -923,10 +1022,11 @@ road_type       r2      mae     rmse      n
 <span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Stage 1a full-network AADT estimates"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
 <span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
 <span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-12-output-1.png" width="1498" height="794" class="figure-img"></p>
+<p><img src="eda-traffic_files/figure-html/cell-12-output-1.png" width="1272" height="852" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -934,8 +1034,10 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="sanity-check-estimated-vs-measured-aadf-2023" class="level3" data-number="4.4">
 <h3 data-number="4.4" class="anchored" data-anchor-id="sanity-check-estimated-vs-measured-aadf-2023"><span class="header-section-number">4.4</span> Sanity check — estimated vs measured AADF (2023)</h3>
-<p>Links that have a directly measured AADF count point within 2 km should have estimates close to the measured value. This checks in-sample calibration.</p>
-<div id="1fbb4f35" class="cell" data-execution_count="12">
+<p>Links that have a directly measured AADF count point within 2 km should have estimates close to the measured value. This is a local sanity check; the held-out validation above is the main check on how the AADT model performs at count sites that were not used for fitting.</p>
+<div id="ad92c3b5" class="cell" data-execution_count="12">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> pyproj</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> scipy.spatial <span class="im">import</span> cKDTree</span>
@@ -995,6 +1097,7 @@ road_type       r2      mae     rmse      n
 <span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>        mae <span class="op">=</span> mean_absolute_error(np.log(comparison[<span class="st">"all_motor_vehicles"</span>]),</span>
 <span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>                                  np.log(comparison[<span class="st">"estimated_aadt"</span>]))</span>
 <span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"In-sample (2023, matched links): R²=</span><span class="sc">{</span>r2<span class="sc">:.3f}</span><span class="ss"> | MAE=</span><span class="sc">{</span>mae<span class="sc">:.3f}</span><span class="ss"> log-units | n=</span><span class="sc">{</span><span class="bu">len</span>(comparison)<span class="sc">:,}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1003,7 +1106,7 @@ road_type       r2      mae     rmse      n
 </div>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>In-sample (2023, matched links): R²=-0.222 | MAE=1.101 log-units | n=10,562</code></pre>
+<pre><code>In-sample (2023, matched links): R²=-0.360 | MAE=1.185 log-units | n=10,562</code></pre>
 </div>
 </div>
 <hr>
@@ -1011,7 +1114,9 @@ road_type       r2      mae     rmse      n
 </section>
 <section id="summary" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="summary"><span class="header-section-number">5</span> Summary</h2>
-<div id="797fd434" class="cell" data-execution_count="13">
+<div id="76da50dc" class="cell" data-execution_count="13">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 1a output summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty:</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Links with estimates : </span><span class="sc">{</span>aadt[<span class="st">'link_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss">"</span>)</span>
@@ -1023,25 +1128,26 @@ road_type       r2      mae     rmse      n
 <span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">External validation R²:"</span>)</span>
 <span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, row <span class="kw">in</span> val_summary.iterrows():</span>
 <span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>row[<span class="st">'scheme'</span>]<span class="sc">:10s}</span><span class="ss">: </span><span class="sc">{</span>row[<span class="st">'r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>=== Stage 1a output summary ===
 
-Links with estimates : 2,167,557
+Links with estimates : 3,941,299
 Years covered        : [np.int64(2015), np.int64(2016), np.int64(2017), np.int64(2018), np.int64(2019), np.int64(2020), np.int64(2021), np.int64(2022), np.int64(2023), np.int64(2024)]
 
 Estimated AADT distribution (2023):
-count    2167557.0
-mean        2064.0
-std         4129.0
-min           60.0
-25%          440.0
-50%          669.0
-75%         1585.0
-max       130611.0
+count    3941299.0
+mean        1734.0
+std         3612.0
+min           39.0
+25%          311.0
+50%          520.0
+75%         1210.0
+max       106131.0
 
 External validation R²:
-  local     : 0.831
-  spatial   : 0.792</code></pre>
+  local     : 0.821
+  spatial   : 0.777</code></pre>
 </div>
 </div>
 <p>Key observations:</p>
@@ -1050,6 +1156,7 @@ External validation R²:
 <li>COVID years (2020–2021) show a clear network-wide dip consistent with measured AADF.</li>
 <li>Local holdout R² exceeds spatial block R², confirming the model is stronger at gap-filling than extrapolating to geography without any measured support.</li>
 <li>The residual plot for matched links shows approximately zero median bias in log space, with spread driven mainly by minor roads where count-point representativeness is weakest.</li>
+<li>The estimated AADT layer feeds Stage 2 as annual vehicle-kilometre exposure (<code>AADT × link length × 365</code>), so the collision model ranks links relative to estimated traffic volume rather than treating raw collision counts alone as risk.</li>
 </ul>
 
 

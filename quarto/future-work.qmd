@@ -33,6 +33,31 @@ Entries are not ranked against each other. They're organised by theme.
 
 ---
 
+## Operational improvements
+
+### Precompute key-figure map layers
+
+**What it is:** Move the 10 km grid aggregation and reporting-area summary
+aggregation out of `quarto/outputs/key-figures.qmd` into a standalone script
+that writes compact GeoJSON/Parquet web layers before Quarto render.
+
+**Why it's useful:** The key-figure page currently rebuilds map layers during
+render, which is convenient but slow after a full GB rebuild. Precomputing the
+layers would make site renders faster and would give the map outputs explicit
+provenance alongside the model artefacts.
+
+**Guardrails:** Keep the 10 km grid as the primary public geography. Treat
+named reporting areas as a simplified display geography only, and continue to
+publish risk percentiles/deciles rather than raw predicted counts unless
+current-run calibration diagnostics support count interpretation.
+
+**Good starting point:** Mirror the style of `scripts/build_context_web.py`:
+load `data/models/risk_scores.parquet`, join Open Roads geometry, aggregate the
+10 km grid and `reporting_areas_gb.geojson`, then write web-ready layers plus a
+manifest consumed directly by `key-figures.qmd`.
+
+---
+
 ## Scope note
 
 The pipeline from raw DfT / OS / OSM data through to modelled outputs

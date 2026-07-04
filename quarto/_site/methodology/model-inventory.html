@@ -147,6 +147,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
  <span class="dropdown-text">Literature evidence register</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
  <span class="dropdown-text">Literature-pipeline alignment</span></a>
   </li>  
@@ -425,6 +429,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
     
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">July 4, 2026</p>
+    </div>
+  </div>
     
   </div>
   
@@ -433,6 +443,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
+<div class="small text-muted">
+<p>Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.</p>
+</div>
 <p><strong>Date:</strong> July 2026<br>
 <strong>Status:</strong> Refreshed against the clean full GB Stage 2 collision retrain.<br>
 <strong>Canonical metrics source:</strong> <code>data/models/collision_metrics.json</code></p>
@@ -457,37 +470,47 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Link-year modelling table</td>
-<td>21,675,570 rows</td>
-<td><code>xgb.n_train + xgb.n_test</code></td>
+<td>39,412,990 rows</td>
+<td>full Open Roads × 2015-2024 scaffold</td>
 </tr>
 <tr class="even">
-<td>GLM complete-case rows before downsampling</td>
-<td>18,302,830 rows</td>
-<td><code>glm.n_full</code></td>
+<td>Open Roads links scored</td>
+<td>3,941,299</td>
+<td><code>risk_scores.parquet</code></td>
 </tr>
 <tr class="odd">
+<td>Positive collision link-years</td>
+<td>391,323</td>
+<td><code>road_link_annual.parquet</code></td>
+</tr>
+<tr class="even">
 <td>GLM training rows (after downsampling)</td>
-<td>3,967,414</td>
+<td>1,565,292</td>
 <td><code>glm.n_obs</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>GLM positive rows (collision &gt; 0)</td>
-<td>360,674</td>
+<td>391,323</td>
 <td><code>glm.n_pos</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>XGBoost training rows</td>
-<td>17,340,450</td>
-<td><code>xgb.n_train</code></td>
+<td>39,412,990</td>
+<td><code>xgb.training_rows</code> / full-zero policy</td>
+</tr>
+<tr class="odd">
+<td>XGBoost positive rows</td>
+<td>391,323</td>
+<td><code>xgb.positive_rows</code></td>
 </tr>
 <tr class="even">
-<td>XGBoost test rows</td>
-<td>4,335,120</td>
-<td><code>xgb.n_test</code></td>
+<td>XGBoost zero rows</td>
+<td>39,021,667</td>
+<td><code>xgb.zero_rows</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Downsampling:</strong> The GLM first keeps complete-case rows for its feature set, then downsamples zero-collision rows to 10× positives (≈ 91% zeros vs 98% in the full table) to keep the statsmodels design matrix tractable. XGBoost trains on the full ~21.7M-row table with zeros filled to 0.</p>
+<p><strong>Downsampling:</strong> The GLM first keeps complete-case rows for its feature set, then downsamples zero-collision rows to 3× positives (≈ 75% zeros vs 99% in the full table) to keep the statsmodels design matrix tractable. XGBoost trains on the full 39.4M-row zero-heavy table by default. A sampled-zero XGBoost mode exists as an explicit memory fallback, but it is not the reported production run.</p>
 </section>
 <section id="glm-poisson-with-log-offset" class="level3" data-number="1.2">
 <h3 data-number="1.2" class="anchored" data-anchor-id="glm-poisson-with-log-offset"><span class="header-section-number">1.2</span> GLM — Poisson with log-offset</h3>
@@ -622,7 +645,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Pseudo-R²</td>
-<td>0.566 (clean full GB run; in-sample on 1:3 zero-collision downsampled training set)</td>
+<td>0.602 (current full-GB run; in-sample on 1:3 zero-collision downsampled training set)</td>
 </tr>
 <tr class="even">
 <td>Deviance</td>
@@ -685,6 +708,14 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tr class="even">
 <td><code>n_jobs</code></td>
 <td>-1</td>
+</tr>
+<tr class="odd">
+<td><code>tree_method</code></td>
+<td><code>hist</code></td>
+</tr>
+<tr class="even">
+<td><code>max_bin</code></td>
+<td>128</td>
 </tr>
 </tbody>
 </table>
@@ -812,20 +843,36 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Pseudo-R²</td>
-<td>0.325 (clean full GB run; temporal features included)</td>
+<td>0.387 (current full-GB run; temporal features included)</td>
 </tr>
 <tr class="even">
-<td>Test deviance</td>
-<td>495,172</td>
+<td>Zero policy</td>
+<td>Full-zero training</td>
+</tr>
+<tr class="odd">
+<td>Training rows</td>
+<td>39,412,990</td>
+</tr>
+<tr class="even">
+<td>Positive rows</td>
+<td>391,323</td>
+</tr>
+<tr class="odd">
+<td>Zero rows</td>
+<td>39,021,667</td>
+</tr>
+<tr class="even">
+<td>Runtime / peak RSS</td>
+<td>~26m32s / ~28.8 GB</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Comparability caveat:</strong> GLM pseudo-R² is in-sample on a 1:3 zero-collision downsampled set; XGBoost is out-of-sample on the true distribution. The gap should not be read as a clean model horse race — the two metrics are not computed on a common evaluation set or against a common null model. Earlier docs cited XGBoost pseudo-R² around <code>0.86</code>, but that number came from a pre-fix evaluation surface that was later superseded after a Stage 2 leakage diagnosis. For current project positioning, use the clean GB XGBoost pseudo-R² of <code>0.325</code> as the primary comparison point.</p>
+<p><strong>Comparability caveat:</strong> GLM pseudo-R² is in-sample on a 1:3 zero-collision downsampled set; XGBoost is out-of-sample on the true distribution. The gap should not be read as a clean model horse race — the two metrics are not computed on a common evaluation set or against a common null model. Earlier docs cited XGBoost pseudo-R² around <code>0.86</code>, but that number came from a pre-fix evaluation surface that was later superseded after a Stage 2 leakage diagnosis. For current project positioning, use the current full-GB XGBoost pseudo-R² of <code>0.387</code> as the primary comparison point.</p>
 </section>
 <section id="output" class="level3" data-number="1.4">
 <h3 data-number="1.4" class="anchored" data-anchor-id="output"><span class="header-section-number">1.4</span> Output</h3>
 <p><code>data/models/risk_scores.parquet</code> — one row per link. Key columns: <code>predicted_xgb</code> (mean collisions/year), <code>predicted_glm</code>, <code>residual_glm</code>, <code>risk_percentile</code> (XGBoost rank × 100 / n_links), <code>collision_count</code>, <code>estimated_aadt</code>, <code>hgv_proportion</code>, <code>speed_limit_mph_effective</code>, raw <code>speed_limit_mph</code>, and <code>betweenness_relative</code>. Post-event diagnostic columns such as <code>pct_dark</code>, <code>pct_urban</code>, <code>pct_junction</code>, <code>pct_near_crossing</code>, and <code>mean_speed_limit</code> are excluded from the output contract.</p>
-<p>The effective-speed retrain retained 2,167,557 scored links and 21,676 top-1% links. Compared with the pre-effective-speed <code>risk_scores.parquet</code>, Spearman rank correlation across all links was 0.9962 and top-1% Jaccard overlap was 0.9512.</p>
+<p>The current full-GB retrain retained 3,941,299 scored links and 39,413 top-1% links, pooled to one output row per link after year-by-year scoring.</p>
 <hr>
 
 

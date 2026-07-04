@@ -1,12 +1,17 @@
 ---
 title: "Current Model Status for Open Road Risk"
+date-modified: 2026-07-04
 description: "Current validation metrics and provenance-backed status for the Open Road Risk traffic estimation and collision risk modelling stages."
 image: ../assets/futuremiss.jpg
 title-block-banner: ../assets/futuremiss.jpg
 title-block-banner-color: "#ffffff"
 ---
 
-This section provides a live view of the modelling pipeline's performance and status, sourced directly from the latest validation artefacts and provenance records.
+::: {.small .text-muted}
+Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.
+:::
+
+This section provides a live view of the modelling pipeline's performance and status, sourced directly from the latest validation artefacts, provenance records, and validated full-GB rebuild counts.
 
 ```{python}
 #| echo: false
@@ -31,14 +36,27 @@ def find_data_root():
 
 root = find_data_root()
 
+VALIDATED_REBUILD_COUNTS = {
+    "processed_collision_rows": 1_148_857,
+    "retained_collision_rows": 1_145_198,
+}
+
 # Data containers
 metrics = {
     "aadt_r2_local": "not available",
     "aadt_r2_spatial": "not available",
     "aadt_holdout": "not available",
     "glm_r2": "not available",
+    "glm_rows": "not available",
     "xgb_r2": "not available",
+    "xgb_zero_policy": "not available",
+    "xgb_train_rows": "not available",
+    "xgb_test_rows": "not available",
+    "link_years": "not available",
+    "positive_link_years": "not available",
     "link_count": "not available",
+    "collision_link_count": "not available",
+    "top_1pct_links": "not available",
     "timestamp": "not available",
     "git_sha": "not available",
     "seeds": "not available"
@@ -51,15 +69,55 @@ if root:
     prov_path = root / "data/provenance/rank_stability_provenance.json"
     aadt_path = root / "data/models/aadt_validation_summary.parquet"
     coll_path = root / "data/models/collision_metrics.json"
+    risk_path = root / "data/models/risk_scores.parquet"
 
-    # 1. Load provenance (Stage 2 primary)
+    # 1. Load current Stage 2 metrics. These supersede older rank-stability
+    # provenance for headline pseudo-R² and row counts.
+    if coll_path.exists():
+        try:
+            with open(coll_path, 'r') as f:
+                coll = json.load(f)
+            glm = coll.get("glm", {})
+            xgb = coll.get("xgb", {})
+            metrics["glm_r2"] = glm.get("pseudo_r2", "not available")
+            metrics["glm_rows"] = glm.get("n_obs", "not available")
+            metrics["positive_link_years"] = glm.get("n_pos", "not available")
+            metrics["xgb_r2"] = xgb.get("pseudo_r2", "not available")
+            metrics["xgb_train_rows"] = xgb.get("n_train", "not available")
+            metrics["xgb_test_rows"] = xgb.get("n_test", "not available")
+            if isinstance(metrics["xgb_train_rows"], int) and isinstance(metrics["xgb_test_rows"], int):
+                metrics["link_years"] = metrics["xgb_train_rows"] + metrics["xgb_test_rows"]
+            zero_policy = xgb.get("zero_policy", "not available")
+            metrics["xgb_zero_policy"] = (
+                "full-zero" if zero_policy == "full" else zero_policy
+            )
+            sources_found.append("collision_metrics.json")
+        except Exception:
+            sources_missing.append("collision_metrics.json")
+    else:
+        sources_missing.append("collision_metrics.json")
+
+    # 2. Load current scored output counts.
+    if risk_path.exists():
+        try:
+            risk_df = pd.read_parquet(
+                risk_path,
+                columns=["link_id", "collision_count", "risk_percentile"],
+            )
+            metrics["link_count"] = len(risk_df)
+            metrics["collision_link_count"] = int((risk_df["collision_count"] > 0).sum())
+            metrics["top_1pct_links"] = int((risk_df["risk_percentile"] >= 99).sum())
+            sources_found.append("risk_scores.parquet")
+        except Exception:
+            sources_missing.append("risk_scores.parquet")
+    else:
+        sources_missing.append("risk_scores.parquet")
+
+    # 3. Load provenance as supplemental run metadata only.
     if prov_path.exists():
         try:
             with open(prov_path, 'r') as f:
                 prov = json.load(f)
-            metrics["glm_r2"] = prov.get("glm_pseudo_r2", "not available")
-            metrics["xgb_r2"] = prov.get("summary_statistics", {}).get("pseudo_r2_mean", "not available")
-            metrics["link_count"] = prov.get("expected_row_count", "not available")
             metrics["timestamp"] = prov.get("timestamp_utc", "not available")
             metrics["git_sha"] = prov.get("git_sha", "not available")
             metrics["seeds"] = prov.get("seeds_used", "not available")
@@ -69,23 +127,7 @@ if root:
     else:
         sources_missing.append("rank_stability_provenance.json")
 
-    # 2. Load fallback metrics (Stage 2 supporting)
-    # Use if either GLM or XGBoost metric is still missing
-    if (metrics["glm_r2"] == "not available" or metrics["xgb_r2"] == "not available") and coll_path.exists():
-        try:
-            with open(coll_path, 'r') as f:
-                coll = json.load(f)
-            if metrics["glm_r2"] == "not available":
-                metrics["glm_r2"] = coll.get("glm", {}).get("pseudo_r2", "not available")
-            if metrics["xgb_r2"] == "not available":
-                metrics["xgb_r2"] = coll.get("xgb", {}).get("pseudo_r2", "not available")
-            sources_found.append("collision_metrics.json")
-        except Exception:
-            sources_missing.append("collision_metrics.json")
-    elif not coll_path.exists() and (metrics["glm_r2"] == "not available" or metrics["xgb_r2"] == "not available"):
-        sources_missing.append("collision_metrics.json")
-
-    # 3. Load AADT metrics (Stage 1a)
+    # 4. Load AADT metrics (Stage 1a)
     if aadt_path.exists():
         try:
             aadt_df = pd.read_parquet(aadt_path)
@@ -124,24 +166,44 @@ status_1a = "Implemented" if metrics["aadt_r2_local"] != "not available" else "a
 evidence_1a = f"Local R²: {fmt(metrics['aadt_r2_local'])}, Spatial R²: {fmt(metrics['aadt_r2_spatial'])}, N={fmt(metrics['aadt_holdout'])}" if status_1a == "Implemented" else "source missing"
 print(f"| Stage 1a: AADT model | {status_1a} | {evidence_1a} | Estimates traffic where direct counts are unavailable |")
 
+# Full GB rebuild
+status_rebuild = "Validated" if metrics["link_years"] != "not available" else "artefact not available"
+evidence_rebuild = (
+    f"{fmt(metrics['link_years'])} link-years; "
+    f"{fmt(VALIDATED_REBUILD_COUNTS['processed_collision_rows'])} processed STATS19 rows; "
+    f"{fmt(VALIDATED_REBUILD_COUNTS['retained_collision_rows'])} retained snapped collisions; "
+    f"{fmt(metrics['positive_link_years'])} positive link-years"
+    if status_rebuild == "Validated" else "source missing"
+)
+print(f"| Full GB collision rebuild | {status_rebuild} | {evidence_rebuild} | Row counts are for the 2015-2024 GB rebuild |")
+
 # Stage 2 GLM
 status_2glm = "Implemented" if metrics["glm_r2"] != "not available" else "artefact not available"
-evidence_2glm = f"Pseudo-R²: {fmt(metrics['glm_r2'])}" if status_2glm == "Implemented" else "source missing"
-print(f"| Stage 2: GLM collision-risk model | {status_2glm} | {evidence_2glm} | Interpretable exposure-adjusted baseline |")
+evidence_2glm = f"Pseudo-R²: {fmt(metrics['glm_r2'])}; rows: {fmt(metrics['glm_rows'])}" if status_2glm == "Implemented" else "source missing"
+print(f"| Stage 2: GLM collision-risk model | {status_2glm} | {evidence_2glm} | Interpretable exposure-adjusted baseline on a 1:3 zero-collision sampled surface |")
 
 # Stage 2 XGB
-status_2xgb = f"Implemented across {len(metrics['seeds'])} seeds" if isinstance(metrics['seeds'], list) else "artefact not available"
-evidence_2xgb = f"Mean Pseudo-R²: {fmt(metrics['xgb_r2'])}, Seeds: {metrics['seeds']}" if "Implemented" in status_2xgb else "source missing"
-print(f"| Stage 2: XGBoost collision-risk model | {status_2xgb} | {evidence_2xgb} | Flexible comparison/diagnostic model; weaker interpretability than GLM |")
+status_2xgb = "Implemented" if metrics["xgb_r2"] != "not available" else "artefact not available"
+evidence_2xgb = (
+    f"Pseudo-R²: {fmt(metrics['xgb_r2'])}; zero policy: {metrics['xgb_zero_policy']}; "
+    f"train/test rows: {fmt(metrics['xgb_train_rows'])}/{fmt(metrics['xgb_test_rows'])}"
+    if status_2xgb == "Implemented" else "source missing"
+)
+print(f"| Stage 2: XGBoost collision-risk model | {status_2xgb} | {evidence_2xgb} | Flexible ranking model; check calibration before presenting raw predicted counts as expected counts |")
 
 # Final Output
 status_out = "Implemented" if metrics["link_count"] != "not available" else "artefact not available"
-evidence_out = f"{fmt(metrics['link_count'])} scored links" if status_out == "Implemented" else "source missing"
+evidence_out = (
+    f"{fmt(metrics['link_count'])} scored links; "
+    f"{fmt(metrics['collision_link_count'])} links with retained collisions; "
+    f"{fmt(metrics['top_1pct_links'])} top-1% links"
+    if status_out == "Implemented" else "source missing"
+)
 print(f"| Final scored output | {status_out} | {evidence_out} | Current scoring grain is one row per road link, not link-year |")
 
 print("\n")
-print(f"- **Latest model run**: {metrics['timestamp']}")
-print(f"- **Git SHA**: `{metrics['git_sha']}`")
+print(f"- **Rank-stability provenance timestamp**: {metrics['timestamp']}")
+print(f"- **Rank-stability Git SHA**: `{metrics['git_sha']}`")
 print(f"- **Sources read**: {', '.join(sources_found) if sources_found else 'none'}")
 if sources_missing:
     print(f"- **Sources missing**: {', '.join(sources_missing)}")

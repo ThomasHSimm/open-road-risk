@@ -23,6 +23,51 @@ task.
   guarded workaround.
 
 
+## Full GB output rebuild follow-up
+
+Status: full GB road, traffic, collision, and risk-score rebuild has completed
+and passed basic integrity checks.
+
+Validated outputs:
+
+- Open Roads links: 3,941,299
+- Link-years: 39,412,990
+- Processed STATS19 collision rows: 1,148,857
+- Snapped/retained collisions used in road-link annual table: 1,145,198
+- Positive road-link × year rows: 945,373
+- Unique links with observed retained collisions: 531,442
+- XGBoost zero policy: full-zero
+- XGBoost pseudo-R²: 0.360
+- GLM pseudo-R²: 0.505
+- Risk-score output rows: 3,941,299
+- Top 1% risk links: 39,413
+
+Remaining work:
+
+- Replace transitional reporting-area grouping with an explicit GB-wide dissolve
+  policy.
+- Remove dependency on the old partial `areas_study.geojson` grouping logic.
+- Decide which compact urban/county-style areas should be merged for legibility.
+- Keep the 10 km grid as the primary consistent geography.
+- Document that named reporting areas are a simplified display geography, not a
+  formal modelling unit.
+- Check XGBoost calibration before presenting raw predicted counts as expected
+  collision counts.
+- Prefer risk percentiles / deciles for public-facing outputs.
+- Consider precomputing key-figure map layers outside Quarto to reduce render
+  time.
+
+### Reporting-area map geography
+
+The full GB key-figures map now has a GB-wide reporting-area layer. This is
+currently a presentation layer built from local-authority / council-area
+boundaries and dissolved into larger reporting areas where useful.
+
+This layer is still being refined. The main comparison geography remains the
+10 km grid, because it is consistent across Great Britain. The named-area view
+is intended for readability, not as the primary modelling unit.
+
+
 ---
 
 ## Where to find the rest
