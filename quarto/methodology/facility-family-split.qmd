@@ -94,7 +94,7 @@ rather than re-deriving them.
 | Trunk A-road | `road_function == "A Road"` and `is_trunk == True` | 16,011 | 5,465 |
 | Other-Urban | neither of the above and `ruc_urban_rural == "Urban"` | 1,366,925 | 177,296 |
 | Other-Rural | neither of the above and `ruc_urban_rural == "Rural"` | 780,537 | 48,564 |
-| **Total** | exactly one family per link | 2,167,557 | 233,604 |
+| **Total** | exactly one family per link | previous smaller build | 233,604 |
 
 The family assignment columns come from two existing sources:
 
@@ -461,7 +461,7 @@ Use the existing global baseline from `reports/rank_stability.md`:
 
 | Metric | Current global result |
 |---|---:|
-| pseudo-R2 mean across 5 seeds | 0.323498 |
+| pseudo-R2 mean across 5 seeds | about 0.32 |
 | pseudo-R2 std across 5 seeds | 0.002678 |
 | top-1% Jaccard mean | 0.903575 |
 | top-1% Jaccard min | 0.896574 |
@@ -483,8 +483,9 @@ If neither condition holds, document the split as evaluated and not adopted.
 ### 7.1 Imputed RUC for about 1k active links
 
 The RUC fill assigned about 336k links with `ruc_imputed = True`. Most are
-outside `road_link_annual.parquet`. The practical rural-default fallback impact
-is 993 active modelled links, about 0.05% of the 2.17M-link network. These
+outside `road_link_annual.parquet`. In the previous smaller diagnostic run, the
+practical rural-default fallback impact was 993 active modelled links, about
+0.05% of that network. These
 links land in Other-Rural. The impact is small, but output documentation should
 keep `ruc_imputed` and `ruc_fill_method` visible for audit.
 
@@ -522,7 +523,7 @@ v1 residuals show form-of-way patterning.
 ### 7.6 GLM unchanged, XGBoost-only split
 
 Per-family GLM is not implemented in v1. The current global GLM remains a
-diagnostic baseline; the clean full GB run sits around pseudo-R² 0.566 on its
+diagnostic baseline; the current full-GB run sits around pseudo-R² 0.602 on its
 1:3 zero-collision downsampled in-sample GLM surface.
 Per-family GLM is a v2 extension if interpretability by family becomes
 important.

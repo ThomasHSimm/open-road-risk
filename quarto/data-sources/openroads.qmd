@@ -12,9 +12,9 @@ format:
 ## Overview
 
 OS Open Roads is the **primary network geometry** for the project. Every
-road link the model scores comes from this dataset: ~2.17 million link
-geometries covering the full classified road network across the study
-area, from motorways down to local streets.
+road link the model scores comes from this dataset: 3.94 million link
+geometries covering the full classified road network across Great Britain,
+from motorways down to local streets.
 
 It is the backbone that everything else attaches to. STATS19 collisions are
 snapped to OS Open Roads links. AADF count points are spatially joined to
@@ -56,7 +56,7 @@ where the project has to estimate exposure rather than measure it.
 For the project's current Great Britain study area, OS Open Roads
 provides:
 
-- **2,167,557 road links** across England, Scotland, and Wales.
+- **3,941,299 road links** across England, Scotland, and Wales.
 - Full coverage of all road classifications, not just the Major Road Network.
 - Topology — every link has `start_node` and `end_node` references that allow
   the network to be reconstructed as a graph.
@@ -123,27 +123,19 @@ reprojection — this preserves accurate metric distances. Computing
 length in WGS84 would give degree-units, which are not metres and vary
 with latitude.
 
-::: {.callout-note}
-A small number of OS Open Roads links have invalid or null geometries.
-The ingest pipeline drops null geometries and applies `buffer(0)` to
-fix invalid ones. This affects a negligible fraction of links but the
-reasoning is documented for reproducibility.
-:::
+The full-GB ingest validates that geometries are present, non-empty,
+`LineString` features, and that the written bounds are finite and GB-wide.
+It does not apply geometry repair to Open Roads LineStrings.
 
 ## Spatial filtering
 
-GB-wide OS Open Roads contains roughly four million links. The ingest
-pipeline applies a **bounding-box filter at read time**, using
-`geopandas.read_file(..., bbox=...)` with the study area extent
-(plus a 20 km buffer) in BNG. This avoids loading the full GB dataset
-into memory and keeps the parquet output to a manageable size for
-downstream processing.
-
-The 20 km buffer is deliberate: a collision near the study area
-boundary should still be able to snap to a road link just outside the
-boundary, otherwise the snap quality degrades at the edges. The buffer
-is only applied to the network — collisions and AADF data are clipped
-to the study area itself.
+GB-wide OS Open Roads contains roughly four million links. The current ingest
+reads the `road_link` layer in small source-row chunks, reprojects each chunk
+from British National Grid to WGS84, validates each chunk, and then writes a
+single full-GB GeoParquet. The Open Roads base ingest does not apply the
+project study-area polygon clip; the source is already GB-wide, and clipping
+belongs in downstream analysis only where a narrower geography is explicitly
+needed.
 
 ## Output
 
@@ -152,7 +144,7 @@ The ingest produces a single GeoParquet file:
 - **Path:** `data/processed/shapefiles/openroads.parquet`
 - **Schema:** the renamed columns listed above, plus `link_length_km`,
   `road_name_clean`, `street_name_clean`, and `geometry` in WGS84.
-- **Size:** ~2.17M rows for the current study area.
+- **Size:** 3,941,299 rows for the current GB study area.
 
 This file is consumed by:
 

@@ -12,7 +12,7 @@ toc: true
 Open Road Risk needed a literature review that could do more than summarise papers. It needed an evidence base that could audit modelling decisions.
 :::
 
-The project estimates exposure-adjusted collision risk for around 2.17 million road links across Great Britain. That means the literature review has a practical job: establish what the road-safety modelling field already knows, identify where the project is aligned with that field, and expose where the modelling choices are weak, premature, or unsupported.
+The project estimates exposure-adjusted collision risk for around 3.94 million road links across Great Britain. That means the literature review has a practical job: establish what the road-safety modelling field already knows, identify where the project is aligned with that field, and expose where the modelling choices are weak, premature, or unsupported.
 
 AI helped with the labour of that review. It was useful for extracting, organising and comparing sources. But it was only useful when the outputs were made checkable.
 
@@ -184,7 +184,7 @@ That should have been suspicious. Injury-collision models at link-year grain are
 
 The audit found the problem: a heavy-goods-vehicle traffic feature had been joined so that it populated only the link-years that already contained collisions. That leaked the outcome into a predictor. The model was not discovering an unusually strong signal; it was being fed information it should not have had.
 
-After the join was fixed, the honest XGBoost figure was about **0.32**. The clean GB retrain later produced XGBoost pseudo-R² 0.325, while the Poisson GLM reached 0.566 on its own downsampled in-sample surface. Those figures are not a direct horse race, but the leak diagnosis still changed how the boosted model was interpreted: the earlier 0.86 result had been flattering the more complex model.
+After the join was fixed, the honest XGBoost figure was about **0.32**. The current full-GB retrain later produced XGBoost pseudo-R² 0.387 with full-zero training, while the Poisson GLM reached 0.602 on its own downsampled in-sample surface. Those figures are not a direct horse race, but the leak diagnosis still changed how the boosted model was interpreted: the earlier 0.86 result had been flattering the more complex model.
 
 That is exactly what a literature-backed audit should do. It gives you enough field expectation to question a result that looks too good.
 

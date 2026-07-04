@@ -26,7 +26,7 @@ anchor for Stage 1a. The processed table contains ~14,200 count points across
 2015--2024, including DfT-estimated rows; the current training signal uses the
 ~12,900 count points with at least one directly `Counted` observation. Most
 road links — particularly minor and unclassified roads — have no nearby count
-point. Stage 1a estimates AADT for all 2.17 million OS Open Roads links using
+point. Stage 1a estimates AADT for all 3.94 million OS Open Roads links using
 the directly counted subset as training data.
 
 ## Data and model setup
@@ -68,7 +68,7 @@ unclassified roads — relies on the Stage 1a model.
 
 Note: `road_link_annual` contains only the ~391k link×year rows that have at
 least one collision record. Coverage figures below reflect that filtered subset,
-not the full 2.1M-link OS Open Roads network.
+not the full 3.94M-link OS Open Roads network.
 
 ```{python}
 if "all_motor_vehicles" in road.columns:
@@ -370,7 +370,7 @@ if not aadt.empty:
   Time-of-day profiles are estimated separately in Stage 1b.
 - The `road_link_annual` dataset is filtered to links with at least one
   collision. Coverage and fit metrics here apply to that subset; the Stage 1a
-  model runs on all 2.1M OS Open Roads links.
+  model runs on all 3.94M OS Open Roads links.
 - The time-zone profile model (Stage 1b) extends this to estimate *when* traffic
   flows, not just how much. See [Stage 1b: Time-Zone Profiles](timezone-profile.qmd).
 :::

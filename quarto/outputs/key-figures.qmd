@@ -17,8 +17,9 @@ detail. The map is *exposure-adjusted*: it reflects risk given traffic, not
 simply where the most collisions happen. Full methodology and diagnostics are
 on the [Stage 2 model](../analysis/model-results.qmd) page.
 
-The map has three views: merged named reporting areas, equal-size 10 km grid
-cells, and the same grid with reporting-area boundaries.
+The map defaults to equal-size 10 km grid cells across Great Britain. It also
+includes a GB-wide reporting-area layer and a grid view with those reporting
+boundaries overlaid.
 
 ```{python}
 #| label: interactive-risk-map
@@ -29,71 +30,32 @@ import branca.colormap as bcm
 from branca.element import MacroElement, Template
 import numpy as np
 import pandas as pd
-from shapely import concave_hull
+from pathlib import Path
+from pyproj import datadir
 from shapely.geometry import box
+import sys
 
-from road_risk.config import _ROOT as ROOT, cfg
+from road_risk.config import _ROOT as ROOT
 
 SHADES = ["#f6ddc9", "#e7b48d", "#d4844f", "#b25636", "#7c3122"]
 GRID_M = 10_000
 MIN_GRID_LINKS = 20
-GB_BBOX = cfg["study_area"]["bbox_wgs84"]
-GB_FIT_BOUNDS = [
-    [GB_BBOX["min_lat"], GB_BBOX["min_lon"]],
-    [GB_BBOX["max_lat"], GB_BBOX["max_lon"]],
-]
-GB_CENTRE = [
-    (GB_BBOX["min_lat"] + GB_BBOX["max_lat"]) / 2,
-    (GB_BBOX["min_lon"] + GB_BBOX["max_lon"]) / 2,
-]
+
+proj_dir = Path(sys.prefix) / "share/proj"
+if proj_dir.exists():
+    datadir.set_data_dir(str(proj_dir))
+
+GB_CENTRE = [54.6, -3.2]
 
 area_paths = [
-    ROOT / "data/raw/boundaries/areas_study.geojson",
-    ROOT / "quarto/outputs/areas_study.geojson",
+    ROOT / "quarto/outputs/reporting_areas_gb.geojson",
 ]
 area_path = next((path for path in area_paths if path.exists()), None)
 if area_path is None:
     checked = "\n".join(str(path) for path in area_paths)
-    raise FileNotFoundError(f"Could not find areas_study.geojson. Checked:\n{checked}")
+    raise FileNotFoundError(f"Could not find reporting_areas_gb.geojson. Checked:\n{checked}")
 areas = gpd.read_file(area_path).to_crs(27700)
-
-REPORTING_GROUPS = {
-    "Bedford": "Bedfordshire",
-    "Central Bedfordshire": "Bedfordshire",
-    "Luton": "Bedfordshire",
-    "Blackburn with Darwen": "Lancashire and Blackpool",
-    "Blackpool": "Lancashire and Blackpool",
-    "Lancashire": "Lancashire and Blackpool",
-    "Darlington": "Tees Valley",
-    "Hartlepool": "Tees Valley",
-    "Middlesbrough": "Tees Valley",
-    "Redcar and Cleveland": "Tees Valley",
-    "Stockton-on-Tees": "Tees Valley",
-    "Derby": "Derby and Derbyshire",
-    "Derbyshire": "Derby and Derbyshire",
-    "Kingston upon Hull, City of": "Hull and East Riding",
-    "East Riding of Yorkshire": "Hull and East Riding",
-    "Leicester": "Leicester, Leicestershire and Rutland",
-    "Leicestershire": "Leicester, Leicestershire and Rutland",
-    "Rutland": "Leicester, Leicestershire and Rutland",
-    "Lincolnshire": "Greater Lincolnshire",
-    "North East Lincolnshire": "Greater Lincolnshire",
-    "North Lincolnshire": "Greater Lincolnshire",
-    "Nottingham": "Nottingham and Nottinghamshire",
-    "Nottinghamshire": "Nottingham and Nottinghamshire",
-    "Peterborough": "Cambridgeshire and Peterborough",
-    "Cambridgeshire": "Cambridgeshire and Peterborough",
-    "Shropshire": "Shropshire and Telford",
-    "Telford and Wrekin": "Shropshire and Telford",
-    "Staffordshire": "Staffordshire and Stoke-on-Trent",
-    "Stoke-on-Trent": "Staffordshire and Stoke-on-Trent",
-    "Cheshire East": "Cheshire and Warrington",
-    "Cheshire West and Chester": "Cheshire and Warrington",
-    "Halton": "Cheshire and Warrington",
-    "Warrington": "Cheshire and Warrington",
-    "North Yorkshire": "North Yorkshire and York",
-    "York": "North Yorkshire and York",
-}
+reporting_areas = areas.copy()
 
 risk = pd.read_parquet(
     ROOT / "data/models/risk_scores.parquet",
@@ -107,29 +69,6 @@ links = roads.merge(risk, on="link_id", how="inner")
 links = links[links.geometry.notna()].to_crs(27700)
 link_points = links.copy()
 link_points["geometry"] = link_points.geometry.representative_point()
-
-areas["reporting_area"] = areas["area_name"].map(REPORTING_GROUPS).fillna(areas["area_name"])
-
-east_anglia_gap_window = box(535000, 245000, 575000, 330000)
-source_union = areas.union_all()
-gap_points = link_points[
-    link_points.within(east_anglia_gap_window)
-    & ~link_points.within(source_union)
-].copy()
-if not gap_points.empty:
-    gap_geometry = concave_hull(gap_points.geometry.union_all(), ratio=0.18)
-    gap_geometry = gap_geometry.buffer(2_500).simplify(500).buffer(0)
-    gap_fill = gpd.GeoDataFrame(
-        {
-            "area_name": ["Boundary gap fill: Fenland"],
-            "reporting_area": ["Cambridgeshire and Peterborough"],
-        },
-        geometry=[gap_geometry],
-        crs=areas.crs,
-    )
-    areas = pd.concat([areas, gap_fill], ignore_index=True)
-
-reporting_areas = areas.dissolve(by="reporting_area", as_index=False)
 
 area_join = gpd.sjoin(
     link_points,
@@ -206,10 +145,36 @@ grid_colour.caption = "Median exposure-adjusted risk percentile"
 area_plot_wgs84 = area_plot.to_crs(4326)
 grid_plot_wgs84 = grid_plot.to_crs(4326)
 reporting_boundaries_wgs84 = reporting_areas.to_crs(4326)
+fit_geometries = gpd.GeoSeries(
+    pd.concat(
+        [
+            grid_plot_wgs84.geometry,
+            reporting_boundaries_wgs84.geometry,
+        ],
+        ignore_index=True,
+    ),
+    crs=4326,
+)
+min_lon, min_lat, max_lon, max_lat = fit_geometries.total_bounds
+
+# Bias the opening view toward mainland GB; the full island geometry remains pannable.
+INITIAL_VIEW_MAX_LAT = 58.85
+initial_max_lat = min(float(max_lat), INITIAL_VIEW_MAX_LAT)
+
+GB_FIT_BOUNDS = [
+    [float(min_lat), float(min_lon)],
+    [initial_max_lat, float(max_lon)],
+]
+GB_CENTRE = [
+    float((min_lat + initial_max_lat) / 2),
+    float((min_lon + max_lon) / 2),
+]
 
 risk_map = folium.Map(
     location=GB_CENTRE,
     zoom_start=6,
+    zoom_snap=0.1,
+    zoom_delta=0.1,
     width="100%",
     height="720px",
     tiles=None,
@@ -218,7 +183,7 @@ risk_map = folium.Map(
 basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
 basemap_layer.add_to(risk_map)
 
-area_layer = folium.FeatureGroup(name="Reporting areas", show=True)
+area_layer = folium.FeatureGroup(name="Reporting areas", show=False)
 folium.GeoJson(
     area_plot_wgs84[["reporting_area", "median_risk", "scored_links", "geometry"]],
     name="Reporting areas",
@@ -242,7 +207,7 @@ folium.GeoJson(
 ).add_to(area_layer)
 area_layer.add_to(risk_map)
 
-grid_layer = folium.FeatureGroup(name="10 km grid", show=False)
+grid_layer = folium.FeatureGroup(name="10 km grid", show=True)
 folium.GeoJson(
     grid_plot_wgs84[["median_risk", "scored_links", "geometry"]],
     name="10 km grid",
@@ -359,8 +324,8 @@ class ModeButtons(MacroElement):
           const div = L.DomUtil.create("div", "risk-mode-control");
           div.innerHTML = `
             <div class="risk-mode-control-title">Map view</div>
-            <button type="button" data-risk-mode="areas" class="active">Reporting areas</button>
-            <button type="button" data-risk-mode="grid">10 km grid</button>
+            <button type="button" data-risk-mode="areas">Reporting areas</button>
+            <button type="button" data-risk-mode="grid" class="active">10 km grid</button>
             <button type="button" data-risk-mode="grid-boundaries">Grid + boundaries</button>
             <div class="risk-mode-control-title">Background</div>
             <button type="button" data-base-mode="light" class="active">Light basemap</button>
@@ -441,7 +406,7 @@ risk_map.add_child(ModeButtons(
     "Median risk percentile",
     "linear-gradient(90deg, #f6ddc9, #e7b48d, #d4844f, #b25636, #7c3122)",
 ))
-risk_map.fit_bounds(GB_FIT_BOUNDS)
+risk_map.fit_bounds(GB_FIT_BOUNDS, padding=(0, 0))
 risk_map
 ```
 
@@ -487,6 +452,8 @@ traffic_colour = bcm.LinearColormap(
 traffic_map = folium.Map(
     location=GB_CENTRE,
     zoom_start=6,
+    zoom_snap=0.1,
+    zoom_delta=0.1,
     width="100%",
     height="720px",
     tiles=None,
@@ -495,7 +462,7 @@ traffic_map = folium.Map(
 traffic_basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
 traffic_basemap_layer.add_to(traffic_map)
 
-traffic_area_layer = folium.FeatureGroup(name="Reporting areas", show=True)
+traffic_area_layer = folium.FeatureGroup(name="Reporting areas", show=False)
 folium.GeoJson(
     area_plot_wgs84[["reporting_area", "median_traffic", "scored_links", "geometry"]],
     name="Reporting areas",
@@ -519,7 +486,7 @@ folium.GeoJson(
 ).add_to(traffic_area_layer)
 traffic_area_layer.add_to(traffic_map)
 
-traffic_grid_layer = folium.FeatureGroup(name="10 km grid", show=False)
+traffic_grid_layer = folium.FeatureGroup(name="10 km grid", show=True)
 folium.GeoJson(
     grid_plot_wgs84[["median_traffic", "scored_links", "geometry"]],
     name="10 km grid",
@@ -564,11 +531,11 @@ traffic_map.add_child(ModeButtons(
     "Median estimated AADT",
     "linear-gradient(90deg, #edf8fb, #b2e2e2, #66c2a4, #2ca25f, #006d2c)",
 ))
-traffic_map.fit_bounds(GB_FIT_BOUNDS)
+traffic_map.fit_bounds(GB_FIT_BOUNDS, padding=(0, 0))
 traffic_map
 ```
 
-The named-area view uses a merged reporting geography so compact urban
-authorities remain legible. A small Fenland boundary gap in the source polygons
-is joined into Cambridgeshire and Peterborough. The grid view uses equal-size
-10 km cells and omits cells with fewer than 20 scored links.
+The named-area view uses a GB-wide reporting geography, preserving the previous
+merged reporting areas where compact urban authorities need to remain legible.
+The grid view uses equal-size 10 km cells and omits cells with fewer than 20
+scored links.

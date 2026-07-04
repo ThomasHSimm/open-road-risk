@@ -351,18 +351,19 @@ GLM zero-downsampling biases the intercept and makes absolute predictions
 unreliable.
 
 **XGBoost Poisson** — captures non-linearities and interactions. Trained
-on the full dataset (no downsampling) and drives the final `risk_percentile`
-ranking via `predicted_xgb`. Comparing `predicted_glm` and `predicted_xgb`
-surfaces links where the GLM linear assumption breaks down.
+on the full zero-heavy dataset by default and drives the final
+`risk_percentile` ranking via `predicted_xgb`. A sampled-zero XGBoost mode is
+available only as an explicit memory fallback. Comparing `predicted_glm` and
+`predicted_xgb` surfaces links where the GLM linear assumption breaks down.
 
 ### Engineering detail: GLM zero-downsampling
 
-The clean GB training table is 21,675,570 link-year rows. `statsmodels` builds
+The current full-GB training table is 39,412,990 link-year rows. `statsmodels` builds
 a dense design matrix, which can OOM at this scale once optional context
 features are expanded.
 
 The GLM training set downsamples zero-collision rows to 3× the number of
-positive rows. All 391,308 positives are kept; 1,173,924 zeros are sampled.
+positive rows. All 391,323 positives are kept; 1,173,969 zeros are sampled.
 This keeps the Poisson coefficient estimates useful as a baseline while
 making the design matrix tractable at GB scale.
 
@@ -370,7 +371,8 @@ making the design matrix tractable at GB scale.
 rate in training (~75% zeros instead of ~98%) implies a higher baseline rate
 than the true population. Feature coefficients are still useful for direction
 and relative interpretation, but absolute predicted counts inherit the bias.
-XGBoost uses the full dataset and does not have this issue.
+XGBoost uses the full dataset in the reported production run and does not have
+this issue.
 
 ### Engineering detail: XGBoost `base_margin`
 
@@ -400,8 +402,8 @@ coefficient interpretability on imputed columns.
 
 ## Output: pooled risk scores
 
-`score_and_save()` applies both models to the full dataset, then pools
-predictions to one row per link.
+`score_and_save()` applies both models to the full GB dataset year-by-year,
+then pools predictions to one row per link.
 
 ### Pooling logic
 
@@ -474,14 +476,14 @@ Reported pseudo-R² reflects out-of-link performance, not in-sample fit.
 
 ### Pseudo-R² comparability between GLM and XGBoost {#pseudo-r-comparability}
 
-The current clean GB GLM pseudo-R² (0.566) and XGBoost pseudo-R² (0.325) are computed on
+The current full-GB GLM pseudo-R² (0.602) and XGBoost pseudo-R² (0.387) are computed on
 different row subsets with different null models. **They are not directly
 comparable.**
 
 | | GLM | XGBoost |
 |---|---|---|
 | Evaluation set | In-sample (downsampled training table) | Out-of-sample (held-out 20% of links) |
-| Rows | ~1.57M (all positives + 1:3 zero sample) | ~4.34M (true held-out link-year distribution) |
+| Rows | 1.57M (all positives + 1:3 zero sample) | full-zero training over 39.41M link-years; reported pseudo-R² from held-out links |
 | Zero rate in eval set | ~75% (downsampled) | ~98% (real distribution) |
 | Null model | Intercept-only Poisson on downsampled set | `y_test.mean()` on the real test set |
 
@@ -497,12 +499,12 @@ using the rank-stability harness where possible.
 Because the GLM null model sees an artificially balanced zero rate, it is
 easier to beat — the true 98% zero rate would produce a higher null deviance
 and a lower pseudo-R² for the same model. Because XGBoost is evaluated on
-the real held-out distribution against that harder null, the clean GB `0.325`
+the real held-out distribution against that harder null, the current full-GB `0.387`
 figure is the cleaner current comparison point. Earlier repo docs cited
 `~0.86`, but that came from a pre-fix evaluation surface that was later
 superseded after a feature-table leakage diagnosis.
 
-The practical implication: the 0.566 vs 0.325 gap should not be read as a
+The practical implication: the 0.602 vs 0.387 gap should not be read as a
 simple model horse race, because the evaluation surfaces still differ and the
 GB GLM uses a lower 1:3 zero-collision sampling ratio for memory reasons.
 A fair comparison would require
@@ -551,23 +553,19 @@ The GLM feature-selection rule uses any column with **>50% coverage** directly,
 then applies `.dropna()` to the assembled feature matrix. The previous raw OSM
 `speed_limit_mph` feature had 56.4% coverage, barely cleared that threshold,
 and reduced the GLM training table to **10,892,180** complete-case link-years.
-Replacing it with `speed_limit_mph_effective` resolved that threshold issue:
-the current retrain uses **18,302,830** complete-case link-years before GLM
-zero-downsampling, then **3,967,414** rows after the 1:10 positive-to-zero
-sample. The remaining complete-case loss is dominated by other network/context
-coverage, especially the RUC-related population/context tail.
+Replacing it with `speed_limit_mph_effective` resolved that threshold issue.
+The current full-GB retrain uses **1,565,292** GLM training rows after explicit
+1:3 zero downsampling.
 
 XGBoost is unaffected by this GLM threshold because `train_collision_xgb()`
 fills missing values with 0 rather than dropping rows. The Stage 2 base table
-remains **21,675,570** link-years, with the current grouped split yielding
-`xgb.n_train = 17,340,450` (80% of the full table). The production ranking
-therefore still covers all **2,167,557** links.
+is **39,412,990** link-years. The production ranking covers all
+**3,941,299** links after year-by-year scoring and link-level pooling.
 
-The effective-speed retrain left the final rank surface stable relative to the
-raw-speed baseline: Spearman rank correlation across all links was **0.9962**,
-and the top-1% Jaccard overlap was **0.9512** (21,134 shared links out of
-22,218 in the union). The feature swap changed local ordering but did not
-materially reshuffle the highest-risk set.
+The current XGBoost production run uses `tree_method="hist"` and
+`max_bin=128` to fit the full-zero training population in memory. The sampled
+XGBoost policy remains available as an explicit fallback, but should not be
+mixed with the reported full-zero metric.
 
 The pipeline also reduces feature count if `network_features.parquet` is
 missing, producing lower-quality scores without an obvious downstream signal.

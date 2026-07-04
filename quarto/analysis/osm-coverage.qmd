@@ -11,12 +11,19 @@ format:
 
 ## Overall coverage
 
-| column          |   n_links |   n_filled |   pct_coverage |
-|:----------------|----------:|-----------:|---------------:|
-| is_unpaved      |   2167557 |     350597 |           16.2 |
-| lanes           |   2167557 |     158217 |            7.3 |
-| lit             |   2167557 |     201442 |            9.3 |
-| speed_limit_mph |   2167557 |    1223142 |           56.4 |
+::: {.callout-warning}
+This OSM coverage diagnostic records a previous smaller-network run and has
+not yet been regenerated for the current 3.94M-link full-GB rebuild. Treat the
+coverage percentages below as historical until this page is rerendered from a
+fresh OSM-enriched `network_features.parquet`.
+:::
+
+| column          |   pct_coverage |
+|:----------------|---------------:|
+| is_unpaved      |           16.2 |
+| lanes           |            7.3 |
+| lit             |            9.3 |
+| speed_limit_mph |           56.4 |
 
 
 ## Coverage by road class (%)

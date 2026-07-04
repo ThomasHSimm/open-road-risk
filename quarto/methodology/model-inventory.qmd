@@ -21,17 +21,21 @@ format:
 
 | Item | Value | Source |
 |---|---|---|
-| Link-year modelling table | 21,675,570 rows | `xgb.n_train + xgb.n_test` |
-| GLM complete-case rows before downsampling | 18,302,830 rows | `glm.n_full` |
-| GLM training rows (after downsampling) | 3,967,414 | `glm.n_obs` |
-| GLM positive rows (collision > 0) | 360,674 | `glm.n_pos` |
-| XGBoost training rows | 17,340,450 | `xgb.n_train` |
-| XGBoost test rows | 4,335,120 | `xgb.n_test` |
+| Link-year modelling table | 39,412,990 rows | full Open Roads × 2015-2024 scaffold |
+| Open Roads links scored | 3,941,299 | `risk_scores.parquet` |
+| Positive collision link-years | 391,323 | `road_link_annual.parquet` |
+| GLM training rows (after downsampling) | 1,565,292 | `glm.n_obs` |
+| GLM positive rows (collision > 0) | 391,323 | `glm.n_pos` |
+| XGBoost training rows | 39,412,990 | `xgb.training_rows` / full-zero policy |
+| XGBoost positive rows | 391,323 | `xgb.positive_rows` |
+| XGBoost zero rows | 39,021,667 | `xgb.zero_rows` |
 
 **Downsampling:** The GLM first keeps complete-case rows for its feature set,
-then downsamples zero-collision rows to 10× positives (≈ 91% zeros vs 98% in
+then downsamples zero-collision rows to 3× positives (≈ 75% zeros vs 99% in
 the full table) to keep the statsmodels design matrix tractable. XGBoost trains
-on the full ~21.7M-row table with zeros filled to 0.
+on the full 39.4M-row zero-heavy table by default. A sampled-zero XGBoost mode
+exists as an explicit memory fallback, but it is not the reported production
+run.
 
 ### GLM — Poisson with log-offset
 
@@ -74,7 +78,7 @@ features.
 
 | Metric | Value |
 |---|---|
-| Pseudo-R² | 0.566 (clean full GB run; in-sample on 1:3 zero-collision downsampled training set) |
+| Pseudo-R² | 0.602 (current full-GB run; in-sample on 1:3 zero-collision downsampled training set) |
 | Deviance | 821,217 |
 | Null deviance | 1,892,370 |
 | AIC | 1,635,651 |
@@ -94,6 +98,8 @@ features.
 | `colsample_bytree` | 0.8 |
 | `random_state` | module constant `RANDOM_STATE` |
 | `n_jobs` | -1 |
+| `tree_method` | `hist` |
+| `max_bin` | 128 |
 
 **Regularisation:** None explicitly set (`reg_alpha`, `reg_lambda` take XGBoost defaults: `reg_alpha=0`, `reg_lambda=1`).  
 **Validation:** `GroupShuffleSplit(n_splits=1, test_size=0.2)` grouped by `link_id` — all years for a link stay in one fold.  
@@ -131,8 +137,12 @@ is not in the trained feature list. `lit` is present in
 
 | Metric | Value |
 |---|---|
-| Pseudo-R² | 0.325 (clean full GB run; temporal features included) |
-| Test deviance | 495,172 |
+| Pseudo-R² | 0.387 (current full-GB run; temporal features included) |
+| Zero policy | Full-zero training |
+| Training rows | 39,412,990 |
+| Positive rows | 391,323 |
+| Zero rows | 39,021,667 |
+| Runtime / peak RSS | ~26m32s / ~28.8 GB |
 
 **Comparability caveat:** GLM pseudo-R² is in-sample on a 1:3 zero-collision
 downsampled set; XGBoost is out-of-sample on the true distribution. The gap
@@ -140,7 +150,7 @@ should not be read as a clean model horse race — the two metrics are not
 computed on a common evaluation set or against a common null model. Earlier
 docs cited XGBoost pseudo-R² around `0.86`, but that number came from a pre-fix
 evaluation surface that was later superseded after a Stage 2 leakage diagnosis.
-For current project positioning, use the clean GB XGBoost pseudo-R² of `0.325`
+For current project positioning, use the current full-GB XGBoost pseudo-R² of `0.387`
 as the primary comparison point.
 
 ### Output
@@ -153,9 +163,7 @@ as the primary comparison point.
 such as `pct_dark`, `pct_urban`, `pct_junction`, `pct_near_crossing`, and
 `mean_speed_limit` are excluded from the output contract.
 
-The effective-speed retrain retained 2,167,557 scored links and 21,676 top-1%
-links. Compared with the pre-effective-speed `risk_scores.parquet`, Spearman
-rank correlation across all links was 0.9962 and top-1% Jaccard overlap was
-0.9512.
+The current full-GB retrain retained 3,941,299 scored links and 39,413 top-1%
+links, pooled to one output row per link after year-by-year scoring.
 
 ---

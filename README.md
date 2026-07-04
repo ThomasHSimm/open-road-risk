@@ -14,7 +14,7 @@ including the large share of roads without direct traffic counters.
 
 - **Current geography:** Great Britain (GB)
 - **Time range:** 2015–2024
-- **Network size:** 2,167,557 OS Open Roads links; model stages expand this to link × year rows
+- **Network size:** 3,941,299 OS Open Roads links; model stages expand this to 39,412,990 link × year rows for 2015-2024
 
 **Documentation site:** https://openroadrisk.org/
 
@@ -27,7 +27,7 @@ Open Road Risk is an independent personal research and software project. It uses
 ## What this builds
 
 **Stage 1a — Traffic estimation**  
-Predicts AADT (annual average daily traffic) for all 2.1M road links using a gradient
+Predicts AADT (annual average daily traffic) for all 3.94M road links using a gradient
 boosting model trained on AADF count points. Fills coverage gaps on minor/unclassified
 roads where DfT has no measured counts. The current training run uses directly Counted
 AADF rows only across 2015-2024. CV R² ~0.83 with features including road class,
@@ -48,13 +48,17 @@ not part of the current Stage 2 collision feature set.
 Uses `log(AADT × length_km × 365 / 1e6)` as exposure offset so the model learns
 *which roads are dangerous given their traffic* — not just which are busy.
 XGBoost drives the final risk percentile ranking (`risk_scores.parquet`).
-The clean full GB retrain completed on 2026-07-01 with XGBoost pseudo-R²
-`0.325` out of sample. Earlier repo
+The current full-GB retrain scores 3,941,299 road links. XGBoost trains on the
+full zero-heavy link-year population by default (39,412,990 rows; 391,323
+positive link-years; 39,021,667 zero link-years) and achieved pseudo-R²
+`0.387` out of sample. Earlier repo
 documentation cited `~0.86`, but that figure came from a pre-fix evaluation
 surface that was later found to be contaminated by feature-table leakage and
 should not be used for current project positioning.
-The GLM (pseudo-R² `0.566`, in-sample on a 1:3 zero-collision downsampled
-training set) provides interpretable coefficients and diagnostic residuals.
+The GLM (pseudo-R² `0.602`, in-sample on 1,565,292 rows with explicit 1:3
+zero-collision downsampling) provides interpretable coefficients and diagnostic
+residuals. Sampled-zero XGBoost is retained only as an explicit fallback for
+memory-constrained runs; it is not the default reported production result.
 Features include a tiered
 speed limit imputation (`speed_limit_mph_effective`), GB within-country
 deprivation deciles, GB rural/urban context, population density, and
@@ -171,17 +175,19 @@ open-road-risk/
 
 ---
 
-## Key Results (May 2026)
+## Key Results (July 2026)
 
 | Metric | Value |
 |---|---|
-| Collisions loaded (2015–2024) | 203,928 |
-| Collisions snapped to road links | ~99.8% |
+| Collisions snapped to road links | 452,897 collisions; 452,283 weighted matches |
 | Mean snap score | 0.860 |
-| Road links scored (full network) | 2,167,557 |
-| AADT estimator CV R² | ~0.83 (counted-only AADF rows) |
-| Poisson GLM pseudo-R² | 0.566 (clean full GB run; in-sample on 1:3 zero-collision downsampled training set; not directly comparable to XGBoost or earlier 1:10 runs) |
-| XGBoost pseudo-R² | 0.325 (clean full GB run; out-of-sample with temporal features included) |
+| Road links scored (full network) | 3,941,299 |
+| Link-years modelled | 39,412,990 (2015-2024) |
+| AADT estimator local holdout R² | 0.821 |
+| AADT estimator spatial holdout R² | 0.777 |
+| Poisson GLM pseudo-R² | 0.602 (interpretable baseline; in-sample on 1:3 zero-collision downsampled training set) |
+| XGBoost pseudo-R² | 0.387 (full-zero training; out-of-sample with temporal features included) |
+| Top 1% risk links | 39,413 |
 
 ---
 
