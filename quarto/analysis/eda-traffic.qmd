@@ -1,12 +1,15 @@
 ---
 title: "Traffic Volume EDA for AADF and WebTRIS"
-description: "Exploratory analysis of traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs."
+date-modified: 2026-07-04
+description: "Exploratory analysis of full-GB traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs."
 format:
   html:
     toc: true
     toc-depth: 3
     number-sections: true
     page-layout: full
+    code-fold: true
+    code-summary: "Show code"
 execute:
   echo: true
   warning: false
@@ -14,19 +17,46 @@ execute:
 jupyter: python3
 ---
 
+::: {.small .text-muted}
+Last updated: 2026-07-04 · Data coverage: 2015–2024.
+:::
+
 ## Overview
 
 Stage 1a estimates Annual Average Daily Traffic (AADT) for every OS Open Roads
-link in the study area. Directly measured AADF count points cover only a
-minority of road links — particularly minor and unclassified roads — so a
-gradient-boosted regressor is trained on those measured points and applied to
-the full 3.94M-link network.
+link across full Great Britain. Directly measured AADF count points cover only a
+minority of road links, especially minor and unclassified roads, so a
+gradient-boosted regressor is trained on measured count sites and applied to the
+full 3.94M-link network.
+
+The resulting AADT layer is an exposure input to the collision model. It is not
+just another predictor: Stage 2 turns each link-year estimate into annual
+vehicle-kilometre exposure using `AADT × link length × 365`, then models
+collisions relative to that exposure and the surrounding road context. AADT is
+estimated where direct counts are unavailable, and the estimates are validated
+against held-out count sites.
 
 This page covers:
 
 - The measured AADF count-point data used for training
 - How the model was built and validated
 - The resulting full-network AADT estimates and their geographic pattern
+
+### Current full-GB traffic layer
+
+| Measure | Current value |
+|---|---:|
+| Open Roads links | 3,941,299 |
+| Link-years | 39,412,990 |
+| Years | 2015-2024 |
+| AADT estimate rows | 39,412,990 |
+| Unique AADT links | 3,941,299 |
+| AADT local holdout R² | 0.821 |
+| AADT spatial holdout R² | 0.777 |
+| AADT CV R² | 0.824 ± 0.008 |
+| Risk-score rows using this exposure layer | 3,941,299 |
+| Collision model XGBoost pseudo-R² | 0.360 |
+| Collision model GLM pseudo-R² | 0.505 |
 
 ```{python}
 from pathlib import Path
@@ -245,8 +275,9 @@ if not val_summary.empty:
     fig, ax = plt.subplots(figsize=(6, 3))
     colors = ["#457b9d", "#e63946"]
     bars = ax.barh(val_summary["scheme"], val_summary["r2"], color=colors)
-    ax.axvline(0.72, color="black", linestyle="--", linewidth=1, alpha=0.5,
-               label="GroupKFold CV R²≈0.72")
+    cv_r2 = aadt_metrics.get("cv_r2_mean", 0.824) if "aadt_metrics" in globals() else 0.824
+    ax.axvline(cv_r2, color="black", linestyle="--", linewidth=1, alpha=0.5,
+               label=f"GroupKFold CV R²≈{cv_r2:.3f}")
     ax.set_xlabel("R² (log scale)")
     ax.set_title("External validation R² by holdout scheme")
     ax.set_xlim(0, 1)
@@ -269,6 +300,10 @@ if val_local_path.exists():
 ---
 
 ## Full-network AADT estimates
+
+The estimates cover every OS Open Roads link in Great Britain for each AADF
+year from 2015 to 2024. They provide a consistent exposure layer for Stage 2,
+including links that have no directly observed count point.
 
 ### Distribution by road classification
 
@@ -376,7 +411,9 @@ if HAS_GPD and openroads is not None and not aadt.empty:
 ### Sanity check — estimated vs measured AADF (2023)
 
 Links that have a directly measured AADF count point within 2 km should have
-estimates close to the measured value. This checks in-sample calibration.
+estimates close to the measured value. This is a local sanity check; the
+held-out validation above is the main check on how the AADT model performs at
+count sites that were not used for fitting.
 
 ```{python}
 if HAS_GPD and openroads is not None and not aadt.empty:
@@ -468,3 +505,7 @@ Key observations:
 - The residual plot for matched links shows approximately zero median bias in
   log space, with spread driven mainly by minor roads where count-point
   representativeness is weakest.
+- The estimated AADT layer feeds Stage 2 as annual vehicle-kilometre exposure
+  (`AADT × link length × 365`), so the collision model ranks links relative to
+  estimated traffic volume rather than treating raw collision counts alone as
+  risk.

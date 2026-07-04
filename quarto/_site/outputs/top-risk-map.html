@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Top-Risk Road Segments Map – Open Road Risk</title>
 <style>
@@ -145,6 +145,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -421,6 +425,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
     
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">July 4, 2026</p>
+    </div>
+  </div>
     
   </div>
   
@@ -429,9 +439,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
+<div class="small text-muted">
+<p>Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.</p>
+</div>
 <p>This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The current GB production export uses the XGBoost <code>risk_percentile</code> ranking from <code>data/models/risk_scores.parquet</code>.</p>
 <p>These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. Sparse collision histories should be interpreted cautiously.</p>
-<p>The refreshed GB outputs were retrained and replayed cleanly on 2026-07-01. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples.</p>
+<p>The refreshed GB outputs were retrained and the top-risk web assets were regenerated on 2026-07-04. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples.</p>
 <p>The map colours links by <code>log_predicted_score = log1p(predicted_xgb)</code> rather than by <code>risk_percentile</code>, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.</p>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -638,11 +651,11 @@ Numeric summary
 <li>Source layer: <code>data/outputs/top_1pct_risk_segments.parquet</code>.</li>
 <li>Web layer: <code>data/outputs/web/top_1pct_risk_segments.geojson</code>.</li>
 <li>Context network layers: <code>data/outputs/web/context/context_manifest.json</code> plus split GeoJSON files. Motorway and trunk-A links are shown in full; <code>other_urban</code> and <code>other_rural</code> show the top context percentile by the ranking field recorded in the manifest.</li>
-<li>Features: 21,676 road links.</li>
-<li>GeoJSON size: 15,880,206 bytes.</li>
+<li>Features: 39,413 road links.</li>
+<li>GeoJSON size: 28,598,972 bytes.</li>
 <li>Geometry simplification: 25 m tolerance in EPSG:3857, then written as EPSG:4326 with coordinates rounded to 0.00001 degrees.</li>
 <li>Colour scaling: <code>log_predicted_score = log1p(predicted_xgb)</code>.</li>
-<li>QA status: GB production model replayed cleanly on 2026-07-01; top-risk plausibility review still required before publication claims.</li>
+<li>QA status: full-GB production model and top-risk web assets refreshed on 2026-07-04; top-risk plausibility review still required before publication claims.</li>
 <li>Background map: OpenStreetMap tiles, with static project GeoJSON files for the risk and context layers.</li>
 </ul>
 <script>
@@ -702,13 +715,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const CONTEXT_MANIFEST_URL = "../data/outputs/web/context/context_manifest.json";
   const CONTEXT_BASE_URL = "../data/outputs/web/context/";
   const CONTEXT_FAMILIES = new Set(["motorway", "trunk_a", "other_urban", "other_rural"]);
+  const FULL_GB_ROAD_BOUNDS = L.latLngBounds(
+    [[49.89091, -8.58617], [60.82770, 1.76234]]
+  );
   const renderer = L.canvas({ padding: 0.35 });
   const map = L.map(elements["top-risk-map"], {
     renderer,
     zoomControl: true,
     preferCanvas: true,
     attributionControl: true
-  }).setView([53.35, -1.3], 7);
+  }).setView([55.4, -3.4], 6);
 
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
@@ -740,6 +756,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let allFeatures = [];
   let currentHaloLayer = null;
   let currentLayer = null;
+  let mapFitBounds = FULL_GB_ROAD_BOUNDS;
   let logMin = 0;
   let logMax = 1;
   let legendScaleLabel = null;
@@ -1003,14 +1020,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     ).addTo(map);
 
-    if (features.length > 0) {
-      map.fitBounds(currentLayer.getBounds(), { padding: [18, 18], maxZoom: 13 });
-    }
+    map.fitBounds(mapFitBounds, { padding: [18, 18] });
 
     status.textContent = [
       `${features.length.toLocaleString()} of ${allFeatures.length.toLocaleString()} links shown`,
       activeFilterText(),
-      `colour scale: ${formatNumber(logMin, 3)}-${formatNumber(logMax, 3)} (${colourLimits.mode})`
+      `colour scale: ${formatNumber(logMin, 3)}-${formatNumber(logMax, 3)} (${colourLimits.mode})`,
+      "map extent: full GB road context"
     ].join(" | ");
   }
 
@@ -1087,6 +1103,7 @@ document.addEventListener("DOMContentLoaded", () => {
   legend.addTo(map);
 
   function loadContextLayers() {
+    let contextBounds = null;
     return fetch(CONTEXT_MANIFEST_URL)
       .then((response) => {
         if (!response.ok) {
@@ -1111,12 +1128,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderer,
                 style: contextStyle,
                 interactive: false
+              }).eachLayer((layer) => {
+                const bounds = layer.getBounds ? layer.getBounds() : null;
+                if (bounds && bounds.isValid()) {
+                  contextBounds = contextBounds ? contextBounds.extend(bounds) : bounds;
+                }
               }).addTo(map);
             })
             .catch((error) => {
               console.warn(`Skipping context layer ${url}: ${error.message}`);
             });
-        }));
+        })).then(() => {
+          if (contextBounds && contextBounds.isValid()) {
+            mapFitBounds = contextBounds;
+          }
+        });
       })
       .catch((error) => {
         console.warn(`Context network unavailable: ${error.message}`);

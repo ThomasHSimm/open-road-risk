@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Current Model Status for Open Road Risk – Open Road Risk</title>
 <style>
@@ -165,6 +165,10 @@ background-size: cover;
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -425,6 +429,12 @@ background-size: cover;
 
       
     
+      <div>
+      <div class="quarto-title-meta-heading">Modified</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date-modified">July 4, 2026</p>
+      </div>
+    </div>
       
     </div>
     
@@ -442,7 +452,10 @@ background-size: cover;
 
 
 
-<p>This section provides a live view of the modelling pipeline’s performance and status, sourced directly from the latest validation artefacts and provenance records.</p>
+<div class="small text-muted">
+<p>Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.</p>
+</div>
+<p>This section provides a live view of the modelling pipeline’s performance and status, sourced directly from the latest validation artefacts, provenance records, and validated full-GB rebuild counts.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -462,33 +475,39 @@ background-size: cover;
 <tr class="odd">
 <td>Stage 1a: AADT model</td>
 <td>Implemented</td>
-<td>Local R²: 0.831, Spatial R²: 0.792, N=17412</td>
+<td>Local R²: 0.821, Spatial R²: 0.777, N=17412</td>
 <td>Estimates traffic where direct counts are unavailable</td>
 </tr>
 <tr class="even">
-<td>Stage 2: GLM collision-risk model</td>
-<td>Implemented</td>
-<td>Pseudo-R²: 0.347</td>
-<td>Interpretable exposure-adjusted baseline</td>
+<td>Full GB collision rebuild</td>
+<td>Validated</td>
+<td>39,412,990 link-years; 1,148,857 processed STATS19 rows; 1,145,198 retained snapped collisions; 945,373 positive link-years</td>
+<td>Row counts are for the 2015-2024 GB rebuild</td>
 </tr>
 <tr class="odd">
-<td>Stage 2: XGBoost collision-risk model</td>
-<td>Implemented across 5 seeds</td>
-<td>Mean Pseudo-R²: 0.323, Seeds: [42, 43, 44, 45, 46]</td>
-<td>Flexible comparison/diagnostic model; weaker interpretability than GLM</td>
+<td>Stage 2: GLM collision-risk model</td>
+<td>Implemented</td>
+<td>Pseudo-R²: 0.505; rows: 3,781,492</td>
+<td>Interpretable exposure-adjusted baseline on a 1:3 zero-collision sampled surface</td>
 </tr>
 <tr class="even">
+<td>Stage 2: XGBoost collision-risk model</td>
+<td>Implemented</td>
+<td>Pseudo-R²: 0.360; zero policy: full-zero; train/test rows: 31,530,390/7,882,600</td>
+<td>Flexible ranking model; check calibration before presenting raw predicted counts as expected counts</td>
+</tr>
+<tr class="odd">
 <td>Final scored output</td>
 <td>Implemented</td>
-<td>2,167,557 scored links</td>
+<td>3,941,299 scored links; 531,442 links with retained collisions; 39,413 top-1% links</td>
 <td>Current scoring grain is one row per road link, not link-year</td>
 </tr>
 </tbody>
 </table>
 <ul>
-<li><strong>Latest model run</strong>: 2026-05-03T13:25:09.900667+00:00</li>
-<li><strong>Git SHA</strong>: <code>301a766b</code></li>
-<li><strong>Sources read</strong>: rank_stability_provenance.json, aadt_validation_summary.parquet</li>
+<li><strong>Rank-stability provenance timestamp</strong>: 2026-05-03T13:25:09.900667+00:00</li>
+<li><strong>Rank-stability Git SHA</strong>: <code>301a766b</code></li>
+<li><strong>Sources read</strong>: collision_metrics.json, risk_scores.parquet, rank_stability_provenance.json, aadt_validation_summary.parquet</li>
 </ul>
 <p>“These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”</p>
 

@@ -1,5 +1,6 @@
 ---
 title: "Stage 2: Collision Risk Model"
+date-modified: 2026-07-04
 description: "Analysis of Stage 2 collision risk model outputs, feature behaviour, metrics, ranking patterns, and diagnostic comparisons."
 format:
   html:
@@ -16,6 +17,10 @@ execute:
 jupyter: python3
 
 ---
+
+::: {.small .text-muted}
+Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.
+:::
 
 ## Overview
 
@@ -40,13 +45,13 @@ and context feature tables. The run built 39,412,990 link-year rows for
 deprivation, and rural/urban context fields, and excluded the retired
 English-only IMD fields.
 
-The XGBoost Poisson model achieved pseudo-R² = 0.387 with full-zero training
-over 39,412,990 link-years (391,323 positives and 39,021,667 zeros). The
-production XGBoost fit uses `tree_method="hist"` and `max_bin=128`; sampled-zero
-XGBoost is available only as an explicit memory fallback. The GLM baseline
-converged with pseudo-R² = 0.602 on 1,565,292 sampled training rows using an
-explicit 1:3 zero-collision sampling ratio. These values are not directly
-comparable because the GLM and XGBoost evaluation surfaces differ.
+The XGBoost Poisson model achieved pseudo-R² = 0.360 with full-zero training
+over the full 39,412,990 link-year population: 945,373 positive road-link ×
+year rows and 38,467,617 zero rows. The production XGBoost fit uses
+`tree_method="hist"` and `max_bin=128`; sampled-zero XGBoost is available only
+as an explicit memory fallback. The GLM baseline converged with pseudo-R² =
+0.505 on its 3,781,492-row 1:3 zero-collision sampled surface. These values are
+not directly comparable because the GLM and XGBoost evaluation surfaces differ.
 
 Outputs were written to `data/models/risk_scores.parquet`,
 `data/models/collision_glm.pkl`, `data/models/collision_xgb.json`, and
@@ -760,9 +765,9 @@ show_table(
 
 Key observations:
 
-- XGBoost's current full-GB run has pseudo-R² `0.387`, with temporal features
-  included and full-zero training, while the GLM sits at pseudo-R² `0.602` on
-  its own 1:3 zero-collision downsampled in-sample surface.
+- XGBoost's current full-GB run has pseudo-R² `0.360`, with temporal features
+  included and full-zero training, while the GLM sits at pseudo-R² `0.505` on
+  its own 1:3 zero-collision sampled surface.
   Earlier repo docs cited an XGBoost pseudo-R² around `0.86`, but that figure
   came from a pre-fix evaluation surface that was later superseded after a
   feature-table leakage diagnosis. The two current pseudo-R² values are also
