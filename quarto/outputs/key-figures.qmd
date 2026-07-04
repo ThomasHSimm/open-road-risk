@@ -17,8 +17,9 @@ detail. The map is *exposure-adjusted*: it reflects risk given traffic, not
 simply where the most collisions happen. Full methodology and diagnostics are
 on the [Stage 2 model](../analysis/model-results.qmd) page.
 
-The map has three views: merged named reporting areas, equal-size 10 km grid
-cells, and the same grid with reporting-area boundaries.
+The map defaults to equal-size 10 km grid cells across Great Britain. It also
+keeps the available merged reporting-area layer for the older named-area
+footprint, plus a grid view with those reporting-area boundaries overlaid.
 
 ```{python}
 #| label: interactive-risk-map
@@ -209,7 +210,7 @@ reporting_boundaries_wgs84 = reporting_areas.to_crs(4326)
 
 risk_map = folium.Map(
     location=GB_CENTRE,
-    zoom_start=6,
+    zoom_start=6.5,
     width="100%",
     height="720px",
     tiles=None,
@@ -218,7 +219,7 @@ risk_map = folium.Map(
 basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
 basemap_layer.add_to(risk_map)
 
-area_layer = folium.FeatureGroup(name="Reporting areas", show=True)
+area_layer = folium.FeatureGroup(name="Available reporting areas", show=False)
 folium.GeoJson(
     area_plot_wgs84[["reporting_area", "median_risk", "scored_links", "geometry"]],
     name="Reporting areas",
@@ -242,7 +243,7 @@ folium.GeoJson(
 ).add_to(area_layer)
 area_layer.add_to(risk_map)
 
-grid_layer = folium.FeatureGroup(name="10 km grid", show=False)
+grid_layer = folium.FeatureGroup(name="10 km grid", show=True)
 folium.GeoJson(
     grid_plot_wgs84[["median_risk", "scored_links", "geometry"]],
     name="10 km grid",
@@ -359,8 +360,8 @@ class ModeButtons(MacroElement):
           const div = L.DomUtil.create("div", "risk-mode-control");
           div.innerHTML = `
             <div class="risk-mode-control-title">Map view</div>
-            <button type="button" data-risk-mode="areas" class="active">Reporting areas</button>
-            <button type="button" data-risk-mode="grid">10 km grid</button>
+            <button type="button" data-risk-mode="areas">Available reporting areas</button>
+            <button type="button" data-risk-mode="grid" class="active">10 km grid</button>
             <button type="button" data-risk-mode="grid-boundaries">Grid + boundaries</button>
             <div class="risk-mode-control-title">Background</div>
             <button type="button" data-base-mode="light" class="active">Light basemap</button>
@@ -486,7 +487,7 @@ traffic_colour = bcm.LinearColormap(
 
 traffic_map = folium.Map(
     location=GB_CENTRE,
-    zoom_start=6,
+    zoom_start=7,
     width="100%",
     height="720px",
     tiles=None,
@@ -495,7 +496,7 @@ traffic_map = folium.Map(
 traffic_basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
 traffic_basemap_layer.add_to(traffic_map)
 
-traffic_area_layer = folium.FeatureGroup(name="Reporting areas", show=True)
+traffic_area_layer = folium.FeatureGroup(name="Available reporting areas", show=False)
 folium.GeoJson(
     area_plot_wgs84[["reporting_area", "median_traffic", "scored_links", "geometry"]],
     name="Reporting areas",
@@ -519,7 +520,7 @@ folium.GeoJson(
 ).add_to(traffic_area_layer)
 traffic_area_layer.add_to(traffic_map)
 
-traffic_grid_layer = folium.FeatureGroup(name="10 km grid", show=False)
+traffic_grid_layer = folium.FeatureGroup(name="10 km grid", show=True)
 folium.GeoJson(
     grid_plot_wgs84[["median_traffic", "scored_links", "geometry"]],
     name="10 km grid",

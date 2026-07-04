@@ -20,7 +20,7 @@ Stage 1a estimates Annual Average Daily Traffic (AADT) for every OS Open Roads
 link in the study area. Directly measured AADF count points cover only a
 minority of road links — particularly minor and unclassified roads — so a
 gradient-boosted regressor is trained on those measured points and applied to
-the full 2.1M-link network.
+the full 3.94M-link network.
 
 This page covers:
 
@@ -194,7 +194,7 @@ GroupKFold CV grouped by `count_point_id` ensures the same station cannot appear
 in both train and test folds across years.
 
 WebTRIS flow features are excluded from Stage 1a: they are unavailable for
-the 2.1M-link network at inference and their absence would need to be imputed
+the 3.94M-link network at inference and their absence would need to be imputed
 with zeros, which corrupts predictions because HistGBR routes NaN and zero
 through different tree branches.
 
@@ -285,7 +285,7 @@ if not aadt.empty and openroads is not None:
                  color="#1d3557", edgecolor="none", alpha=0.8)
     axes[0].set_xlabel("log(estimated AADT vehicles/day)")
     axes[0].set_ylabel("Link count")
-    axes[0].set_title("Estimated AADT — all 2.1M links (2023, log scale)")
+    axes[0].set_title("Estimated AADT — all 3.94M links (2023, log scale)")
 
     cls_order = ["Motorway", "A Road", "B Road", "Classified Unnumbered",
                  "Not Classified", "Unclassified", "Unknown"]

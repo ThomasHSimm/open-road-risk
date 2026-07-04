@@ -109,7 +109,7 @@ Plot.plot({
 
 Stage 2 currently ranks links by pooled `predicted_xgb`. This is a model-only
 ranking: it uses the XGBoost Poisson expectation and does not directly borrow
-from observed collision history. For rare events across roughly 2.17 million
+from observed collision history. For rare events across roughly 3.94 million
 links, a pure point-prediction ranking can overstate certainty near narrow
 top-k thresholds.
 
@@ -151,10 +151,9 @@ The output `collision_count` is:
 > table.
 
 The current Stage 2 dataset is built from all years in `aadt_estimates.parquet`;
-the 5-seed rank-stability run logged 10 years, 2015-2024, giving 21,675,570
-link-years and 2,167,557 scored links. The EB implementation should not assume
-10 years permanently: it should compute `n_years` per link from the link-year
-table.
+the full-GB run covers 10 years, 2015-2024, giving 39,412,990 link-years and
+3,941,299 scored links. The EB implementation should not assume 10 years
+permanently: it should compute `n_years` per link from the link-year table.
 
 ---
 
@@ -559,7 +558,7 @@ seed-churn population moved barely more than the general scored population:
 |---|---:|---:|---:|
 | seed_churn_top_100 | 21 | 0 (0.00%) | 0 (0.00%) |
 | seed_churn_top_1000 | 234 | 2 (0.85%) | 1 (0.43%) |
-| full scored population | 2,167,557 | 16,114 (0.74%) | 6,597 (0.30%) |
+| previous smaller scored population | previous run | 16,114 (0.74%) | 6,597 (0.30%) |
 
 The seed-churn population showed movement rates at or below the general
 population rate — the opposite of what the hypothesis predicted.

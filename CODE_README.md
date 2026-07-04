@@ -16,9 +16,9 @@ Status of each module in the pipeline.
 | `features/road_curvature.py` | ✅ Done | Curvature/sinuosity feature derivation from OS Open Roads geometry; motorway gating documented |
 | `features/road_terrain.py` | ✅ Done | Grade features from OS Terrain 50; `mean_grade` now used in Stage 2 |
 | `features/legacy.py` | ✅ Done (legacy) | Deprecated — collision.py builds its own feature table. Self-deprecates on import. |
-| `model/aadt.py` | ✅ Done | Stage 1a AADT estimator (counted-only CV R² ~0.83), GroupKFold by count_point_id, applied to 2.1M links |
+| `model/aadt.py` | ✅ Done | Stage 1a AADT estimator (local holdout R² 0.821, spatial holdout R² 0.777), GroupKFold by count_point_id, applied to 3.94M links |
 | `model/timezone_profile.py` | ✅ Done | Stage 1b time-zone fractions (peak/pre-peak/off-peak), GroupKFold by site_id |
-| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost; clean full GB retrain completed 2026-07-01 (XGB pseudo-R² 0.325, GLM pseudo-R² 0.566 with 1:3 zero-collision sampling); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
+| `model/collision.py` | ✅ Done | Stage 2 Poisson GLM + XGBoost; current full-GB retrain scores 3.94M links (XGB pseudo-R² 0.387 with full-zero training; GLM pseudo-R² 0.602 with explicit 1:3 zero-collision sampling); XGBoost drives risk_percentile; GroupShuffleSplit by link_id |
 | `model/eb_*.py` | ✅ Diagnostic | Empirical Bayes dispersion/shrinkage outputs, separate from production `risk_scores.parquet` |
 | `model/family_split.py` | ✅ Diagnostic | Facility-family XGBoost experiment and stitched ranking diagnostics |
 | `model/rank_stability.py` | ✅ Done | Multi-seed XGBoost ranking stability harness |
@@ -131,12 +131,13 @@ See [methodology site](https://openroadrisk.org/) for feature lists,
 performance metrics, and validation detail — kept there to avoid documentation drift in this file.
 
 **Stage 1a — AADT Estimator**
-- Counted-only AADF target CV R²: ~0.83 | Applied to 2,167,557 links × 10 years
+- Counted-only AADF target validation: local holdout R² 0.821; spatial holdout R² 0.777 | Applied to 3,941,299 links × 10 years
 
 **Stage 2 — Collision Model**
-- 2026-07-01: Clean full GB Stage 2 collision retrain completed. Scored 2,167,557 links across 2015–2024 AADT years.
-- Poisson GLM pseudo-R²: 0.566 (in-sample on downsampled training set; `n_full` 21.7M; uses 1:3 zero-collision sampling for GB-scale memory)
-- XGBoost pseudo-R²: 0.325 (out-of-sample, GroupShuffleSplit by `link_id`, with temporal features included)
+- Current full-GB Stage 2 collision retrain completed. Scored 3,941,299 links across 2015–2024 AADT years.
+- Poisson GLM pseudo-R²: 0.602 (interpretable baseline; in-sample on 1,565,292 training rows with explicit 1:3 zero-collision sampling)
+- XGBoost pseudo-R²: 0.387 (out-of-sample, GroupShuffleSplit by `link_id`, temporal features included, full-zero training over 39,412,990 link-years)
+- XGBoost zero policy: `full` by default; sampled-zero XGBoost is an explicit fallback for memory-constrained runs.
 - **Not directly comparable** — different row subsets, different null models. See methodology site.
 - XGBoost drives `risk_percentile`; GLM drives `residual_glm` residual diagnostics. 
 - *Note: diagnostic runs generated `risk_scores_eb.parquet` (Empirical Bayes) and `risk_scores_family.parquet` (Facility-Family split). Production app uses the current `risk_scores.parquet`.*
@@ -151,7 +152,7 @@ performance metrics, and validation detail — kept there to avoid documentation
 | STATS19 collisions | `data/raw/stats19/` | Great Britain 2015–2024 after GB boundary filtering |
 | AADF traffic counts | `data/raw/aadf/` | Study area 2015–2024 |
 | WebTRIS sensor data | `data/raw/webtris/` | National Highways sensors, target years 2019, 2021, 2023 |
-| OS Open Roads | `data/raw/shapefiles/oproad_gb.gpkg` | Study area + 20km buffer |
+| OS Open Roads | `data/raw/shapefiles/oproad_gb.gpkg` | Full Great Britain |
 | MRDB | `data/raw/shapefiles/MRDB_2024_published.shp` | Study area major roads |
 | OSM pbf files | `data/raw/osm/*.osm` | County files from Geofabrik (see `data/raw/osm/`) |
 | GB OA population density | `data/processed/context/oa_population_density_gb.parquet` | England/Wales OA2021 + Scotland OA2022; assigned in `network.py` by OA polygon containment with nearest fallback |

@@ -20,7 +20,7 @@ different gap in the available data, and each stage feeds the next.
 
 | Stage | What it predicts | Why it exists | Output |
 |---|---|---|---|
-| **1a — Traffic volume** | AADT for every road link | DfT AADF has ~14,200 processed count points, of which ~12,900 provide directly counted Stage 1a training signal; the network has 2.17M links | `aadt_estimates.parquet` |
+| **1a — Traffic volume** | AADT for every road link | DfT AADF has ~14,200 processed count points, of which ~12,900 provide directly counted Stage 1a training signal; the network has 3.94M links | `aadt_estimates.parquet` |
 | **1b — Time-zone profiles** | Within-day traffic shape (peak / pre-peak / off-peak fractions) | WebTRIS sensors are sparse; profiles let temporal exposure be projected to all links | `timezone_profiles.parquet` |
 | **2 — Collision risk** | Expected collisions per link per year | The headline risk model — uses Stage 1a output as exposure | `risk_scores.parquet` |
 
@@ -37,7 +37,7 @@ with 500 — that's not a safety problem, it's a volume problem.
 The natural denominator is AADT (Annual Average Daily Flow), and the processed
 DfT AADF table contains ~14,200 count points across the study area. Stage 1a
 uses the ~12,900 count points with at least one directly counted observation
-as the training signal. But the project scores 2.17 million road links. Most
+as the training signal. But the project scores 3.94 million road links. Most
 of the network — particularly minor and unclassified roads where collision
 under-counting is most severe — has no nearby count point.
 
@@ -124,12 +124,12 @@ collisions it's trying to predict.
 
 Each stage has its own held-out validation:
 
-- **Stage 1a:** CV R² ~0.83 on counted-only AADF rows.
+- **Stage 1a:** local holdout R² 0.821 and spatial holdout R² 0.777 on counted-only AADF rows.
 - **Stage 1b:** CV R² ~0.65 on `core_daytime_frac`, ~0.46 on
   `late_evening_frac` (weakest band).
-- **Stage 2:** The clean full GB run gives out-of-sample pseudo-R² 0.325 for
-  XGBoost, with temporal features included, and 0.566 for the GLM in-sample on
-  a 1:3 zero-collision downsampled training set.
+- **Stage 2:** The current full-GB run gives out-of-sample pseudo-R² 0.387 for
+  XGBoost, with temporal features included and full-zero training, and 0.602
+  for the GLM in-sample on a 1:3 zero-collision downsampled training set.
 
 **The Stage 1a and Stage 2 metrics are not directly comparable** —
 different targets, different null models, different row subsets. See
@@ -141,8 +141,8 @@ zero-collision links.
 Earlier internal docs and site pages cited a Stage 2 XGBoost pseudo-R²
 around `0.86`. That number came from a pre-fix evaluation surface that was
 later superseded after a Stage 2 feature-table bug and leakage issue were
-diagnosed. For current project positioning, use the clean GB XGBoost
-pseudo-R² of `0.325` as the primary comparison point.
+diagnosed. For current project positioning, use the current full-GB XGBoost
+pseudo-R² of `0.387` as the primary comparison point.
 
 ## What this section covers
 

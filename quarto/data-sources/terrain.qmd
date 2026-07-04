@@ -114,10 +114,10 @@ if "mean_grade" in feat:
           f"({100 * n_null / len(feat):.2f}%)")
 ```
 
-As verified on the current local build: `grade_method` is `profile` for all
-2,167,557 links, all three structure proxies are empty, and the 12,234 OS Open
-Roads slip-road links (~0.56% of the network) likewise carry uncorrected
-profile-method grade, with `mean_grade` present on 10,325 of them.
+As verified on the previous smaller local build: `grade_method` was `profile`
+for all links, all three structure proxies were empty, and the OS Open Roads
+slip-road links likewise carried uncorrected profile-method grade. Recheck the
+exact slip-road counts after any full-GB terrain rebuild.
 
 ::: {.callout-note collapse="true"}
 ## Implication for the risk model — measured
@@ -150,11 +150,11 @@ import json
 import pandas as pd
 from road_risk.config import _ROOT as ROOT
 
-# Fallback, stamped to the current build, used only if artefacts are absent.
-STAMP = ("Current build: mean_grade XGBoost importance 0.0199 (rank 16/26); "
-         "slip roads 484/21,676 = 2.23% of the top 1% risk set vs 0.56% of the "
-         "network; bridge/tunnel/covered links unquantified (none flagged — OSM "
-         "structure file absent).")
+# Fallback used only if artefacts are absent. Keep it qualitative so it does
+# not preserve stale top-risk counts from earlier network builds.
+STAMP = ("Current build: mean_grade is a low-importance Stage 2 feature; "
+         "slip-road and structure-related grade caveats should be rechecked "
+         "against the regenerated full-GB top-risk output before publication.")
 
 try:
     with open(ROOT / "data/models/collision_metrics.json") as f:

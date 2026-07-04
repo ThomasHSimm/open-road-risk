@@ -30,18 +30,21 @@ Both models are trained on link × year data then pooled to a single stable
 risk score per link. The pooled output (`risk_scores.parquet`) has one row per
 link with no year dimension.
 
-### Clean GB collision retrain
+### Current full-GB collision retrain
 
-A clean full GB Stage 2 collision retrain was completed on 2026-07-01 using
-the refreshed GB context feature table. The run built 21,675,570 link-year rows
-and scored all 2,167,557 road links. The model included GB population,
+The current full-GB Stage 2 collision retrain uses the refreshed GB Open Roads
+and context feature tables. The run built 39,412,990 link-year rows for
+2015-2024 and scored all 3,941,299 road links. The model included GB population,
 deprivation, and rural/urban context fields, and excluded the retired
 English-only IMD fields.
 
-The XGBoost Poisson model achieved pseudo-R² = 0.325, broadly consistent with
-the previous model. The GLM baseline converged with pseudo-R² = 0.566, but this
-value is not directly comparable with earlier GLM runs because the GB run used
-a lower zero-collision sampling ratio of 1:3 for memory reasons.
+The XGBoost Poisson model achieved pseudo-R² = 0.387 with full-zero training
+over 39,412,990 link-years (391,323 positives and 39,021,667 zeros). The
+production XGBoost fit uses `tree_method="hist"` and `max_bin=128`; sampled-zero
+XGBoost is available only as an explicit memory fallback. The GLM baseline
+converged with pseudo-R² = 0.602 on 1,565,292 sampled training rows using an
+explicit 1:3 zero-collision sampling ratio. These values are not directly
+comparable because the GLM and XGBoost evaluation surfaces differ.
 
 Outputs were written to `data/models/risk_scores.parquet`,
 `data/models/collision_glm.pkl`, `data/models/collision_xgb.json`, and
@@ -194,7 +197,7 @@ except NameError:
     print("Run the GLM coefficients cell first.")
 ```
 
-With ~2M link-years, statistical significance is near-guaranteed; the practical
+With ~39.4M link-years, statistical significance is near-guaranteed; the practical
 effect is modest (each decile step shifts the rate a few percent) and is
 **associational, not causal** — LSOA-level context, not a road attribute.
 
@@ -500,16 +503,16 @@ print(
 
 Key observations:
 
-- XGBoost's current clean GB run has pseudo-R² `0.325`, with temporal features
-  included, while the GLM sits at pseudo-R² `0.566` on its own 1:3
-  zero-collision downsampled in-sample surface.
+- XGBoost's current full-GB run has pseudo-R² `0.387`, with temporal features
+  included and full-zero training, while the GLM sits at pseudo-R² `0.602` on
+  its own 1:3 zero-collision downsampled in-sample surface.
   Earlier repo docs cited an XGBoost pseudo-R² around `0.86`, but that figure
   came from a pre-fix evaluation surface that was later superseded after a
   feature-table leakage diagnosis. The two current pseudo-R² values are also
   still computed on different row subsets and with different null models
   (GLM: in-sample on a downsampled training set; XGBoost: out-of-sample on the
   full zero-heavy test set), so the gap should not be read as pure modelling
-  lift. These metrics are from the current clean GB run after the counted-only Stage 1a
+  lift. These metrics are from the current full-GB run after the counted-only Stage 1a
   filter, the Stage 2 post-event provenance guard, OSM feature enrichment,
   deprivation features, terrain grade, and the GLM optional-feature imputation
   refactor.
@@ -521,8 +524,9 @@ Key observations:
 - Residuals show where traffic volume and road geometry alone under-predict
   observed collisions — likely reflecting local factors not in the feature set
   (junction design, sight lines, speed compliance).
-- The top 1% risk links are concentrated on high-traffic A-roads and
-  motorways, consistent with higher exposure and absolute collision counts.
+- The regenerated top 1% output contains 39,413 links: 28,435 A roads, 4,234
+  B roads, 4,168 classified unnumbered roads, 2,001 motorways, 568
+  unclassified roads, 6 unknown-class links, and 1 not-classified link.
 - Excess-risk links (residual > 2) are candidates for targeted intervention
   where infrastructure or behaviour factors drive risk beyond what the model
   can attribute to road class and traffic alone.
