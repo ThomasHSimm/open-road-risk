@@ -238,6 +238,169 @@ introduces more errors on dense multi-road areas. It has not been formally
 optimised against a gold-standard labelled set.
 :::
 
+### Worked graphical examples
+
+The examples below show the spatial decision being made. The highlighted
+alternatives are nearby candidate links reconstructed for explanation; the
+exact internal candidate list is not stored in the final snapped output. The
+aim is to show why snapping quality matters before collisions are aggregated
+to road-link × year.
+
+STATS19 collisions are point records, while the model needs counts on
+`link_id × year`. Snapping assigns each point to a plausible OS Open Roads
+link, then the retained snapped collisions are aggregated by `link_id × year`
+before joining to AADT, road geometry, and context features. Near junctions,
+dual carriageways, and dense urban networks, this is necessarily a spatial
+approximation rather than a literal observation of the carriageway used.
+Low-confidence, invalid, or unmatched records are filtered or handled
+separately before rate modelling.
+
+The figures are generated statically by
+`src/road_risk/outputs/build_snap_example_figures.py` from existing processed
+outputs. Grey lines are nearby OS Open Roads candidates, red is the selected
+snapped link, and the blue point is the original STATS19 collision location.
+Orange and purple links mark the next two reconstructed nearby candidates
+shown for context. The labels `S`, `2`, and `3` identify the selected link and
+the two highlighted alternatives; the dashed blue line shows the snap offset.
+The compact scoring tables below are reconstructed explanatory candidate
+tables: they reuse the weighted snap scoring functions, but the final snapped
+parquet stores exact component scores only for the selected link, not for every
+losing candidate.
+
+Small schematic of the weighted snap:
+
+`STATS19 point` → `find nearby densified Open Roads candidates` →
+`score candidates` → `keep highest scoring link` → `apply 0.6 threshold` →
+`aggregate retained collisions to link_id × year`
+
+The first table is source-row context from the cleaned STATS19 collision
+parquet. These fields are not the snap output: they are the original collision
+row values carried through cleaning, shown here for the six example rows chosen
+by the figure script.
+
+| Example type | Original STATS19 row context |
+|---|---|
+| Simple road segment | `collision_index=2022501162401`; 2022-04-04 07:59; severity Slight; 2 vehicles, 1 casualty; first road A38; single carriageway; 50 mph; not at junction or within 20 metres; raining, no high winds; wet or damp; point (-4.349419, 50.407907). |
+| Junction or roundabout | `collision_index=20171341K0936`; 2017-01-20 12:00; severity Slight; 2 vehicles, 1 casualty; first road A650; roundabout; 60 mph; STATS19 `junction_detail=0` (not at junction or within 20 metres); fine, no high winds; dry; point (-1.520043, 53.708393). |
+| Dual carriageway / parallel links | `collision_index=2018200265540`; 2018-01-23 14:35; severity Slight; 2 vehicles, 3 casualties; first road A4540; road type roundabout; 40 mph; second road A38; raining, no high winds; wet or damp; point (-1.888107, 52.491773). |
+| Dense urban network | `collision_index=2019051912399`; 2019-09-19 18:00; severity Slight; 2 vehicles, 1 casualty; first road unclassified; single carriageway; 30 mph; STATS19 `junction_detail=13` in the cleaned row; fine, no high winds; dry; point (-3.038868, 53.430502). |
+| Lower-confidence retained snap | `collision_index=2023010445298`; 2023-05-26 19:03; severity Slight; 1 vehicle, 1 casualty; first road class C with no road number; single carriageway; 20 mph; not at junction or within 20 metres; fine, no high winds; dry; point (-0.249922, 51.516427). |
+| Filtered low-score snap | `collision_index=2015950000240`; 2015-01-22 08:05; severity Serious; 2 vehicles, 1 casualty; first road B1345; single carriageway; 60 mph; not at junction or within 20 metres; fine, no high winds; wet or damp; point (-2.746766, 56.055312). |
+
+The next table is snap-output traceability from
+`quarto/outputs/figures/snap-examples-manifest.json`. It shows what the snap
+step produced for those same STATS19 rows, including the selected OS Open Roads
+`link_id` and whether the row is retained for link-year aggregation.
+
+| Example type | STATS19 collision_index | Year | Snap method | Score | Distance | Selected link id | Candidates shown | Status | What this shows |
+|---|---|---:|---|---:|---:|---|---:|---|---|
+| Simple road segment | `2022501162401` | 2022 | weighted | 0.861 | 5.0 m | `65BCF56A-4692-46C5-AF86-284DA73DF77E` | 3 | retained | One nearby link clearly fits the point and road attributes. |
+| Junction or roundabout | `20171341K0936` | 2017 | weighted | 0.875 | 0.0 m | `E43FE188-A37C-4085-BC80-8F3009AD643C` | 17 | retained | Near a junction, several short links can be plausible. |
+| Dual carriageway / parallel links | `2018200265540` | 2018 | weighted | 0.875 | 0.0 m | `7DF69055-C6EC-459B-AD10-3C683FFCD19E` | 59 | retained | Parallel carriageways make distance-only snapping ambiguous. |
+| Dense urban network | `2019051912399` | 2019 | weighted | 0.950 | 0.0 m | `0370946C-80EB-4F17-A5B4-3D8A25075146` | 71 | retained | Dense urban networks create many nearby candidates. |
+| Lower-confidence retained snap | `2023010445298` | 2023 | weighted | 0.680 | 7.4 m | `F5232992-2B80-43BB-ACED-ECA1538996AB` | 135 | retained | Retained because it passes the threshold; uncertainty is higher. |
+| Filtered low-score snap | `2015950000240` | 2015 | weighted | 0.596 | 25.3 m | `E2DE2F6D-9788-4273-9848-86AA8B014DAD` | 40 | filtered | Filtered example: below the retained score threshold. |
+
+![Simple road segment snap: the point is close to one plausible single-carriageway link.](../outputs/figures/snap-example-simple.png){fig-alt="Simple STATS19 snapping example showing nearby grey road links, a red selected road link, and a blue collision point."}
+
+**Original STATS19 row:** `collision_index=2022501162401`; 2022-04-04 07:59; severity Slight; first road A38; single carriageway; 50 mph; not at junction; raining; wet surface; point (-4.349419, 50.407907).
+
+**What this shows:** The ambiguity is limited here: the collision point sits close to one plausible
+single-carriageway link, and the next nearby candidates are much farther away.
+The snap chooses the red A-road link, which is plausible because both distance
+and road class support it. Confidence is high, although it is still a spatial
+linkage rather than ground truth. This collision is retained and later counted
+under its selected `link_id × year`.
+
+**Worked scoring breakdown (reconstructed):** The selected link is not chosen
+by distance alone. Each nearby candidate is scored on distance, road class,
+junction/form-of-way agreement, and road-number agreement; the highest
+composite score is selected. These reconstructed composites use line-to-point
+distances in the figure window, so the selected-row composite can differ
+slightly from the saved snap score in the traceability table.
+
+| Candidate | Role | Distance | Spatial | Class | Junction | Number | Composite | Why it matters |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| Rank 1 | Selected link | 1.5 m | 0.990 | 1.000 | 0.500 | 1.000 | 0.871 | Closest plausible A38 link. |
+| Rank 2 | Alternative 2 | 146.2 m | 0.363 | 1.000 | 0.500 | 1.000 | 0.620 | Same road evidence, but much weaker spatial support. |
+| Rank 3 | Alternative 3 | 146.2 m | 0.363 | 1.000 | 0.500 | 1.000 | 0.620 | Similar to candidate 2, so distance separates it from the selected link. |
+
+Here, candidates 2 and 3 match the road number and class, but their spatial
+score is much lower. The selected link wins because it is both the right road
+class/number and much closer to the collision point.
+
+![Junction or roundabout snap: several short links are plausible, so the selected link is a local spatial decision.](../outputs/figures/snap-example-junction.png){fig-alt="Roundabout STATS19 snapping example with nearby candidate road links, a selected red roundabout link, and a blue collision point."}
+
+**Original STATS19 row:** `collision_index=20171341K0936`; 2017-01-20 12:00; severity Slight; first road A650; road type roundabout; 60 mph; `junction_detail=0`; dry surface; point (-1.520043, 53.708393).
+
+**What this shows:** The ambiguity is the junction itself: several short roundabout or approach
+links are close enough to be plausible. The snap chooses one roundabout link,
+which is plausible because the point lies on the junction geometry and the
+form-of-way matches the junction context. Confidence is lower than on an open
+segment because adjacent junction links can be almost tied. The retained snap
+contributes one collision to the selected link-year.
+
+![Dual carriageway or parallel-link snap: nearby links can be close enough that attributes matter as well as distance.](../outputs/figures/snap-example-parallel-links.png){fig-alt="Dual carriageway snapping example with parallel nearby candidate links, a selected red link, and a blue collision point."}
+
+**Original STATS19 row:** `collision_index=2018200265540`; 2018-01-23 14:35; severity Slight; first road A4540; second road A38; road type roundabout; 40 mph; wet surface; point (-1.888107, 52.491773).
+
+**What this shows:** The ambiguity is the cluster of near-parallel and junction links around the
+point. The snap chooses the red dual-carriageway link; this is plausible
+because it is colocated with the point and matches the broad road context. It
+is not a perfect carriageway-level assertion: nearby links have very similar
+geometry, so confidence depends on the combined score rather than distance
+alone. The collision is retained and aggregated to the selected link-year.
+
+![Dense urban snap: many local links sit within a small search window around the point.](../outputs/figures/snap-example-dense-urban.png){fig-alt="Dense urban network snapping example with many nearby grey road links, a selected red link, and a blue collision point."}
+
+**Original STATS19 row:** `collision_index=2019051912399`; 2019-09-19 18:00; severity Slight; first road unclassified; single carriageway; 30 mph; `junction_detail=13`; dry surface; point (-3.038868, 53.430502).
+
+**What this shows:** The ambiguity is network density. Many short urban links are close to the
+collision point, and more than one reconstructed nearby candidate can score
+similarly. The snap chooses an unclassified single-carriageway link, which is
+plausible because it is at the point and matches the recorded road context.
+Confidence is still qualified by the dense street pattern. The retained
+collision is counted on that selected link-year before traffic and context
+features are joined.
+
+**Worked scoring breakdown (reconstructed):** Dense urban examples are useful
+because they show the limit of the method as well as the method itself: several
+short links can receive near-identical evidence.
+
+| Candidate | Role | Distance | Spatial | Class | Junction | Number | Composite | Why it matters |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| Rank 2 | Selected link | 0.0 m | 1.000 | 1.000 | 1.000 | 0.500 | 0.950 | Saved snap target; all non-number evidence is strong. |
+| Rank 1 | Alternative 2 | 0.0 m | 1.000 | 1.000 | 1.000 | 0.500 | 0.950 | Reconstructs as tied, showing genuine local ambiguity. |
+| Rank 3 | Alternative 3 | 38.1 m | 0.768 | 1.000 | 1.000 | 0.500 | 0.857 | Still plausible, but less spatially supported. |
+
+Here, the selected link and candidate 2 reconstruct as a tie: the method has
+found a plausible top-scoring local link, but it should not be read as a
+perfect carriageway-level truth. Candidate 3 is also plausible, but lower
+distance support drops its composite score.
+
+![Lower-confidence retained snap: the selected link is retained but carries a lower composite score for downstream filtering and diagnostics.](../outputs/figures/snap-example-low-confidence.png){fig-alt="Lower-confidence STATS19 snapping example showing a dense road network, selected red link, and blue collision point."}
+
+**Original STATS19 row:** `collision_index=2023010445298`; 2023-05-26 19:03; severity Slight; first road class C with no road number; single carriageway; 20 mph; not at junction; dry surface; point (-0.249922, 51.516427).
+
+**What this shows:** This is lower confidence because the point is surrounded by many nearby links
+and the selected score is only just above the retention threshold. The snap
+chooses the closest unclassified single-carriageway link, which is plausible
+spatially, but nearby alternatives mean the exact road assignment is less
+certain. Because the score remains above 0.6, the collision is retained and
+included in the downstream `link_id × year` collision count.
+
+![Filtered low-score snap: the selected weighted link is shown, but the score falls below the retention threshold used for aggregation.](../outputs/figures/snap-example-filtered-low-score.png){fig-alt="Filtered low-score STATS19 snapping example showing nearby candidate links, the selected weighted link, and the collision point."}
+
+**Original STATS19 row:** `collision_index=2015950000240`; 2015-01-22 08:05; severity Serious; first road B1345; single carriageway; 60 mph; not at junction; wet surface; point (-2.746766, 56.055312).
+
+**What this shows:** The ambiguity is both spatial and attribute-based: the selected link is close
+to the point, but the saved weighted score falls below 0.6 after combining
+distance, road class, junction context, and road-number evidence. The red link
+is the best weighted snap stored for this collision, but confidence is too low
+for the modelling target. This collision is filtered out before link-year
+aggregation, so it does not add to any road-link collision count used for rate
+modelling.
+
 ### Fallback: `snap_quick` and `snap_collisions_to_roads`
 
 `snap.py` also provides `snap_quick` — a single `sjoin_nearest` call with a

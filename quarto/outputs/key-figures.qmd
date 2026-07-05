@@ -1,6 +1,6 @@
 ---
 title: "Road risk at a glance"
-date-modified: 2026-07-04
+date-modified: 2026-07-05
 description: "Plain-language figures summarising where collision risk is highest across the Open Road Risk study area."
 format:
     html:
@@ -14,13 +14,21 @@ jupyter: python3
 ---
 
 ::: {.small .text-muted}
-Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.
+Last updated: 2026-07-05 · Full GB output rebuild: 2026-07-04.
 :::
 
 Figures summarising the main outputs of the risk model, without the modelling
 detail. The map is *exposure-adjusted*: it reflects risk given traffic, not
 simply where the most collisions happen. Full methodology and diagnostics are
 on the [Stage 2 model](../analysis/model-results.qmd) page.
+
+The modelled-risk map is not the same as a simple collision-rate map. Traffic
+volume is a major driver of collision frequency, so modelled risk can still
+resemble the traffic-volume surface. The diagnostic maps below add two
+comparators: a crude rate map showing collisions per unit exposure, and an
+observed-vs-expected map showing where collision occurrence is higher or lower
+than expected after accounting for exposure and the available road/network
+context.
 
 The map defaults to equal-size 10 km grid cells across Great Britain. It also
 includes a simplified GB-wide named reporting-area layer for optional display
@@ -48,6 +56,7 @@ import branca.colormap as bcm
 from branca.element import MacroElement, Template
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 from pathlib import Path
 from pyproj import datadir
 from shapely.geometry import box
@@ -75,18 +84,75 @@ if area_path is None:
 areas = gpd.read_file(area_path).to_crs(27700)
 reporting_areas = areas.copy()
 
-risk = pd.read_parquet(
-    ROOT / "data/models/risk_scores.parquet",
-    columns=["link_id", "risk_percentile", "estimated_aadt"],
-)
+risk_path = ROOT / "data/models/risk_scores.parquet"
+if not risk_path.exists():
+    risk_path = ROOT / "data/models/risk_scores_eb.parquet"
+risk_columns_available = set(pq.ParquetFile(risk_path).schema_arrow.names)
+risk_columns = [
+    col
+    for col in [
+        "link_id",
+        "risk_percentile",
+        "estimated_aadt",
+        "collision_count",
+        "predicted_xgb",
+        "n_years",
+    ]
+    if col in risk_columns_available
+]
+missing_required = {
+    "link_id",
+    "risk_percentile",
+    "estimated_aadt",
+    "collision_count",
+    "predicted_xgb",
+} - set(risk_columns)
+if missing_required:
+    raise KeyError(f"{risk_path.relative_to(ROOT)} is missing columns: {sorted(missing_required)}")
+risk = pd.read_parquet(risk_path, columns=risk_columns)
+if "n_years" not in risk.columns:
+    # The production risk score is pooled from the same all-link scoring panel
+    # for each year, so the scoring-period length is common across links here.
+    aadt_years = pd.read_parquet(
+        ROOT / "data/models/aadt_estimates.parquet",
+        columns=["year"],
+    )
+    risk["n_years"] = int(aadt_years["year"].nunique())
 roads = gpd.read_parquet(
     ROOT / "data/processed/shapefiles/openroads.parquet",
-    columns=["link_id", "geometry"],
+    columns=["link_id", "link_length_km", "geometry"],
 )
 links = roads.merge(risk, on="link_id", how="inner")
 links = links[links.geometry.notna()].to_crs(27700)
+links["collision_count"] = pd.to_numeric(links["collision_count"], errors="coerce").fillna(0)
+links["estimated_aadt"] = pd.to_numeric(links["estimated_aadt"], errors="coerce")
+links["link_length_km"] = pd.to_numeric(links["link_length_km"], errors="coerce")
+links["n_years"] = pd.to_numeric(links["n_years"], errors="coerce")
+links["predicted_xgb"] = pd.to_numeric(links["predicted_xgb"], errors="coerce")
+links["exposure_vehicle_km"] = (
+    links["estimated_aadt"] * links["link_length_km"] * 365 * links["n_years"]
+)
+links["expected_collisions"] = links["predicted_xgb"] * links["n_years"]
 link_points = links.copy()
 link_points["geometry"] = link_points.geometry.representative_point()
+
+OE_CONTINUITY = 0.5
+
+
+def add_diagnostic_metrics(frame):
+    frame = frame.copy()
+    frame["crude_rate_per_million_vkm"] = np.where(
+        frame["exposure_vehicle_km"] > 0,
+        frame["observed_collisions"] / frame["exposure_vehicle_km"] * 1_000_000,
+        np.nan,
+    )
+    frame["log_oe"] = np.log(
+        (frame["observed_collisions"] + OE_CONTINUITY)
+        / (frame["expected_collisions"] + OE_CONTINUITY)
+    )
+    frame["oe_ratio"] = np.exp(frame["log_oe"])
+    frame["exposure_million_vkm"] = frame["exposure_vehicle_km"] / 1_000_000
+    return frame
 
 area_join = gpd.sjoin(
     link_points,
@@ -100,9 +166,13 @@ area_stats = (
         scored_links=("link_id", "size"),
         median_risk=("risk_percentile", "median"),
         median_traffic=("estimated_aadt", "median"),
+        observed_collisions=("collision_count", "sum"),
+        exposure_vehicle_km=("exposure_vehicle_km", "sum"),
+        expected_collisions=("expected_collisions", "sum"),
     )
     .reset_index()
 )
+area_stats = add_diagnostic_metrics(area_stats)
 area_plot = reporting_areas.merge(
     area_stats,
     on="reporting_area",
@@ -110,6 +180,12 @@ area_plot = reporting_areas.merge(
 )
 area_plot["median_risk"] = area_plot["median_risk"].round(1)
 area_plot["median_traffic"] = area_plot["median_traffic"].round(0)
+area_plot["observed_collisions"] = area_plot["observed_collisions"].round(0)
+area_plot["expected_collisions"] = area_plot["expected_collisions"].round(1)
+area_plot["exposure_million_vkm"] = area_plot["exposure_million_vkm"].round(1)
+area_plot["crude_rate_per_million_vkm"] = area_plot["crude_rate_per_million_vkm"].round(3)
+area_plot["log_oe"] = area_plot["log_oe"].round(3)
+area_plot["oe_ratio"] = area_plot["oe_ratio"].round(2)
 area_plot["scored_links"] = area_plot["scored_links"].fillna(0).astype(int)
 
 centroids = link_points.geometry
@@ -118,6 +194,9 @@ grid_df = pd.DataFrame({
     "grid_y": np.floor(centroids.y / GRID_M) * GRID_M,
     "risk_percentile": link_points["risk_percentile"].to_numpy(),
     "estimated_aadt": link_points["estimated_aadt"].to_numpy(),
+    "collision_count": link_points["collision_count"].to_numpy(),
+    "exposure_vehicle_km": link_points["exposure_vehicle_km"].to_numpy(),
+    "expected_collisions": link_points["expected_collisions"].to_numpy(),
 })
 grid_stats = (
     grid_df.groupby(["grid_x", "grid_y"])
@@ -125,10 +204,14 @@ grid_stats = (
         scored_links=("risk_percentile", "size"),
         median_risk=("risk_percentile", "median"),
         median_traffic=("estimated_aadt", "median"),
+        observed_collisions=("collision_count", "sum"),
+        exposure_vehicle_km=("exposure_vehicle_km", "sum"),
+        expected_collisions=("expected_collisions", "sum"),
     )
     .reset_index()
 )
 grid_stats = grid_stats[grid_stats["scored_links"] >= MIN_GRID_LINKS].copy()
+grid_stats = add_diagnostic_metrics(grid_stats)
 grid_stats["geometry"] = [
     box(x, y, x + GRID_M, y + GRID_M)
     for x, y in zip(grid_stats["grid_x"], grid_stats["grid_y"])
@@ -136,6 +219,12 @@ grid_stats["geometry"] = [
 grid_plot = gpd.GeoDataFrame(grid_stats, geometry="geometry", crs="EPSG:27700")
 grid_plot["median_risk"] = grid_plot["median_risk"].round(1)
 grid_plot["median_traffic"] = grid_plot["median_traffic"].round(0)
+grid_plot["observed_collisions"] = grid_plot["observed_collisions"].round(0)
+grid_plot["expected_collisions"] = grid_plot["expected_collisions"].round(1)
+grid_plot["exposure_million_vkm"] = grid_plot["exposure_million_vkm"].round(1)
+grid_plot["crude_rate_per_million_vkm"] = grid_plot["crude_rate_per_million_vkm"].round(3)
+grid_plot["log_oe"] = grid_plot["log_oe"].round(3)
+grid_plot["oe_ratio"] = grid_plot["oe_ratio"].round(2)
 grid_plot["scored_links"] = grid_plot["scored_links"].astype(int)
 
 area_values_nonnull = area_plot["median_risk"].dropna()
@@ -551,6 +640,302 @@ traffic_map.add_child(ModeButtons(
 ))
 traffic_map.fit_bounds(GB_FIT_BOUNDS, padding=(0, 0))
 traffic_map
+```
+
+### Crude collision rate per million vehicle-km
+
+This is a transparent baseline: observed injury collisions divided by estimated
+vehicle-km travelled. It is useful because it shows collisions per unit
+exposure, but it can be noisy where exposure is low.
+
+```{python}
+#| label: interactive-crude-rate-map
+
+CRUDE_SHADES = ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"]
+OE_SHADES = ["#2166ac", "#f7f7f7", "#b2182b"]
+
+
+def unique_columns(columns):
+    return list(dict.fromkeys(columns))
+
+
+def quantile_edges(values, n_shades):
+    edges = np.quantile(values, np.linspace(0, 1, n_shades + 1))
+    if len(np.unique(edges)) != len(edges):
+        edges = np.linspace(values.min(), values.max(), n_shades + 1)
+    edges[0] -= 1e-9
+    edges[-1] += 1e-9
+    return edges
+
+
+def binned_colour(value, edges, shades):
+    if pd.isna(value):
+        return "#eeeeee"
+    index = np.searchsorted(edges[1:], value, side="right")
+    return shades[min(index, len(shades) - 1)]
+
+
+def metric_colour_scales(metric, shades, diverging=False):
+    area_values = area_plot[metric].dropna()
+    grid_values = grid_plot[metric].dropna()
+    if diverging:
+        all_values = pd.concat([area_values, grid_values], ignore_index=True)
+        max_abs = float(all_values.abs().quantile(0.98))
+        if max_abs <= 0 or pd.isna(max_abs):
+            max_abs = float(all_values.abs().max())
+        if max_abs <= 0 or pd.isna(max_abs):
+            max_abs = 1.0
+        colour = bcm.LinearColormap(shades, vmin=-max_abs, vmax=max_abs)
+
+        def area_colour(value):
+            if pd.isna(value):
+                return "#eeeeee"
+            return colour(float(np.clip(value, -max_abs, max_abs)))
+
+        return area_colour, colour
+
+    area_edges = quantile_edges(area_values, len(shades))
+
+    def area_colour(value):
+        return binned_colour(value, area_edges, shades)
+
+    grid_vmin, grid_vmax = grid_values.quantile([0.02, 0.98])
+    if grid_vmin == grid_vmax:
+        grid_vmin, grid_vmax = grid_values.min(), grid_values.max()
+    return area_colour, bcm.LinearColormap(shades, vmin=float(grid_vmin), vmax=float(grid_vmax))
+
+
+def diagnostic_map(
+    metric,
+    legend_title,
+    legend_gradient,
+    shades,
+    area_fields,
+    area_aliases,
+    grid_fields,
+    grid_aliases,
+    diverging=False,
+):
+    area_colour, grid_colour = metric_colour_scales(metric, shades, diverging=diverging)
+
+    active_map = folium.Map(
+        location=GB_CENTRE,
+        zoom_start=6,
+        zoom_snap=0.1,
+        zoom_delta=0.1,
+        width="100%",
+        height="720px",
+        tiles=None,
+        control_scale=True,
+    )
+    active_basemap_layer = folium.TileLayer(
+        "CartoDB positron",
+        name="Light basemap",
+        control=False,
+    )
+    active_basemap_layer.add_to(active_map)
+
+    active_area_layer = folium.FeatureGroup(name="Reporting areas", show=False)
+    folium.GeoJson(
+        area_plot_wgs84[unique_columns([*area_fields, "geometry"])],
+        name="Reporting areas",
+        style_function=lambda feature: {
+            "fillColor": area_colour(feature["properties"][metric]),
+            "color": "#ffffff",
+            "weight": 0.9,
+            "fillOpacity": 0.78,
+        },
+        highlight_function=lambda feature: {
+            "weight": 1.8,
+            "color": "#222222",
+            "fillOpacity": 0.86,
+        },
+        tooltip=folium.GeoJsonTooltip(
+            fields=area_fields,
+            aliases=area_aliases,
+            localize=True,
+            sticky=False,
+        ),
+    ).add_to(active_area_layer)
+    active_area_layer.add_to(active_map)
+
+    active_grid_layer = folium.FeatureGroup(name="10 km grid", show=True)
+    folium.GeoJson(
+        grid_plot_wgs84[unique_columns([*grid_fields, "geometry"])],
+        name="10 km grid",
+        style_function=lambda feature: {
+            "fillColor": grid_colour(feature["properties"][metric]),
+            "color": "#6c6c6c",
+            "weight": 0.25,
+            "fillOpacity": 0.5,
+        },
+        highlight_function=lambda feature: {
+            "weight": 1.2,
+            "color": "#222222",
+            "fillOpacity": 0.68,
+        },
+        tooltip=folium.GeoJsonTooltip(
+            fields=grid_fields,
+            aliases=grid_aliases,
+            localize=True,
+            sticky=False,
+        ),
+    ).add_to(active_grid_layer)
+    active_grid_layer.add_to(active_map)
+
+    active_boundary_layer = folium.FeatureGroup(name="Reporting boundaries", show=False)
+    folium.GeoJson(
+        reporting_boundaries_wgs84[["reporting_area", "geometry"]],
+        name="Reporting boundaries",
+        style_function=lambda feature: {
+            "fillOpacity": 0,
+            "color": "#333333",
+            "weight": 0.8,
+        },
+        tooltip=folium.GeoJsonTooltip(
+            fields=["reporting_area"],
+            aliases=["Reporting area"],
+            sticky=False,
+        ),
+    ).add_to(active_boundary_layer)
+    active_boundary_layer.add_to(active_map)
+
+    active_map.add_child(ModeButtons(
+        active_area_layer,
+        active_grid_layer,
+        active_boundary_layer,
+        active_basemap_layer,
+        legend_title,
+        legend_gradient,
+    ))
+    active_map.fit_bounds(GB_FIT_BOUNDS, padding=(0, 0))
+    return active_map
+
+
+crude_rate_map = diagnostic_map(
+    "crude_rate_per_million_vkm",
+    "Crude collision rate per million vehicle-km",
+    "linear-gradient(90deg, #f7fbff, #c6dbef, #6baed6, #2171b5, #08306b)",
+    CRUDE_SHADES,
+    [
+        "reporting_area",
+        "crude_rate_per_million_vkm",
+        "observed_collisions",
+        "exposure_million_vkm",
+        "scored_links",
+    ],
+    [
+        "Reporting area",
+        "Crude collision rate per million vehicle-km",
+        "Observed collisions",
+        "Exposure, million vehicle-km",
+        "Scored links",
+    ],
+    [
+        "crude_rate_per_million_vkm",
+        "observed_collisions",
+        "exposure_million_vkm",
+        "scored_links",
+    ],
+    [
+        "Crude collision rate per million vehicle-km",
+        "Observed collisions",
+        "Exposure, million vehicle-km",
+        "Scored links",
+    ],
+)
+crude_rate_map
+```
+
+### Higher/lower collision occurrence than expected from the exposure-adjusted model
+
+This map compares observed collisions with model-expected collisions on the
+same public geography. It is the clearest diagnostic view of where collision
+occurrence is higher or lower than expected after accounting for exposure and
+the available road/network context. It should not be read as "true risk".
+
+```{python}
+#| label: interactive-observed-expected-map
+
+oe_map = diagnostic_map(
+    "log_oe",
+    "Higher/lower collision occurrence than expected from the exposure-adjusted model",
+    "linear-gradient(90deg, #2166ac, #f7f7f7, #b2182b)",
+    OE_SHADES,
+    [
+        "reporting_area",
+        "log_oe",
+        "oe_ratio",
+        "observed_collisions",
+        "expected_collisions",
+        "scored_links",
+    ],
+    [
+        "Reporting area",
+        "Log observed/expected",
+        "Observed/expected ratio",
+        "Observed collisions",
+        "Expected collisions",
+        "Scored links",
+    ],
+    [
+        "log_oe",
+        "oe_ratio",
+        "observed_collisions",
+        "expected_collisions",
+        "scored_links",
+    ],
+    [
+        "Log observed/expected",
+        "Observed/expected ratio",
+        "Observed collisions",
+        "Expected collisions",
+        "Scored links",
+    ],
+    diverging=True,
+)
+oe_map
+```
+
+Crude rates and observed/expected ratios can be unstable in low-exposure or
+low-count areas, so these maps should be read as diagnostics rather than
+definitive site rankings.
+
+### Diagnostic correlations
+
+The table below is calculated on the 10 km grid cells shown above. Aggregated
+traffic volume is represented by median estimated AADT, matching the traffic
+map.
+
+```{python}
+#| label: diagnostic-correlations
+
+def spearman_row(label, left, right):
+    values = grid_plot[[left, right]].dropna()
+    return {
+        "Comparison": label,
+        "Spearman rho": round(float(values[left].corr(values[right], method="spearman")), 3),
+        "Grid cells": int(len(values)),
+    }
+
+
+pd.DataFrame([
+    spearman_row(
+        "Traffic volume vs modelled risk",
+        "median_traffic",
+        "median_risk",
+    ),
+    spearman_row(
+        "Crude collision rate vs modelled risk",
+        "crude_rate_per_million_vkm",
+        "median_risk",
+    ),
+    spearman_row(
+        "Traffic volume vs O/E excess",
+        "median_traffic",
+        "log_oe",
+    ),
+])
 ```
 
 The 10 km grid is the primary consistent public geography. The named-area view
