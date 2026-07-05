@@ -414,7 +414,7 @@ background-size: cover;
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page">
+    <div class="quarto-title column-page-left">
       <h1 class="title">Current Model Status for Open Road Risk</h1>
                   <div>
         <div class="description">
@@ -425,7 +425,7 @@ background-size: cover;
   </div>
     
   
-  <div class="quarto-title-meta column-page">
+  <div class="quarto-title-meta column-page-left">
 
       
     
@@ -442,11 +442,17 @@ background-size: cover;
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#validation-and-interpretation" id="toc-validation-and-interpretation" class="nav-link active" data-scroll-target="#validation-and-interpretation">Validation and interpretation</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page" id="quarto-document-content">
+<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
 
 
 
@@ -510,8 +516,76 @@ background-size: cover;
 <li><strong>Sources read</strong>: collision_metrics.json, risk_scores.parquet, rank_stability_provenance.json, aadt_validation_summary.parquet</li>
 </ul>
 <p>“These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”</p>
+<section id="validation-and-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="validation-and-interpretation">Validation and interpretation</h2>
+<p>The current checks support using Open Road Risk as a <strong>screening and prioritisation layer</strong>, not as a causal or engineering-audit result. The strongest interpretation is relative: which links or areas appear high-risk compared with the rest of the scored network, given estimated exposure and available road/network context.</p>
+<p>Public-facing use should therefore prefer <code>risk_percentile</code>, deciles, bands, and ranked lists. Raw predicted counts are useful internally, but they should not be presented as calibrated expected collision counts unless the relevant calibration checks are shown alongside them.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Check</th>
+<th>What it tests</th>
+<th>Current status</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Overall Stage 2 model fit</td>
+<td>Whether the fitted collision models improve on a no-feature baseline</td>
+<td>Current artefacts report GLM pseudo-R² <code>0.505</code> and XGBoost pseudo-R² <code>0.360</code>; XGBoost uses the full zero-heavy link-year population</td>
+<td>Supports a useful ranking signal, but pseudo-R² is not by itself proof of future predictive accuracy</td>
+</tr>
+<tr class="even">
+<td>Exposure adjustment</td>
+<td>Whether traffic exposure is handled explicitly rather than simply ranking busy roads</td>
+<td>Stage 2 uses traffic exposure, length, and road/network context; Stage 1a AADT validation is reported above where artefacts are available</td>
+<td>High scores should be interpreted with exposure in view: a busy road can still rank high because both exposure and residual risk matter</td>
+</tr>
+<tr class="odd">
+<td>Rank stability</td>
+<td>Whether the high-risk ranking changes substantially across random seeds</td>
+<td>Five-seed diagnostic reported pairwise Spearman <code>0.999</code> and top-1% Jaccard mean <code>0.904</code> on the earlier post-fix production surface</td>
+<td>The broad ordering is stable, but the top-1% boundary still has some churn; repeat after major feature/model changes</td>
+</tr>
+<tr class="even">
+<td>Empirical Bayes shrinkage</td>
+<td>Whether sparse histories and zero-collision links are overconfidently ranked</td>
+<td>EB diagnostics exist and are documented in <a href="../methodology/empirical-bayes-shrinkage.html">Empirical Bayes Shrinkage</a>; EB is published as an additional ranking, not a silent replacement</td>
+<td>Useful caution layer for regression-to-the-mean, especially when interpreting low-observation links</td>
+</tr>
+<tr class="odd">
+<td>Family-level diagnostics</td>
+<td>Whether road families behave differently enough to need separate handling</td>
+<td>Historical family-split checks found strong rank agreement with the global model and highlighted motorway/other-rural caveats; the family model is diagnostic, not production</td>
+<td>Supports family-aware interpretation, but does not justify replacing the current global ranking</td>
+</tr>
+<tr class="even">
+<td>Top-risk QA and manual plausibility checks</td>
+<td>Whether mapped high-risk links look plausible and where manual review is needed</td>
+<td>Top-risk output QA and short-link neighbourhood diagnostics flag short segments and local outliers for review</td>
+<td>High-ranked links are candidates for inspection, not proof of dangerous design</td>
+</tr>
+<tr class="odd">
+<td>Spatial, temporal, and external validation</td>
+<td>Whether the ranking generalises across geography, time, or an independent safety framework</td>
+<td>Partly planned or not yet surfaced publicly for Stage 2; the literature basis is documented in <a href="../literature/validation-and-metrics.html">Validation and Metrics</a></td>
+<td>This is the main next validation gap before stronger public claims</td>
+</tr>
+</tbody>
+</table>
+<p>What the ranking <strong>does not</strong> prove:</p>
+<ul>
+<li>It is not causal proof that a road’s design caused collisions.</li>
+<li>It is not an engineering safety audit and cannot replace site inspection.</li>
+<li>It is not a guarantee that future collisions will occur on a ranked link.</li>
+<li>Short links, sparse collision histories, and unusual network segmentation need manual caution.</li>
+<li>Reporting-area or grid summaries are display choices, not formal modelling units.</li>
+</ul>
+<p>The practical reading is: use the ranking to decide where to look first, then combine it with exposure, collision history, road layout, local knowledge, and engineering review before making decisions.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

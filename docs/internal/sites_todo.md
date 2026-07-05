@@ -4,7 +4,7 @@ Outstanding work on the public Quarto documentation site
 (<https://openroadrisk.org/>). Engineering work belongs
 in `TODO.md` at the repo root.
 
-Last reviewed: 2026-04-28.
+Last reviewed: 2026-07-06.
 
 ## In progress
 
@@ -21,23 +21,6 @@ Last reviewed: 2026-04-28.
   `data/processed/context/oa_population_density_gb.parquet`; current
   `network.py` still uses the legacy E/W LSOA-centroid population-density path
   until the link-level OA assignment migration lands.
-
-## Validation content — potential new subsection
-
-Three validation reports in `reports/` contain site-worthy content currently
-not on the site:
-
-- `reports/eb_validation.md` — quantifies impact of EB shrinkage on motorway
-  ranks, top-1% intersection.
-- `reports/family_validation.md` — per-family modelling gains and held-out
-  reversal warning.
-- `reports/rank_stability.md` — Spearman 0.998 and Jaccard 0.918 across seeds.
-
-These are working reports, not site-ready prose. Adapting them into a
-Methodology > Validation subsection (or appending to relevant existing pages)
-would close a credibility gap — the site explains *how* EB and the family
-split work but doesn't show *that* they produced the claimed effects. Real
-work, not just relocation.
 
 ## Documentation/code mismatches to resolve
 
@@ -79,6 +62,15 @@ work, not just relocation.
   Consolidation would help.
 
 ## Closed / done
+
+**2026-07-06 session:**
+
+- Added a concise public "Validation and interpretation" subsection to
+  `quarto/project/model-status.qmd`, drawing on `reports/eb_validation.md`,
+  `reports/family_validation.md`, `reports/rank_stability.md`, top-risk QA,
+  and current `collision_metrics.json`. The section frames the ranking as a
+  screening layer, lists what the checks support, and states remaining spatial,
+  temporal, and external validation gaps.
 
 **2026-04-28 session:**
 

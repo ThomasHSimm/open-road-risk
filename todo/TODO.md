@@ -10,7 +10,7 @@ task.
 
 ## 🔴 High Priority
 
-- [ ] Fix middle panel in risk score distribution plot (section 5) — flat uniform
+- [x] Fix middle panel in risk score distribution plot (section 5) — flat uniform
   distribution because it's plotting risk_percentile which is by construction uniform.
   Replace with collision count distribution on collision links instead.
 

@@ -210,3 +210,40 @@ if sources_missing:
 ```
 
 “These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”
+
+## Validation and interpretation
+
+The current checks support using Open Road Risk as a **screening and
+prioritisation layer**, not as a causal or engineering-audit result. The
+strongest interpretation is relative: which links or areas appear high-risk
+compared with the rest of the scored network, given estimated exposure and
+available road/network context.
+
+Public-facing use should therefore prefer `risk_percentile`, deciles, bands,
+and ranked lists. Raw predicted counts are useful internally, but they should
+not be presented as calibrated expected collision counts unless the relevant
+calibration checks are shown alongside them.
+
+| Check | What it tests | Current status | Interpretation |
+|---|---|---|---|
+| Overall Stage 2 model fit | Whether the fitted collision models improve on a no-feature baseline | Current artefacts report GLM pseudo-R² `0.505` and XGBoost pseudo-R² `0.360`; XGBoost uses the full zero-heavy link-year population | Supports a useful ranking signal, but pseudo-R² is not by itself proof of future predictive accuracy |
+| Exposure adjustment | Whether traffic exposure is handled explicitly rather than simply ranking busy roads | Stage 2 uses traffic exposure, length, and road/network context; Stage 1a AADT validation is reported above where artefacts are available | High scores should be interpreted with exposure in view: a busy road can still rank high because both exposure and residual risk matter |
+| Rank stability | Whether the high-risk ranking changes substantially across random seeds | Five-seed diagnostic reported pairwise Spearman `0.999` and top-1% Jaccard mean `0.904` on the earlier post-fix production surface | The broad ordering is stable, but the top-1% boundary still has some churn; repeat after major feature/model changes |
+| Empirical Bayes shrinkage | Whether sparse histories and zero-collision links are overconfidently ranked | EB diagnostics exist and are documented in [Empirical Bayes Shrinkage](../methodology/empirical-bayes-shrinkage.qmd); EB is published as an additional ranking, not a silent replacement | Useful caution layer for regression-to-the-mean, especially when interpreting low-observation links |
+| Family-level diagnostics | Whether road families behave differently enough to need separate handling | Historical family-split checks found strong rank agreement with the global model and highlighted motorway/other-rural caveats; the family model is diagnostic, not production | Supports family-aware interpretation, but does not justify replacing the current global ranking |
+| Top-risk QA and manual plausibility checks | Whether mapped high-risk links look plausible and where manual review is needed | Top-risk output QA and short-link neighbourhood diagnostics flag short segments and local outliers for review | High-ranked links are candidates for inspection, not proof of dangerous design |
+| Spatial, temporal, and external validation | Whether the ranking generalises across geography, time, or an independent safety framework | Partly planned or not yet surfaced publicly for Stage 2; the literature basis is documented in [Validation and Metrics](../literature/validation-and-metrics.qmd) | This is the main next validation gap before stronger public claims |
+
+What the ranking **does not** prove:
+
+- It is not causal proof that a road's design caused collisions.
+- It is not an engineering safety audit and cannot replace site inspection.
+- It is not a guarantee that future collisions will occur on a ranked link.
+- Short links, sparse collision histories, and unusual network segmentation need
+  manual caution.
+- Reporting-area or grid summaries are display choices, not formal modelling
+  units.
+
+The practical reading is: use the ranking to decide where to look first, then
+combine it with exposure, collision history, road layout, local knowledge, and
+engineering review before making decisions.

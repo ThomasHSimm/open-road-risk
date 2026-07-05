@@ -458,13 +458,27 @@ axes[0].set_xlabel("log(GLM predicted rate)")
 axes[0].set_ylabel("log(XGBoost predicted rate)")
 axes[0].set_title("GLM vs XGBoost predictions (50k sample, log scale)")
 
-pct_data = [risk[risk["road_classification"] == c]["risk_percentile"].values
-            for c in cls_in_data]
-axes[1].boxplot(pct_data, labels=cls_in_data, patch_artist=True,
-                boxprops=dict(facecolor="#a8dadc", color="#1d3557"),
-                medianprops=dict(color="#e63946", linewidth=2))
-axes[1].set_ylabel("Risk percentile")
-axes[1].set_title("Risk percentile distribution by road class")
+collision_links = risk[risk["collision_count"] > 0].copy()
+collision_cap = clipped_upper(collision_links["collision_count"], q=0.99, fallback=20)
+count_data = []
+count_labels = []
+for c in cls_in_data:
+    values = collision_links.loc[
+        collision_links["road_classification"] == c, "collision_count"
+    ].clip(upper=collision_cap).values
+    if len(values):
+        count_data.append(values)
+        count_labels.append(c)
+axes[1].boxplot(
+    count_data,
+    labels=count_labels,
+    patch_artist=True,
+    showfliers=False,
+    boxprops=dict(facecolor="#a8dadc", color="#1d3557"),
+    medianprops=dict(color="#e63946", linewidth=2),
+)
+axes[1].set_ylabel(f"Observed collisions, capped at {collision_cap:.0f}")
+axes[1].set_title("Collision count distribution by road class\n(links with collisions only)")
 axes[1].tick_params(axis="x", rotation=30)
 
 plt.tight_layout()

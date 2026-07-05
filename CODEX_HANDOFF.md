@@ -1,12 +1,19 @@
 # Open Road Risk Codex handoff
 
-Current branch/work:
-- We are updating full-GB outputs and documentation after fixing stale STATS19 coverage.
-- Do not rerun STATS19, snap, join, traffic, AADT, or collision modelling unless explicitly asked.
-- Do not inspect or edit huge generated files unless necessary.
-- Avoid reading full GeoJSON/HTML outputs into context.
+## Current branch/work
 
-Validated full-GB model/output state:
+We are updating full-GB outputs and documentation after fixing stale output coverage.
+
+Do not rerun STATS19, snapping, joining, traffic, AADT, or collision modelling unless explicitly asked.
+
+Do not inspect or edit huge generated files unless necessary. Avoid reading full GeoJSON/HTML outputs into context.
+
+Prefer small source/docs edits. Render only the single page being changed when testing.
+
+Do not commit raw data, logs, parquet outputs, or huge generated artefacts unless explicitly requested.
+
+## Validated full-GB model/output state
+
 - Open Roads links: 3,941,299
 - Link-years: 39,412,990
 - Processed STATS19 collision rows: 1,148,857
@@ -19,14 +26,35 @@ Validated full-GB model/output state:
 - Risk-score rows: 3,941,299
 - Top 1% risk links: 39,413
 
-Known issues:
-- Key figures now use a GB-wide reporting-area layer, but dissolve/grouping policy is still rough.
-- Old partial `areas_study.geojson` should not drive final full-GB named areas.
-- Named reporting areas are a display geography only.
-- The 10 km grid is the primary consistent GB comparison geography.
-- Raw XGBoost predicted counts are somewhat high on average; risk percentiles/deciles are the safer public output.
+## Top-risk map status
 
-Working rule:
-- Prefer small source/docs edits.
-- Render only the single page being changed when testing.
-- Do not commit raw data, logs, parquet outputs, or huge generated artefacts unless explicitly requested.
+The model files were already full GB. The stale/England-biased layer was:
+
+- `data/outputs/top_1pct_risk_segments.parquet`
+
+It has now been regenerated from current full-GB `data/models/risk_scores.parquet`.
+
+Current regenerated bounds:
+
+- `top_1pct_risk_segments.parquet`: `[-6.297683, 50.023067, 1.751146, 60.323022]`
+- `data/outputs/web/top_1pct_risk_segments.geojson`: `[-6.29768, 50.02307, 1.75115, 60.32302]`
+
+Current regenerated top-risk country counts:
+
+- England: 37,959
+- Scotland: 893
+- Wales: 548
+- missing: 13
+
+Context layers were also regenerated from current GB scores:
+
+- features: 597,072
+- files: 33
+- bounds: `[-7.51646, 49.9119, 1.75939, 60.78527]`
+
+Commands already run:
+
+```bash
+python -m road_risk.outputs.top_risk_web
+python scripts/build_context_web.py
+conda run --no-capture-output -n env1 quarto render quarto/outputs/top-risk-map.qmd

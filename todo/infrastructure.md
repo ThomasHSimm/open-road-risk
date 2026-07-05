@@ -9,7 +9,7 @@
 - [ ] GeoPackage export — ESRI-compatible output layer (link_id, geometry,
   estimated_aadt, risk_percentile, road_classification). Useful.
 
-- [ ] `data/README.md` — download instructions for all large raw files not in git
+- [x] `data/README.md` — download instructions for all large raw files not in git
   (STATS19 CSV, OS Open Roads GeoPackage, AADF zip, WebTRIS/API notes,
   OSM pbf files, OS Terrain 50 tiles, ONS population/RUC files, and MHCLG
   IMD 2025).
