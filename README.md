@@ -192,6 +192,8 @@ open-road-risk/
 | XGBoost pseudo-R² | 0.360 (full-zero training) |
 | Top 1% risk links | 39,413 |
 
+The QGIS-ready full-GB link-level GeoPackage export is distributed through the Kaggle Dataset: https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/
+
 ---
 
 ## Key Data Quality Notes
@@ -246,7 +248,7 @@ This pipeline produces **Safety Performance Functions (SPFs)** for the full road
 using open data — extending exposure-adjusted risk analysis to the 85% of roads where
 DfT currently has no traffic counts.
 
-Compatible with ESRI/ArcGIS workflows via GeoPackage output. PostGIS backend for app queries.
+Compatible with ESRI/ArcGIS workflows via GeoPackage output. The public full-GB GIS export is available as a Kaggle Dataset: https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/. PostGIS backend for app queries.
 
 ---
 

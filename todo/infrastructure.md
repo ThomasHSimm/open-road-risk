@@ -6,8 +6,10 @@
 - [ ] Streamlit app skeleton — map with road links coloured by risk percentile,
   sidebar filters for road type / year / severity.
 
-- [ ] GeoPackage export — ESRI-compatible output layer (link_id, geometry,
-  estimated_aadt, risk_percentile, road_classification). Useful.
+- [x] GeoPackage export — ESRI-compatible/QGIS-ready full-GB output layer
+  with link geometry, exposure, observed collision summaries, modelled risk
+  ranking fields, QML styles, and public Kaggle validation/demo notebook.
+  Generated `.gpkg` remains ignored by git.
 
 - [ ] `data/README.md` — download instructions for all large raw files not in git
   (STATS19 CSV, OS Open Roads GeoPackage, AADF zip, WebTRIS/API notes,
@@ -21,7 +23,11 @@
   until after OS contact response so the page reflects specific
   references rather than generic ecosystem framing.
 
-- [ ] Kaggle dataset — upload processed parquets so others can skip ingest/clean/snap.
+- [x] Kaggle GIS dataset — published full link-level GeoPackage release:
+  https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/
+
+- [ ] Kaggle processed-parquet dataset — upload processed parquets so others can
+  skip ingest/clean/snap.
 
 - [ ] Provenance directory restructure (small session) — move
   `curvature_provenance.json`, `ruc_provenance.json`,
