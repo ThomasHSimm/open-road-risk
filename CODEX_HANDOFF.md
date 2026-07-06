@@ -19,6 +19,12 @@ Validated full-GB model/output state:
 - Risk-score rows: 3,941,299
 - Top 1% risk links: 39,413
 
+GIS/Kaggle release state:
+- Full link-level GIS export script: `src/road_risk/outputs/gis_link_export.py`.
+- Local GeoPackage target: `data/exports/gis/open-road-risk-gb-link-risk-exposure.gpkg` (large, ignored by git).
+- Public Kaggle Dataset: https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/
+- Public demo notebook: `notebooks/open-road-risk-gis-export-for-qgis.ipynb`; keep outputs and attachments cleared so Kaggle source stays below 1 MB.
+
 Known issues:
 - Key figures now use a GB-wide reporting-area layer, but dissolve/grouping policy is still rough.
 - Old partial `areas_study.geojson` should not drive final full-GB named areas.
