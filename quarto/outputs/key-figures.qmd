@@ -1,6 +1,6 @@
 ---
 title: "Road risk at a glance"
-date-modified: 2026-07-05
+date-modified: 2026-07-07
 description: "Plain-language figures summarising where collision risk is highest across the Open Road Risk study area."
 format:
     html:
@@ -14,13 +14,20 @@ jupyter: python3
 ---
 
 ::: {.small .text-muted}
-Last updated: 2026-07-05 · Full GB output rebuild: 2026-07-04.
+Last updated: 2026-07-07 · Full GB output rebuild: 2026-07-04.
 :::
 
 Figures summarising the main outputs of the risk model, without the modelling
 detail. The map is *exposure-adjusted*: it reflects risk given traffic, not
 simply where the most collisions happen. Full methodology and diagnostics are
 on the [Stage 2 model](../analysis/model-results.qmd) page.
+
+For GIS users, the full link-level QGIS-ready GeoPackage is distributed through
+the public [Open Road Risk GB link risk + exposure GIS Kaggle Dataset](https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/).
+It contains one row per scored OS Open Roads link with geometry, estimated
+traffic exposure, observed injury-collision summaries, and modelled risk
+ranking fields. Treat it as a screening/research layer, not causal proof or an
+engineering audit.
 
 The modelled-risk map is not the same as a simple collision-rate map. Traffic
 volume is a major driver of collision frequency, so modelled risk can still
