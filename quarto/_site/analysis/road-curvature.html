@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Road Curvature from OS Open Roads – Open Road Risk</title>
 <style>
@@ -62,7 +62,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -117,24 +117,15 @@ gtag('js', new Date());
 gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </script>
 <style>html{ scroll-behavior: smooth; }</style>
-<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
-
-<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 <link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Road Curvature from OS Open Roads – Open Road Risk">
 <meta property="og:description" content="Analysis of road curvature features derived from OS Open Roads geometry and their coverage, distributions, and modelling caveats.">
-<meta property="og:image" content="https://openroadrisk.org/analysis/road-curvature_files/figure-html/gate-plot-output-1.png">
 <meta property="og:site_name" content="Open Road Risk">
-<meta property="og:image:height" content="1183">
-<meta property="og:image:width" content="2375">
 <meta name="twitter:title" content="Road Curvature from OS Open Roads – Open Road Risk">
 <meta name="twitter:description" content="Analysis of road curvature features derived from OS Open Roads geometry and their coverage, distributions, and modelling caveats.">
-<meta name="twitter:image" content="https://openroadrisk.org/analysis/road-curvature_files/figure-html/gate-plot-output-1.png">
-<meta name="twitter:image-height" content="1183">
-<meta name="twitter:image-width" content="2375">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -157,6 +148,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li class="nav-item">
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
   </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
@@ -189,6 +184,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -400,6 +399,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -490,7 +493,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <li>Curvature should therefore be treated as a screening/ranking proxy rather than a survey-grade design measure.</li>
 <li>The implementation uses a vertex-density gate by road class so sparse geometry is left as missing instead of being silently interpreted as straight.</li>
 </ul>
-<p>The full background note is in <a href="../../docs/notes/deep-research-roadcurvature.md"><code>docs/notes/deep-research-roadcurvature.md</code></a>.</p>
+<p>The full background note is in <code>docs/notes/deep-research-roadcurvature.md</code> in Github.</p>
 </section>
 <section id="method" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="method"><span class="header-section-number">2</span> Method</h2>
@@ -505,844 +508,142 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <li>Store three features: <code>mean_curvature_deg_per_km</code>, <code>max_curvature_deg_per_km</code>, and <code>sinuosity</code>.</li>
 </ol>
 <p><code>mean_curvature_deg_per_km</code> is total absolute turning angle per kilometre of link. It is therefore interpretable as “how much the link turns overall”. <code>max_curvature_deg_per_km</code> is the sharpest local turning-angle density found on the resampled line, capped at 10,000 deg/km to suppress single-vertex artefacts. <code>sinuosity</code> is <code>link_length / straight_line_distance</code>, clipped at 5.0 for near-closed loop-like geometries.</p>
-<div id="load-openroads" class="cell" data-execution_count="2">
+<div id="load-openroads" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> OPENROADS_PATH.exists():</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">FileNotFoundError</span>(<span class="ss">f"Open Roads parquet not found: </span><span class="sc">{</span>OPENROADS_PATH<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>openroads <span class="op">=</span> gpd.read_parquet(OPENROADS_PATH)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Loaded </span><span class="sc">{</span><span class="bu">len</span>(openroads)<span class="sc">:,}</span><span class="ss"> OS Open Roads links from </span><span class="sc">{</span>OPENROADS_PATH<span class="sc">.</span>relative_to(ROOT)<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Source CRS: </span><span class="sc">{</span>openroads<span class="sc">.</span>crs<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Loaded 2,167,557 OS Open Roads links from data/processed/shapefiles/openroads.parquet
-Source CRS: {"$schema": "https://proj.org/schemas/v0.7/projjson.schema.json", "type": "GeographicCRS", "name": "WGS 84", "datum_ensemble": {"name": "World Geodetic System 1984 ensemble", "members": [{"name": "World Geodetic System 1984 (Transit)"}, {"name": "World Geodetic System 1984 (G730)"}, {"name": "World Geodetic System 1984 (G873)"}, {"name": "World Geodetic System 1984 (G1150)"}, {"name": "World Geodetic System 1984 (G1674)"}, {"name": "World Geodetic System 1984 (G1762)"}, {"name": "World Geodetic System 1984 (G2139)"}, {"name": "World Geodetic System 1984 (G2296)"}], "ellipsoid": {"name": "WGS 84", "semi_major_axis": 6378137, "inverse_flattening": 298.257223563}, "accuracy": "2.0", "id": {"authority": "EPSG", "code": 6326}}, "coordinate_system": {"subtype": "ellipsoidal", "axis": [{"name": "Geodetic latitude", "abbreviation": "Lat", "direction": "north", "unit": "degree"}, {"name": "Geodetic longitude", "abbreviation": "Lon", "direction": "east", "unit": "degree"}]}, "scope": "Horizontal component of 3D system.", "area": "World.", "bbox": {"south_latitude": -90, "west_longitude": -180, "north_latitude": 90, "east_longitude": 180}, "id": {"authority": "EPSG", "code": 4326}}</code></pre>
+</details>
 </div>
-</div>
-<div id="prepare-geometry" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> openroads.copy()</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"geometry"</span>] <span class="op">=</span> gdf.geometry.<span class="bu">apply</span>(normalise_linestring)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> gdf.loc[gdf.geometry.notna()].copy()</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> gdf.crs <span class="kw">is</span> <span class="va">None</span>:</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Input CRS is missing; curvature needs a metric CRS."</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>units <span class="op">=</span> (</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">getattr</span>(gdf.crs.axis_info[<span class="dv">0</span>], <span class="st">"unit_name"</span>, <span class="st">""</span>).lower()</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> gdf.crs.axis_info</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">""</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"metre"</span> <span class="kw">not</span> <span class="kw">in</span> units <span class="kw">and</span> <span class="st">"meter"</span> <span class="kw">not</span> <span class="kw">in</span> units:</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    gdf <span class="op">=</span> gdf.to_crs(<span class="dv">27700</span>)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"calc_length_m"</span>] <span class="op">=</span> gdf.geometry.length</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> gdf.loc[gdf[<span class="st">"calc_length_m"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"vertex_count"</span>] <span class="op">=</span> gdf.geometry.<span class="bu">apply</span>(vertex_count)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"vertices_per_km"</span>] <span class="op">=</span> gdf[<span class="st">"vertex_count"</span>] <span class="op">/</span> (gdf[<span class="st">"calc_length_m"</span>] <span class="op">/</span> <span class="dv">1000</span>)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Metric CRS used for curvature: </span><span class="sc">{</span>gdf<span class="sc">.</span>crs<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Usable non-empty LineString links: </span><span class="sc">{</span><span class="bu">len</span>(gdf)<span class="sc">:,}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Metric CRS used for curvature: EPSG:27700
-Usable non-empty LineString links: 2,167,557</code></pre>
-</div>
+<div id="prepare-geometry" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> openroads.copy()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"geometry"</span>] <span class="op">=</span> gdf.geometry.<span class="bu">apply</span>(normalise_linestring)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> gdf.loc[gdf.geometry.notna()].copy()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> gdf.crs <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Input CRS is missing; curvature needs a metric CRS."</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>units <span class="op">=</span> (</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">getattr</span>(gdf.crs.axis_info[<span class="dv">0</span>], <span class="st">"unit_name"</span>, <span class="st">""</span>).lower()</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> gdf.crs.axis_info</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">""</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"metre"</span> <span class="kw">not</span> <span class="kw">in</span> units <span class="kw">and</span> <span class="st">"meter"</span> <span class="kw">not</span> <span class="kw">in</span> units:</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    gdf <span class="op">=</span> gdf.to_crs(<span class="dv">27700</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"calc_length_m"</span>] <span class="op">=</span> gdf.geometry.length</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> gdf.loc[gdf[<span class="st">"calc_length_m"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"vertex_count"</span>] <span class="op">=</span> gdf.geometry.<span class="bu">apply</span>(vertex_count)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>gdf[<span class="st">"vertices_per_km"</span>] <span class="op">=</span> gdf[<span class="st">"vertex_count"</span>] <span class="op">/</span> (gdf[<span class="st">"calc_length_m"</span>] <span class="op">/</span> <span class="dv">1000</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Metric CRS used for curvature: </span><span class="sc">{</span>gdf<span class="sc">.</span>crs<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Usable non-empty LineString links: </span><span class="sc">{</span><span class="bu">len</span>(gdf)<span class="sc">:,}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 </section>
 <section id="geometry-quality-gate" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="geometry-quality-gate"><span class="header-section-number">3</span> Geometry Quality Gate</h2>
 <p>The gate is deliberately operational. It is not an OS-published standard; it is a guardrail for using 15 m resampling on already-generalised Open Roads centreline geometry. Classes that fail the gate should keep curvature as <code>NaN</code> so sparse linework does not become a false zero-curvature signal.</p>
-<div id="cell-vertex-density" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>vertex_summary <span class="op">=</span> (</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    gdf.groupby(<span class="st">"road_classification"</span>, dropna<span class="op">=</span><span class="va">False</span>)[<span class="st">"vertices_per_km"</span>]</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .describe()</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    .sort_index()</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>valid_classes <span class="op">=</span> vertex_summary.index[</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    (vertex_summary[<span class="st">"50%"</span>] <span class="op">&gt;=</span> MEDIAN_VERTICES_PER_KM_MIN)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span> (vertex_summary[<span class="st">"25%"</span>] <span class="op">&gt;=</span> P25_VERTICES_PER_KM_MIN)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>].tolist()</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> (</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"all_classes"</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">set</span>(valid_classes) <span class="op">==</span> <span class="bu">set</span>(vertex_summary.index.tolist())</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">"gated_by_road_classification"</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>gate_table <span class="op">=</span> vertex_summary.reset_index().rename(</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>{</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"road_classification"</span>: <span class="st">"road_class"</span>,</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"50%"</span>: <span class="st">"median_vertices_per_km"</span>,</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"25%"</span>: <span class="st">"p25_vertices_per_km"</span>,</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"75%"</span>: <span class="st">"p75_vertices_per_km"</span>,</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>gate_table[<span class="st">"passes_gate"</span>] <span class="op">=</span> gate_table[<span class="st">"road_class"</span>].isin(valid_classes)</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>show_cols <span class="op">=</span> [</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"road_class"</span>,</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"count"</span>,</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean"</span>,</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"p25_vertices_per_km"</span>,</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"median_vertices_per_km"</span>,</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"p75_vertices_per_km"</span>,</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"passes_gate"</span>,</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>gate_table[show_cols].<span class="bu">round</span>(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="vertex-density" class="cell-output cell-output-display" data-execution_count="4">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">road_class</th>
-<th data-quarto-table-cell-role="th">count</th>
-<th data-quarto-table-cell-role="th">mean</th>
-<th data-quarto-table-cell-role="th">p25_vertices_per_km</th>
-<th data-quarto-table-cell-role="th">median_vertices_per_km</th>
-<th data-quarto-table-cell-role="th">p75_vertices_per_km</th>
-<th data-quarto-table-cell-role="th">passes_gate</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">0</th>
-<td>A Road</td>
-<td>155538.0</td>
-<td>148.78</td>
-<td>30.62</td>
-<td>65.65</td>
-<td>130.07</td>
-<td>True</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">1</th>
-<td>B Road</td>
-<td>89286.0</td>
-<td>96.59</td>
-<td>27.29</td>
-<td>55.42</td>
-<td>104.01</td>
-<td>True</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">2</th>
-<td>Classified Unnumbered</td>
-<td>190921.0</td>
-<td>78.15</td>
-<td>21.42</td>
-<td>43.97</td>
-<td>88.49</td>
-<td>True</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">3</th>
-<td>Motorway</td>
-<td>4084.0</td>
-<td>128.83</td>
-<td>15.78</td>
-<td>24.32</td>
-<td>53.90</td>
-<td>False</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">4</th>
-<td>Not Classified</td>
-<td>224878.0</td>
-<td>81.60</td>
-<td>41.74</td>
-<td>63.34</td>
-<td>94.99</td>
-<td>True</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">5</th>
-<td>Unclassified</td>
-<td>1060014.0</td>
-<td>84.11</td>
-<td>41.65</td>
-<td>63.68</td>
-<td>97.54</td>
-<td>True</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">6</th>
-<td>Unknown</td>
-<td>442836.0</td>
-<td>77.58</td>
-<td>36.34</td>
-<td>60.61</td>
-<td>93.52</td>
-<td>True</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
-<div id="cell-gate-plot" class="cell" data-execution_count="5">
-<div class="cell-output cell-output-display">
-<div id="gate-plot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="road-curvature_files/figure-html/gate-plot-output-1.png" width="1187" height="591" class="figure-img"></p>
-<figcaption>Original geometry vertex density by road class. Dashed lines show the p25 and median gate thresholds.</figcaption>
-</figure>
-</div>
-</div>
+<div id="vertex-density" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>vertex_summary <span class="op">=</span> (</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    gdf.groupby(<span class="st">"road_classification"</span>, dropna<span class="op">=</span><span class="va">False</span>)[<span class="st">"vertices_per_km"</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    .describe()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    .sort_index()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>valid_classes <span class="op">=</span> vertex_summary.index[</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    (vertex_summary[<span class="st">"50%"</span>] <span class="op">&gt;=</span> MEDIAN_VERTICES_PER_KM_MIN)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span> (vertex_summary[<span class="st">"25%"</span>] <span class="op">&gt;=</span> P25_VERTICES_PER_KM_MIN)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>].tolist()</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> (</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"all_classes"</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">set</span>(valid_classes) <span class="op">==</span> <span class="bu">set</span>(vertex_summary.index.tolist())</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">"gated_by_road_classification"</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>gate_table <span class="op">=</span> vertex_summary.reset_index().rename(</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>{</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"road_classification"</span>: <span class="st">"road_class"</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"50%"</span>: <span class="st">"median_vertices_per_km"</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"25%"</span>: <span class="st">"p25_vertices_per_km"</span>,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"75%"</span>: <span class="st">"p75_vertices_per_km"</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>gate_table[<span class="st">"passes_gate"</span>] <span class="op">=</span> gate_table[<span class="st">"road_class"</span>].isin(valid_classes)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>show_cols <span class="op">=</span> [</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"road_class"</span>,</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"count"</span>,</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean"</span>,</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"p25_vertices_per_km"</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"median_vertices_per_km"</span>,</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"p75_vertices_per_km"</span>,</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"passes_gate"</span>,</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>gate_table[show_cols].<span class="bu">round</span>(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 </section>
 <section id="seeded-random-road-section-sample" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="seeded-random-road-section-sample"><span class="header-section-number">4</span> Seeded Random Road-Section Sample</h2>
 <p>The table and plots below use a reproducible random sample from the actual OS Open Roads parquet. The sample is restricted to links with at least three vertices and length between 30 m and 2 km, so every plotted section has enough geometry to inspect. Curvature is calculated for every sampled section for diagnostic visibility; the <code>passes_class_gate</code> column shows whether production code would persist those values or leave them missing.</p>
-<div id="sample-links" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sample_pool <span class="op">=</span> gdf.loc[</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    (gdf[<span class="st">"vertex_count"</span>] <span class="op">&gt;=</span> <span class="dv">3</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span> (gdf[<span class="st">"calc_length_m"</span>].between(<span class="dv">30</span>, <span class="dv">2000</span>))</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>].copy()</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>sample_links <span class="op">=</span> sample_pool.sample(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    n<span class="op">=</span><span class="bu">min</span>(N_SAMPLE, <span class="bu">len</span>(sample_pool)),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span>RANDOM_SEED,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>).copy()</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>feature_rows <span class="op">=</span> []</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, row <span class="kw">in</span> sample_links.iterrows():</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    features <span class="op">=</span> turning_angle_features(row.geometry, spacing_m<span class="op">=</span>SPACING_M)</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    feature_rows.append(</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        {</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">"link_id"</span>: row[<span class="st">"link_id"</span>],</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>            MEAN_CURVATURE_COL: features[MEAN_CURVATURE_COL],</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>            MAX_CURVATURE_COL: features[MAX_CURVATURE_COL],</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>            SINUOSITY_COL: features[SINUOSITY_COL],</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">"passes_class_gate"</span>: row[<span class="st">"road_classification"</span>] <span class="kw">in</span> valid_classes,</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>sample_features <span class="op">=</span> pd.DataFrame(feature_rows)</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>sample_links <span class="op">=</span> sample_links.merge(sample_features, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"Seed </span><span class="sc">{</span>RANDOM_SEED<span class="sc">}</span><span class="ss"> selected </span><span class="sc">{</span><span class="bu">len</span>(sample_links)<span class="sc">}</span><span class="ss"> links "</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"from </span><span class="sc">{</span><span class="bu">len</span>(sample_pool)<span class="sc">:,}</span><span class="ss"> eligible road sections."</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Seed 20260421 selected 8 links from 1,845,997 eligible road sections.</code></pre>
-</div>
-</div>
-<div id="cell-sample-table" class="cell" data-execution_count="7">
-<div id="sample-table" class="cell-output cell-output-display" data-execution_count="7">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">link_id</th>
-<th data-quarto-table-cell-role="th">road_classification</th>
-<th data-quarto-table-cell-role="th">form_of_way</th>
-<th data-quarto-table-cell-role="th">road_name</th>
-<th data-quarto-table-cell-role="th">start_node</th>
-<th data-quarto-table-cell-role="th">end_node</th>
-<th data-quarto-table-cell-role="th">calc_length_m</th>
-<th data-quarto-table-cell-role="th">vertex_count</th>
-<th data-quarto-table-cell-role="th">vertices_per_km</th>
-<th data-quarto-table-cell-role="th">passes_class_gate</th>
-<th data-quarto-table-cell-role="th">mean_curvature_deg_per_km</th>
-<th data-quarto-table-cell-role="th">max_curvature_deg_per_km</th>
-<th data-quarto-table-cell-role="th">sinuosity</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">0</th>
-<td>44280356-A6F5-4FF8-AB95-713DD95CD4CC</td>
-<td>Unclassified</td>
-<td>Single Carriageway</td>
-<td></td>
-<td>3C3A4374-1ED0-451D-ACF4-175CD790F9EF</td>
-<td>C67E4253-6E96-464D-9B70-5CA4D67946AD</td>
-<td>79.164</td>
-<td>4</td>
-<td>50.528</td>
-<td>True</td>
-<td>998.386</td>
-<td>3608.360</td>
-<td>1.210</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">5</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>Not Classified</td>
-<td>Single Carriageway</td>
-<td>Pasture Close</td>
-<td>5A9E2542-979C-4CD6-B087-C6C25E2594B7</td>
-<td>E491F454-80E8-4A86-B208-EFF89A237EE4</td>
-<td>151.464</td>
-<td>9</td>
-<td>59.420</td>
-<td>True</td>
-<td>872.444</td>
-<td>2481.432</td>
-<td>1.478</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">4</th>
-<td>BE3CE2CE-C1CB-443E-ABE2-7C9D48279163</td>
-<td>Unclassified</td>
-<td>Single Carriageway</td>
-<td>Wrightson Avenue</td>
-<td>645C4237-F279-4D59-968F-C7CF9283C2D9</td>
-<td>CD39309E-62E6-4000-B2C9-5FC9F842CF8A</td>
-<td>154.342</td>
-<td>4</td>
-<td>25.916</td>
-<td>True</td>
-<td>113.225</td>
-<td>1174.140</td>
-<td>1.006</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">3</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>Unclassified</td>
-<td>Single Carriageway</td>
-<td>Gregory Street</td>
-<td>10380C8B-4137-4B96-96CB-0056E6B70E34</td>
-<td>C40FDD24-F378-4E0B-98E8-F7528FF7D285</td>
-<td>108.148</td>
-<td>7</td>
-<td>64.726</td>
-<td>True</td>
-<td>41.738</td>
-<td>231.213</td>
-<td>1.001</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">1</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>Classified Unnumbered</td>
-<td>Single Carriageway</td>
-<td>Gipsy Lane</td>
-<td>AC3C7397-2AE5-49A3-AEB5-74A9C2A9D8C0</td>
-<td>84CC2165-9BD5-43A7-BC6B-91333C7FC8FC</td>
-<td>156.340</td>
-<td>9</td>
-<td>57.567</td>
-<td>True</td>
-<td>5.611</td>
-<td>26.189</td>
-<td>1.000</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">7</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>Unclassified</td>
-<td>Single Carriageway</td>
-<td>Dalewood</td>
-<td>859686FD-5C36-4167-98E7-8807276BBBCD</td>
-<td>D46680DA-2623-424F-B494-B2DAFDAC895D</td>
-<td>49.906</td>
-<td>5</td>
-<td>100.188</td>
-<td>True</td>
-<td>0.476</td>
-<td>0.890</td>
-<td>1.000</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">2</th>
-<td>80FA9366-B954-4A23-A0F3-4D87149FDCDC</td>
-<td>Unclassified</td>
-<td>Single Carriageway</td>
-<td>Cedarway</td>
-<td>A13E47E6-409B-47D4-90EF-41519EE409DD</td>
-<td>3FF8A033-483B-45E3-9AF7-2A310955F405</td>
-<td>34.929</td>
-<td>3</td>
-<td>85.888</td>
-<td>True</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>1.000</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">6</th>
-<td>8491CCDF-EF5F-4A21-8F49-BF7E9022ECE3</td>
-<td>Unclassified</td>
-<td>Single Carriageway</td>
-<td>Byward Drive</td>
-<td>958B158C-89DC-4616-9E57-54B5B19DABC9</td>
-<td>F3B26BEE-8E49-473C-86BE-0B4277675EBB</td>
-<td>62.611</td>
-<td>3</td>
-<td>47.915</td>
-<td>True</td>
-<td>0.000</td>
-<td>0.000</td>
-<td>1.000</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
+<div id="sample-links" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sample_pool <span class="op">=</span> gdf.loc[</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    (gdf[<span class="st">"vertex_count"</span>] <span class="op">&gt;=</span> <span class="dv">3</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">&amp;</span> (gdf[<span class="st">"calc_length_m"</span>].between(<span class="dv">30</span>, <span class="dv">2000</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>].copy()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>sample_links <span class="op">=</span> sample_pool.sample(</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    n<span class="op">=</span><span class="bu">min</span>(N_SAMPLE, <span class="bu">len</span>(sample_pool)),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span>RANDOM_SEED,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>).copy()</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>feature_rows <span class="op">=</span> []</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, row <span class="kw">in</span> sample_links.iterrows():</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    features <span class="op">=</span> turning_angle_features(row.geometry, spacing_m<span class="op">=</span>SPACING_M)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    feature_rows.append(</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        {</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">"link_id"</span>: row[<span class="st">"link_id"</span>],</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>            MEAN_CURVATURE_COL: features[MEAN_CURVATURE_COL],</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            MAX_CURVATURE_COL: features[MAX_CURVATURE_COL],</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>            SINUOSITY_COL: features[SINUOSITY_COL],</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">"passes_class_gate"</span>: row[<span class="st">"road_classification"</span>] <span class="kw">in</span> valid_classes,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>sample_features <span class="op">=</span> pd.DataFrame(feature_rows)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>sample_links <span class="op">=</span> sample_links.merge(sample_features, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"Seed </span><span class="sc">{</span>RANDOM_SEED<span class="sc">}</span><span class="ss"> selected </span><span class="sc">{</span><span class="bu">len</span>(sample_links)<span class="sc">}</span><span class="ss"> links "</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"from </span><span class="sc">{</span><span class="bu">len</span>(sample_pool)<span class="sc">:,}</span><span class="ss"> eligible road sections."</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 <section id="sample-section-plots" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="sample-section-plots"><span class="header-section-number">4.1</span> Sample Section Plots</h3>
 <p>Black lines are the original OS Open Roads link geometry. Blue points are the 15 m resampled points used for turning-angle calculation. Red points are the start and end nodes.</p>
-<div id="cell-sample-plots" class="cell" data-execution_count="8">
-<div class="cell-output cell-output-display">
-<div id="sample-plots" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="road-curvature_files/figure-html/sample-plots-output-1.png" width="1429" height="2065" class="figure-img"></p>
-<figcaption>Seeded random sample of Open Roads links with original geometry and 15 m resampled points.</figcaption>
-</figure>
-</div>
-</div>
-</div>
 </section>
 </section>
 <section id="startend-nodes-and-geometry-coordinates" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="startend-nodes-and-geometry-coordinates"><span class="header-section-number">5</span> Start/End Nodes and Geometry Coordinates</h2>
 <p>This table exposes the node-level geometry used by the plots. Coordinates are in the metric CRS used for curvature calculation, currently British National Grid if the source parquet is WGS84.</p>
-<div id="cell-node-table" class="cell" data-execution_count="9">
-<div id="node-table" class="cell-output cell-output-display" data-execution_count="9">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">link_id</th>
-<th data-quarto-table-cell-role="th">node_role</th>
-<th data-quarto-table-cell-role="th">node_id</th>
-<th data-quarto-table-cell-role="th">x_m</th>
-<th data-quarto-table-cell-role="th">y_m</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">0</th>
-<td>44280356-A6F5-4FF8-AB95-713DD95CD4CC</td>
-<td>start</td>
-<td>3C3A4374-1ED0-451D-ACF4-175CD790F9EF</td>
-<td>454596.137</td>
-<td>518319.037</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">1</th>
-<td>44280356-A6F5-4FF8-AB95-713DD95CD4CC</td>
-<td>end</td>
-<td>C67E4253-6E96-464D-9B70-5CA4D67946AD</td>
-<td>454531.707</td>
-<td>518307.597</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">2</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>start</td>
-<td>AC3C7397-2AE5-49A3-AEB5-74A9C2A9D8C0</td>
-<td>460091.514</td>
-<td>306885.928</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">3</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>end</td>
-<td>84CC2165-9BD5-43A7-BC6B-91333C7FC8FC</td>
-<td>460230.022</td>
-<td>306813.420</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">4</th>
-<td>80FA9366-B954-4A23-A0F3-4D87149FDCDC</td>
-<td>start</td>
-<td>A13E47E6-409B-47D4-90EF-41519EE409DD</td>
-<td>428108.818</td>
-<td>560169.152</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">5</th>
-<td>80FA9366-B954-4A23-A0F3-4D87149FDCDC</td>
-<td>end</td>
-<td>3FF8A033-483B-45E3-9AF7-2A310955F405</td>
-<td>428140.819</td>
-<td>560183.152</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">6</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>start</td>
-<td>10380C8B-4137-4B96-96CB-0056E6B70E34</td>
-<td>455232.797</td>
-<td>338997.709</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">7</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>end</td>
-<td>C40FDD24-F378-4E0B-98E8-F7528FF7D285</td>
-<td>455228.798</td>
-<td>338889.708</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">8</th>
-<td>BE3CE2CE-C1CB-443E-ABE2-7C9D48279163</td>
-<td>start</td>
-<td>645C4237-F279-4D59-968F-C7CF9283C2D9</td>
-<td>454346.577</td>
-<td>400181.554</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">9</th>
-<td>BE3CE2CE-C1CB-443E-ABE2-7C9D48279163</td>
-<td>end</td>
-<td>CD39309E-62E6-4000-B2C9-5FC9F842CF8A</td>
-<td>454294.179</td>
-<td>400325.815</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">10</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>start</td>
-<td>5A9E2542-979C-4CD6-B087-C6C25E2594B7</td>
-<td>334726.767</td>
-<td>432524.459</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">11</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>end</td>
-<td>E491F454-80E8-4A86-B208-EFF89A237EE4</td>
-<td>334646.645</td>
-<td>432588.347</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">12</th>
-<td>8491CCDF-EF5F-4A21-8F49-BF7E9022ECE3</td>
-<td>start</td>
-<td>958B158C-89DC-4616-9E57-54B5B19DABC9</td>
-<td>503121.067</td>
-<td>484139.036</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">13</th>
-<td>8491CCDF-EF5F-4A21-8F49-BF7E9022ECE3</td>
-<td>end</td>
-<td>F3B26BEE-8E49-473C-86BE-0B4277675EBB</td>
-<td>503065.066</td>
-<td>484111.035</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">14</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>start</td>
-<td>859686FD-5C36-4167-98E7-8807276BBBCD</td>
-<td>496793.943</td>
-<td>366650.528</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">15</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>end</td>
-<td>D46680DA-2623-424F-B494-B2DAFDAC895D</td>
-<td>496842.613</td>
-<td>366639.488</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
 <p>The next table lists the first few original geometry vertices per sampled road section. It is intentionally compact: enough to show the actual coordinate sequence, without printing every point for long links.</p>
-<div id="cell-vertex-table" class="cell" data-execution_count="10">
-<div id="vertex-table" class="cell-output cell-output-display" data-execution_count="10">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">link_id</th>
-<th data-quarto-table-cell-role="th">vertex_ix</th>
-<th data-quarto-table-cell-role="th">x_m</th>
-<th data-quarto-table-cell-role="th">y_m</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">0</th>
-<td>44280356-A6F5-4FF8-AB95-713DD95CD4CC</td>
-<td>0</td>
-<td>454596.137</td>
-<td>518319.037</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">1</th>
-<td>44280356-A6F5-4FF8-AB95-713DD95CD4CC</td>
-<td>1</td>
-<td>454582.707</td>
-<td>518335.327</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">2</th>
-<td>44280356-A6F5-4FF8-AB95-713DD95CD4CC</td>
-<td>2</td>
-<td>454566.477</td>
-<td>518326.507</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">3</th>
-<td>44280356-A6F5-4FF8-AB95-713DD95CD4CC</td>
-<td>3</td>
-<td>454531.707</td>
-<td>518307.597</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">4</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>0</td>
-<td>460091.514</td>
-<td>306885.928</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">5</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>1</td>
-<td>460097.174</td>
-<td>306882.878</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">6</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>2</td>
-<td>460102.834</td>
-<td>306879.828</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">7</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>3</td>
-<td>460117.494</td>
-<td>306872.078</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">8</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>4</td>
-<td>460132.153</td>
-<td>306864.319</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">9</th>
-<td>C4B7A336-9E0F-4446-916B-E943F9E244CB</td>
-<td>5</td>
-<td>460161.233</td>
-<td>306849.199</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">10</th>
-<td>80FA9366-B954-4A23-A0F3-4D87149FDCDC</td>
-<td>0</td>
-<td>428108.818</td>
-<td>560169.152</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">11</th>
-<td>80FA9366-B954-4A23-A0F3-4D87149FDCDC</td>
-<td>1</td>
-<td>428124.819</td>
-<td>560176.152</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">12</th>
-<td>80FA9366-B954-4A23-A0F3-4D87149FDCDC</td>
-<td>2</td>
-<td>428140.819</td>
-<td>560183.152</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">13</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>0</td>
-<td>455232.797</td>
-<td>338997.709</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">14</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>1</td>
-<td>455232.067</td>
-<td>338988.219</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">15</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>2</td>
-<td>455231.347</td>
-<td>338978.729</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">16</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>3</td>
-<td>455230.017</td>
-<td>338959.359</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">17</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>4</td>
-<td>455228.687</td>
-<td>338939.988</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">18</th>
-<td>F1BE01C7-E58C-4093-8014-85B9CFFEED18</td>
-<td>5</td>
-<td>455228.737</td>
-<td>338914.848</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">19</th>
-<td>BE3CE2CE-C1CB-443E-ABE2-7C9D48279163</td>
-<td>0</td>
-<td>454346.577</td>
-<td>400181.554</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">20</th>
-<td>BE3CE2CE-C1CB-443E-ABE2-7C9D48279163</td>
-<td>1</td>
-<td>454339.178</td>
-<td>400189.814</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">21</th>
-<td>BE3CE2CE-C1CB-443E-ABE2-7C9D48279163</td>
-<td>2</td>
-<td>454318.418</td>
-<td>400252.545</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">22</th>
-<td>BE3CE2CE-C1CB-443E-ABE2-7C9D48279163</td>
-<td>3</td>
-<td>454294.179</td>
-<td>400325.815</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">23</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>0</td>
-<td>334726.767</td>
-<td>432524.459</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">24</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>1</td>
-<td>334689.617</td>
-<td>432505.779</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">25</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>2</td>
-<td>334682.688</td>
-<td>432502.299</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">26</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>3</td>
-<td>334666.597</td>
-<td>432507.528</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">27</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>4</td>
-<td>334657.267</td>
-<td>432521.628</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">28</th>
-<td>3CB73090-FF8F-417C-B46C-6AD368C3A54B</td>
-<td>5</td>
-<td>334656.726</td>
-<td>432540.868</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">29</th>
-<td>8491CCDF-EF5F-4A21-8F49-BF7E9022ECE3</td>
-<td>0</td>
-<td>503121.067</td>
-<td>484139.036</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">30</th>
-<td>8491CCDF-EF5F-4A21-8F49-BF7E9022ECE3</td>
-<td>1</td>
-<td>503093.067</td>
-<td>484125.036</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">31</th>
-<td>8491CCDF-EF5F-4A21-8F49-BF7E9022ECE3</td>
-<td>2</td>
-<td>503065.066</td>
-<td>484111.035</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">32</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>0</td>
-<td>496793.943</td>
-<td>366650.528</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">33</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>1</td>
-<td>496810.033</td>
-<td>366646.878</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">34</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>2</td>
-<td>496826.113</td>
-<td>366643.228</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">35</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>3</td>
-<td>496834.363</td>
-<td>366641.358</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">36</th>
-<td>9AC3CFA6-7FDA-446F-9395-7343CE6C2815</td>
-<td>4</td>
-<td>496842.613</td>
-<td>366639.488</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
 </section>
 <section id="how-the-curvature-code-works" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="how-the-curvature-code-works"><span class="header-section-number">6</span> How the Curvature Code Works</h2>
-<p>The production module lives at <a href="../../src/road_risk/features/road_curvature.py"><code>src/road_risk/features/road_curvature.py</code></a>. The key pieces are:</p>
+<p>The production module lives at <code>src/road_risk/features/road_curvature.py</code></p>
+<p>The key pieces are:</p>
 <ul>
 <li><code>normalise_linestring()</code> handles empty geometry, <code>LineString</code>, and <code>MultiLineString</code> cases before feature calculation.</li>
 <li><code>ensure_metric_crs()</code> converts longitude/latitude geometry to EPSG:27700 so spacing and length calculations are in metres.</li>

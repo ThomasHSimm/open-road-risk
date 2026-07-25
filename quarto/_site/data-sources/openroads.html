@@ -114,6 +114,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -145,6 +149,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -356,6 +364,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -438,7 +450,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <section id="overview" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
-<p>OS Open Roads is the <strong>primary network geometry</strong> for the project. Every road link the model scores comes from this dataset: ~2.17 million link geometries covering the full classified road network across the study area, from motorways down to local streets.</p>
+<p>OS Open Roads is the <strong>primary network geometry</strong> for the project. Every road link the model scores comes from this dataset: 3.94 million link geometries covering the full classified road network across Great Britain, from motorways down to local streets.</p>
 <p>It is the backbone that everything else attaches to. STATS19 collisions are snapped to OS Open Roads links. AADF count points are spatially joined to OS Open Roads links. Network features (centrality, length, road classification) are computed on the OS Open Roads graph. The output of the modelling pipeline is a risk score per OS Open Roads link.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -501,7 +513,7 @@ Note
 <p>OS Open Roads covers <strong>all classified roads in Great Britain</strong> — motorways, A roads, B roads, minor roads, and local/unclassified roads. This breadth is what makes it usable as the model’s network: minor and unclassified roads are exactly where DfT has no traffic counters and where the project has to estimate exposure rather than measure it.</p>
 <p>For the project’s current Great Britain study area, OS Open Roads provides:</p>
 <ul>
-<li><strong>2,167,557 road links</strong> across England, Scotland, and Wales.</li>
+<li><strong>3,941,299 road links</strong> across England, Scotland, and Wales.</li>
 <li>Full coverage of all road classifications, not just the Major Road Network.</li>
 <li>Topology — every link has <code>start_node</code> and <code>end_node</code> references that allow the network to be reconstructed as a graph.</li>
 </ul>
@@ -592,24 +604,11 @@ Note
 <h2 data-number="6" class="anchored" data-anchor-id="coordinate-handling"><span class="header-section-number">6</span> Coordinate handling</h2>
 <p>OS Open Roads ships in <strong>EPSG:27700</strong> (British National Grid, metres). The project reprojects to <strong>EPSG:4326</strong> (WGS84, degrees) for consistency with STATS19 lat/lon and AADF coordinates. The reprojection happens once, at ingest time.</p>
 <p>Link length (<code>link_length_m</code>) is computed in the source BNG CRS before reprojection — this preserves accurate metric distances. Computing length in WGS84 would give degree-units, which are not metres and vary with latitude.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>A small number of OS Open Roads links have invalid or null geometries. The ingest pipeline drops null geometries and applies <code>buffer(0)</code> to fix invalid ones. This affects a negligible fraction of links but the reasoning is documented for reproducibility.</p>
-</div>
-</div>
+<p>The full-GB ingest validates that geometries are present, non-empty, <code>LineString</code> features, and that the written bounds are finite and GB-wide. It does not apply geometry repair to Open Roads LineStrings.</p>
 </section>
 <section id="spatial-filtering" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="spatial-filtering"><span class="header-section-number">7</span> Spatial filtering</h2>
-<p>GB-wide OS Open Roads contains roughly four million links. The ingest pipeline applies a <strong>bounding-box filter at read time</strong>, using <code>geopandas.read_file(..., bbox=...)</code> with the study area extent (plus a 20 km buffer) in BNG. This avoids loading the full GB dataset into memory and keeps the parquet output to a manageable size for downstream processing.</p>
-<p>The 20 km buffer is deliberate: a collision near the study area boundary should still be able to snap to a road link just outside the boundary, otherwise the snap quality degrades at the edges. The buffer is only applied to the network — collisions and AADF data are clipped to the study area itself.</p>
+<p>GB-wide OS Open Roads contains roughly four million links. The current ingest reads the <code>road_link</code> layer in small source-row chunks, reprojects each chunk from British National Grid to WGS84, validates each chunk, and then writes a single full-GB GeoParquet. The Open Roads base ingest does not apply the project study-area polygon clip; the source is already GB-wide, and clipping belongs in downstream analysis only where a narrower geography is explicitly needed.</p>
 </section>
 <section id="output" class="level2" data-number="8">
 <h2 data-number="8" class="anchored" data-anchor-id="output"><span class="header-section-number">8</span> Output</h2>
@@ -617,7 +616,7 @@ Note
 <ul>
 <li><strong>Path:</strong> <code>data/processed/shapefiles/openroads.parquet</code></li>
 <li><strong>Schema:</strong> the renamed columns listed above, plus <code>link_length_km</code>, <code>road_name_clean</code>, <code>street_name_clean</code>, and <code>geometry</code> in WGS84.</li>
-<li><strong>Size:</strong> ~2.17M rows for the current study area.</li>
+<li><strong>Size:</strong> 3,941,299 rows for the current GB study area.</li>
 </ul>
 <p>This file is consumed by:</p>
 <ul>

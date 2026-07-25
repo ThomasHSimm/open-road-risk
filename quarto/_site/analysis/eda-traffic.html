@@ -122,16 +122,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="Traffic Volume EDA for AADF and WebTRIS – Open Road Risk">
 <meta property="og:description" content="Exploratory analysis of full-GB traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.">
-<meta property="og:image" content="https://openroadrisk.org/analysis/eda-traffic_files/figure-html/cell-3-output-1.png">
 <meta property="og:site_name" content="Open Road Risk">
-<meta property="og:image:height" content="1517">
-<meta property="og:image:width" content="1239">
 <meta name="twitter:title" content="Traffic Volume EDA for AADF and WebTRIS – Open Road Risk">
 <meta name="twitter:description" content="Exploratory analysis of full-GB traffic volume data, AADF patterns, WebTRIS observations, exposure distributions, and model inputs.">
-<meta name="twitter:image" content="https://openroadrisk.org/analysis/eda-traffic_files/figure-html/cell-3-output-1.png">
-<meta name="twitter:image-height" content="1517">
-<meta name="twitter:image-width" content="1239">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -154,6 +148,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
   <li class="nav-item">
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
   </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
@@ -401,6 +399,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -488,6 +490,12 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
     
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">July 4, 2026</p>
+    </div>
+  </div>
     
   </div>
   
@@ -496,6 +504,9 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
+<div class="small text-muted">
+<p>Last updated: 2026-07-04 · Data coverage: 2015–2024.</p>
+</div>
 <section id="overview" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
 <p>Stage 1a estimates Annual Average Daily Traffic (AADT) for every OS Open Roads link across full Great Britain. Directly measured AADF count points cover only a minority of road links, especially minor and unclassified roads, so a gradient-boosted regressor is trained on measured count sites and applied to the full 3.94M-link network.</p>
@@ -562,7 +573,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </tr>
 </tbody>
 </table>
-<div id="41f81e93" class="cell" data-execution_count="1">
+<div id="03b5e479" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -600,11 +611,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"OS Open Roads     : </span><span class="sc">{</span><span class="bu">len</span>(openroads)<span class="sc">:,}</span><span class="ss"> links"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>AADF count points : 14,193 count points × 10 years (105,661 rows)
-AADT estimates    : 3,941,299 links × 10 years (39,412,990 rows)
-OS Open Roads     : 3,941,299 links</code></pre>
-</div>
 </div>
 <hr>
 </section>
@@ -613,151 +619,123 @@ OS Open Roads     : 3,941,299 links</code></pre>
 <h2 data-number="2" class="anchored" data-anchor-id="measured-aadf-training-data"><span class="header-section-number">2</span> Measured AADF — training data</h2>
 <section id="spatial-coverage-of-count-points" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="spatial-coverage-of-count-points"><span class="header-section-number">2.1</span> Spatial coverage of count points</h3>
-<div id="0732140c" class="cell" data-execution_count="2">
+<div id="e146dca7" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">8</span>))</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(RANDOM_STATE)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    sample_idx <span class="op">=</span> rng.choice(<span class="bu">len</span>(openroads), size<span class="op">=</span><span class="bu">min</span>(<span class="dv">200_000</span>, <span class="bu">len</span>(openroads)), replace<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    openroads.iloc[sample_idx].plot(ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">"#d0d0d0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    latest_aadf <span class="op">=</span> (</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        aadf.sort_values(<span class="st">"year"</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        .groupby(<span class="st">"count_point_id"</span>, as_index<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        .last()</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    gdf_pts <span class="op">=</span> gpd.GeoDataFrame(</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        latest_aadf,</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        geometry<span class="op">=</span>gpd.points_from_xy(latest_aadf[<span class="st">"longitude"</span>], latest_aadf[<span class="st">"latitude"</span>]),</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        crs<span class="op">=</span><span class="st">"EPSG:4326"</span>,</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    gdf_pts.plot(ax<span class="op">=</span>ax, markersize<span class="op">=</span><span class="dv">3</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, zorder<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"AADF count-point locations (</span><span class="sc">{</span>gdf_pts[<span class="st">'count_point_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss"> count points)</span><span class="ch">\n</span><span class="ss">"</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Red dots = AADF count points; grey = full road network (200k link sample)"</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">8</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(RANDOM_STATE)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    sample_idx <span class="op">=</span> rng.choice(<span class="bu">len</span>(openroads), size<span class="op">=</span><span class="bu">min</span>(<span class="dv">200_000</span>, <span class="bu">len</span>(openroads)), replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    openroads.iloc[sample_idx].plot(ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">"#d0d0d0"</span>, linewidth<span class="op">=</span><span class="fl">0.2</span>, zorder<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    latest_aadf <span class="op">=</span> (</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        aadf.sort_values(<span class="st">"year"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        .groupby(<span class="st">"count_point_id"</span>, as_index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        .last()</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    gdf_pts <span class="op">=</span> gpd.GeoDataFrame(</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        latest_aadf,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        geometry<span class="op">=</span>gpd.points_from_xy(latest_aadf[<span class="st">"longitude"</span>], latest_aadf[<span class="st">"latitude"</span>]),</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        crs<span class="op">=</span><span class="st">"EPSG:4326"</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    gdf_pts.plot(ax<span class="op">=</span>ax, markersize<span class="op">=</span><span class="dv">3</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, zorder<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"AADF count-point locations (</span><span class="sc">{</span>gdf_pts[<span class="st">'count_point_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss"> count points)</span><span class="ch">\n</span><span class="ss">"</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Red dots = AADF count points; grey = full road network (200k link sample)"</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-3-output-1.png" width="620" height="759" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="aadf-distribution-by-road-type" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="aadf-distribution-by-road-type"><span class="header-section-number">2.2</span> AADF distribution by road type</h3>
-<div id="003ae6ef" class="cell" data-execution_count="3">
+<div id="77d60b57" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>measured <span class="op">=</span> aadf[aadf[<span class="st">"all_motor_vehicles"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].hist(np.log(measured[<span class="st">"all_motor_vehicles"</span>]), bins<span class="op">=</span><span class="dv">60</span>, color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(AADF vehicles/day)"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Distribution of measured AADF (log scale)"</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>medians <span class="op">=</span> (</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    measured.groupby(<span class="st">"road_type"</span>)[<span class="st">"all_motor_vehicles"</span>]</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    .median()</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    .sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].barh(medians.index, medians.values <span class="op">/</span> <span class="dv">1000</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Median AADF (thousands vehicles/day)"</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Median AADF by road type"</span>)</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, v <span class="kw">in</span> <span class="bu">enumerate</span>(medians.values):</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].text(v <span class="op">/</span> <span class="dv">1000</span> <span class="op">+</span> <span class="fl">0.3</span>, i, <span class="ss">f"</span><span class="sc">{</span>v<span class="op">/</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">k"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>measured <span class="op">=</span> aadf[aadf[<span class="st">"all_motor_vehicles"</span>] <span class="op">&gt;</span> <span class="dv">0</span>].copy()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].hist(np.log(measured[<span class="st">"all_motor_vehicles"</span>]), bins<span class="op">=</span><span class="dv">60</span>, color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(AADF vehicles/day)"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Count"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Distribution of measured AADF (log scale)"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>medians <span class="op">=</span> (</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    measured.groupby(<span class="st">"road_type"</span>)[<span class="st">"all_motor_vehicles"</span>]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    .median()</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    .sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].barh(medians.index, medians.values <span class="op">/</span> <span class="dv">1000</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Median AADF (thousands vehicles/day)"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Median AADF by road type"</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, v <span class="kw">in</span> <span class="bu">enumerate</span>(medians.values):</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].text(v <span class="op">/</span> <span class="dv">1000</span> <span class="op">+</span> <span class="fl">0.3</span>, i, <span class="ss">f"</span><span class="sc">{</span>v<span class="op">/</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">k"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-4-output-1.png" width="1139" height="372" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="annual-trends-including-covid" class="level3" data-number="2.3">
 <h3 data-number="2.3" class="anchored" data-anchor-id="annual-trends-including-covid"><span class="header-section-number">2.3</span> Annual trends including COVID</h3>
-<div id="2b95d8c5" class="cell" data-execution_count="4">
+<div id="57abaa38" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>year_stats <span class="op">=</span> (</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    measured.groupby(<span class="st">"year"</span>)[<span class="st">"all_motor_vehicles"</span>]</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"median"</span>, <span class="st">"count"</span>])</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    .reset_index()</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot(year_stats[<span class="st">"year"</span>], year_stats[<span class="st">"median"</span>] <span class="op">/</span> <span class="dv">1000</span>, marker<span class="op">=</span><span class="st">"o"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> y <span class="kw">in</span> [<span class="dv">2020</span>, <span class="dv">2021</span>]:</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> y <span class="kw">in</span> year_stats[<span class="st">"year"</span>].values:</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].axvline(y, color<span class="op">=</span><span class="st">"#e63946"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                        label<span class="op">=</span><span class="st">"COVID"</span> <span class="cf">if</span> y <span class="op">==</span> <span class="dv">2020</span> <span class="cf">else</span> <span class="st">""</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"Year"</span>)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Median AADF (thousands vehicles/day)"</span>)</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Median AADF by year (red dashes = COVID years)"</span>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xticks(year_stats[<span class="st">"year"</span>])</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].legend()</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].bar(year_stats[<span class="st">"year"</span>], year_stats[<span class="st">"count"</span>], color<span class="op">=</span><span class="st">"#457b9d"</span>)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Year"</span>)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Observations"</span>)</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"AADF observations per year"</span>)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xticks(year_stats[<span class="st">"year"</span>])</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>year_stats <span class="op">=</span> (</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    measured.groupby(<span class="st">"year"</span>)[<span class="st">"all_motor_vehicles"</span>]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    .agg([<span class="st">"median"</span>, <span class="st">"count"</span>])</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    .reset_index()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot(year_stats[<span class="st">"year"</span>], year_stats[<span class="st">"median"</span>] <span class="op">/</span> <span class="dv">1000</span>, marker<span class="op">=</span><span class="st">"o"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> y <span class="kw">in</span> [<span class="dv">2020</span>, <span class="dv">2021</span>]:</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> y <span class="kw">in</span> year_stats[<span class="st">"year"</span>].values:</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].axvline(y, color<span class="op">=</span><span class="st">"#e63946"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                        label<span class="op">=</span><span class="st">"COVID"</span> <span class="cf">if</span> y <span class="op">==</span> <span class="dv">2020</span> <span class="cf">else</span> <span class="st">""</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"Year"</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Median AADF (thousands vehicles/day)"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Median AADF by year (red dashes = COVID years)"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xticks(year_stats[<span class="st">"year"</span>])</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].legend()</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].bar(year_stats[<span class="st">"year"</span>], year_stats[<span class="st">"count"</span>], color<span class="op">=</span><span class="st">"#457b9d"</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Year"</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Observations"</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"AADF observations per year"</span>)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xticks(year_stats[<span class="st">"year"</span>])</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-5-output-1.png" width="1141" height="373" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="hgv-proportion-by-road-type" class="level3" data-number="2.4">
 <h3 data-number="2.4" class="anchored" data-anchor-id="hgv-proportion-by-road-type"><span class="header-section-number">2.4</span> HGV proportion by road type</h3>
-<div id="d75091e1" class="cell" data-execution_count="5">
+<div id="c0f5c1cd" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>hgv_data <span class="op">=</span> measured.dropna(subset<span class="op">=</span>[<span class="st">"hgv_proportion"</span>, <span class="st">"road_type"</span>])</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>road_types <span class="op">=</span> hgv_data[<span class="st">"road_type"</span>].value_counts().index.tolist()</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>box_data <span class="op">=</span> [hgv_data[hgv_data[<span class="st">"road_type"</span>] <span class="op">==</span> rt][<span class="st">"hgv_proportion"</span>].values <span class="cf">for</span> rt <span class="kw">in</span> road_types]</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>ax.boxplot(box_data, labels<span class="op">=</span>road_types, patch_artist<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>           boxprops<span class="op">=</span><span class="bu">dict</span>(facecolor<span class="op">=</span><span class="st">"#a8dadc"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>           medianprops<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="dv">2</span>))</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"HGV proportion"</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"HGV proportion by road type"</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>hgv_data <span class="op">=</span> measured.dropna(subset<span class="op">=</span>[<span class="st">"hgv_proportion"</span>, <span class="st">"road_type"</span>])</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>road_types <span class="op">=</span> hgv_data[<span class="st">"road_type"</span>].value_counts().index.tolist()</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>box_data <span class="op">=</span> [hgv_data[hgv_data[<span class="st">"road_type"</span>] <span class="op">==</span> rt][<span class="st">"hgv_proportion"</span>].values <span class="cf">for</span> rt <span class="kw">in</span> road_types]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>ax.boxplot(box_data, labels<span class="op">=</span>road_types, patch_artist<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>           boxprops<span class="op">=</span><span class="bu">dict</span>(facecolor<span class="op">=</span><span class="st">"#a8dadc"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>),</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>           medianprops<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"HGV proportion"</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"HGV proportion by road type"</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-6-output-1.png" width="757" height="373" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 <hr>
 </section>
@@ -810,26 +788,23 @@ OS Open Roads     : 3,941,299 links</code></pre>
 </section>
 <section id="cross-validation-results" class="level3" data-number="3.2">
 <h3 data-number="3.2" class="anchored" data-anchor-id="cross-validation-results"><span class="header-section-number">3.2</span> Cross-validation results</h3>
-<div id="2e505bd3" class="cell" data-execution_count="6">
+<div id="06be3d58" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>metrics_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_metrics.json"</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> metrics_path.exists():</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(metrics_path) <span class="im">as</span> f:</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        all_metrics <span class="op">=</span> json.load(f)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    aadt_metrics <span class="op">=</span> all_metrics.get(<span class="st">"aadt"</span>, {})</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> aadt_metrics:</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"CV R²   : </span><span class="sc">{</span>aadt_metrics[<span class="st">'cv_r2_mean'</span>]<span class="sc">:.3f}</span><span class="ss"> (±</span><span class="sc">{</span>aadt_metrics[<span class="st">'cv_r2_std'</span>]<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"CV MAE  : </span><span class="sc">{</span>aadt_metrics[<span class="st">'cv_mae_mean'</span>]<span class="sc">:.3f}</span><span class="ss"> log-units"</span>)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"n train : </span><span class="sc">{</span>aadt_metrics[<span class="st">'n_train'</span>]<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"No 'aadt' key in collision_metrics.json."</span>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"collision_metrics.json not found — run: python -m road_risk.model --stage traffic"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>metrics_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/collision_metrics.json"</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> metrics_path.exists():</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(metrics_path) <span class="im">as</span> f:</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        all_metrics <span class="op">=</span> json.load(f)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    aadt_metrics <span class="op">=</span> all_metrics.get(<span class="st">"aadt"</span>, {})</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> aadt_metrics:</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"CV R²   : </span><span class="sc">{</span>aadt_metrics[<span class="st">'cv_r2_mean'</span>]<span class="sc">:.3f}</span><span class="ss"> (±</span><span class="sc">{</span>aadt_metrics[<span class="st">'cv_r2_std'</span>]<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"CV MAE  : </span><span class="sc">{</span>aadt_metrics[<span class="st">'cv_mae_mean'</span>]<span class="sc">:.3f}</span><span class="ss"> log-units"</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"n train : </span><span class="sc">{</span>aadt_metrics[<span class="st">'n_train'</span>]<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"No 'aadt' key in collision_metrics.json."</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"collision_metrics.json not found — run: python -m road_risk.model --stage traffic"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>No 'aadt' key in collision_metrics.json.</code></pre>
-</div>
 </div>
 </section>
 <section id="external-validation" class="level3" data-number="3.3">
@@ -839,59 +814,41 @@ OS Open Roads     : 3,941,299 links</code></pre>
 <li><strong>Local holdout</strong> — 20% of count-point IDs withheld at random. Tests gap-filling.</li>
 <li><strong>Spatial block</strong> — all points north of the 75th-percentile latitude withheld. Tests generalisation to a region with no measured support.</li>
 </ul>
-<div id="bf9e7640" class="cell" data-execution_count="7">
+<div id="2cf3b6ed" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> val_summary.empty:</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, row <span class="kw">in</span> val_summary.iterrows():</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>row[<span class="st">'scheme'</span>]<span class="sc">:10s}</span><span class="ss">: R²=</span><span class="sc">{</span>row[<span class="st">'r2'</span>]<span class="sc">:.3f}</span><span class="ss"> | "</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>              <span class="ss">f"MAE=</span><span class="sc">{</span>row[<span class="st">'mae'</span>]<span class="sc">:.3f}</span><span class="ss"> | RMSE=</span><span class="sc">{</span>row[<span class="st">'rmse'</span>]<span class="sc">:.3f}</span><span class="ss"> "</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>              <span class="ss">f"(n=</span><span class="sc">{</span><span class="bu">int</span>(row[<span class="st">'n_holdout'</span>])<span class="sc">:,}</span><span class="ss">)"</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    colors <span class="op">=</span> [<span class="st">"#457b9d"</span>, <span class="st">"#e63946"</span>]</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    bars <span class="op">=</span> ax.barh(val_summary[<span class="st">"scheme"</span>], val_summary[<span class="st">"r2"</span>], color<span class="op">=</span>colors)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    cv_r2 <span class="op">=</span> aadt_metrics.get(<span class="st">"cv_r2_mean"</span>, <span class="fl">0.824</span>) <span class="cf">if</span> <span class="st">"aadt_metrics"</span> <span class="kw">in</span> <span class="bu">globals</span>() <span class="cf">else</span> <span class="fl">0.824</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    ax.axvline(cv_r2, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f"GroupKFold CV R²≈</span><span class="sc">{</span>cv_r2<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"R² (log scale)"</span>)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"External validation R² by holdout scheme"</span>)</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> bar, val <span class="kw">in</span> <span class="bu">zip</span>(bars, val_summary[<span class="st">"r2"</span>]):</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        ax.text(val <span class="op">+</span> <span class="fl">0.005</span>, bar.get_y() <span class="op">+</span> bar.get_height() <span class="op">/</span> <span class="dv">2</span>,</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                <span class="ss">f"</span><span class="sc">{</span>val<span class="sc">:.3f}</span><span class="ss">"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> val_summary.empty:</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, row <span class="kw">in</span> val_summary.iterrows():</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>row[<span class="st">'scheme'</span>]<span class="sc">:10s}</span><span class="ss">: R²=</span><span class="sc">{</span>row[<span class="st">'r2'</span>]<span class="sc">:.3f}</span><span class="ss"> | "</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>              <span class="ss">f"MAE=</span><span class="sc">{</span>row[<span class="st">'mae'</span>]<span class="sc">:.3f}</span><span class="ss"> | RMSE=</span><span class="sc">{</span>row[<span class="st">'rmse'</span>]<span class="sc">:.3f}</span><span class="ss"> "</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>              <span class="ss">f"(n=</span><span class="sc">{</span><span class="bu">int</span>(row[<span class="st">'n_holdout'</span>])<span class="sc">:,}</span><span class="ss">)"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    colors <span class="op">=</span> [<span class="st">"#457b9d"</span>, <span class="st">"#e63946"</span>]</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    bars <span class="op">=</span> ax.barh(val_summary[<span class="st">"scheme"</span>], val_summary[<span class="st">"r2"</span>], color<span class="op">=</span>colors)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    cv_r2 <span class="op">=</span> aadt_metrics.get(<span class="st">"cv_r2_mean"</span>, <span class="fl">0.824</span>) <span class="cf">if</span> <span class="st">"aadt_metrics"</span> <span class="kw">in</span> <span class="bu">globals</span>() <span class="cf">else</span> <span class="fl">0.824</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    ax.axvline(cv_r2, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="ss">f"GroupKFold CV R²≈</span><span class="sc">{</span>cv_r2<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"R² (log scale)"</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"External validation R² by holdout scheme"</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> bar, val <span class="kw">in</span> <span class="bu">zip</span>(bars, val_summary[<span class="st">"r2"</span>]):</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        ax.text(val <span class="op">+</span> <span class="fl">0.005</span>, bar.get_y() <span class="op">+</span> bar.get_height() <span class="op">/</span> <span class="dv">2</span>,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>                <span class="ss">f"</span><span class="sc">{</span>val<span class="sc">:.3f}</span><span class="ss">"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>  local     : R²=0.821 | MAE=0.584 | RMSE=0.770 (n=7,639)
-  spatial   : R²=0.777 | MAE=0.676 | RMSE=0.869 (n=9,773)</code></pre>
 </div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-8-output-2.png" width="566" height="276" class="figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="a39374c1" class="cell" data-execution_count="8">
+<div id="963ced19" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>val_local_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/aadt_validation_local.parquet"</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> val_local_path.exists():</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    val_local <span class="op">=</span> pd.read_parquet(val_local_path)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Local holdout — metrics by road type:</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(val_local[[<span class="st">"road_type"</span>, <span class="st">"r2"</span>, <span class="st">"mae"</span>, <span class="st">"rmse"</span>, <span class="st">"n"</span>]].to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>val_local_path <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">"data/models/aadt_validation_local.parquet"</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> val_local_path.exists():</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    val_local <span class="op">=</span> pd.read_parquet(val_local_path)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Local holdout — metrics by road type:</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(val_local[[<span class="st">"road_type"</span>, <span class="st">"r2"</span>, <span class="st">"mae"</span>, <span class="st">"rmse"</span>, <span class="st">"n"</span>]].to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Local holdout — metrics by road type:
-
-road_type       r2      mae     rmse      n
-    Major 0.587299 0.465580 0.603615 3861.0
-    Minor 0.529895 0.704221 0.908934 3778.0</code></pre>
-</div>
 </div>
 <hr>
 </section>
@@ -901,254 +858,203 @@ road_type       r2      mae     rmse      n
 <p>The estimates cover every OS Open Roads link in Great Britain for each AADF year from 2015 to 2024. They provide a consistent exposure layer for Stage 2, including links that have no directly observed count point.</p>
 <section id="distribution-by-road-classification" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="distribution-by-road-classification"><span class="header-section-number">4.1</span> Distribution by road classification</h3>
-<div id="e462ccc2" class="cell" data-execution_count="9">
+<div id="494a142d" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>].copy()</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> est_2023.merge(</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        openroads[[<span class="st">"link_id"</span>, <span class="st">"road_classification"</span>]], on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].hist(np.log(est_2023[<span class="st">"estimated_aadt"</span>].clip(<span class="dv">1</span>)), bins<span class="op">=</span><span class="dv">60</span>,</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                 color<span class="op">=</span><span class="st">"#1d3557"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>, alpha<span class="op">=</span><span class="fl">0.8</span>)</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(estimated AADT vehicles/day)"</span>)</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Link count"</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Estimated AADT — all 3.94M links (2023, log scale)"</span>)</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    cls_order <span class="op">=</span> [<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>, <span class="st">"B Road"</span>, <span class="st">"Classified Unnumbered"</span>,</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Not Classified"</span>, <span class="st">"Unclassified"</span>, <span class="st">"Unknown"</span>]</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    cls_medians <span class="op">=</span> (</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        est_2023.groupby(<span class="st">"road_classification"</span>)[<span class="st">"estimated_aadt"</span>]</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>        .median()</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>        .reindex([c <span class="cf">for</span> c <span class="kw">in</span> cls_order <span class="cf">if</span> c <span class="kw">in</span> est_2023[<span class="st">"road_classification"</span>].unique()])</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        .dropna()</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].barh(cls_medians.index, cls_medians.values <span class="op">/</span> <span class="dv">1000</span>, color<span class="op">=</span><span class="st">"#457b9d"</span>)</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Median estimated AADT (thousands vehicles/day)"</span>)</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Median estimated AADT by road class (2023)"</span>)</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, v <span class="kw">in</span> <span class="bu">enumerate</span>(cls_medians.values):</span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].text(v <span class="op">/</span> <span class="dv">1000</span> <span class="op">+</span> <span class="fl">0.1</span>, i, <span class="ss">f"</span><span class="sc">{</span>v<span class="op">/</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">k"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>].copy()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> est_2023.merge(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        openroads[[<span class="st">"link_id"</span>, <span class="st">"road_classification"</span>]], on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].hist(np.log(est_2023[<span class="st">"estimated_aadt"</span>].clip(<span class="dv">1</span>)), bins<span class="op">=</span><span class="dv">60</span>,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                 color<span class="op">=</span><span class="st">"#1d3557"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>, alpha<span class="op">=</span><span class="fl">0.8</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_xlabel(<span class="st">"log(estimated AADT vehicles/day)"</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Link count"</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Estimated AADT — all 3.94M links (2023, log scale)"</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    cls_order <span class="op">=</span> [<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>, <span class="st">"B Road"</span>, <span class="st">"Classified Unnumbered"</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Not Classified"</span>, <span class="st">"Unclassified"</span>, <span class="st">"Unknown"</span>]</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    cls_medians <span class="op">=</span> (</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        est_2023.groupby(<span class="st">"road_classification"</span>)[<span class="st">"estimated_aadt"</span>]</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        .median()</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        .reindex([c <span class="cf">for</span> c <span class="kw">in</span> cls_order <span class="cf">if</span> c <span class="kw">in</span> est_2023[<span class="st">"road_classification"</span>].unique()])</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        .dropna()</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].barh(cls_medians.index, cls_medians.values <span class="op">/</span> <span class="dv">1000</span>, color<span class="op">=</span><span class="st">"#457b9d"</span>)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Median estimated AADT (thousands vehicles/day)"</span>)</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Median estimated AADT by road class (2023)"</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, v <span class="kw">in</span> <span class="bu">enumerate</span>(cls_medians.values):</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].text(v <span class="op">/</span> <span class="dv">1000</span> <span class="op">+</span> <span class="fl">0.1</span>, i, <span class="ss">f"</span><span class="sc">{</span>v<span class="op">/</span><span class="dv">1000</span><span class="sc">:.1f}</span><span class="ss">k"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-10-output-1.png" width="1236" height="468" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="year-on-year-trends" class="level3" data-number="4.2">
 <h3 data-number="4.2" class="anchored" data-anchor-id="year-on-year-trends"><span class="header-section-number">4.2</span> Year-on-year trends</h3>
-<div id="d4ae72d4" class="cell" data-execution_count="10">
+<div id="f1c0b32c" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty:</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    yr_med <span class="op">=</span> aadt.groupby(<span class="st">"year"</span>)[<span class="st">"estimated_aadt"</span>].median()</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>))</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    ax.plot(yr_med.index, yr_med.values <span class="op">/</span> <span class="dv">1000</span>, marker<span class="op">=</span><span class="st">"o"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> y <span class="kw">in</span> [<span class="dv">2020</span>, <span class="dv">2021</span>]:</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> y <span class="kw">in</span> yr_med.index:</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>            ax.axvline(y, color<span class="op">=</span><span class="st">"#e63946"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>                       label<span class="op">=</span><span class="st">"COVID"</span> <span class="cf">if</span> y <span class="op">==</span> <span class="dv">2020</span> <span class="cf">else</span> <span class="st">""</span>)</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Year"</span>)</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">"Network-wide median estimated AADT (thousands)"</span>)</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"Network-wide median estimated AADT by year"</span>)</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    ax.set_xticks(yr_med.index)</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    ax.tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty:</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    yr_med <span class="op">=</span> aadt.groupby(<span class="st">"year"</span>)[<span class="st">"estimated_aadt"</span>].median()</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">4</span>))</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    ax.plot(yr_med.index, yr_med.values <span class="op">/</span> <span class="dv">1000</span>, marker<span class="op">=</span><span class="st">"o"</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> y <span class="kw">in</span> [<span class="dv">2020</span>, <span class="dv">2021</span>]:</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> y <span class="kw">in</span> yr_med.index:</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>            ax.axvline(y, color<span class="op">=</span><span class="st">"#e63946"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>                       label<span class="op">=</span><span class="st">"COVID"</span> <span class="cf">if</span> y <span class="op">==</span> <span class="dv">2020</span> <span class="cf">else</span> <span class="st">""</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"Year"</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">"Network-wide median estimated AADT (thousands)"</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"Network-wide median estimated AADT by year"</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    ax.set_xticks(yr_med.index)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    ax.tick_params(axis<span class="op">=</span><span class="st">"x"</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    ax.legend()</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-11-output-1.png" width="853" height="373" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="geographic-distribution-all-links-2023" class="level3" data-number="4.3">
 <h3 data-number="4.3" class="anchored" data-anchor-id="geographic-distribution-all-links-2023"><span class="header-section-number">4.3</span> Geographic distribution — all links (2023)</h3>
-<div id="1affb685" class="cell" data-execution_count="11">
+<div id="3f2354d4" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>][[<span class="st">"link_id"</span>, <span class="st">"estimated_aadt"</span>]].copy()</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    or_plot <span class="op">=</span> openroads.merge(est_2023, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"inner"</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    or_plot <span class="op">=</span> or_plot[or_plot.geometry.notna()].copy()</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    or_plot.plot(</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"estimated_aadt"</span>,</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        norm<span class="op">=</span>mcolors.LogNorm(</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>            vmin<span class="op">=</span><span class="bu">max</span>(<span class="dv">1</span>, or_plot[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.05</span>)),</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>            vmax<span class="op">=</span>or_plot[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.99</span>),</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        ),</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"plasma"</span>,</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>,</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Estimated AADT (log scale)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Estimated AADT — all links (2023)"</span>)</span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_plot[or_plot[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"estimated_aadt"</span>,</span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>        norm<span class="op">=</span>mcolors.LogNorm(</span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>            vmin<span class="op">=</span><span class="bu">max</span>(<span class="dv">1</span>, major[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.05</span>)),</span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>            vmax<span class="op">=</span>major[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.99</span>),</span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>        ),</span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"plasma"</span>,</span>
-<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>,</span>
-<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>        legend<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Estimated AADT (log scale)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
-<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Motorways &amp; A Roads only (2023)"</span>)</span>
-<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
-<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Stage 1a full-network AADT estimates"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    est_2023 <span class="op">=</span> aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>][[<span class="st">"link_id"</span>, <span class="st">"estimated_aadt"</span>]].copy()</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    or_plot <span class="op">=</span> openroads.merge(est_2023, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"inner"</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    or_plot <span class="op">=</span> or_plot[or_plot.geometry.notna()].copy()</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>))</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    or_plot.plot(</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"estimated_aadt"</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axes[<span class="dv">0</span>],</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        norm<span class="op">=</span>mcolors.LogNorm(</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>            vmin<span class="op">=</span><span class="bu">max</span>(<span class="dv">1</span>, or_plot[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.05</span>)),</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>            vmax<span class="op">=</span>or_plot[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.99</span>),</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"plasma"</span>,</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Estimated AADT (log scale)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_title(<span class="st">"Estimated AADT — all links (2023)"</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>].set_axis_off()</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    major <span class="op">=</span> or_plot[or_plot[<span class="st">"road_classification"</span>].isin([<span class="st">"Motorway"</span>, <span class="st">"A Road"</span>])].copy()</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    major.plot(</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        column<span class="op">=</span><span class="st">"estimated_aadt"</span>,</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axes[<span class="dv">1</span>],</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        norm<span class="op">=</span>mcolors.LogNorm(</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>            vmin<span class="op">=</span><span class="bu">max</span>(<span class="dv">1</span>, major[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.05</span>)),</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>            vmax<span class="op">=</span>major[<span class="st">"estimated_aadt"</span>].quantile(<span class="fl">0.99</span>),</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"plasma"</span>,</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="fl">0.8</span>,</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>        legend<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>        legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"Estimated AADT (log scale)"</span>, <span class="st">"shrink"</span>: <span class="fl">0.6</span>},</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_title(<span class="st">"Motorways &amp; A Roads only (2023)"</span>)</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>].set_axis_off()</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>    plt.suptitle(<span class="st">"Stage 1a full-network AADT estimates"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-12-output-1.png" width="1272" height="852" class="figure-img"></p>
-</figure>
-</div>
-</div>
 </div>
 </section>
 <section id="sanity-check-estimated-vs-measured-aadf-2023" class="level3" data-number="4.4">
 <h3 data-number="4.4" class="anchored" data-anchor-id="sanity-check-estimated-vs-measured-aadf-2023"><span class="header-section-number">4.4</span> Sanity check — estimated vs measured AADF (2023)</h3>
 <p>Links that have a directly measured AADF count point within 2 km should have estimates close to the measured value. This is a local sanity check; the held-out validation above is the main check on how the AADT model performs at count sites that were not used for fitting.</p>
-<div id="ad92c3b5" class="cell" data-execution_count="12">
+<div id="d68968c5" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> pyproj</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> scipy.spatial <span class="im">import</span> cKDTree</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn.metrics <span class="im">import</span> r2_score, mean_absolute_error</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    or_bng <span class="op">=</span> openroads.to_crs(<span class="st">"EPSG:27700"</span>)</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    link_xy <span class="op">=</span> np.column_stack([</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        or_bng.geometry.centroid.x,</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        or_bng.geometry.centroid.y,</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    ])</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    tree <span class="op">=</span> cKDTree(link_xy)</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    wgs_bng <span class="op">=</span> pyproj.Transformer.from_crs(<span class="st">"EPSG:4326"</span>, <span class="st">"EPSG:27700"</span>, always_xy<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    aadf_yr <span class="op">=</span> aadf[(aadf[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>) <span class="op">&amp;</span> (aadf[<span class="st">"all_motor_vehicles"</span>] <span class="op">&gt;</span> <span class="dv">0</span>)].copy()</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    e, n <span class="op">=</span> wgs_bng.transform(aadf_yr[<span class="st">"longitude"</span>].values, aadf_yr[<span class="st">"latitude"</span>].values)</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    dists, idx <span class="op">=</span> tree.query(np.column_stack([e, n]), k<span class="op">=</span><span class="dv">1</span>, distance_upper_bound<span class="op">=</span><span class="dv">2000</span>)</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> dists <span class="op">&lt;</span> <span class="dv">2000</span></span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    aadf_yr <span class="op">=</span> aadf_yr.reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    aadf_yr[<span class="st">"_link_id"</span>] <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    aadf_yr.loc[valid, <span class="st">"_link_id"</span>] <span class="op">=</span> openroads[<span class="st">"link_id"</span>].values[idx[valid]]</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    comparison <span class="op">=</span> aadf_yr.dropna(subset<span class="op">=</span>[<span class="st">"_link_id"</span>]).merge(</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>],</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        left_on<span class="op">=</span><span class="st">"_link_id"</span>, right_on<span class="op">=</span><span class="st">"link_id"</span>,</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        how<span class="op">=</span><span class="st">"inner"</span>,</span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(comparison) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>        fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>        max_pt <span class="op">=</span> <span class="bu">max</span>(comparison[<span class="st">"all_motor_vehicles"</span>].<span class="bu">max</span>(), comparison[<span class="st">"estimated_aadt"</span>].<span class="bu">max</span>())</span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].scatter(comparison[<span class="st">"all_motor_vehicles"</span>], comparison[<span class="st">"estimated_aadt"</span>],</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>                        s<span class="op">=</span><span class="dv">5</span>, alpha<span class="op">=</span><span class="fl">0.3</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].plot([<span class="dv">1</span>, max_pt], [<span class="dv">1</span>, max_pt], <span class="st">"r--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, label<span class="op">=</span><span class="st">"1:1 line"</span>)</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_xscale(<span class="st">"log"</span>)<span class="op">;</span> axes[<span class="dv">0</span>].set_yscale(<span class="st">"log"</span>)</span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_xlabel(<span class="st">"Measured AADF (vehicles/day)"</span>)</span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Estimated AADT (vehicles/day)"</span>)</span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_title(<span class="ss">f"Measured vs estimated — </span><span class="sc">{</span><span class="bu">len</span>(comparison)<span class="sc">:,}</span><span class="ss"> matched links (2023)"</span>)</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].legend()</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>        residuals <span class="op">=</span> np.log(comparison[<span class="st">"estimated_aadt"</span>]) <span class="op">-</span> np.log(comparison[<span class="st">"all_motor_vehicles"</span>])</span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].hist(residuals, bins<span class="op">=</span><span class="dv">60</span>, color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].axvline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].set_xlabel(<span class="st">"log(estimated) − log(measured)"</span>)</span>
-<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Count"</span>)</span>
-<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].set_title(</span>
-<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>            <span class="ss">f"Residuals (log scale)</span><span class="ch">\n</span><span class="ss">median=</span><span class="sc">{</span>residuals<span class="sc">.</span>median()<span class="sc">:.3f}</span><span class="ss">  std=</span><span class="sc">{</span>residuals<span class="sc">.</span>std()<span class="sc">:.3f}</span><span class="ss">"</span></span>
-<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
-<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
-<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>        r2  <span class="op">=</span> r2_score(np.log(comparison[<span class="st">"all_motor_vehicles"</span>]),</span>
-<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>                       np.log(comparison[<span class="st">"estimated_aadt"</span>]))</span>
-<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>        mae <span class="op">=</span> mean_absolute_error(np.log(comparison[<span class="st">"all_motor_vehicles"</span>]),</span>
-<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>                                  np.log(comparison[<span class="st">"estimated_aadt"</span>]))</span>
-<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"In-sample (2023, matched links): R²=</span><span class="sc">{</span>r2<span class="sc">:.3f}</span><span class="ss"> | MAE=</span><span class="sc">{</span>mae<span class="sc">:.3f}</span><span class="ss"> log-units | n=</span><span class="sc">{</span><span class="bu">len</span>(comparison)<span class="sc">:,}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> HAS_GPD <span class="kw">and</span> openroads <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> <span class="kw">not</span> aadt.empty:</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> pyproj</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> scipy.spatial <span class="im">import</span> cKDTree</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn.metrics <span class="im">import</span> r2_score, mean_absolute_error</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    or_bng <span class="op">=</span> openroads.to_crs(<span class="st">"EPSG:27700"</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    link_xy <span class="op">=</span> np.column_stack([</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        or_bng.geometry.centroid.x,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        or_bng.geometry.centroid.y,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    tree <span class="op">=</span> cKDTree(link_xy)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    wgs_bng <span class="op">=</span> pyproj.Transformer.from_crs(<span class="st">"EPSG:4326"</span>, <span class="st">"EPSG:27700"</span>, always_xy<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    aadf_yr <span class="op">=</span> aadf[(aadf[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>) <span class="op">&amp;</span> (aadf[<span class="st">"all_motor_vehicles"</span>] <span class="op">&gt;</span> <span class="dv">0</span>)].copy()</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    e, n <span class="op">=</span> wgs_bng.transform(aadf_yr[<span class="st">"longitude"</span>].values, aadf_yr[<span class="st">"latitude"</span>].values)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    dists, idx <span class="op">=</span> tree.query(np.column_stack([e, n]), k<span class="op">=</span><span class="dv">1</span>, distance_upper_bound<span class="op">=</span><span class="dv">2000</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> dists <span class="op">&lt;</span> <span class="dv">2000</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    aadf_yr <span class="op">=</span> aadf_yr.reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    aadf_yr[<span class="st">"_link_id"</span>] <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    aadf_yr.loc[valid, <span class="st">"_link_id"</span>] <span class="op">=</span> openroads[<span class="st">"link_id"</span>].values[idx[valid]]</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    comparison <span class="op">=</span> aadf_yr.dropna(subset<span class="op">=</span>[<span class="st">"_link_id"</span>]).merge(</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>        aadt[aadt[<span class="st">"year"</span>] <span class="op">==</span> <span class="dv">2023</span>],</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>        left_on<span class="op">=</span><span class="st">"_link_id"</span>, right_on<span class="op">=</span><span class="st">"link_id"</span>,</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>        how<span class="op">=</span><span class="st">"inner"</span>,</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(comparison) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="dv">5</span>))</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>        max_pt <span class="op">=</span> <span class="bu">max</span>(comparison[<span class="st">"all_motor_vehicles"</span>].<span class="bu">max</span>(), comparison[<span class="st">"estimated_aadt"</span>].<span class="bu">max</span>())</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].scatter(comparison[<span class="st">"all_motor_vehicles"</span>], comparison[<span class="st">"estimated_aadt"</span>],</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>                        s<span class="op">=</span><span class="dv">5</span>, alpha<span class="op">=</span><span class="fl">0.3</span>, color<span class="op">=</span><span class="st">"#1d3557"</span>)</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].plot([<span class="dv">1</span>, max_pt], [<span class="dv">1</span>, max_pt], <span class="st">"r--"</span>, linewidth<span class="op">=</span><span class="dv">1</span>, label<span class="op">=</span><span class="st">"1:1 line"</span>)</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_xscale(<span class="st">"log"</span>)<span class="op">;</span> axes[<span class="dv">0</span>].set_yscale(<span class="st">"log"</span>)</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_xlabel(<span class="st">"Measured AADF (vehicles/day)"</span>)</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Estimated AADT (vehicles/day)"</span>)</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].set_title(<span class="ss">f"Measured vs estimated — </span><span class="sc">{</span><span class="bu">len</span>(comparison)<span class="sc">:,}</span><span class="ss"> matched links (2023)"</span>)</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">0</span>].legend()</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>        residuals <span class="op">=</span> np.log(comparison[<span class="st">"estimated_aadt"</span>]) <span class="op">-</span> np.log(comparison[<span class="st">"all_motor_vehicles"</span>])</span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].hist(residuals, bins<span class="op">=</span><span class="dv">60</span>, color<span class="op">=</span><span class="st">"#457b9d"</span>, edgecolor<span class="op">=</span><span class="st">"none"</span>)</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].axvline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"#e63946"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].set_xlabel(<span class="st">"log(estimated) − log(measured)"</span>)</span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Count"</span>)</span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>        axes[<span class="dv">1</span>].set_title(</span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>            <span class="ss">f"Residuals (log scale)</span><span class="ch">\n</span><span class="ss">median=</span><span class="sc">{</span>residuals<span class="sc">.</span>median()<span class="sc">:.3f}</span><span class="ss">  std=</span><span class="sc">{</span>residuals<span class="sc">.</span>std()<span class="sc">:.3f}</span><span class="ss">"</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>        plt.tight_layout()</span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>        r2  <span class="op">=</span> r2_score(np.log(comparison[<span class="st">"all_motor_vehicles"</span>]),</span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a>                       np.log(comparison[<span class="st">"estimated_aadt"</span>]))</span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>        mae <span class="op">=</span> mean_absolute_error(np.log(comparison[<span class="st">"all_motor_vehicles"</span>]),</span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>                                  np.log(comparison[<span class="st">"estimated_aadt"</span>]))</span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"In-sample (2023, matched links): R²=</span><span class="sc">{</span>r2<span class="sc">:.3f}</span><span class="ss"> | MAE=</span><span class="sc">{</span>mae<span class="sc">:.3f}</span><span class="ss"> log-units | n=</span><span class="sc">{</span><span class="bu">len</span>(comparison)<span class="sc">:,}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="eda-traffic_files/figure-html/cell-13-output-1.png" width="1236" height="468" class="figure-img"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>In-sample (2023, matched links): R²=-0.360 | MAE=1.185 log-units | n=10,562</code></pre>
-</div>
 </div>
 <hr>
 </section>
 </section>
 <section id="summary" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="summary"><span class="header-section-number">5</span> Summary</h2>
-<div id="76da50dc" class="cell" data-execution_count="13">
+<div id="cb4d9615" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 1a output summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty:</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Links with estimates : </span><span class="sc">{</span>aadt[<span class="st">'link_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Years covered        : </span><span class="sc">{</span><span class="bu">sorted</span>(aadt[<span class="st">'year'</span>].unique())<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Estimated AADT distribution (2023):"</span>)</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(aadt[aadt[<span class="st">'year'</span>] <span class="op">==</span> <span class="dv">2023</span>][<span class="st">'estimated_aadt'</span>].describe().<span class="bu">round</span>(<span class="dv">0</span>).to_string())</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> val_summary.empty:</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">External validation R²:"</span>)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, row <span class="kw">in</span> val_summary.iterrows():</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>row[<span class="st">'scheme'</span>]<span class="sc">:10s}</span><span class="ss">: </span><span class="sc">{</span>row[<span class="st">'r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Stage 1a output summary ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> aadt.empty:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Links with estimates : </span><span class="sc">{</span>aadt[<span class="st">'link_id'</span>]<span class="sc">.</span>nunique()<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Years covered        : </span><span class="sc">{</span><span class="bu">sorted</span>(aadt[<span class="st">'year'</span>].unique())<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Estimated AADT distribution (2023):"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(aadt[aadt[<span class="st">'year'</span>] <span class="op">==</span> <span class="dv">2023</span>][<span class="st">'estimated_aadt'</span>].describe().<span class="bu">round</span>(<span class="dv">0</span>).to_string())</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> val_summary.empty:</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">External validation R²:"</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, row <span class="kw">in</span> val_summary.iterrows():</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>row[<span class="st">'scheme'</span>]<span class="sc">:10s}</span><span class="ss">: </span><span class="sc">{</span>row[<span class="st">'r2'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>=== Stage 1a output summary ===
-
-Links with estimates : 3,941,299
-Years covered        : [np.int64(2015), np.int64(2016), np.int64(2017), np.int64(2018), np.int64(2019), np.int64(2020), np.int64(2021), np.int64(2022), np.int64(2023), np.int64(2024)]
-
-Estimated AADT distribution (2023):
-count    3941299.0
-mean        1734.0
-std         3612.0
-min           39.0
-25%          311.0
-50%          520.0
-75%         1210.0
-max       106131.0
-
-External validation R²:
-  local     : 0.821
-  spatial   : 0.777</code></pre>
-</div>
 </div>
 <p>Key observations:</p>
 <ul>

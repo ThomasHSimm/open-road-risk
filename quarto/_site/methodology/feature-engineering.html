@@ -178,6 +178,10 @@ window.Quarto = {
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -209,6 +213,10 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -419,6 +427,10 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
   </li>  
     </ul>
   </li>
@@ -864,13 +876,13 @@ Important
 <h3 data-number="6.4" class="anchored" data-anchor-id="two-models-trained-in-parallel"><span class="header-section-number">6.4</span> Two models trained in parallel</h3>
 <p>Both are fit to the same table but differ in what they optimise and what they can represent.</p>
 <p><strong>Poisson GLM (<code>statsmodels</code>)</strong> — linear-in-log-rate, interpretable coefficients, standard errors, p-values. Used for diagnostic residual analysis (<code>residual_glm</code>) but <strong>not</strong> for the final risk ranking, because GLM zero-downsampling biases the intercept and makes absolute predictions unreliable.</p>
-<p><strong>XGBoost Poisson</strong> — captures non-linearities and interactions. Trained on the full dataset (no downsampling) and drives the final <code>risk_percentile</code> ranking via <code>predicted_xgb</code>. Comparing <code>predicted_glm</code> and <code>predicted_xgb</code> surfaces links where the GLM linear assumption breaks down.</p>
+<p><strong>XGBoost Poisson</strong> — captures non-linearities and interactions. Trained on the full zero-heavy dataset by default and drives the final <code>risk_percentile</code> ranking via <code>predicted_xgb</code>. A sampled-zero XGBoost mode is available only as an explicit memory fallback. Comparing <code>predicted_glm</code> and <code>predicted_xgb</code> surfaces links where the GLM linear assumption breaks down.</p>
 </section>
 <section id="engineering-detail-glm-zero-downsampling" class="level3" data-number="6.5">
 <h3 data-number="6.5" class="anchored" data-anchor-id="engineering-detail-glm-zero-downsampling"><span class="header-section-number">6.5</span> Engineering detail: GLM zero-downsampling</h3>
-<p>The clean GB training table is 21,675,570 link-year rows. <code>statsmodels</code> builds a dense design matrix, which can OOM at this scale once optional context features are expanded.</p>
-<p>The GLM training set downsamples zero-collision rows to 3× the number of positive rows. All 391,308 positives are kept; 1,173,924 zeros are sampled. This keeps the Poisson coefficient estimates useful as a baseline while making the design matrix tractable at GB scale.</p>
-<p><strong>Consequence:</strong> the GLM intercept is biased upward — the effective zero rate in training (~75% zeros instead of ~98%) implies a higher baseline rate than the true population. Feature coefficients are still useful for direction and relative interpretation, but absolute predicted counts inherit the bias. XGBoost uses the full dataset and does not have this issue.</p>
+<p>The current full-GB training table is 39,412,990 link-year rows. <code>statsmodels</code> builds a dense design matrix, which can OOM at this scale once optional context features are expanded.</p>
+<p>The GLM training set downsamples zero-collision rows to 3× the number of positive rows. All 391,323 positives are kept; 1,173,969 zeros are sampled. This keeps the Poisson coefficient estimates useful as a baseline while making the design matrix tractable at GB scale.</p>
+<p><strong>Consequence:</strong> the GLM intercept is biased upward — the effective zero rate in training (~75% zeros instead of ~98%) implies a higher baseline rate than the true population. Feature coefficients are still useful for direction and relative interpretation, but absolute predicted counts inherit the bias. XGBoost uses the full dataset in the reported production run and does not have this issue.</p>
 </section>
 <section id="engineering-detail-xgboost-base_margin" class="level3" data-number="6.6">
 <h3 data-number="6.6" class="anchored" data-anchor-id="engineering-detail-xgboost-base_margin"><span class="header-section-number">6.6</span> Engineering detail: XGBoost <code>base_margin</code></h3>
@@ -891,7 +903,7 @@ Important
 </section>
 <section id="output-pooled-risk-scores" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="output-pooled-risk-scores"><span class="header-section-number">7</span> Output: pooled risk scores</h2>
-<p><code>score_and_save()</code> applies both models to the full dataset, then pools predictions to one row per link.</p>
+<p><code>score_and_save()</code> applies both models to the full GB dataset year-by-year, then pools predictions to one row per link.</p>
 <section id="pooling-logic" class="level3" data-number="7.1">
 <h3 data-number="7.1" class="anchored" data-anchor-id="pooling-logic"><span class="header-section-number">7.1</span> Pooling logic</h3>
 <p>For each <code>link_id</code>, aggregate across years:</p>
@@ -1021,7 +1033,7 @@ Warning
 </section>
 <section id="pseudo-r-comparability" class="level3" data-number="9.2">
 <h3 data-number="9.2" class="anchored" data-anchor-id="pseudo-r-comparability"><span class="header-section-number">9.2</span> Pseudo-R² comparability between GLM and XGBoost</h3>
-<p>The current clean GB GLM pseudo-R² (0.566) and XGBoost pseudo-R² (0.325) are computed on different row subsets with different null models. <strong>They are not directly comparable.</strong></p>
+<p>The current full-GB GLM pseudo-R² (0.602) and XGBoost pseudo-R² (0.387) are computed on different row subsets with different null models. <strong>They are not directly comparable.</strong></p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -1043,8 +1055,8 @@ Warning
 </tr>
 <tr class="even">
 <td>Rows</td>
-<td>~1.57M (all positives + 1:3 zero sample)</td>
-<td>~4.34M (true held-out link-year distribution)</td>
+<td>1.57M (all positives + 1:3 zero sample)</td>
+<td>full-zero training over 39.41M link-years; reported pseudo-R² from held-out links</td>
 </tr>
 <tr class="odd">
 <td>Zero rate in eval set</td>
@@ -1059,8 +1071,8 @@ Warning
 </tbody>
 </table>
 <p>The current Stage 2 metrics reflect the state after the counted-only Stage 1a AADF filter, the Stage 2 post-event provenance guard, OSM network feature enrichment, tiered speed-limit imputation, deprivation features, terrain grade, and the GLM optional-feature imputation refactor. These were shipped to improve methodological correctness and feature coverage rather than to optimise pseudo-R², and attribution of changes across them was not formally ablated. Future feature and modelling work should be evaluated against a saved baseline using the rank-stability harness where possible.</p>
-<p>Because the GLM null model sees an artificially balanced zero rate, it is easier to beat — the true 98% zero rate would produce a higher null deviance and a lower pseudo-R² for the same model. Because XGBoost is evaluated on the real held-out distribution against that harder null, the clean GB <code>0.325</code> figure is the cleaner current comparison point. Earlier repo docs cited <code>~0.86</code>, but that came from a pre-fix evaluation surface that was later superseded after a feature-table leakage diagnosis.</p>
-<p>The practical implication: the 0.566 vs 0.325 gap should not be read as a simple model horse race, because the evaluation surfaces still differ and the GB GLM uses a lower 1:3 zero-collision sampling ratio for memory reasons. A fair comparison would require both models evaluated on the same held-out set against the same null model. This has not been done; recomputing both on a common evaluation set is a known pending improvement.</p>
+<p>Because the GLM null model sees an artificially balanced zero rate, it is easier to beat — the true 98% zero rate would produce a higher null deviance and a lower pseudo-R² for the same model. Because XGBoost is evaluated on the real held-out distribution against that harder null, the current full-GB <code>0.387</code> figure is the cleaner current comparison point. Earlier repo docs cited <code>~0.86</code>, but that came from a pre-fix evaluation surface that was later superseded after a feature-table leakage diagnosis.</p>
+<p>The practical implication: the 0.602 vs 0.387 gap should not be read as a simple model horse race, because the evaluation surfaces still differ and the GB GLM uses a lower 1:3 zero-collision sampling ratio for memory reasons. A fair comparison would require both models evaluated on the same held-out set against the same null model. This has not been done; recomputing both on a common evaluation set is a known pending improvement.</p>
 </section>
 <section id="glm-intercept-bias" class="level3" data-number="9.3">
 <h3 data-number="9.3" class="anchored" data-anchor-id="glm-intercept-bias"><span class="header-section-number">9.3</span> GLM intercept bias</h3>
@@ -1084,9 +1096,9 @@ Warning
 </section>
 <section id="glm-training-set-size-under-osm-coverage" class="level3" data-number="9.8">
 <h3 data-number="9.8" class="anchored" data-anchor-id="glm-training-set-size-under-osm-coverage"><span class="header-section-number">9.8</span> GLM training-set size under OSM coverage</h3>
-<p>The GLM feature-selection rule uses any column with <strong>&gt;50% coverage</strong> directly, then applies <code>.dropna()</code> to the assembled feature matrix. The previous raw OSM <code>speed_limit_mph</code> feature had 56.4% coverage, barely cleared that threshold, and reduced the GLM training table to <strong>10,892,180</strong> complete-case link-years. Replacing it with <code>speed_limit_mph_effective</code> resolved that threshold issue: the current retrain uses <strong>18,302,830</strong> complete-case link-years before GLM zero-downsampling, then <strong>3,967,414</strong> rows after the 1:10 positive-to-zero sample. The remaining complete-case loss is dominated by other network/context coverage, especially the RUC-related population/context tail.</p>
-<p>XGBoost is unaffected by this GLM threshold because <code>train_collision_xgb()</code> fills missing values with 0 rather than dropping rows. The Stage 2 base table remains <strong>21,675,570</strong> link-years, with the current grouped split yielding <code>xgb.n_train = 17,340,450</code> (80% of the full table). The production ranking therefore still covers all <strong>2,167,557</strong> links.</p>
-<p>The effective-speed retrain left the final rank surface stable relative to the raw-speed baseline: Spearman rank correlation across all links was <strong>0.9962</strong>, and the top-1% Jaccard overlap was <strong>0.9512</strong> (21,134 shared links out of 22,218 in the union). The feature swap changed local ordering but did not materially reshuffle the highest-risk set.</p>
+<p>The GLM feature-selection rule uses any column with <strong>&gt;50% coverage</strong> directly, then applies <code>.dropna()</code> to the assembled feature matrix. The previous raw OSM <code>speed_limit_mph</code> feature had 56.4% coverage, barely cleared that threshold, and reduced the GLM training table to <strong>10,892,180</strong> complete-case link-years. Replacing it with <code>speed_limit_mph_effective</code> resolved that threshold issue. The current full-GB retrain uses <strong>1,565,292</strong> GLM training rows after explicit 1:3 zero downsampling.</p>
+<p>XGBoost is unaffected by this GLM threshold because <code>train_collision_xgb()</code> fills missing values with 0 rather than dropping rows. The Stage 2 base table is <strong>39,412,990</strong> link-years. The production ranking covers all <strong>3,941,299</strong> links after year-by-year scoring and link-level pooling.</p>
+<p>The current XGBoost production run uses <code>tree_method="hist"</code> and <code>max_bin=128</code> to fit the full-zero training population in memory. The sampled XGBoost policy remains available as an explicit fallback, but should not be mixed with the reported full-zero metric.</p>
 <p>The pipeline also reduces feature count if <code>network_features.parquet</code> is missing, producing lower-quality scores without an obvious downstream signal. The train log reports this, but consumers of <code>risk_scores.parquet</code> should check <code>data/models/collision_metrics.json</code> for the actual feature list used by a run.</p>
 <hr>
 </section>

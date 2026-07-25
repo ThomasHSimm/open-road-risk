@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>WebTRIS Traffic Sensor Data – Open Road Risk</title>
 <style>
@@ -151,6 +151,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -182,6 +186,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -393,6 +401,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -534,9 +546,9 @@ Important
 </section>
 <section id="load-data" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="load-data"><span class="header-section-number">5</span> Load data</h2>
-<div id="load-data" class="cell" data-execution_count="2">
+<div id="load-data" class="cell">
 <details class="code-fold">
-<summary>Code</summary>
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>raw_webtris        <span class="op">=</span> _ROOT <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"raw"</span>       <span class="op">/</span> <span class="st">"webtris"</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>processed_webtris  <span class="op">=</span> _ROOT <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"processed"</span> <span class="op">/</span> <span class="st">"webtris"</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -549,172 +561,140 @@ Important
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"webtris file exists    :"</span>, os.path.isfile(webtris_path) <span class="cf">if</span> webtris_path <span class="cf">else</span> <span class="va">False</span>)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"time_webtris exists    :"</span>, os.path.isfile(time_webtris_path))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>sites file exists      : True
-webtris file exists    : True
-time_webtris exists    : True</code></pre>
 </div>
-</div>
-<div id="read-parquets" class="cell" data-execution_count="3">
+<div id="read-parquets" class="cell">
 <details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>sites        <span class="op">=</span> pd.read_parquet(sites_path)        <span class="cf">if</span> sites_path.exists()                                  <span class="cf">else</span> pd.DataFrame()</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>webtris      <span class="op">=</span> pd.read_parquet(webtris_path)       <span class="cf">if</span> (webtris_path <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> webtris_path.exists()) <span class="cf">else</span> pd.DataFrame()</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>time_webtris <span class="op">=</span> pd.read_parquet(time_webtris_path)  <span class="cf">if</span> time_webtris_path.exists()                           <span class="cf">else</span> pd.DataFrame()</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Normalise year column — ingest output uses _pull_year; clean output uses year</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> webtris.empty <span class="kw">and</span> <span class="st">"_pull_year"</span> <span class="kw">in</span> webtris.columns <span class="kw">and</span> <span class="st">"year"</span> <span class="kw">not</span> <span class="kw">in</span> webtris.columns:</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    webtris <span class="op">=</span> webtris.rename(columns<span class="op">=</span>{<span class="st">"_pull_year"</span>: <span class="st">"year"</span>})</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Resolve column name variants between ingest and clean outputs</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>COL_FLOW    <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"adt24hour"</span>,                   <span class="st">"mean_daily_flow"</span>,          <span class="st">"all_flow"</span>]        <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>COL_WD_FLOW <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"awt24hour"</span>,                   <span class="st">"mean_weekday_flow"</span>,        <span class="st">"weekday_flow"</span>]    <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>COL_LV      <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"adt24largevehiclepercentage"</span>, <span class="st">"large_vehicle_pct"</span>,        <span class="st">"hgv_pct"</span>]         <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>COL_LV_WD   <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"awt24largevehiclepercentage"</span>, <span class="st">"large_vehicle_weekday_pct"</span>, <span class="st">"hgv_weekday_pct"</span>] <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># WebTRIS API often returns object dtype — convert once here</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> webtris.empty:</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    webtris[<span class="st">"year"</span>] <span class="op">=</span> pd.to_numeric(webtris[<span class="st">"year"</span>], errors<span class="op">=</span><span class="st">"coerce"</span>).astype(<span class="st">"Int64"</span>)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"monthname"</span> <span class="kw">in</span> webtris.columns:</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        webtris[<span class="st">"monthname"</span>] <span class="op">=</span> webtris[<span class="st">"monthname"</span>].<span class="bu">map</span>(normalise_month)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> [COL_FLOW, COL_WD_FLOW, COL_LV, COL_LV_WD]:</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> col:</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>            webtris[col] <span class="op">=</span> pd.to_numeric(webtris[col], errors<span class="op">=</span><span class="st">"coerce"</span>)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>webtris[<span class="st">"year"</span>] <span class="op">=</span> webtris[<span class="st">"year"</span>].astype(<span class="bu">int</span>)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>YEAR_COLOURS <span class="op">=</span> make_year_colours(webtris[<span class="st">"year"</span>].dropna().unique())</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"sites rows     : </span><span class="sc">{</span><span class="bu">len</span>(sites)<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"webtris rows   : </span><span class="sc">{</span><span class="bu">len</span>(webtris)<span class="sc">:,}</span><span class="ss">"</span>)</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Resolved columns:"</span>)</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  flow (all-day) : </span><span class="sc">{</span>COL_FLOW<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  flow (weekday) : </span><span class="sc">{</span>COL_WD_FLOW<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  large veh %    : </span><span class="sc">{</span>COL_LV<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  large veh % WD : </span><span class="sc">{</span>COL_LV_WD<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"monthname"</span> <span class="kw">in</span> webtris.columns:</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  months present : </span><span class="sc">{</span><span class="bu">sorted</span>(webtris[<span class="st">'monthname'</span>].dropna().unique().tolist())<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  years present  : </span><span class="sc">{</span><span class="bu">sorted</span>(webtris[<span class="st">'year'</span>].dropna().unique().tolist())<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sites        <span class="op">=</span> pd.read_parquet(sites_path)        <span class="cf">if</span> sites_path.exists()                                  <span class="cf">else</span> pd.DataFrame()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>webtris      <span class="op">=</span> pd.read_parquet(webtris_path)       <span class="cf">if</span> (webtris_path <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> webtris_path.exists()) <span class="cf">else</span> pd.DataFrame()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>time_webtris <span class="op">=</span> pd.read_parquet(time_webtris_path)  <span class="cf">if</span> time_webtris_path.exists()                           <span class="cf">else</span> pd.DataFrame()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Normalise year column — ingest output uses _pull_year; clean output uses year</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> webtris.empty <span class="kw">and</span> <span class="st">"_pull_year"</span> <span class="kw">in</span> webtris.columns <span class="kw">and</span> <span class="st">"year"</span> <span class="kw">not</span> <span class="kw">in</span> webtris.columns:</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    webtris <span class="op">=</span> webtris.rename(columns<span class="op">=</span>{<span class="st">"_pull_year"</span>: <span class="st">"year"</span>})</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Resolve column name variants between ingest and clean outputs</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>COL_FLOW    <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"adt24hour"</span>,                   <span class="st">"mean_daily_flow"</span>,          <span class="st">"all_flow"</span>]        <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>COL_WD_FLOW <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"awt24hour"</span>,                   <span class="st">"mean_weekday_flow"</span>,        <span class="st">"weekday_flow"</span>]    <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>COL_LV      <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"adt24largevehiclepercentage"</span>, <span class="st">"large_vehicle_pct"</span>,        <span class="st">"hgv_pct"</span>]         <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>COL_LV_WD   <span class="op">=</span> <span class="bu">next</span>((c <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"awt24largevehiclepercentage"</span>, <span class="st">"large_vehicle_weekday_pct"</span>, <span class="st">"hgv_weekday_pct"</span>] <span class="cf">if</span> c <span class="kw">in</span> webtris.columns), <span class="va">None</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># WebTRIS API often returns object dtype — convert once here</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> webtris.empty:</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    webtris[<span class="st">"year"</span>] <span class="op">=</span> pd.to_numeric(webtris[<span class="st">"year"</span>], errors<span class="op">=</span><span class="st">"coerce"</span>).astype(<span class="st">"Int64"</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"monthname"</span> <span class="kw">in</span> webtris.columns:</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        webtris[<span class="st">"monthname"</span>] <span class="op">=</span> webtris[<span class="st">"monthname"</span>].<span class="bu">map</span>(normalise_month)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> [COL_FLOW, COL_WD_FLOW, COL_LV, COL_LV_WD]:</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> col:</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>            webtris[col] <span class="op">=</span> pd.to_numeric(webtris[col], errors<span class="op">=</span><span class="st">"coerce"</span>)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>webtris[<span class="st">"year"</span>] <span class="op">=</span> webtris[<span class="st">"year"</span>].astype(<span class="bu">int</span>)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>YEAR_COLOURS <span class="op">=</span> make_year_colours(webtris[<span class="st">"year"</span>].dropna().unique())</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"sites rows     : </span><span class="sc">{</span><span class="bu">len</span>(sites)<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"webtris rows   : </span><span class="sc">{</span><span class="bu">len</span>(webtris)<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Resolved columns:"</span>)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  flow (all-day) : </span><span class="sc">{</span>COL_FLOW<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  flow (weekday) : </span><span class="sc">{</span>COL_WD_FLOW<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  large veh %    : </span><span class="sc">{</span>COL_LV<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  large veh % WD : </span><span class="sc">{</span>COL_LV_WD<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"monthname"</span> <span class="kw">in</span> webtris.columns:</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  months present : </span><span class="sc">{</span><span class="bu">sorted</span>(webtris[<span class="st">'monthname'</span>].dropna().unique().tolist())<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  years present  : </span><span class="sc">{</span><span class="bu">sorted</span>(webtris[<span class="st">'year'</span>].dropna().unique().tolist())<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>sites rows     : 19,518
-webtris rows   : 15,011
-
-Resolved columns:
-  flow (all-day) : all_flow
-  flow (weekday) : weekday_flow
-  large veh %    : hgv_pct
-  large veh % WD : hgv_weekday_pct
-  years present  : [2019, 2021, 2023]</code></pre>
-</div>
 </div>
 <hr>
 </section>
 <section id="site-coverage" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="site-coverage"><span class="header-section-number">6</span> Site coverage</h2>
-<div id="cell-fig-site-map" class="cell" data-execution_count="4">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>active_sites <span class="op">=</span> pd.DataFrame()</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> sites.empty <span class="kw">and</span> {<span class="st">"latitude"</span>, <span class="st">"longitude"</span>, <span class="st">"status"</span>}.issubset(sites.columns):</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    active_sites <span class="op">=</span> sites[</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        sites[<span class="st">"latitude"</span>].notna()</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">&amp;</span> sites[<span class="st">"longitude"</span>].notna()</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">&amp;</span> (sites[<span class="st">"status"</span>].astype(<span class="bu">str</span>).<span class="bu">str</span>.strip().<span class="bu">str</span>.lower() <span class="op">==</span> <span class="st">"active"</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    ].copy()</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> active_sites.empty:</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"No active WebTRIS sites with latitude/longitude available."</span>)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    sites_gdf <span class="op">=</span> gpd.GeoDataFrame(</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        active_sites,</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        geometry<span class="op">=</span>gpd.points_from_xy(active_sites[<span class="st">"longitude"</span>], active_sites[<span class="st">"latitude"</span>]),</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        crs<span class="op">=</span><span class="st">"EPSG:4326"</span>,</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    ).to_crs(epsg<span class="op">=</span><span class="dv">3857</span>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    minx, miny, maxx, maxy <span class="op">=</span> sites_gdf.total_bounds</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    pad <span class="op">=</span> <span class="bu">max</span>(maxx <span class="op">-</span> minx, maxy <span class="op">-</span> miny) <span class="op">*</span> <span class="fl">0.08</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(minx <span class="op">-</span> pad, maxx <span class="op">+</span> pad)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim(miny <span class="op">-</span> pad, maxy <span class="op">+</span> pad)</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        cx.add_basemap(ax, source<span class="op">=</span>cx.providers.OpenStreetMap.Mapnik,</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>                       zoom<span class="op">=</span><span class="st">"auto"</span>, attribution_size<span class="op">=</span><span class="dv">6</span>)</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Basemap unavailable: </span><span class="sc">{</span>exc<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    sites_gdf.plot(ax<span class="op">=</span>ax, markersize<span class="op">=</span><span class="dv">18</span>, color<span class="op">=</span><span class="st">"#dc2626"</span>,</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>                   edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.35</span>, alpha<span class="op">=</span><span class="fl">0.9</span>, zorder<span class="op">=</span><span class="dv">3</span>)</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"Active WebTRIS site locations"</span>)</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<div id="fig-site-map" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-site-map" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-site-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="webtris_files/figure-html/fig-site-map-output-1.png" width="595" height="758" class="figure-img">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>active_sites <span class="op">=</span> pd.DataFrame()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> sites.empty <span class="kw">and</span> {<span class="st">"latitude"</span>, <span class="st">"longitude"</span>, <span class="st">"status"</span>}.issubset(sites.columns):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    active_sites <span class="op">=</span> sites[</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        sites[<span class="st">"latitude"</span>].notna()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">&amp;</span> sites[<span class="st">"longitude"</span>].notna()</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">&amp;</span> (sites[<span class="st">"status"</span>].astype(<span class="bu">str</span>).<span class="bu">str</span>.strip().<span class="bu">str</span>.lower() <span class="op">==</span> <span class="st">"active"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    ].copy()</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> active_sites.empty:</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"No active WebTRIS sites with latitude/longitude available."</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    sites_gdf <span class="op">=</span> gpd.GeoDataFrame(</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        active_sites,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        geometry<span class="op">=</span>gpd.points_from_xy(active_sites[<span class="st">"longitude"</span>], active_sites[<span class="st">"latitude"</span>]),</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        crs<span class="op">=</span><span class="st">"EPSG:4326"</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    ).to_crs(epsg<span class="op">=</span><span class="dv">3857</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    minx, miny, maxx, maxy <span class="op">=</span> sites_gdf.total_bounds</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    pad <span class="op">=</span> <span class="bu">max</span>(maxx <span class="op">-</span> minx, maxy <span class="op">-</span> miny) <span class="op">*</span> <span class="fl">0.08</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(minx <span class="op">-</span> pad, maxx <span class="op">+</span> pad)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    ax.set_ylim(miny <span class="op">-</span> pad, maxy <span class="op">+</span> pad)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        cx.add_basemap(ax, source<span class="op">=</span>cx.providers.OpenStreetMap.Mapnik,</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>                       zoom<span class="op">=</span><span class="st">"auto"</span>, attribution_size<span class="op">=</span><span class="dv">6</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Basemap unavailable: </span><span class="sc">{</span>exc<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    sites_gdf.plot(ax<span class="op">=</span>ax, markersize<span class="op">=</span><span class="dv">18</span>, color<span class="op">=</span><span class="st">"#dc2626"</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>                   edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.35</span>, alpha<span class="op">=</span><span class="fl">0.9</span>, zorder<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    ax.set_axis_off()</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="st">"Active WebTRIS site locations"</span>)</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-site-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Active WebTRIS site locations
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-site-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1
 </figcaption>
 </figure>
-</div>
-</div>
 </div>
 <hr>
 </section>
 <section id="years-covered-and-vehicle-composition" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="years-covered-and-vehicle-composition"><span class="header-section-number">7</span> Years covered and vehicle composition</h2>
-<div id="cell-fig-lv-pct-year" class="cell" data-execution_count="5">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> (</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    webtris.groupby(<span class="st">"year"</span>)[COL_LV]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    .agg(mean<span class="op">=</span><span class="st">"mean"</span>, std<span class="op">=</span><span class="st">"std"</span>, n<span class="op">=</span><span class="st">"count"</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    .reset_index()</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="fl">3.5</span>))</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>ax.bar(</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    stats[<span class="st">"year"</span>].astype(<span class="bu">str</span>),</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    stats[<span class="st">"mean"</span>],</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    yerr<span class="op">=</span>stats[<span class="st">"std"</span>],</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span>[YEAR_COLOURS.get(y, <span class="st">"#93c5fd"</span>) <span class="cf">for</span> y <span class="kw">in</span> stats[<span class="st">"year"</span>]],</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.5</span>,</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    error_kw<span class="op">=</span><span class="bu">dict</span>(ecolor<span class="op">=</span><span class="st">"black"</span>, elinewidth<span class="op">=</span><span class="fl">1.0</span>, capsize<span class="op">=</span><span class="dv">4</span>),</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    width<span class="op">=</span><span class="fl">0.6</span>,</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Year"</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Large vehicle % (mean ± 1 SD)"</span>)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Large vehicle percentage by year"</span>)</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>ax.spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(stats[[<span class="st">"year"</span>, <span class="st">"mean"</span>, <span class="st">"std"</span>, <span class="st">"n"</span>]].to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<div id="fig-lv-pct-year" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-lv-pct-year" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-lv-pct-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="webtris_files/figure-html/fig-lv-pct-year-output-1.png" width="661" height="324" class="figure-img">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> (</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    webtris.groupby(<span class="st">"year"</span>)[COL_LV]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    .agg(mean<span class="op">=</span><span class="st">"mean"</span>, std<span class="op">=</span><span class="st">"std"</span>, n<span class="op">=</span><span class="st">"count"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    .reset_index()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="fl">3.5</span>))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>ax.bar(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    stats[<span class="st">"year"</span>].astype(<span class="bu">str</span>),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    stats[<span class="st">"mean"</span>],</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    yerr<span class="op">=</span>stats[<span class="st">"std"</span>],</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span>[YEAR_COLOURS.get(y, <span class="st">"#93c5fd"</span>) <span class="cf">for</span> y <span class="kw">in</span> stats[<span class="st">"year"</span>]],</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    error_kw<span class="op">=</span><span class="bu">dict</span>(ecolor<span class="op">=</span><span class="st">"black"</span>, elinewidth<span class="op">=</span><span class="fl">1.0</span>, capsize<span class="op">=</span><span class="dv">4</span>),</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    width<span class="op">=</span><span class="fl">0.6</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Year"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Large vehicle % (mean ± 1 SD)"</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Large vehicle percentage by year"</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>ax.spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(stats[[<span class="st">"year"</span>, <span class="st">"mean"</span>, <span class="st">"std"</span>, <span class="st">"n"</span>]].to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lv-pct-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Mean large vehicle percentage by year (± 1 SD across sites)
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-lv-pct-year-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2
 </figcaption>
 </figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code> year      mean      std    n
- 2019 15.304335 6.615736 4766
- 2021 18.784249 7.851997 5097
- 2023 16.766444 7.091977 5148</code></pre>
-</div>
 </div>
 <p>Large vehicle percentage is broadly stable across years — the motorway network composition does not change quickly. Error bars reflect variation across sites (some corridors are much more freight-heavy than others) rather than measurement uncertainty.</p>
 <hr>
@@ -722,83 +702,80 @@ Figure&nbsp;2: Mean large vehicle percentage by year (± 1 SD across sites)
 <section id="seasonal-flow-patterns" class="level2" data-number="8">
 <h2 data-number="8" class="anchored" data-anchor-id="seasonal-flow-patterns"><span class="header-section-number">8</span> Seasonal flow patterns</h2>
 <p>Monthly flow data is available in the annual reports file. The grey line shows mean all-day flow by month; the red dashed line (right axis) shows how much higher weekday flows are relative to the all-day average for that month.</p>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"monthname"</span> <span class="kw">not</span> <span class="kw">in</span> webtris.columns:</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"'monthname' not present — data is likely at annual grain, not monthly."</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    months_present <span class="op">=</span> [m <span class="cf">for</span> m <span class="kw">in</span> MONTH_ORDER <span class="cf">if</span> m <span class="kw">in</span> webtris[<span class="st">"monthname"</span>].unique()]</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    xticks  <span class="op">=</span> <span class="bu">range</span>(<span class="bu">len</span>(months_present))</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    xlabels <span class="op">=</span> months_present</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    month_avg <span class="op">=</span> (</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        webtris.groupby(<span class="st">"monthname"</span>, observed<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        .agg({COL_FLOW: <span class="st">"mean"</span>, COL_WD_FLOW: <span class="st">"mean"</span>, COL_LV: <span class="st">"mean"</span>, COL_LV_WD: <span class="st">"mean"</span>})</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        .reindex(months_present)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        .reset_index()</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        .rename(columns<span class="op">=</span>{</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            COL_FLOW:    <span class="st">"mean_flow"</span>,</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>            COL_WD_FLOW: <span class="st">"mean_weekday_flow"</span>,</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>            COL_LV:      <span class="st">"large_vehicle_pct"</span>,</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>            COL_LV_WD:   <span class="st">"large_vehicle_weekday_pct"</span>,</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        })</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    flow_delta <span class="op">=</span> (</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        (month_avg[<span class="st">"mean_weekday_flow"</span>] <span class="op">-</span> month_avg[<span class="st">"mean_flow"</span>])</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> month_avg[<span class="st">"mean_flow"</span>] <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    lv_delta <span class="op">=</span> (</span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        (month_avg[<span class="st">"large_vehicle_weekday_pct"</span>] <span class="op">-</span> month_avg[<span class="st">"large_vehicle_pct"</span>])</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> month_avg[<span class="st">"large_vehicle_pct"</span>] <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    ax0, ax0R <span class="op">=</span> axes[<span class="dv">0</span>], axes[<span class="dv">0</span>].twinx()</span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    ax0.plot(xticks, month_avg[<span class="st">"mean_flow"</span>], color<span class="op">=</span>AVERAGE_COLOUR,</span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>             marker<span class="op">=</span><span class="st">"o"</span>, linewidth<span class="op">=</span><span class="fl">1.8</span>, label<span class="op">=</span><span class="st">"All-day avg"</span>)</span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    ax0R.plot(xticks, flow_delta, color<span class="op">=</span>DELTA_COLOUR,</span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>              marker<span class="op">=</span><span class="st">"o"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"Weekday premium"</span>)</span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    ax0.set_xticks(xticks)</span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    ax0.set_xticklabels(xlabels, rotation<span class="op">=</span><span class="dv">45</span>, ha<span class="op">=</span><span class="st">"right"</span>, fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    ax0.set_ylabel(<span class="st">"Mean daily flow (veh/day)"</span>)</span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    ax0R.set_ylabel(<span class="st">"Weekday vs all-day premium (%)"</span>)</span>
-<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>    ax0.set_ylim(<span class="dv">0</span>, month_avg[<span class="st">"mean_flow"</span>].<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.2</span>)</span>
-<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    ax0R.set_ylim(<span class="dv">0</span>, flow_delta.<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.5</span>)</span>
-<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    ax0.set_title(<span class="st">"Total flow"</span>)</span>
-<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>    ax0.spines[[<span class="st">"top"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>    ax0.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> ax0.get_lines() <span class="op">+</span> ax0R.get_lines()</span>
-<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    ax0.legend(lines, [l.get_label() <span class="cf">for</span> l <span class="kw">in</span> lines], fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>    ax1, ax1R <span class="op">=</span> axes[<span class="dv">1</span>], axes[<span class="dv">1</span>].twinx()</span>
-<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>    ax1.plot(xticks, month_avg[<span class="st">"large_vehicle_pct"</span>], color<span class="op">=</span>AVERAGE_COLOUR,</span>
-<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>             marker<span class="op">=</span><span class="st">"o"</span>, linewidth<span class="op">=</span><span class="fl">1.8</span>, label<span class="op">=</span><span class="st">"All-day LV%"</span>)</span>
-<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>    ax1R.plot(xticks, lv_delta, color<span class="op">=</span>DELTA_COLOUR,</span>
-<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>              marker<span class="op">=</span><span class="st">"P"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"Weekday premium"</span>)</span>
-<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>    ax1.set_xticks(xticks)</span>
-<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>    ax1.set_xticklabels(xlabels, rotation<span class="op">=</span><span class="dv">45</span>, ha<span class="op">=</span><span class="st">"right"</span>, fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>    ax1.set_ylabel(<span class="st">"Large vehicle %"</span>)</span>
-<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    ax1R.set_ylabel(<span class="st">"Weekday LV vs all-day premium (%)"</span>)</span>
-<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    ax1.set_ylim(<span class="dv">0</span>, month_avg[<span class="st">"large_vehicle_pct"</span>].<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.2</span>)</span>
-<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>    ax1R.set_ylim(<span class="dv">0</span>, lv_delta.<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.5</span>)</span>
-<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>    ax1.set_title(<span class="st">"Large vehicle %"</span>)</span>
-<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>    ax1.spines[[<span class="st">"top"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>    ax1.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> ax1.get_lines() <span class="op">+</span> ax1R.get_lines()</span>
-<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    ax1.legend(lines, [l.get_label() <span class="cf">for</span> l <span class="kw">in</span> lines], fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>    fig.suptitle(<span class="st">"Seasonal patterns — network average across all years"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span>
-<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div id="fig-seasonal-flow" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
+<div id="fig-seasonal-flow" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-seasonal-flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-stdout">
-<pre><code>'monthname' not present — data is likely at annual grain, not monthly.</code></pre>
-</div>
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"monthname"</span> <span class="kw">not</span> <span class="kw">in</span> webtris.columns:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"'monthname' not present — data is likely at annual grain, not monthly."</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    months_present <span class="op">=</span> [m <span class="cf">for</span> m <span class="kw">in</span> MONTH_ORDER <span class="cf">if</span> m <span class="kw">in</span> webtris[<span class="st">"monthname"</span>].unique()]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    xticks  <span class="op">=</span> <span class="bu">range</span>(<span class="bu">len</span>(months_present))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    xlabels <span class="op">=</span> months_present</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    month_avg <span class="op">=</span> (</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        webtris.groupby(<span class="st">"monthname"</span>, observed<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        .agg({COL_FLOW: <span class="st">"mean"</span>, COL_WD_FLOW: <span class="st">"mean"</span>, COL_LV: <span class="st">"mean"</span>, COL_LV_WD: <span class="st">"mean"</span>})</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        .reindex(months_present)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        .reset_index()</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        .rename(columns<span class="op">=</span>{</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>            COL_FLOW:    <span class="st">"mean_flow"</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>            COL_WD_FLOW: <span class="st">"mean_weekday_flow"</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>            COL_LV:      <span class="st">"large_vehicle_pct"</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>            COL_LV_WD:   <span class="st">"large_vehicle_weekday_pct"</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    flow_delta <span class="op">=</span> (</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        (month_avg[<span class="st">"mean_weekday_flow"</span>] <span class="op">-</span> month_avg[<span class="st">"mean_flow"</span>])</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> month_avg[<span class="st">"mean_flow"</span>] <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    lv_delta <span class="op">=</span> (</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        (month_avg[<span class="st">"large_vehicle_weekday_pct"</span>] <span class="op">-</span> month_avg[<span class="st">"large_vehicle_pct"</span>])</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> month_avg[<span class="st">"large_vehicle_pct"</span>] <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    ax0, ax0R <span class="op">=</span> axes[<span class="dv">0</span>], axes[<span class="dv">0</span>].twinx()</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    ax0.plot(xticks, month_avg[<span class="st">"mean_flow"</span>], color<span class="op">=</span>AVERAGE_COLOUR,</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>             marker<span class="op">=</span><span class="st">"o"</span>, linewidth<span class="op">=</span><span class="fl">1.8</span>, label<span class="op">=</span><span class="st">"All-day avg"</span>)</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    ax0R.plot(xticks, flow_delta, color<span class="op">=</span>DELTA_COLOUR,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>              marker<span class="op">=</span><span class="st">"o"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"Weekday premium"</span>)</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    ax0.set_xticks(xticks)</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    ax0.set_xticklabels(xlabels, rotation<span class="op">=</span><span class="dv">45</span>, ha<span class="op">=</span><span class="st">"right"</span>, fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    ax0.set_ylabel(<span class="st">"Mean daily flow (veh/day)"</span>)</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    ax0R.set_ylabel(<span class="st">"Weekday vs all-day premium (%)"</span>)</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    ax0.set_ylim(<span class="dv">0</span>, month_avg[<span class="st">"mean_flow"</span>].<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.2</span>)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    ax0R.set_ylim(<span class="dv">0</span>, flow_delta.<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.5</span>)</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    ax0.set_title(<span class="st">"Total flow"</span>)</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    ax0.spines[[<span class="st">"top"</span>]].set_visible(<span class="va">False</span>)</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    ax0.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> ax0.get_lines() <span class="op">+</span> ax0R.get_lines()</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    ax0.legend(lines, [l.get_label() <span class="cf">for</span> l <span class="kw">in</span> lines], fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    ax1, ax1R <span class="op">=</span> axes[<span class="dv">1</span>], axes[<span class="dv">1</span>].twinx()</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    ax1.plot(xticks, month_avg[<span class="st">"large_vehicle_pct"</span>], color<span class="op">=</span>AVERAGE_COLOUR,</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>             marker<span class="op">=</span><span class="st">"o"</span>, linewidth<span class="op">=</span><span class="fl">1.8</span>, label<span class="op">=</span><span class="st">"All-day LV%"</span>)</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>    ax1R.plot(xticks, lv_delta, color<span class="op">=</span>DELTA_COLOUR,</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>              marker<span class="op">=</span><span class="st">"P"</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"Weekday premium"</span>)</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>    ax1.set_xticks(xticks)</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    ax1.set_xticklabels(xlabels, rotation<span class="op">=</span><span class="dv">45</span>, ha<span class="op">=</span><span class="st">"right"</span>, fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>    ax1.set_ylabel(<span class="st">"Large vehicle %"</span>)</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>    ax1R.set_ylabel(<span class="st">"Weekday LV vs all-day premium (%)"</span>)</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>    ax1.set_ylim(<span class="dv">0</span>, month_avg[<span class="st">"large_vehicle_pct"</span>].<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.2</span>)</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>    ax1R.set_ylim(<span class="dv">0</span>, lv_delta.<span class="bu">max</span>() <span class="op">*</span> <span class="fl">1.5</span>)</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    ax1.set_title(<span class="st">"Large vehicle %"</span>)</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    ax1.spines[[<span class="st">"top"</span>]].set_visible(<span class="va">False</span>)</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>    ax1.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> ax1.get_lines() <span class="op">+</span> ax1R.get_lines()</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>    ax1.legend(lines, [l.get_label() <span class="cf">for</span> l <span class="kw">in</span> lines], fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    fig.suptitle(<span class="st">"Seasonal patterns — network average across all years"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-seasonal-flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3
@@ -811,144 +788,126 @@ Figure&nbsp;3
 <section id="weekday-vs-weekend" class="level2" data-number="9">
 <h2 data-number="9" class="anchored" data-anchor-id="weekday-vs-weekend"><span class="header-section-number">9</span> Weekday vs weekend</h2>
 <p>Weekday daily average is directly available. Weekend flow is estimated as the complement: <code>(7 × all-day − 5 × weekday) / 2</code>.</p>
-<div id="cell-fig-weekday-weekend" class="cell" data-execution_count="7">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>webtris[<span class="st">"est_weekend_flow"</span>] <span class="op">=</span> (<span class="dv">7</span> <span class="op">*</span> webtris[COL_FLOW] <span class="op">-</span> <span class="dv">5</span> <span class="op">*</span> webtris[COL_WD_FLOW]) <span class="op">/</span> <span class="dv">2</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>webtris[<span class="st">"est_weekend_lv"</span>]   <span class="op">=</span> (<span class="dv">7</span> <span class="op">*</span> webtris[COL_LV]   <span class="op">-</span> <span class="dv">5</span> <span class="op">*</span> webtris[COL_LV_WD])   <span class="op">/</span> <span class="dv">2</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>years  <span class="op">=</span> <span class="bu">sorted</span>(webtris[<span class="st">"year"</span>].dropna().unique())</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>x      <span class="op">=</span> np.arange(<span class="bu">len</span>(years))</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>width  <span class="op">=</span> <span class="fl">0.35</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="dv">4</span>))</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>wd_means <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, COL_WD_FLOW].mean()        <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>we_means <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, <span class="st">"est_weekend_flow"</span>].mean() <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].bar(x <span class="op">-</span> width<span class="op">/</span><span class="dv">2</span>, wd_means, width, label<span class="op">=</span><span class="st">"Weekday"</span>,  color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].bar(x <span class="op">+</span> width<span class="op">/</span><span class="dv">2</span>, we_means, width, label<span class="op">=</span><span class="st">"Weekend*"</span>, color<span class="op">=</span><span class="st">"#f59e0b"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xticks(x)</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xticklabels([<span class="bu">str</span>(yr) <span class="cf">for</span> yr <span class="kw">in</span> years])</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Mean daily flow (veh/day)"</span>)</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Daily flow by day type"</span>)</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>wd_lv <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, COL_LV_WD].mean()        <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>we_lv <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, <span class="st">"est_weekend_lv"</span>].mean() <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].bar(x <span class="op">-</span> width<span class="op">/</span><span class="dv">2</span>, wd_lv, width, label<span class="op">=</span><span class="st">"Weekday"</span>,  color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].bar(x <span class="op">+</span> width<span class="op">/</span><span class="dv">2</span>, we_lv, width, label<span class="op">=</span><span class="st">"Weekend*"</span>, color<span class="op">=</span><span class="st">"#f59e0b"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xticks(x)</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xticklabels([<span class="bu">str</span>(yr) <span class="cf">for</span> yr <span class="kw">in</span> years])</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Large vehicle %"</span>)</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Large vehicle % by day type"</span>)</span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"Weekday vs weekend — site-level means by year"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"* Weekend estimated as (7 × all-day − 5 × weekday) / 2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<div id="fig-weekday-weekend" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-weekday-weekend" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-weekday-weekend-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="webtris_files/figure-html/fig-weekday-weekend-output-1.png" width="1045" height="395" class="figure-img">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>webtris[<span class="st">"est_weekend_flow"</span>] <span class="op">=</span> (<span class="dv">7</span> <span class="op">*</span> webtris[COL_FLOW] <span class="op">-</span> <span class="dv">5</span> <span class="op">*</span> webtris[COL_WD_FLOW]) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>webtris[<span class="st">"est_weekend_lv"</span>]   <span class="op">=</span> (<span class="dv">7</span> <span class="op">*</span> webtris[COL_LV]   <span class="op">-</span> <span class="dv">5</span> <span class="op">*</span> webtris[COL_LV_WD])   <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>years  <span class="op">=</span> <span class="bu">sorted</span>(webtris[<span class="st">"year"</span>].dropna().unique())</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>x      <span class="op">=</span> np.arange(<span class="bu">len</span>(years))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>width  <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="dv">4</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>wd_means <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, COL_WD_FLOW].mean()        <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>we_means <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, <span class="st">"est_weekend_flow"</span>].mean() <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].bar(x <span class="op">-</span> width<span class="op">/</span><span class="dv">2</span>, wd_means, width, label<span class="op">=</span><span class="st">"Weekday"</span>,  color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].bar(x <span class="op">+</span> width<span class="op">/</span><span class="dv">2</span>, we_means, width, label<span class="op">=</span><span class="st">"Weekend*"</span>, color<span class="op">=</span><span class="st">"#f59e0b"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xticks(x)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xticklabels([<span class="bu">str</span>(yr) <span class="cf">for</span> yr <span class="kw">in</span> years])</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"Mean daily flow (veh/day)"</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"Daily flow by day type"</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>wd_lv <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, COL_LV_WD].mean()        <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>we_lv <span class="op">=</span> [webtris.loc[webtris[<span class="st">"year"</span>] <span class="op">==</span> yr, <span class="st">"est_weekend_lv"</span>].mean() <span class="cf">for</span> yr <span class="kw">in</span> years]</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].bar(x <span class="op">-</span> width<span class="op">/</span><span class="dv">2</span>, wd_lv, width, label<span class="op">=</span><span class="st">"Weekday"</span>,  color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].bar(x <span class="op">+</span> width<span class="op">/</span><span class="dv">2</span>, we_lv, width, label<span class="op">=</span><span class="st">"Weekend*"</span>, color<span class="op">=</span><span class="st">"#f59e0b"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xticks(x)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xticklabels([<span class="bu">str</span>(yr) <span class="cf">for</span> yr <span class="kw">in</span> years])</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Large vehicle %"</span>)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Large vehicle % by day type"</span>)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"Weekday vs weekend — site-level means by year"</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"* Weekend estimated as (7 × all-day − 5 × weekday) / 2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-weekday-weekend-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Weekday vs estimated weekend flow and large vehicle % by year
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-weekday-weekend-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4
 </figcaption>
 </figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>* Weekend estimated as (7 × all-day − 5 × weekday) / 2</code></pre>
-</div>
 </div>
 <hr>
 </section>
 <section id="within-day-concentration" class="level2" data-number="10">
 <h2 data-number="10" class="anchored" data-anchor-id="within-day-concentration"><span class="header-section-number">10</span> Within-day concentration</h2>
 <p>The <code>time_webtris</code> dataset contains sub-24h flow averages for 12, 16, and 18-hour windows. These give a rough picture of how concentrated flows are within the working day — useful for understanding what the annual average masks.</p>
-<div id="cell-fig-nhour-fraction" class="cell" data-execution_count="9">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>frac_means <span class="op">=</span> time_webtris[frac_cols].mean()</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>adt_hgv, adt_all <span class="op">=</span> [], []</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col <span class="kw">in</span> frac_cols:</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    hours <span class="op">=</span> <span class="bu">int</span>(col.split(<span class="st">"hour"</span>)[<span class="dv">0</span>].split(<span class="st">"t"</span>)[<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    val   <span class="op">=</span> frac_means[col]</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"adt"</span> <span class="kw">not</span> <span class="kw">in</span> col:</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    (adt_hgv <span class="cf">if</span> col.endswith(<span class="st">"_hgv"</span>) <span class="cf">else</span> adt_all).append((hours, val))</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>adt_hgv <span class="op">=</span> np.array(<span class="bu">sorted</span>(adt_hgv))</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>adt_all <span class="op">=</span> np.array(<span class="bu">sorted</span>(adt_all))</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>ax.bar(adt_all[:, <span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.25</span>, adt_all[:, <span class="dv">1</span>], width<span class="op">=</span><span class="fl">0.45</span>,</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>       label<span class="op">=</span><span class="st">"All vehicles"</span>, color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>ax.bar(adt_hgv[:, <span class="dv">0</span>] <span class="op">-</span> <span class="fl">0.25</span>, adt_hgv[:, <span class="dv">1</span>], width<span class="op">=</span><span class="fl">0.45</span>,</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>       label<span class="op">=</span><span class="st">"HGV"</span>, color<span class="op">=</span><span class="st">"#dc2626"</span>, alpha<span class="op">=</span><span class="fl">0.75</span>)</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Hour window"</span>)</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Fraction of 24-hour total"</span>)</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Fraction of vehicles in N-hour period vs 24-hour total"</span>)</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>ax.set_xticks([<span class="dv">12</span>, <span class="dv">16</span>, <span class="dv">18</span>, <span class="dv">24</span>])</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="fl">0.5</span>, <span class="fl">1.05</span>)</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>ax.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>ax.spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<div id="fig-nhour-fraction" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-nhour-fraction" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-nhour-fraction-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="webtris_files/figure-html/fig-nhour-fraction-output-1.png" width="661" height="372" class="figure-img">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>frac_means <span class="op">=</span> time_webtris[frac_cols].mean()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>adt_hgv, adt_all <span class="op">=</span> [], []</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col <span class="kw">in</span> frac_cols:</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    hours <span class="op">=</span> <span class="bu">int</span>(col.split(<span class="st">"hour"</span>)[<span class="dv">0</span>].split(<span class="st">"t"</span>)[<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    val   <span class="op">=</span> frac_means[col]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"adt"</span> <span class="kw">not</span> <span class="kw">in</span> col:</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    (adt_hgv <span class="cf">if</span> col.endswith(<span class="st">"_hgv"</span>) <span class="cf">else</span> adt_all).append((hours, val))</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>adt_hgv <span class="op">=</span> np.array(<span class="bu">sorted</span>(adt_hgv))</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>adt_all <span class="op">=</span> np.array(<span class="bu">sorted</span>(adt_all))</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>ax.bar(adt_all[:, <span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.25</span>, adt_all[:, <span class="dv">1</span>], width<span class="op">=</span><span class="fl">0.45</span>,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>       label<span class="op">=</span><span class="st">"All vehicles"</span>, color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.85</span>)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>ax.bar(adt_hgv[:, <span class="dv">0</span>] <span class="op">-</span> <span class="fl">0.25</span>, adt_hgv[:, <span class="dv">1</span>], width<span class="op">=</span><span class="fl">0.45</span>,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>       label<span class="op">=</span><span class="st">"HGV"</span>, color<span class="op">=</span><span class="st">"#dc2626"</span>, alpha<span class="op">=</span><span class="fl">0.75</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Hour window"</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Fraction of 24-hour total"</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Fraction of vehicles in N-hour period vs 24-hour total"</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>ax.set_xticks([<span class="dv">12</span>, <span class="dv">16</span>, <span class="dv">18</span>, <span class="dv">24</span>])</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="fl">0.5</span>, <span class="fl">1.05</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>ax.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>ax.spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-nhour-fraction-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Fraction of 24-hour traffic captured in N-hour windows
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-nhour-fraction-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5
 </figcaption>
 </figure>
 </div>
-</div>
-</div>
-<div id="cell-fig-12h-distribution" class="cell" data-execution_count="10">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>bins <span class="op">=</span> np.arange(<span class="fl">0.4</span>, <span class="fl">1.01</span>, <span class="fl">0.01</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>time_webtris[<span class="st">"frac_awt12hour"</span>].hist(    bins<span class="op">=</span>bins, ax<span class="op">=</span>ax, label<span class="op">=</span><span class="st">"All vehicles"</span>,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                                        color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.75</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>time_webtris[<span class="st">"frac_awt12hour_hgv"</span>].hist(bins<span class="op">=</span>bins, ax<span class="op">=</span>ax, label<span class="op">=</span><span class="st">"HGV"</span>,</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                                         color<span class="op">=</span><span class="st">"#dc2626"</span>, alpha<span class="op">=</span><span class="fl">0.65</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Fraction of 24-hour total in 12-hour window"</span>)</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Site count"</span>)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Distribution of vehicles in 12-hour period vs 24-hour total"</span>)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="fl">0.4</span>, <span class="fl">1.0</span>)</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>ax.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>ax.spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<div id="fig-12h-distribution" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-12h-distribution" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-12h-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="webtris_files/figure-html/fig-12h-distribution-output-1.png" width="661" height="372" class="figure-img">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>bins <span class="op">=</span> np.arange(<span class="fl">0.4</span>, <span class="fl">1.01</span>, <span class="fl">0.01</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>time_webtris[<span class="st">"frac_awt12hour"</span>].hist(    bins<span class="op">=</span>bins, ax<span class="op">=</span>ax, label<span class="op">=</span><span class="st">"All vehicles"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                                        color<span class="op">=</span><span class="st">"#2563eb"</span>, alpha<span class="op">=</span><span class="fl">0.75</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>time_webtris[<span class="st">"frac_awt12hour_hgv"</span>].hist(bins<span class="op">=</span>bins, ax<span class="op">=</span>ax, label<span class="op">=</span><span class="st">"HGV"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                                         color<span class="op">=</span><span class="st">"#dc2626"</span>, alpha<span class="op">=</span><span class="fl">0.65</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Fraction of 24-hour total in 12-hour window"</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Site count"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Distribution of vehicles in 12-hour period vs 24-hour total"</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="fl">0.4</span>, <span class="fl">1.0</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>ax.grid(alpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>ax.spines[[<span class="st">"top"</span>, <span class="st">"right"</span>]].set_visible(<span class="va">False</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-12h-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Distribution of 12-hour fraction across sites (all vehicles vs HGV)
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-12h-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6
 </figcaption>
 </figure>
-</div>
-</div>
 </div>
 <p>Most sites see roughly 70–80% of daily traffic in the 12-hour core window. The HGV distribution shifted right relative to all vehicles means heavy goods vehicles are more concentrated in daytime hours — consistent with delivery restrictions and driver hours regulations.</p>
 <hr>
@@ -956,55 +915,45 @@ Figure&nbsp;6: Distribution of 12-hour fraction across sites (all vehicles vs HG
 <section id="site-exposure-maps" class="level2" data-number="11">
 <h2 data-number="11" class="anchored" data-anchor-id="site-exposure-maps"><span class="header-section-number">11</span> Site exposure maps</h2>
 <p>Flow and large vehicle percentage vary across the network. The maps below show site-level means, sized and coloured by the chosen variable.</p>
-<div id="cell-fig-exposure-flow" class="cell" data-execution_count="12">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>active <span class="op">=</span> prepare_webtris_site_exposure(</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    sites, webtris, exposure_columns<span class="op">=</span>[COL_FLOW, COL_WD_FLOW]</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>plot_webtris_site_exposure(</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    active, value_col<span class="op">=</span>COL_FLOW, cmap<span class="op">=</span><span class="st">"hot"</span>,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"WebTRIS site exposure — mean daily flow"</span>,</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    colorbar_label<span class="op">=</span><span class="st">"Mean daily flow (veh/day)"</span>,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<div id="fig-exposure-flow" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-exposure-flow" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-exposure-flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="webtris_files/figure-html/fig-exposure-flow-output-1.png" width="822" height="854" class="figure-img">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>active <span class="op">=</span> prepare_webtris_site_exposure(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    sites, webtris, exposure_columns<span class="op">=</span>[COL_FLOW, COL_WD_FLOW]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>plot_webtris_site_exposure(</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    active, value_col<span class="op">=</span>COL_FLOW, cmap<span class="op">=</span><span class="st">"hot"</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"WebTRIS site exposure — mean daily flow"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    colorbar_label<span class="op">=</span><span class="st">"Mean daily flow (veh/day)"</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-exposure-flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: Mean all-day daily flow by site
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-exposure-flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7
 </figcaption>
 </figure>
 </div>
-</div>
-</div>
-<div id="cell-fig-exposure-lv" class="cell" data-execution_count="13">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>active <span class="op">=</span> prepare_webtris_site_exposure(</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    sites, webtris, exposure_columns<span class="op">=</span>[COL_LV, COL_LV_WD]</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>plot_webtris_site_exposure(</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    active, value_col<span class="op">=</span>COL_LV, cmap<span class="op">=</span><span class="st">"hot"</span>, clim<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">30</span>),</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"WebTRIS — mean large vehicle percentage"</span>,</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    colorbar_label<span class="op">=</span><span class="st">"Large vehicle %"</span>,</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<div id="fig-exposure-lv" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-exposure-lv" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-exposure-lv-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="webtris_files/figure-html/fig-exposure-lv-output-1.png" width="809" height="853" class="figure-img">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>active <span class="op">=</span> prepare_webtris_site_exposure(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    sites, webtris, exposure_columns<span class="op">=</span>[COL_LV, COL_LV_WD]</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>plot_webtris_site_exposure(</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    active, value_col<span class="op">=</span>COL_LV, cmap<span class="op">=</span><span class="st">"hot"</span>, clim<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">30</span>),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"WebTRIS — mean large vehicle percentage"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    colorbar_label<span class="op">=</span><span class="st">"Large vehicle %"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-exposure-lv-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: Mean large vehicle percentage by site
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-exposure-lv-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8
 </figcaption>
 </figure>
-</div>
-</div>
 </div>
 <hr>
 </section>
