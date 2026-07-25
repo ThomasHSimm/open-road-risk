@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>OS Terrain 50 — Road Gradient – Open Road Risk</title>
 <style>
@@ -149,6 +149,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -180,6 +184,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -391,6 +399,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -522,9 +534,9 @@ Note
 </div>
 </div>
 <p>The chunk below reports the as-built state directly from the feature table.</p>
-<div id="grade-structure-status" class="cell" data-execution_count="1">
+<div id="grade-structure-status" class="cell">
 <details open="" class="code-fold">
-<summary>Code</summary>
+<summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -549,23 +561,8 @@ Note
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">mean_grade missing      : </span><span class="sc">{</span>n_null<span class="sc">:,}</span><span class="ss"> "</span></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"(</span><span class="sc">{</span><span class="dv">100</span> <span class="op">*</span> n_null <span class="op">/</span> <span class="bu">len</span>(feat)<span class="sc">:.2f}</span><span class="ss">%)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Links in feature table : 2,167,557
-
-grade_method distribution:
-grade_method
-profile    2167557
-
-is_bridge_proxy   : 0 flagged
-
-is_tunnel_proxy   : 0 flagged
-
-is_covered_proxy  : 0 flagged
-
-mean_grade missing      : 332,579 (15.34%)</code></pre>
 </div>
-</div>
-<p>As verified on the current local build: <code>grade_method</code> is <code>profile</code> for all 2,167,557 links, all three structure proxies are empty, and the 12,234 OS Open Roads slip-road links (~0.56% of the network) likewise carry uncorrected profile-method grade, with <code>mean_grade</code> present on 10,325 of them.</p>
+<p>As verified on the previous smaller local build: <code>grade_method</code> was <code>profile</code> for all links, all three structure proxies were empty, and the OS Open Roads slip-road links likewise carried uncorrected profile-method grade. Recheck the exact slip-road counts after any full-GB terrain rebuild.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -584,59 +581,50 @@ mean_grade missing      : 332,579 (15.34%)</code></pre>
 </div>
 </div>
 </div>
-<div id="grade-impact" class="cell" data-execution_count="2">
+<div id="grade-impact" class="cell">
 <details open="" class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT <span class="im">as</span> ROOT</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Fallback, stamped to the current build, used only if artefacts are absent.</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>STAMP <span class="op">=</span> (<span class="st">"Current build: mean_grade XGBoost importance 0.0199 (rank 16/26); "</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">"slip roads 484/21,676 = 2.23</span><span class="sc">% o</span><span class="st">f the top 1</span><span class="sc">% r</span><span class="st">isk set vs 0.56</span><span class="sc">% o</span><span class="st">f the "</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">"network; bridge/tunnel/covered links unquantified (none flagged — OSM "</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">"structure file absent)."</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(ROOT <span class="op">/</span> <span class="st">"data/models/collision_metrics.json"</span>) <span class="im">as</span> f:</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        xgb_feats <span class="op">=</span> json.load(f)[<span class="st">"xgb"</span>][<span class="st">"features"</span>]</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> xgboost <span class="im">import</span> XGBRegressor</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    xgb <span class="op">=</span> XGBRegressor()</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    xgb.load_model(<span class="bu">str</span>(ROOT <span class="op">/</span> <span class="st">"data/models/collision_xgb.json"</span>))</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    imp <span class="op">=</span> pd.Series(xgb.feature_importances_, index<span class="op">=</span>xgb_feats)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    g_imp <span class="op">=</span> imp[<span class="st">"mean_grade"</span>]</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    g_rank <span class="op">=</span> <span class="bu">int</span>(imp.rank(ascending<span class="op">=</span><span class="va">False</span>)[<span class="st">"mean_grade"</span>])</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    n_feat <span class="op">=</span> <span class="bu">len</span>(imp)</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    risk <span class="op">=</span> pd.read_parquet(ROOT <span class="op">/</span> <span class="st">"data/models/risk_scores.parquet"</span>,</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                           columns<span class="op">=</span>[<span class="st">"link_id"</span>, <span class="st">"risk_percentile"</span>])</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    fow <span class="op">=</span> pd.read_parquet(ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span>,</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                          columns<span class="op">=</span>[<span class="st">"link_id"</span>, <span class="st">"form_of_way"</span>])</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> risk.merge(fow, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    is_slip <span class="op">=</span> df[<span class="st">"form_of_way"</span>].astype(<span class="st">"string"</span>).<span class="bu">str</span>.contains(<span class="st">"Slip"</span>, case<span class="op">=</span><span class="va">False</span>, na<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    top1 <span class="op">=</span> df[<span class="st">"risk_percentile"</span>] <span class="op">&gt;=</span> <span class="dv">99</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"mean_grade XGBoost importance : </span><span class="sc">{</span>g_imp<span class="sc">:.4f}</span><span class="ss">  (rank </span><span class="sc">{</span>g_rank<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>n_feat<span class="sc">}</span><span class="ss">)"</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Uniform share if all equal    : </span><span class="sc">{</span><span class="dv">1</span> <span class="op">/</span> n_feat<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Slip roads in top 1% risk     : </span><span class="sc">{</span><span class="bu">int</span>((is_slip <span class="op">&amp;</span> top1).<span class="bu">sum</span>())<span class="sc">:,}</span><span class="ss">"</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"/</span><span class="sc">{</span><span class="bu">int</span>(top1.<span class="bu">sum</span>())<span class="sc">:,}</span><span class="ss"> = </span><span class="sc">{</span>is_slip[top1]<span class="sc">.</span>mean()<span class="sc">:.2%}</span><span class="ss">"</span>)</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Slip roads in full network    : </span><span class="sc">{</span>is_slip<span class="sc">.</span>mean()<span class="sc">:.2%}</span><span class="ss">"</span>)</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Enrichment                    : </span><span class="sc">{</span>is_slip[top1]<span class="sc">.</span>mean() <span class="op">/</span> is_slip<span class="sc">.</span>mean()<span class="sc">:.1f}</span><span class="ss">x"</span>)</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Bridge/tunnel/covered in top 1%: unquantified (none flagged — "</span></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>          <span class="st">"OSM structure file absent)"</span>)</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(STAMP)</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">[live computation unavailable: </span><span class="sc">{</span>exc<span class="sc">}</span><span class="ss">]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> road_risk.config <span class="im">import</span> _ROOT <span class="im">as</span> ROOT</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Fallback used only if artefacts are absent. Keep it qualitative so it does</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># not preserve stale top-risk counts from earlier network builds.</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>STAMP <span class="op">=</span> (<span class="st">"Current build: mean_grade is a low-importance Stage 2 feature; "</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">"slip-road and structure-related grade caveats should be rechecked "</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">"against the regenerated full-GB top-risk output before publication."</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(ROOT <span class="op">/</span> <span class="st">"data/models/collision_metrics.json"</span>) <span class="im">as</span> f:</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        xgb_feats <span class="op">=</span> json.load(f)[<span class="st">"xgb"</span>][<span class="st">"features"</span>]</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> xgboost <span class="im">import</span> XGBRegressor</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    xgb <span class="op">=</span> XGBRegressor()</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    xgb.load_model(<span class="bu">str</span>(ROOT <span class="op">/</span> <span class="st">"data/models/collision_xgb.json"</span>))</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    imp <span class="op">=</span> pd.Series(xgb.feature_importances_, index<span class="op">=</span>xgb_feats)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    g_imp <span class="op">=</span> imp[<span class="st">"mean_grade"</span>]</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    g_rank <span class="op">=</span> <span class="bu">int</span>(imp.rank(ascending<span class="op">=</span><span class="va">False</span>)[<span class="st">"mean_grade"</span>])</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    n_feat <span class="op">=</span> <span class="bu">len</span>(imp)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    risk <span class="op">=</span> pd.read_parquet(ROOT <span class="op">/</span> <span class="st">"data/models/risk_scores.parquet"</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                           columns<span class="op">=</span>[<span class="st">"link_id"</span>, <span class="st">"risk_percentile"</span>])</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    fow <span class="op">=</span> pd.read_parquet(ROOT <span class="op">/</span> <span class="st">"data/processed/shapefiles/openroads.parquet"</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                          columns<span class="op">=</span>[<span class="st">"link_id"</span>, <span class="st">"form_of_way"</span>])</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> risk.merge(fow, on<span class="op">=</span><span class="st">"link_id"</span>, how<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    is_slip <span class="op">=</span> df[<span class="st">"form_of_way"</span>].astype(<span class="st">"string"</span>).<span class="bu">str</span>.contains(<span class="st">"Slip"</span>, case<span class="op">=</span><span class="va">False</span>, na<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    top1 <span class="op">=</span> df[<span class="st">"risk_percentile"</span>] <span class="op">&gt;=</span> <span class="dv">99</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"mean_grade XGBoost importance : </span><span class="sc">{</span>g_imp<span class="sc">:.4f}</span><span class="ss">  (rank </span><span class="sc">{</span>g_rank<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>n_feat<span class="sc">}</span><span class="ss">)"</span>)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Uniform share if all equal    : </span><span class="sc">{</span><span class="dv">1</span> <span class="op">/</span> n_feat<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Slip roads in top 1% risk     : </span><span class="sc">{</span><span class="bu">int</span>((is_slip <span class="op">&amp;</span> top1).<span class="bu">sum</span>())<span class="sc">:,}</span><span class="ss">"</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"/</span><span class="sc">{</span><span class="bu">int</span>(top1.<span class="bu">sum</span>())<span class="sc">:,}</span><span class="ss"> = </span><span class="sc">{</span>is_slip[top1]<span class="sc">.</span>mean()<span class="sc">:.2%}</span><span class="ss">"</span>)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Slip roads in full network    : </span><span class="sc">{</span>is_slip<span class="sc">.</span>mean()<span class="sc">:.2%}</span><span class="ss">"</span>)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Enrichment                    : </span><span class="sc">{</span>is_slip[top1]<span class="sc">.</span>mean() <span class="op">/</span> is_slip<span class="sc">.</span>mean()<span class="sc">:.1f}</span><span class="ss">x"</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Bridge/tunnel/covered in top 1%: unquantified (none flagged — "</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>          <span class="st">"OSM structure file absent)"</span>)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(STAMP)</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">[live computation unavailable: </span><span class="sc">{</span>exc<span class="sc">}</span><span class="ss">]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>mean_grade XGBoost importance : 0.0181  (rank 17/29)
-Uniform share if all equal    : 0.0345
-
-Slip roads in top 1% risk     : 481/21,676 = 2.22%
-Slip roads in full network    : 0.56%
-Enrichment                    : 3.9x
-Bridge/tunnel/covered in top 1%: unquantified (none flagged — OSM structure file absent)</code></pre>
-</div>
 </div>
 </section>
 <section id="download" class="level2" data-number="5">

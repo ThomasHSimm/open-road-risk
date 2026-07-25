@@ -8,7 +8,7 @@
 
 <meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
-<title>Open Road Risk</title>
+<title>What does a road-risk model actually predict? – Open Road Risk</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -96,20 +96,20 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
       .quarto-title-block .quarto-title-banner {
         color: #ffffff;
-background-image: url(assets/futuremiss.jpg);
+background-image: url(assets/nearmiss.jpg);
 background-size: cover;
       }
 </style>
 
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="Open Road Risk">
-<meta property="og:description" content="Open Road Risk estimates exposure-adjusted collision risk across Great Britain using open transport, road, and collision data.">
-<meta property="og:image" content="https://openroadrisk.org/assets/futuremiss.jpg">
+<meta property="og:title" content="What does a road-risk model actually predict? – Open Road Risk">
+<meta property="og:description" content="A road-risk ranking answers one specific question, not several. This essay sets out the estimand behind Open Road Risk, why exposure has to be modelled, what sparse counts do to evaluation, and where the current evidence stops.">
+<meta property="og:image" content="https://openroadrisk.org/assets/nearmiss.jpg">
 <meta property="og:site_name" content="Open Road Risk">
-<meta name="twitter:title" content="Open Road Risk">
-<meta name="twitter:description" content="Open Road Risk estimates exposure-adjusted collision risk across Great Britain using open transport, road, and collision data.">
-<meta name="twitter:image" content="https://openroadrisk.org/assets/futuremiss.jpg">
+<meta name="twitter:title" content="What does a road-risk model actually predict? – Open Road Risk">
+<meta name="twitter:description" content="A road-risk ranking answers one specific question, not several. This essay sets out the estimand behind Open Road Risk, why exposure has to be modelled, what sparse counts do to evaluation, and where the current evidence stops.">
+<meta name="twitter:image" content="https://openroadrisk.org/assets/nearmiss.jpg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -131,11 +131,11 @@ background-size: cover;
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./what-a-road-risk-model-predicts.html"> 
+    <a class="nav-link active" href="./what-a-road-risk-model-predicts.html" aria-current="page"> 
 <span class="menu-text">Start Here</span></a>
   </li>  
   <li class="nav-item dropdown ">
@@ -423,11 +423,11 @@ background-size: cover;
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-page-left">
-      <h1 class="title">Open Road Risk</h1>
-            <p class="subtitle lead">Exposure-adjusted road risk modelling from open transport data</p>
+      <h1 class="title">What does a road-risk model actually predict?</h1>
+            <p class="subtitle lead">Lessons from modelling collision risk across the road network of Great Britain</p>
                   <div>
         <div class="description">
-          Open Road Risk estimates exposure-adjusted collision risk across Great Britain using open transport, road, and collision data.
+          A road-risk ranking answers one specific question, not several. This essay sets out the estimand behind Open Road Risk, why exposure has to be modelled, what sparse counts do to evaluation, and where the current evidence stops.
         </div>
       </div>
                 </div>
@@ -441,7 +441,7 @@ background-size: cover;
       <div>
       <div class="quarto-title-meta-heading">Modified</div>
       <div class="quarto-title-meta-contents">
-        <p class="date-modified">July 7, 2026</p>
+        <p class="date-modified">July 25, 2026</p>
       </div>
     </div>
       
@@ -455,12 +455,18 @@ background-size: cover;
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
-  <li><a href="#traffic" id="toc-traffic" class="nav-link active" data-scroll-target="#traffic">Traffic</a></li>
-  <li><a href="#collision-risk" id="toc-collision-risk" class="nav-link" data-scroll-target="#collision-risk">Collision risk</a></li>
-  <li><a href="#what-this-project-is" id="toc-what-this-project-is" class="nav-link" data-scroll-target="#what-this-project-is">What this project is</a></li>
-  <li><a href="#why-this-matters" id="toc-why-this-matters" class="nav-link" data-scroll-target="#why-this-matters">Why this matters</a></li>
-  <li><a href="#site-guide" id="toc-site-guide" class="nav-link" data-scroll-target="#site-guide">Site guide</a></li>
+  <ul class="collapse">
+  <li><a href="#start-with-the-estimand" id="toc-start-with-the-estimand" class="nav-link active" data-scroll-target="#start-with-the-estimand">Start with the estimand</a></li>
+  <li><a href="#exposure-is-necessary-and-partly-modelled" id="toc-exposure-is-necessary-and-partly-modelled" class="nav-link" data-scroll-target="#exposure-is-necessary-and-partly-modelled">Exposure is necessary, and partly modelled</a></li>
+  <li><a href="#sparse-counts-need-count-model-thinking" id="toc-sparse-counts-need-count-model-thinking" class="nav-link" data-scroll-target="#sparse-counts-need-count-model-thinking">Sparse counts need count-model thinking</a></li>
+  <li><a href="#one-headline-metric-is-not-enough" id="toc-one-headline-metric-is-not-enough" class="nav-link" data-scroll-target="#one-headline-metric-is-not-enough">One headline metric is not enough</a></li>
+  <li><a href="#spatial-validation-changes-the-question" id="toc-spatial-validation-changes-the-question" class="nav-link" data-scroll-target="#spatial-validation-changes-the-question">Spatial validation changes the question</a></li>
+  <li><a href="#rankings-are-decisions-not-just-predictions" id="toc-rankings-are-decisions-not-just-predictions" class="nav-link" data-scroll-target="#rankings-are-decisions-not-just-predictions">Rankings are decisions, not just predictions</a></li>
+  <li><a href="#literature-should-guide-interpretation-not-supply-a-ceiling" id="toc-literature-should-guide-interpretation-not-supply-a-ceiling" class="nav-link" data-scroll-target="#literature-should-guide-interpretation-not-supply-a-ceiling">Literature should guide interpretation, not supply a ceiling</a></li>
+  <li><a href="#what-credible-external-validation-would-look-like" id="toc-what-credible-external-validation-would-look-like" class="nav-link" data-scroll-target="#what-credible-external-validation-would-look-like">What credible external validation would look like</a></li>
+  <li><a href="#the-next-experiment" id="toc-the-next-experiment" class="nav-link" data-scroll-target="#the-next-experiment">The next experiment</a></li>
+  <li><a href="#a-model-is-more-than-its-algorithm" id="toc-a-model-is-more-than-its-algorithm" class="nav-link" data-scroll-target="#a-model-is-more-than-its-algorithm">A model is more than its algorithm</a></li>
+  <li><a href="#where-to-go-next" id="toc-where-to-go-next" class="nav-link" data-scroll-target="#where-to-go-next">Where to go next</a></li>
   </ul>
 </nav>
     </div>
@@ -472,53 +478,147 @@ background-size: cover;
 
 
 <div class="small text-muted">
-<p>Last updated: 2026-07-07 · Current scope: full Great Britain road-link risk outputs.</p>
+<p>This page is the overview argument. Every claim links down to the page that owns the evidence. For current model figures at render time, see <a href="./project/model-status.html">Model Status</a>.</p>
 </div>
-<section id="traffic" class="level3">
-<h3 class="anchored" data-anchor-id="traffic">Traffic</h3>
-<p><img src="assets/exposure_map.jpg" class="img-fluid"></p>
-</section>
-<section id="collision-risk" class="level3">
-<h3 class="anchored" data-anchor-id="collision-risk">Collision risk</h3>
-<p><img src="assets/collision-map.png" class="img-fluid"></p>
-</section>
-<section id="what-this-project-is" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-project-is">What this project is</h2>
-<p>Open Road Risk is an open-source pipeline for estimating an <a href="./methodology/modelling.html">exposure-adjusted collision risk model</a> across the road network.</p>
-<p>The core idea is simple:</p>
+<p>A road-risk map can look deceptively simple. Colour the network from low to high, give every segment a percentile, and let people find the places worth looking at.</p>
+<p>Underneath that interface sits a much harder question: <strong>what do we mean by risk?</strong></p>
+<p>A road can carry many collisions because it is dangerous, because it is busy, because it is long, or because of some combination of the three. A model that does not separate those interpretations can produce a technically valid prediction that is confidently misread.</p>
+<p>Open Road Risk is an open-data pipeline for estimating exposure-adjusted collision risk across the Great Britain road network. Building it has been less an exercise in model selection than a long argument about what is being estimated, what the data can support, and where a ranking stops being evidence and starts being a decision.</p>
+<section id="start-with-the-estimand" class="level2">
+<h2 class="anchored" data-anchor-id="start-with-the-estimand">Start with the estimand</h2>
+<p>Three quantities appear constantly in road-safety analysis, and they are not interchangeable.</p>
+<p><strong>Observed collision count</strong> — how many collisions were recorded on this road? <strong>Exposure-adjusted rate</strong> — how many occurred per unit of traffic and length? <strong>Modelled expected count</strong> — how many does a model expect, given exposure and the character of the road and its surroundings?</p>
+<p>The distinction is not academic. A road with ten collisions per million vehicle-kilometres is a very different object from one with ten per hundred million. A short street with a high rate may contribute far less total burden than a long, heavily-travelled road with a lower one.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/essay-three-questions.png" class="img-fluid figure-img" alt="Bump chart showing five road links changing rank position across three estimands: observed count, exposure-adjusted rate, and observed versus expected."></p>
+<figcaption>The same five road links, ranked by three different definitions of risk. Nothing about the roads changes between the columns — only the question being asked. Illustrative values.</figcaption>
+</figure>
+</div>
+<p>The motorway is first by observed count and last by rate. The urban minor road is last by count and first by rate. Both orderings are correct. They answer different questions.</p>
+<p>Open Road Risk models the expected collision count for each road-link year. In simplified form:</p>
 <blockquote class="blockquote">
-<p>raw collision counts are misleading without traffic context.</p>
+<p>expected collisions = exposure baseline × contextual adjustment</p>
 </blockquote>
-<p>A road with ten reported collisions may be unusually dangerous if it carries very little traffic, or relatively safe if it carries very high traffic volumes. To compare roads fairly, collisions need to be interpreted relative to <strong>exposure</strong>.</p>
-<p>This project combines open road network, traffic, and collision datasets to estimate risk at road-link level and support network screening, corridor comparison, and safety analysis.</p>
-<p>The QGIS-ready full-GB link-level GeoPackage export is available as a public <a href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">Kaggle Dataset</a>. It contains one row per OS Open Roads link with geometry, estimated exposure, observed injury-collision summaries, and modelled risk ranking fields.</p>
-<p>Open Road Risk is an independent personal research and software project. It uses public/open datasets and is not produced by, endorsed by, or representative of DfT, National Highways, DVSA, Ordnance Survey, Office for National Statistics, or any other public body.</p>
-<p><img src="assets/collision_exposure_comaprisons.jpg" class="img-fluid"></p>
+<p>Exposure is built from estimated traffic, link length and time. The contextual adjustment uses features describing the road, its position in the network, the surrounding area and the year. The full specification is on the <a href="./methodology/modelling.html">modelling methodology</a> page.</p>
+<p>One detail matters more than any other, and it is easy to miss: the published percentile ranks links by their <strong>mean predicted collision count</strong>. It is an expected-burden ranking. It is not a measure of intrinsic danger with traffic and length removed.</p>
+<p>A busy urban A road can rank highly because a great many vehicles travel along it, even if its collision rate is unremarkable. That does not make the prediction wrong. It changes what the output is for.</p>
+<p>A mature public analytical product would publish several explicitly labelled views rather than one: expected burden, crude exposure-adjusted rate, observed-to-expected history, and rankings within comparable road families. No single ordering answers every road-safety question, and choosing one silently turns an analytical decision into a product default.</p>
 </section>
-<section id="why-this-matters" class="level2">
-<h2 class="anchored" data-anchor-id="why-this-matters">Why this matters</h2>
-<p>Most roads do not have direct traffic measurements.</p>
-<p>Official traffic counts are concentrated on major roads and sampled count points, while collision records exist across the network. That creates a common problem in road safety analysis:</p>
-<ul>
-<li>collisions are observed widely</li>
-<li>exposure is only partially observed</li>
-<li>direct comparison is therefore difficult</li>
-</ul>
-<p>This pipeline addresses that by estimating traffic where it is not measured and then modelling collision risk in relation to that estimated exposure.</p>
+<section id="exposure-is-necessary-and-partly-modelled" class="level2">
+<h2 class="anchored" data-anchor-id="exposure-is-necessary-and-partly-modelled">Exposure is necessary, and partly modelled</h2>
+<p>Exposure is central to the whole analysis, and it is not observed.</p>
+<p>Official traffic counts are concentrated at monitoring locations on major roads. Collision records, by contrast, exist across the entire network. That asymmetry is the structural problem the pipeline exists to solve: collisions are observed widely, exposure is observed narrowly, and fair comparison needs both.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/essay-exposure-propagation.png" class="img-fluid figure-img" alt="Two panels: a schematic road network with traffic counters only on major roads, and a five-step chain showing exposure uncertainty flowing into the published ranking."></p>
+<figcaption>Traffic counters sit on a small, non-random slice of the network, but every link needs an exposure value before its risk can be compared — and the resulting uncertainty travels all the way to the published ranking.</figcaption>
+</figure>
+</div>
+<p>The project handles this in two stages: a model of annual average daily traffic at monitored count points, and a transfer of that information across the wider network. Details are on the <a href="./data-sources/aadf.html">AADF traffic counts</a> page, and the decision to train only on directly counted observations — rather than on the published interpolations — is recorded in its <a href="./investigations/aadf-counted-only-filter.html">own investigation</a>.</p>
+<p>The spatial holdout result is genuine evidence that the model generalises beyond nearby observations. It is not an accuracy guarantee. Monitoring locations are not a random sample of roads; major roads are far better represented than minor and local ones. Error should be expected to grow with distance from a counter and in road families where counters are scarce — which is to say, precisely where the model is doing the most work.</p>
+<p>This produces a methodological principle worth stating plainly:</p>
+<blockquote class="blockquote">
+<p>Uncertainty in an upstream model does not disappear when its prediction becomes an input to a downstream one.</p>
+</blockquote>
+<p>At present that uncertainty is not propagated. The exposure estimate enters the collision model as though it were measured, and the published ranking carries no interval. Quantifying that propagation — or at minimum reporting performance by distance from counters and by road class — is the single largest outstanding correction, and it is tracked in <a href="./future-work.html">Future Work</a>.</p>
+<p><img src="assets/exposure_map.jpg" class="img-fluid" alt="Modelled traffic exposure across the Great Britain road network."></p>
 </section>
-<section id="site-guide" class="level2">
-<h2 class="anchored" data-anchor-id="site-guide">Site guide</h2>
-<p>The site is organised around the logic of the pipeline:</p>
+<section id="sparse-counts-need-count-model-thinking" class="level2">
+<h2 class="anchored" data-anchor-id="sparse-counts-need-count-model-thinking">Sparse counts need count-model thinking</h2>
+<p>The outcome is extremely sparse. The overwhelming majority of road-link years contain no recorded collision at all.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/essay-sparsity.png" class="img-fluid figure-img" alt="Grid of squares, the vast majority empty, with a small scattering of filled squares representing link-years with a recorded collision."></p>
+<figcaption>Each square is one road link in one year, at roughly the observed positive rate. Simulated for illustration.</figcaption>
+</figure>
+</div>
+<p>That shape drives most of the modelling decisions. Ordinary least squares can estimate a conditional mean under some assumptions, but it is a poor default here: it will happily predict negative collisions, it assumes an error structure the data does not have, and its loss function concentrates attention on the rare high-count tail rather than the zero-heavy bulk where the decision-relevant signal lives.</p>
+<p>Poisson regression is the natural starting point, because it models non-negative counts directly. Its central assumption is that conditional variance equals conditional mean — and road collision data routinely violate it. Differences between roads, unobserved behaviour, weather and temporary conditions all create more variance than a Poisson model expects. The literature on this is summarised on the <a href="./literature/crash-frequency-models.html">crash frequency models</a> page.</p>
+<p>Rather than inherit that conclusion, the project tested it. A <a href="./investigations/zero-calibration.html">zero-calibration diagnostic</a> simulated from the fitted model and compared the number of zeros it produced against the number actually observed. The Poisson specification fell short by a small but overwhelmingly significant margin; a negative binomial closed the gap without any zero-inflation component.</p>
+<p>That is good evidence for promoting negative binomial to the next comparison. It is not evidence that it has already won. Matching the zero count tests one part of the distribution. The models still need comparing on the same held-out rows, using count deviance, calibration across the range, ranking behaviour and operational selection criteria.</p>
+</section>
+<section id="one-headline-metric-is-not-enough" class="level2">
+<h2 class="anchored" data-anchor-id="one-headline-metric-is-not-enough">One headline metric is not enough</h2>
+<p>The repository reports results from more than one modelling surface — an interpretable GLM on a downsampled table, and a gradient-boosted model on the full population with its natural zero rate.</p>
+<p>It is tempting to read those two numbers against each other. It would be misleading. They are computed on different populations, with different zero rates, different splits and different null models. The gap between them is mostly a property of the evaluation surfaces, not of the models.</p>
+<p>A fair comparison would require one frozen link-year dataset, one shared train/test definition, the same exposure assumptions, the same null model, the same metric implementation, and results broken out by road family and geography. This sounds procedural. It is fundamental: model comparison only means anything when the evaluation surface is held constant.</p>
+<p>The same discipline applies to knowing when <em>not</em> to adopt something. The project sets adoption thresholds before running a test, using a <a href="./investigations/rank-stability.html">rank-stability harness</a> to establish how much of a metric movement is simply random-seed variation. One candidate feature set produced a real, consistently measured improvement that nonetheless sat below that threshold, and was <a href="./investigations/temporal-descriptors.html">parked rather than shipped</a>.</p>
+</section>
+<section id="spatial-validation-changes-the-question" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-validation-changes-the-question">Spatial validation changes the question</h2>
+<p>Random train–test splits are optimistic for spatial data. Neighbouring road links share traffic, design, network function and surrounding context. Holding out individual links stops repeated years of the same link leaking across the split — the obvious leak — but adjacent links can still make the test set unusually familiar.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/essay-validation-questions.png" class="img-fluid figure-img" alt="Three panels showing a random spatial split, a buffered spatial block holdout, and a leave-last-year-out temporal split."></p>
+<figcaption>Three different generalisation questions, and three different validation designs. Only the first is answered by a conventional split.</figcaption>
+</figure>
+</div>
+<p>Three questions need keeping apart: can the model predict another observation in a familiar area, can it predict a genuinely new place, and can it predict a future year? They need different schemes, and the <a href="./literature/spatial-methods-and-network-risk.html">spatial methods</a> literature is clear that the answers differ substantially.</p>
+<p>Performance will very probably fall under the harder tests. That decline is not a failure — it is the measurement. It tells you how far the model can safely travel from the context it was trained in, which is exactly what a screening tool needs to state.</p>
+</section>
+<section id="rankings-are-decisions-not-just-predictions" class="level2">
+<h2 class="anchored" data-anchor-id="rankings-are-decisions-not-just-predictions">Rankings are decisions, not just predictions</h2>
+<p>Look at the composition of the current top 1% and it is dominated by A roads and by urban links. That is entirely plausible for an expected-burden ranking: busy, long, urban roads carry more traffic and contribute a larger share of total collisions. The current breakdown is on the <a href="./analysis/model-results.html">model results</a> page.</p>
+<p><img src="assets/collision-map.png" class="img-fluid" alt="Modelled collision risk across the Great Britain road network."></p>
+<p>But composition is not evidence of value. It describes the portfolio that was selected; it says nothing about how much the model added. To establish that, the ranking needs comparing against a deliberately naive alternative:</p>
 <ul>
-<li><strong><a href="./what-a-road-risk-model-predicts.html">Start here: what does a road-risk model actually predict?</a></strong> — the overview argument: estimand, exposure, evaluation and limits</li>
-<li><strong><a href="./project/project-overview.html">Project Overview</a></strong> — overview of repository layout, modelling stages, and current status</li>
-<li><strong><a href="./data-sources/index.html">Data Sources</a></strong> — what each dataset contains and what it can and cannot tell us</li>
-<li><strong><a href="./methodology/methodology-index.html">Methodology</a></strong> — how sources are joined and transformed into modelling inputs</li>
-<li><strong><a href="./analysis/eda-collisions.html">Analysis</a></strong> — model behaviour, outputs, and exploratory evaluation</li>
-<li><strong><a href="./future-work.html">Future Work</a></strong> — research questions and extensions the pipeline can support</li>
+<li>How much of the top 1% would an exposure-only ranking have selected anyway?</li>
+<li>How many subsequent collisions does each approach capture?</li>
+<li>Does the model add anything <em>within</em> comparable road families?</li>
+<li>How stable is the selected set between years and between estimators?</li>
+<li>Which links appear only because of contextual features?</li>
 </ul>
-<p>A good place to start is with the source pages for <a href="./data-sources/stats19.html">STATS19 collision data</a>, <a href="./data-sources/aadf.html">AADF traffic counts</a>, and <a href="./data-sources/webtris.html">WebTRIS sensor data</a>, then move to the methodology pages on <a href="./methodology/data-joining.html">joining road safety datasets</a> and <a href="./methodology/feature-engineering.html">feature engineering</a>.</p>
-<p>For possible extensions, <a href="./future-work.html">Future Work</a> collects research questions that are not in the active backlog but are natural next uses of the same road-link, exposure, and collision-risk infrastructure.</p>
+<p>That exposure-only baseline has not yet been run, and it is the cheapest informative experiment available to the project.</p>
+<p>The choice of estimator matters just as much. An <a href="./methodology/empirical-bayes-shrinkage.html">empirical Bayes</a> adjustment — which combines the model’s expectation with observed history and shrinks unstable observations — produced a top-1% list that shared well under half its membership with the unadjusted ranking on an earlier England-scale run.</p>
+<p>Neither is wrong. They answer subtly different questions. But a difference that large belongs in the model contract, stated prominently, rather than sitting as an implementation detail that a downstream user has no way to see.</p>
+</section>
+<section id="literature-should-guide-interpretation-not-supply-a-ceiling" class="level2">
+<h2 class="anchored" data-anchor-id="literature-should-guide-interpretation-not-supply-a-ceiling">Literature should guide interpretation, not supply a ceiling</h2>
+<p>Road-safety research consistently finds that collisions arise from interacting behavioural, environmental, vehicle and infrastructure factors. A model built mainly from road and area characteristics necessarily omits the transient ones: driver behaviour, weather, momentary traffic conditions, individual interactions.</p>
+<p>Limited predictive power is therefore expected, and chasing it with more features is more likely to import leakage than signal — a lesson this project learned the expensive way, and <a href="./analysis/model-results.html">documented rather than quietly corrected</a>.</p>
+<p>That expectation should not harden into a fixed numerical ceiling. Metrics from binary crash prediction, causal studies and link-year count models are not interchangeable, and a result should not be declared impossible because it exceeds a number reported for a different task. The literature is most useful here as a guide to omitted variables, a warning about spatially optimistic validation, a source of plausible mechanisms and a framework for external checks — which is how the <a href="./literature/validation-and-metrics.html">evidence register</a> treats it.</p>
+</section>
+<section id="what-credible-external-validation-would-look-like" class="level2">
+<h2 class="anchored" data-anchor-id="what-credible-external-validation-would-look-like">What credible external validation would look like</h2>
+<p>Correlation with an independent road-safety rating would be useful convergent evidence. It would not, on its own, validate the model — the two systems are estimating different things.</p>
+<p>A serious programme has layers:</p>
+<ol type="1">
+<li><strong>Internal correctness</strong> — joins, schemas, feature timing, reproducible runs.</li>
+<li><strong>Statistical adequacy</strong> — calibration, residuals, spatial and temporal transfer.</li>
+<li><strong>Convergent validity</strong> — agreement with independent engineering assessment.</li>
+<li><strong>Predictive validity</strong> — do highly-ranked links see more collisions in held-out years?</li>
+</ol>
+<p>Layers 1 and 2 are within the project’s control and partly done. Layers 3 and 4 require independent data access or a partner, which makes them the genuine bottleneck. Every internal diagnostic compares the model to itself: to other seeds, to another estimator, to its own residuals. None of them can detect an error shared across all of those.</p>
+</section>
+<section id="the-next-experiment" class="level2">
+<h2 class="anchored" data-anchor-id="the-next-experiment">The next experiment</h2>
+<p>The most informative next step is not another feature. It is a common evaluation surface.</p>
+<p>On one frozen dataset with shared holdouts, compare an exposure-only baseline, a Poisson GLM, a negative binomial GLM, the boosted model and the empirical Bayes alternative — scoring all of them with the same deviance, the same calibration checks, top-k capture, lift over exposure alone, ranking stability and performance by geography and road family. Adoption criteria defined before the results are seen.</p>
+<p>One programme, several currently-tangled questions answered at once: Poisson versus negative binomial, interpretable model versus boosting, global prediction versus empirical Bayes, and model signal versus exposure alone.</p>
+</section>
+<section id="a-model-is-more-than-its-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="a-model-is-more-than-its-algorithm">A model is more than its algorithm</h2>
+<p>The clearest lesson from this project is that credibility does not come from model complexity.</p>
+<p>It comes from being precise about the quantity being predicted, honest about where uncertainty enters, disciplined about evaluation surfaces, and explicit about how a ranking should and should not be used.</p>
+<p>A useful road-risk model helps identify candidates for investigation. It is not an engineering diagnosis, not a causal explanation, and not a statement that one road is inherently more dangerous than another.</p>
+<p>That distinction is not a disclaimer bolted on after the modelling.</p>
+<p>It is part of the model.</p>
+<hr>
+</section>
+<section id="where-to-go-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-to-go-next">Where to go next</h2>
+<ul>
+<li><a href="./project/model-status.html">Model Status</a> — current figures, read from the model artefacts at render time</li>
+<li><a href="./analysis/model-results.html">Model Results</a> — performance, residuals, risk distribution and maps</li>
+<li><a href="./investigations/index.html">Investigations</a> — diagnostics and negative results, including what was tested and rejected</li>
+<li><a href="./methodology/methodology-index.html">Methodology</a> — how the sources become modelling inputs, including the <a href="./methodology/data-joining.html">collision-to-link join</a></li>
+<li><a href="./literature/literature-index.html">Literature</a> — what the field expects, and where this project departs from it</li>
+<li><a href="./future-work.html">Future Work</a> — the open questions, in rough order of evidence gained per unit of effort</li>
+</ul>
+<div class="small text-muted">
+<p>Open Road Risk is an independent personal research and software project. It uses public and open datasets and is not produced by, endorsed by, or representative of DfT, National Highways, Ordnance Survey, the Office for National Statistics or any other public body. The figures on this page are either read from model artefacts at render time or linked to the page that owns them; illustrative figures are labelled as such.</p>
+</div>
 
 
 </section>

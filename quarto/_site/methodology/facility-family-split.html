@@ -149,6 +149,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -180,6 +184,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -391,6 +399,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -583,7 +595,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tr class="odd">
 <td><strong>Total</strong></td>
 <td>exactly one family per link</td>
-<td style="text-align: right;">2,167,557</td>
+<td style="text-align: right;">previous smaller build</td>
 <td style="text-align: right;">233,604</td>
 </tr>
 </tbody>
@@ -974,7 +986,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>pseudo-R2 mean across 5 seeds</td>
-<td style="text-align: right;">0.323498</td>
+<td style="text-align: right;">about 0.32</td>
 </tr>
 <tr class="even">
 <td>pseudo-R2 std across 5 seeds</td>
@@ -1011,7 +1023,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="caveats">7. Caveats</h2>
 <section id="imputed-ruc-for-about-1k-active-links" class="level3">
 <h3 class="anchored" data-anchor-id="imputed-ruc-for-about-1k-active-links">7.1 Imputed RUC for about 1k active links</h3>
-<p>The RUC fill assigned about 336k links with <code>ruc_imputed = True</code>. Most are outside <code>road_link_annual.parquet</code>. The practical rural-default fallback impact is 993 active modelled links, about 0.05% of the 2.17M-link network. These links land in Other-Rural. The impact is small, but output documentation should keep <code>ruc_imputed</code> and <code>ruc_fill_method</code> visible for audit.</p>
+<p>The RUC fill assigned about 336k links with <code>ruc_imputed = True</code>. Most are outside <code>road_link_annual.parquet</code>. In the previous smaller diagnostic run, the practical rural-default fallback impact was 993 active modelled links, about 0.05% of that network. These links land in Other-Rural. The impact is small, but output documentation should keep <code>ruc_imputed</code> and <code>ruc_fill_method</code> visible for audit.</p>
 </section>
 <section id="motorway-family-size" class="level3">
 <h3 class="anchored" data-anchor-id="motorway-family-size">7.2 Motorway family size</h3>
@@ -1031,7 +1043,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </section>
 <section id="glm-unchanged-xgboost-only-split" class="level3">
 <h3 class="anchored" data-anchor-id="glm-unchanged-xgboost-only-split">7.6 GLM unchanged, XGBoost-only split</h3>
-<p>Per-family GLM is not implemented in v1. The current global GLM remains a diagnostic baseline; the clean full GB run sits around pseudo-R² 0.566 on its 1:3 zero-collision downsampled in-sample GLM surface. Per-family GLM is a v2 extension if interpretability by family becomes important.</p>
+<p>Per-family GLM is not implemented in v1. The current global GLM remains a diagnostic baseline; the current full-GB run sits around pseudo-R² 0.602 on its 1:3 zero-collision downsampled in-sample GLM surface. Per-family GLM is a v2 extension if interpretability by family becomes important.</p>
 <hr>
 </section>
 </section>

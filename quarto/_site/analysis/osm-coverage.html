@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>OSM Feature Coverage Diagnostic – Open Road Risk</title>
 <style>
@@ -114,6 +114,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -145,6 +149,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
         <li>
     <a class="dropdown-item" href="../literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../literature/literature-pipeline-alignment.html">
@@ -356,6 +364,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -442,38 +454,41 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 
 <section id="overall-coverage" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="overall-coverage"><span class="header-section-number">1</span> Overall coverage</h2>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This OSM coverage diagnostic records a previous smaller-network run and has not yet been regenerated for the current 3.94M-link full-GB rebuild. Treat the coverage percentages below as historical until this page is rerendered from a fresh OSM-enriched <code>network_features.parquet</code>.</p>
+</div>
+</div>
 <table class="caption-top table">
 <thead>
 <tr class="header">
 <th style="text-align: left;">column</th>
-<th style="text-align: right;">n_links</th>
-<th style="text-align: right;">n_filled</th>
 <th style="text-align: right;">pct_coverage</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">is_unpaved</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">350597</td>
 <td style="text-align: right;">16.2</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">lanes</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">158217</td>
 <td style="text-align: right;">7.3</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">lit</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">201442</td>
 <td style="text-align: right;">9.3</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">speed_limit_mph</td>
-<td style="text-align: right;">2167557</td>
-<td style="text-align: right;">1223142</td>
 <td style="text-align: right;">56.4</td>
 </tr>
 </tbody>

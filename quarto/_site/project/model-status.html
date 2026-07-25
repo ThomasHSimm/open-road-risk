@@ -134,6 +134,10 @@ background-size: cover;
     <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -380,6 +384,10 @@ background-size: cover;
     <a class="dropdown-item" href="../outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -456,59 +464,6 @@ background-size: cover;
 <p>Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.</p>
 </div>
 <p>This section provides a live view of the modelling pipeline’s performance and status, sourced directly from the latest validation artefacts, provenance records, and validated full-GB rebuild counts.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Component</th>
-<th>Current status</th>
-<th>Latest evidence</th>
-<th>Caveat</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Stage 1a: AADT model</td>
-<td>Implemented</td>
-<td>Local R²: 0.821, Spatial R²: 0.777, N=17412</td>
-<td>Estimates traffic where direct counts are unavailable</td>
-</tr>
-<tr class="even">
-<td>Full GB collision rebuild</td>
-<td>Validated</td>
-<td>39,412,990 link-years; 1,148,857 processed STATS19 rows; 1,145,198 retained snapped collisions; 945,373 positive link-years</td>
-<td>Row counts are for the 2015-2024 GB rebuild</td>
-</tr>
-<tr class="odd">
-<td>Stage 2: GLM collision-risk model</td>
-<td>Implemented</td>
-<td>Pseudo-R²: 0.505; rows: 3,781,492</td>
-<td>Interpretable exposure-adjusted baseline on a 1:3 zero-collision sampled surface</td>
-</tr>
-<tr class="even">
-<td>Stage 2: XGBoost collision-risk model</td>
-<td>Implemented</td>
-<td>Pseudo-R²: 0.360; zero policy: full-zero; train/test rows: 31,530,390/7,882,600</td>
-<td>Flexible ranking model; check calibration before presenting raw predicted counts as expected counts</td>
-</tr>
-<tr class="odd">
-<td>Final scored output</td>
-<td>Implemented</td>
-<td>3,941,299 scored links; 531,442 links with retained collisions; 39,413 top-1% links</td>
-<td>Current scoring grain is one row per road link, not link-year</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li><strong>Rank-stability provenance timestamp</strong>: 2026-05-03T13:25:09.900667+00:00</li>
-<li><strong>Rank-stability Git SHA</strong>: <code>301a766b</code></li>
-<li><strong>Sources read</strong>: collision_metrics.json, risk_scores.parquet, rank_stability_provenance.json, aadt_validation_summary.parquet</li>
-</ul>
 <p>“These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”</p>
 
 

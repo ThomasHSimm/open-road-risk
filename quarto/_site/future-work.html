@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Exposure-adjusted road collision risk modelling for Northern and Central England">
+<meta name="description" content="Exposure-adjusted road collision risk modelling for Great Britain">
 
 <title>Future Work for Open Road Risk – Open Road Risk</title>
 <style>
@@ -134,6 +134,10 @@ background-size: cover;
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./what-a-road-risk-model-predicts.html"> 
+<span class="menu-text">Start Here</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-project" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Project</span>
@@ -165,6 +169,10 @@ background-size: cover;
         <li>
     <a class="dropdown-item" href="./literature/literature-evidence-register.html">
  <span class="dropdown-text">Literature evidence register</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./project/ai-assisted-domain-knowledge.html">
+ <span class="dropdown-text">AI-assisted literature review</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./literature/literature-pipeline-alignment.html">
@@ -376,6 +384,10 @@ background-size: cover;
     <a class="dropdown-item" href="./outputs/top-risk-map.html">
  <span class="dropdown-text">Top-risk map</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/">
+ <span class="dropdown-text">QGIS GeoPackage (Kaggle)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -439,6 +451,10 @@ background-size: cover;
    
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#operational-improvements" id="toc-operational-improvements" class="nav-link" data-scroll-target="#operational-improvements">Operational improvements</a>
+  <ul class="collapse">
+  <li><a href="#precompute-key-figure-map-layers" id="toc-precompute-key-figure-map-layers" class="nav-link" data-scroll-target="#precompute-key-figure-map-layers">Precompute key-figure map layers</a></li>
+  </ul></li>
   <li><a href="#scope-note" id="toc-scope-note" class="nav-link" data-scroll-target="#scope-note">Scope note</a></li>
   <li><a href="#theme-1-alternative-ranking-targets" id="toc-theme-1-alternative-ranking-targets" class="nav-link" data-scroll-target="#theme-1-alternative-ranking-targets">Theme 1: Alternative ranking targets</a>
   <ul class="collapse">
@@ -484,6 +500,17 @@ background-size: cover;
 <p>Entries are not ranked against each other. They’re organised by theme.</p>
 <hr>
 </section>
+<section id="operational-improvements" class="level2">
+<h2 class="anchored" data-anchor-id="operational-improvements">Operational improvements</h2>
+<section id="precompute-key-figure-map-layers" class="level3">
+<h3 class="anchored" data-anchor-id="precompute-key-figure-map-layers">Precompute key-figure map layers</h3>
+<p><strong>What it is:</strong> Move the 10 km grid aggregation and reporting-area summary aggregation out of <code>quarto/outputs/key-figures.qmd</code> into a standalone script that writes compact GeoJSON/Parquet web layers before Quarto render.</p>
+<p><strong>Why it’s useful:</strong> The key-figure page currently rebuilds map layers during render, which is convenient but slow after a full GB rebuild. Precomputing the layers would make site renders faster and would give the map outputs explicit provenance alongside the model artefacts.</p>
+<p><strong>Guardrails:</strong> Keep the 10 km grid as the primary public geography. Treat named reporting areas as a simplified display geography only, and continue to publish risk percentiles/deciles rather than raw predicted counts unless current-run calibration diagnostics support count interpretation.</p>
+<p><strong>Good starting point:</strong> Mirror the style of <code>scripts/build_context_web.py</code>: load <code>data/models/risk_scores.parquet</code>, join Open Roads geometry, aggregate the 10 km grid and <code>reporting_areas_gb.geojson</code>, then write web-ready layers plus a manifest consumed directly by <code>key-figures.qmd</code>.</p>
+<hr>
+</section>
+</section>
 <section id="scope-note" class="level2">
 <h2 class="anchored" data-anchor-id="scope-note">Scope note</h2>
 <p>The pipeline from raw DfT / OS / OSM data through to modelled outputs at OS Open Roads link-year grain is reusable infrastructure. The research questions below illustrate what that substrate supports beyond the headline risk ranking. Reproducibility documentation and contribution paths are in active development in the repository backlog.</p>
@@ -517,7 +544,7 @@ background-size: cover;
 <h3 class="anchored" data-anchor-id="fatal-only-collision-modelling">Fatal-only collision modelling</h3>
 <p><strong>What it is:</strong> Train a separate Stage 2 model with <code>fatal_count</code> as target rather than all-injury <code>collision_count</code>. Either a direct Poisson/NB fit on fatal counts, or a hurdle model separating “any fatal?” from “how many fatal given any?”.</p>
 <p><strong>Why it’s interesting:</strong> Fatal collisions are substantively different from slight-injury collisions — different mechanisms (speed, vehicle mass, occupant age), different road environments (higher-speed roads disproportionately), different policy implications. A fatal-only model would identify a different set of high-risk links and could be used as a fatality-focused screening layer alongside the main ranking. The methodology page notes this is not yet implemented.</p>
-<p><strong>Why not now:</strong> Fatal counts are sparse at link grain — 7,402 fatals across 2.17M links over 10 years means most links have zero fatals even over the full window. Direct modelling will be noisy without shrinkage or hierarchical structure. Better approached after EB shrinkage is in place (see <code>TODO.md</code> → Queued tasks) so sparse fatal counts benefit from shrinkage toward facility-family averages, and after facility-family split so motorway-specific fatal patterns don’t blur with unclassified-road patterns.</p>
+<p><strong>Why not now:</strong> Fatal counts are sparse at link grain. Even across the full GB link universe over 10 years, most links have zero fatals. Direct modelling will be noisy without shrinkage or hierarchical structure. Better approached after EB shrinkage is in place (see <code>TODO.md</code> → Queued tasks) so sparse fatal counts benefit from shrinkage toward facility-family averages, and after facility-family split so motorway-specific fatal patterns don’t blur with unclassified-road patterns.</p>
 <p><strong>Good starting point for someone else:</strong> - After EB shrinkage and facility-family split are in place, add <code>fatal_count</code> target as a parallel Stage 2 model. - Consider a hurdle approach: fit “P(any fatal in link-year)” as a logistic model, then “E(fatals | any fatal)” as a truncated Poisson. Avoids zero-inflation problems at high road-class levels. - Output a parallel <code>fatal_risk_percentile</code> alongside the main ranking. Compare which links appear in both top-1% lists vs which are divergent.</p>
 <p><strong>Related:</strong> Severity-aware ranking (above) is the composite alternative — fatal-only is the purist version of the same idea.</p>
 <hr>
