@@ -137,17 +137,18 @@ def f01_three_questions(out):
                 zorder=4,
             )
 
-    for x, (_, label) in zip(xs, keys, strict=True):
+    xs_labels = [-0.35, 1, 2.35]
+    for x, (_, label) in zip(xs_labels, keys, strict=True):
         ax.text(
             x,
             0.30,
             label,
             ha="center",
             va="center",
-            fontsize=11,
+            fontsize=9.5,
             color=NAVY,
             fontweight="bold",
-            linespacing=1.5,
+            linespacing=1.0,
         )
 
     ax.set_xlim(-1.35, 3.35)

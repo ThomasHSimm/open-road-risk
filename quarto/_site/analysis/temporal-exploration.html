@@ -502,7 +502,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <p>This notebook explores the temporal dimensions of traffic flow using WebTRIS sensor data. We analyze how traffic volumes and compositions change across different months and between weekdays and weekends.</p>
 <p>The goal is to determine which temporal patterns are link-specific (requiring granular modelling) and which are stable enough to be treated as global constants.</p>
 <p>We investigate: 1. <strong>Monthly Seasonality</strong>: High-season vs.&nbsp;low-season flow amplitudes. 2. <strong>Weekday/Weekend Ratios</strong>: Commuter-heavy vs.&nbsp;leisure-heavy road signatures. 3. <strong>Time-of-Day Intensity</strong>: The ratio of daytime to nighttime flow. 4. <strong>HGV Mixing</strong>: How vehicle composition shifts across these same axes.</p>
-<div id="74c14fe4" class="cell">
+<div id="c60133e3" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
@@ -530,7 +530,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <h2 data-number="1" class="anchored" data-anchor-id="variance-analysis-weekdayweekend"><span class="header-section-number">1</span> Variance Analysis (Weekday/Weekend)</h2>
 <p>We begin by testing the variance of the weekday/weekend ratio at the individual sensor level. If the ratio is stable across different sites within the same month, it suggests the pattern is universal rather than link-specific.</p>
 <p>We start with the strongest test: whether different sensors in the same month give similar weekday/weekend ratios. If they do, the descriptor has no link-specific variation to model.</p>
-<div id="9569ac7e" class="cell">
+<div id="f435b5c3" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a larger sample of raw parquets to test variance</span></span>
@@ -563,7 +563,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <section id="monthly-seasonality-analysis" class="level2" data-number="2">
 <h2 data-number="2" class="anchored" data-anchor-id="monthly-seasonality-analysis"><span class="header-section-number">2</span> Monthly Seasonality Analysis</h2>
 <p>We now switch to the <code>temporal_profiles.parquet</code>, which aggregates data at the road corridor grain and calculates seasonal indices.</p>
-<div id="8f692600" class="cell">
+<div id="e94e4aaa" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>profiles <span class="op">=</span> pd.read_parquet(TEMPORAL_PROFILES)</span>
@@ -583,7 +583,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <section id="seasonal-index-distribution" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="seasonal-index-distribution"><span class="header-section-number">2.1</span> Seasonal Index Distribution</h3>
 <p>The seasonal index is the monthly flow divided by the annual average. We want to see if different road types have different seasonal “signatures.”</p>
-<div id="db470318" class="cell">
+<div id="e02c9eb2" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
@@ -621,7 +621,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <h2 data-number="3" class="anchored" data-anchor-id="weekday-vs.-weekend-profiles"><span class="header-section-number">3</span> Weekday vs.&nbsp;Weekend Profiles</h2>
 <p>We investigate the stability of the weekday/weekend ratio across the network.</p>
 <p>The Variance Analysis section used raw 2023 chunks at site grain. This section uses the corridor-level aggregations from temporal_profiles.parquet, confirming the same result holds at corridor grain.</p>
-<div id="19f2296b" class="cell">
+<div id="7ac0c131" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">6</span>))</span>
@@ -655,7 +655,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <section id="time-of-day-intensity-day-vs.-night" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="time-of-day-intensity-day-vs.-night"><span class="header-section-number">4</span> Time-of-Day Intensity (Day vs.&nbsp;Night)</h2>
 <p>Using the <code>webtris_clean.parquet</code> dataset, we examine the <code>core_overnight_ratio</code>. This measures the daytime flow per hour relative to the nighttime flow per hour.</p>
-<div id="e7513727" class="cell">
+<div id="024820d4" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>webtris_clean <span class="op">=</span> pd.read_parquet(WEBTRIS_CLEAN)</span>
@@ -680,7 +680,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <section id="heavy-goods-vehicle-hgv-composition" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="heavy-goods-vehicle-hgv-composition"><span class="header-section-number">5</span> Heavy Goods Vehicle (HGV) Composition</h2>
 <p>Finally, we look at how the large vehicle percentage fluctuates across the network.</p>
-<div id="c7ebe989" class="cell">
+<div id="aa910678" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
@@ -704,7 +704,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <section id="data-depth-check" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="data-depth-check"><span class="header-section-number">6</span> Data Depth Check</h2>
 <p>We verify the amount of data backing these observations to ensure statistical confidence.</p>
-<div id="61352b2b" class="cell">
+<div id="08174a6a" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Site counts per corridor</span></span>
