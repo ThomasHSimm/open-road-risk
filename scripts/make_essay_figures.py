@@ -124,7 +124,7 @@ def f01_three_questions(out):
         ax.text(
             2.09, ys[2], name, ha="left", va="center", fontsize=11.5, color=c, fontweight="bold"
         )
-        for x, y in zip(xs, ys):
+        for x, y in zip(xs, ys, strict=True):
             ax.text(
                 x,
                 y,
@@ -137,7 +137,7 @@ def f01_three_questions(out):
                 zorder=4,
             )
 
-    for x, (_, label) in zip(xs, keys):
+    for x, (_, label) in zip(xs, keys, strict=True):
         ax.text(
             x,
             0.30,
@@ -175,7 +175,6 @@ def f02_exposure(out):
 
     # --- left: schematic network with a handful of counters
     ax = fig.add_subplot(gs[0, 0])
-    rng = np.random.default_rng(11)
     # minor road mesh
     for v in np.linspace(0.08, 0.92, 9):
         ax.plot([0.04, 0.96], [v, v], color=LGREY, lw=1.1, zorder=1)
