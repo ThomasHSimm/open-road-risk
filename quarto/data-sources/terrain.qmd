@@ -90,15 +90,25 @@ The chunk below reports the as-built state directly from the feature table.
 #| code-fold: show
 
 import pandas as pd
+import pyarrow.parquet as pq
 from road_risk.config import _ROOT
 
 feat_path = _ROOT / "data/features/network_features.parquet"
-cols = ["grade_method", "mean_grade",
-        "is_bridge_proxy", "is_tunnel_proxy", "is_covered_proxy"]
+wanted = ["grade_method", "mean_grade",
+          "is_bridge_proxy", "is_tunnel_proxy", "is_covered_proxy"]
 
-feat = pd.read_parquet(feat_path, columns=[c for c in cols if c])
+# The grade / structure columns are absent from some full-GB rebuilds. Only
+# request what the current parquet actually carries so the read cannot raise.
+available = [c for c in wanted if c in pq.read_schema(feat_path).names]
+n_rows = pq.ParquetFile(feat_path).metadata.num_rows
+feat = (pd.read_parquet(feat_path, columns=available)
+        if available else pd.DataFrame(index=range(n_rows)))
 
-print(f"Links in feature table : {len(feat):,}\n")
+print(f"Links in feature table : {n_rows:,}\n")
+
+missing = [c for c in wanted if c not in available]
+if missing:
+    print("Not present in the current full-GB build: " + ", ".join(missing) + "\n")
 
 if "grade_method" in feat:
     print("grade_method distribution:")
