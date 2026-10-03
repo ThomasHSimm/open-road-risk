@@ -542,6 +542,9 @@ background-size: cover;
 <h2 class="anchored" data-anchor-id="one-headline-metric-is-not-enough">One headline metric is not enough</h2>
 <p>The repository reports results from more than one modelling surface — an interpretable GLM on a downsampled table, and a gradient-boosted model on the full population with its natural zero rate.</p>
 <p>It is tempting to read those two numbers against each other. It would be misleading. They are computed on different populations, with different zero rates, different splits and different null models. The gap between them is mostly a property of the evaluation surfaces, not of the models.</p>
+<blockquote class="blockquote">
+<p><strong>At render time</strong>, the GLM reports a pseudo-R² of <code>0.505</code> on its downsampled in-sample surface, and the gradient-boosted model <code>0.360</code> out-of-sample against the real zero rate. These are read from <code>collision_metrics.json</code> rather than typed, and they are not comparable to one another.</p>
+</blockquote>
 <p>A fair comparison would require one frozen link-year dataset, one shared train/test definition, the same exposure assumptions, the same null model, the same metric implementation, and results broken out by road family and geography. This sounds procedural. It is fundamental: model comparison only means anything when the evaluation surface is held constant.</p>
 <p>The same discipline applies to knowing when <em>not</em> to adopt something. The project sets adoption thresholds before running a test, using a <a href="./investigations/rank-stability.html">rank-stability harness</a> to establish how much of a metric movement is simply random-seed variation. One candidate feature set produced a real, consistently measured improvement that nonetheless sat below that threshold, and was <a href="./investigations/temporal-descriptors.html">parked rather than shipped</a>.</p>
 </section>
