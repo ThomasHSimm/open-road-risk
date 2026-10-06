@@ -8,13 +8,6 @@ format:
     toc-depth: 3
 ---
 
-::: {.callout-warning}
-## AADF coverage caveat — 2026-10-06
-Stage 1a AADF training data was limited to 52.0–55.2°N due to a stale ingest
-cache; figures on this page reflect that subset; a full-GB rebuild is in
-progress.
-:::
-
 Open Road Risk uses only publicly available UK data. The crash-frequency and
 network-safety literature is predominantly built on US state DOT inventories,
 New Zealand motorway sensor networks, or proprietary UK data sources that are
@@ -44,7 +37,7 @@ What is freely available at national England scale, and what is not.
 | Data domain | Available (open) | Not available / not open |
 |---|---|---|
 | Road network geometry | OS Open Roads: link geometry, road name, road classification, form of way | Lane count (sparse in OSM, absent in OS Open Roads); shoulder width; median type/width; lane marking |
-| Traffic volume (AADT) | DfT AADF count points (~14,200 processed count points; ~12,900 directly counted for Stage 1a training) | Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density |
+| Traffic volume (AADT) | DfT AADF count points (full GB: ~29,400 processed count points; ~26,100 directly counted for Stage 1a training) | Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density |
 | Traffic profiles | WebTRIS sensor data (National Highways motorways/A-roads) | Push-button pedestrian actuations; turning-movement counts; corridor-level time series without exposure |
 | Collision records | STATS19 injury collisions: location, severity, date, road class; record-level CF fields for pre-2024 context where recorded | PDO collisions; record-level RSF fields in the standard open download; post-event crash attributes as Stage 2 predictors |
 | Road geometry/context | OS Terrain 50 DEM (grade derivable); OS Open Roads topology | Degree of horizontal curvature (derivable from polyline geometry but not a RAMM/DOT-style inventory); driveway/access density; side slope; fixed objects |
@@ -376,7 +369,7 @@ its availability in the UK open data stack used by Open Road Risk.
 | Road link geometry | OS Open Roads | S1a / S2 | None — core data | All |
 | Road classification (motorway/A/B/minor) | OS Open Roads | S2 | None | Chengye, Wang, Michalaki, Al-Omari |
 | Form of way (slip road, roundabout, motorway) | OS Open Roads | S2 | Partial (not all distinctions visible) | Chengye (ramp detection) |
-| Annual observed traffic count (AADF) | DfT AADF (~12,900 directly counted training count points) | S1a | **Major** — direct-count locations are equivalent to only ~0.6% of the scored link count; rest estimated | All exposure papers |
+| Annual observed traffic count (AADF) | DfT AADF (full GB: ~26,100 directly counted training count points) | S1a | **Major** — direct-count locations are equivalent to only ~0.66% of the scored link count; rest estimated | All exposure papers |
 | Motorway/A-road traffic profiles | WebTRIS (National Highways) | S1b | **Major** — not nationally complete | Chengye, Wang, Roll |
 | Injury collision records | STATS19 | S2 | Partial — PDO absent; contributory factors excluded | All |
 | Terrain / elevation / grade | OS Terrain 50 DEM | S2 | Low-medium — derived, not fully validated | Huda, Wang, Chengye |

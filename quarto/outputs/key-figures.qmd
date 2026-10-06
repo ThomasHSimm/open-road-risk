@@ -13,21 +13,18 @@ execute:
 jupyter: python3
 ---
 
-::: {.callout-warning}
-## AADF coverage caveat — 2026-10-06
-Stage 1a AADF training data was limited to 52.0–55.2°N due to a stale ingest
-cache; figures on this page reflect that subset; a full-GB rebuild is in
-progress.
-:::
-
 ::: {.small .text-muted}
 Last updated: 2026-07-07 · Full GB output rebuild: 2026-07-04.
 :::
 
 Figures summarising the main outputs of the risk model, without the modelling
-detail. The map is *exposure-adjusted*: it reflects risk given traffic, not
-simply where the most collisions happen. Full methodology and diagnostics are
-on the [Stage 2 model](../analysis/model-results.qmd) page.
+detail. `risk_percentile` ranks each link by its **expected collision count
+(burden)** — the model's prediction includes the traffic-exposure offset, so a
+high-ranked link is one expected to carry many collisions, largely because it
+carries much traffic. It is **not** a ranking of collision rate per vehicle-km;
+the diagnostic maps below add that exposure-adjusted rate for comparison. Full
+methodology and diagnostics are on the
+[Stage 2 model](../analysis/model-results.qmd) page.
 
 For GIS users, the full link-level QGIS-ready GeoPackage is distributed through
 the public [Open Road Risk GB link risk + exposure GIS Kaggle Dataset](https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/).

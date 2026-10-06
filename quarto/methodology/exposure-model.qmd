@@ -16,12 +16,27 @@ execute:
 jupyter: python3
 ---
 
-::: {.callout-warning}
-## AADF coverage caveat — 2026-10-06
-Stage 1a AADF training data was limited to 52.0–55.2°N due to a stale ingest
-cache; figures on this page reflect that subset; a full-GB rebuild is in
-progress.
-:::
+```{python}
+#| label: stage1a-figures
+#| include: false
+import pandas as pd
+from road_risk.config import _ROOT as ROOT
+
+_aadf = pd.read_parquet(
+    ROOT / "data/processed/aadf/aadf_clean.parquet",
+    columns=["count_point_id", "estimation_method"],
+)
+N_AADF_POINTS = _aadf["count_point_id"].nunique()
+_counted = _aadf["estimation_method"].astype("string").str.strip() == "Counted"
+N_COUNTED_POINTS = _aadf.loc[_counted, "count_point_id"].nunique()
+N_DROPPED_POINTS = N_AADF_POINTS - N_COUNTED_POINTS
+PCT_DROPPED = 100 * N_DROPPED_POINTS / N_AADF_POINTS
+N_LINKS = 3_941_299
+PCT_COUNTED_OF_LINKS = 100 * N_COUNTED_POINTS / N_LINKS
+_val = pd.read_parquet(ROOT / "data/models/aadt_validation_summary.parquet").set_index("scheme")
+R2_LOCAL = float(_val.loc["local", "r2"])
+R2_SPATIAL = float(_val.loc["spatial", "r2"])
+```
 
 ## Why exposure estimation is necessary
 
@@ -31,12 +46,35 @@ collisions than a rural lane with 500. Risk is collisions per unit of traffic
 exposure, not collisions per road link.
 
 AADF (Annual Average Daily Flow) count points provide the measured exposure
-anchor for Stage 1a. The processed table contains ~14,200 count points across
-2015--2024, including DfT-estimated rows; the current training signal uses the
-~12,900 count points with at least one directly `Counted` observation. Most
-road links — particularly minor and unclassified roads — have no nearby count
-point. Stage 1a estimates AADT for all 3.94 million OS Open Roads links using
-the directly counted subset as training data.
+anchor for Stage 1a. The processed table contains
+`{python} f"{N_AADF_POINTS:,}"` count points across 2015--2024 (full GB),
+including DfT-estimated rows; the training signal uses the
+`{python} f"{N_COUNTED_POINTS:,}"` count points with at least one directly
+`Counted` observation. Most road links — particularly minor and unclassified
+roads — have no nearby count point. Stage 1a estimates AADT for all
+`{python} f"{N_LINKS:,}"` OS Open Roads links from the directly counted points.
+
+### Full-GB validation and transferability
+
+Stage 1a is trained on the full-GB AADF count network and validated with two
+holdouts: a random 20% count-point holdout (R² =
+`{python} f"{R2_LOCAL:.3f}"`, log scale) and a northern spatial-block holdout
+(R² = `{python} f"{R2_SPATIAL:.3f}"`). A separate transferability study
+(`results/aadf-transferability/` in the repository) scored the model on counted
+points by region under spatial holdout: no region has a mean signed log bias
+above 0.1, with **London the weakest region at +0.090 [95% CI 0.072, 0.109]**.
+
+An earlier version trained Stage 1a on a 52.0–55.2°N AADF subset caused by a
+stale ingest cache. On that subset an ablation favoured *dropping*
+latitude/longitude, because those features were being extrapolated far outside
+their training range. Re-running on full-GB data **reversed that decision**:
+with national coverage latitude is in range everywhere, and keeping
+latitude/longitude is needed to calibrate London — dropping them left a +0.245
+London bias and failed the acceptance check. The production model keeps
+latitude/longitude.
+
+Holdout R² is measured on counted points, which sit disproportionately on major
+roads; minor-road accuracy is therefore only measured where counted points exist.
 
 ## Data and model setup
 
@@ -216,10 +254,11 @@ holdout validation. Estimated AADF rows are year-on-year interpolations, so
 including them would mix DfT interpolation with the project's own network-wide
 extrapolation model.
 
-This drops 1,288 of 14,193 count points (9.1% of count-point locations) with no
-Counted observation in the 2015-2024 training window, leaving 12,905 directly
-counted training count points. The drop rate is approximately
-twice as high on Major roads (11.2%) as on Minor roads (4.6%), which means the
+This drops `{python} f"{N_DROPPED_POINTS:,}"` of `{python} f"{N_AADF_POINTS:,}"`
+count points (`{python} f"{PCT_DROPPED:.1f}"`% of count-point locations) with no
+Counted observation in the 2015-2024 training window, leaving
+`{python} f"{N_COUNTED_POINTS:,}"` directly counted training count points. The
+drop rate is somewhat higher on Major roads than on Minor roads, which means the
 counted-only training set is modestly less representative of Major-road
 conditions than a raw AADF training set would be. Regional distribution is
 broadly uniform; no single core study region loses coverage disproportionately.
@@ -235,9 +274,9 @@ remains unchanged.
 
 The counted-only evaluation should be read as a cleaner, more honest target
 rather than proof that the model became intrinsically stronger. GroupKFold CV
-R² increased from about 0.72 to 0.83 because DfT's smoothed carry-forward
+R² increased from about 0.73 to 0.82 because DfT's smoothed carry-forward
 estimates no longer contaminate the target. Local holdout R² increased from
-0.776 to 0.832 and spatial holdout R² from 0.707 to 0.788. Log-MAE is slightly
+0.762 to 0.816 and spatial holdout R² from 0.624 to 0.768. Log-MAE is slightly
 higher on the counted-only holdout, which is expected because direct
 measurements retain real traffic variance that DfT-estimated rows partly
 smooth away.
