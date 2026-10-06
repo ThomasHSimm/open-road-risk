@@ -66,15 +66,9 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from IPython.display import HTML, display
 
-from road_risk.config import _ROOT as ROOT, cfg
+from road_risk.config import _ROOT as ROOT
+from road_risk.viz import set_gb_wgs84_extent
 RANDOM_STATE = 42
-GB_BBOX = cfg["study_area"]["bbox_wgs84"]
-GB_MAP_EXTENT = {
-    "min_lon": min(GB_BBOX["min_lon"], -8.7),
-    "max_lon": max(GB_BBOX["max_lon"], 2.1),
-    "min_lat": min(GB_BBOX["min_lat"], 49.8),
-    "max_lat": max(GB_BBOX["max_lat"], 60.9),
-}
 
 try:
     import geopandas as gpd
@@ -94,15 +88,6 @@ if HAS_GPD:
     openroads = gpd.read_parquet(or_path) if or_path.exists() else None
 else:
     openroads = None
-
-
-def set_gb_wgs84_extent(ax):
-    """Use a stable GB frame and latitude-aware WGS84 aspect."""
-    ax.set_xlim(GB_MAP_EXTENT["min_lon"], GB_MAP_EXTENT["max_lon"])
-    ax.set_ylim(GB_MAP_EXTENT["min_lat"], GB_MAP_EXTENT["max_lat"])
-    mid_lat = (GB_MAP_EXTENT["min_lat"] + GB_MAP_EXTENT["max_lat"]) / 2
-    ax.set_aspect(1 / np.cos(np.deg2rad(mid_lat)), adjustable="box")
-    ax.set_anchor("C")
 
 
 MAP_FIGSIZE = (7.4, 9.6)
