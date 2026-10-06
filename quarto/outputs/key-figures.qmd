@@ -70,10 +70,52 @@ from shapely.geometry import box
 import sys
 
 from road_risk.config import _ROOT as ROOT
+from road_risk.viz import GB_OUTLINE_ATTRIBUTION
 
 SHADES = ["#f6ddc9", "#e7b48d", "#d4844f", "#b25636", "#7c3122"]
 GRID_M = 10_000
 MIN_GRID_LINKS = 20
+
+# Thin GB coastline, used in place of a tile basemap on the interactive maps.
+# Each folium map is its own srcdoc iframe (separate JS scope), so a shared
+# in-page variable cannot be reused. Instead every map fetches ONE external
+# GeoJSON file (served from data/outputs/web) — the browser caches it, so it is
+# downloaded once no matter how many maps reference it.
+GB_OUTLINE_URL = "../data/outputs/web/gb_risk_outline.geojson"
+
+
+class _GBOutlineLayer(MacroElement):
+    """Fetch the shared external GB outline, draw it, and register attribution."""
+
+    def __init__(self, url, attribution):
+        super().__init__()
+        self._name = "GBOutlineLayer"
+        self.url = url
+        self.attribution = attribution
+        self._template = Template(
+            "{% macro script(this, kwargs) %}\n"
+            "(function() {\n"
+            "  var m = {{ this._parent.get_name() }};\n"
+            "  if (m.attributionControl) {\n"
+            "    m.attributionControl.addAttribution('{{ this.attribution }}');\n"
+            "  }\n"
+            "  fetch('{{ this.url }}')\n"
+            "    .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })\n"
+            "    .then(function(gj) {\n"
+            "      L.geoJSON(gj, {\n"
+            "        interactive: false,\n"
+            "        style: function() { return {color: '#9aa0a6', weight: 0.8, fill: false}; }\n"
+            "      }).addTo(m);\n"
+            "    })\n"
+            "    .catch(function(e) { console.warn('GB outline unavailable: ' + e.message); });\n"
+            "})();\n"
+            "{% endmacro %}"
+        )
+
+
+def add_gb_outline_layer(fmap):
+    """Fetch + draw the shared external GB outline on a folium map (+ attribution)."""
+    fmap.add_child(_GBOutlineLayer(GB_OUTLINE_URL, GB_OUTLINE_ATTRIBUTION))
 
 proj_dir = Path(sys.prefix) / "share/proj"
 if proj_dir.exists():
@@ -294,8 +336,7 @@ risk_map = folium.Map(
     tiles=None,
     control_scale=True,
 )
-basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
-basemap_layer.add_to(risk_map)
+add_gb_outline_layer(risk_map)
 
 area_layer = folium.FeatureGroup(name="Reporting areas", show=False)
 folium.GeoJson(
@@ -359,18 +400,22 @@ folium.GeoJson(
 boundary_layer.add_to(risk_map)
 
 class ModeButtons(MacroElement):
-    def __init__(self, area_layer, grid_layer, boundary_layer, basemap_layer, legend_title, legend_gradient):
+    def __init__(self, area_layer, grid_layer, boundary_layer, legend_title, legend_gradient):
         super().__init__()
         self._name = "ModeButtons"
         self.area_layer = area_layer.get_name()
         self.grid_layer = grid_layer.get_name()
         self.boundary_layer = boundary_layer.get_name()
-        self.basemap_layer = basemap_layer.get_name()
         self.legend_title = legend_title
         self.legend_gradient = legend_gradient
         self._template = Template("""
         {% macro header(this, kwargs) %}
         <style>
+          /* Neutral canvas: there is no tile basemap, so the empty map area
+             should read as an intentional backdrop rather than a broken load. */
+          .leaflet-container {
+            background: #eef1f4;
+          }
           .risk-mode-control {
             background: rgba(255, 255, 255, 0.96);
             border: 1px solid #c8d0dc;
@@ -430,7 +475,6 @@ class ModeButtons(MacroElement):
         const areaLayer = {{ this.area_layer }};
         const gridLayer = {{ this.grid_layer }};
         const boundaryLayer = {{ this.boundary_layer }};
-        const basemapLayer = {{ this.basemap_layer }};
         const modeControl = L.control({ position: "topright" });
         const legendControl = L.control({ position: "bottomright" });
 
@@ -441,9 +485,6 @@ class ModeButtons(MacroElement):
             <button type="button" data-risk-mode="areas">Reporting areas</button>
             <button type="button" data-risk-mode="grid" class="active">10 km grid</button>
             <button type="button" data-risk-mode="grid-boundaries">Grid + boundaries</button>
-            <div class="risk-mode-control-title">Background</div>
-            <button type="button" data-base-mode="light" class="active">Light basemap</button>
-            <button type="button" data-base-mode="none">No basemap</button>
           `;
           L.DomEvent.disableClickPropagation(div);
           L.DomEvent.disableScrollPropagation(div);
@@ -451,12 +492,6 @@ class ModeButtons(MacroElement):
             L.DomEvent.on(button, "click", (event) => {
               L.DomEvent.stop(event);
               setRiskMode(button.dataset.riskMode, div);
-            });
-          });
-          div.querySelectorAll("[data-base-mode]").forEach((button) => {
-            L.DomEvent.on(button, "click", (event) => {
-              L.DomEvent.stop(event);
-              setBaseMode(button.dataset.baseMode, div);
             });
           });
           return div;
@@ -494,19 +529,6 @@ class ModeButtons(MacroElement):
             button.classList.toggle("active", button.dataset.riskMode === mode);
           });
         }
-
-        function setBaseMode(mode, root) {
-          if (mode === "none" && activeMap.hasLayer(basemapLayer)) {
-            activeMap.removeLayer(basemapLayer);
-          }
-          if (mode === "light" && !activeMap.hasLayer(basemapLayer)) {
-            activeMap.addLayer(basemapLayer);
-            basemapLayer.bringToBack();
-          }
-          root.querySelectorAll("[data-base-mode]").forEach((button) => {
-            button.classList.toggle("active", button.dataset.baseMode === mode);
-          });
-        }
         })();
         {% endmacro %}
         """)
@@ -516,7 +538,6 @@ risk_map.add_child(ModeButtons(
     area_layer,
     grid_layer,
     boundary_layer,
-    basemap_layer,
     "Median risk percentile",
     "linear-gradient(90deg, #f6ddc9, #e7b48d, #d4844f, #b25636, #7c3122)",
 ))
@@ -573,8 +594,7 @@ traffic_map = folium.Map(
     tiles=None,
     control_scale=True,
 )
-traffic_basemap_layer = folium.TileLayer("CartoDB positron", name="Light basemap", control=False)
-traffic_basemap_layer.add_to(traffic_map)
+add_gb_outline_layer(traffic_map)
 
 traffic_area_layer = folium.FeatureGroup(name="Reporting areas", show=False)
 folium.GeoJson(
@@ -641,7 +661,6 @@ traffic_map.add_child(ModeButtons(
     traffic_area_layer,
     traffic_grid_layer,
     traffic_boundary_layer,
-    traffic_basemap_layer,
     "Median estimated AADT",
     "linear-gradient(90deg, #edf8fb, #b2e2e2, #66c2a4, #2ca25f, #006d2c)",
 ))
@@ -735,12 +754,7 @@ def diagnostic_map(
         tiles=None,
         control_scale=True,
     )
-    active_basemap_layer = folium.TileLayer(
-        "CartoDB positron",
-        name="Light basemap",
-        control=False,
-    )
-    active_basemap_layer.add_to(active_map)
+    add_gb_outline_layer(active_map)
 
     active_area_layer = folium.FeatureGroup(name="Reporting areas", show=False)
     folium.GeoJson(
@@ -811,7 +825,6 @@ def diagnostic_map(
         active_area_layer,
         active_grid_layer,
         active_boundary_layer,
-        active_basemap_layer,
         legend_title,
         legend_gradient,
     ))

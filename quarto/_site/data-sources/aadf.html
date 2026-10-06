@@ -127,13 +127,13 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <meta property="og:description" content="Source notes for DfT AADF traffic counts, including count-point coverage, counted-only training data, and traffic exposure estimation.">
 <meta property="og:image" content="https://openroadrisk.org/data-sources/aadf_files/figure-html/fig-aadf-map-output-1.png">
 <meta property="og:site_name" content="Open Road Risk">
-<meta property="og:image:height" content="1468">
-<meta property="og:image:width" content="1614">
+<meta property="og:image:height" content="1723">
+<meta property="og:image:width" content="1625">
 <meta name="twitter:title" content="AADF Traffic Counts – Open Road Risk">
 <meta name="twitter:description" content="Source notes for DfT AADF traffic counts, including count-point coverage, counted-only training data, and traffic exposure estimation.">
 <meta name="twitter:image" content="https://openroadrisk.org/data-sources/aadf_files/figure-html/fig-aadf-map-output-1.png">
-<meta name="twitter:image-height" content="1468">
-<meta name="twitter:image-width" content="1614">
+<meta name="twitter:image-height" content="1723">
+<meta name="twitter:image-width" content="1625">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -572,42 +572,35 @@ road types    : ['Major', 'Minor']</code></pre>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    snap,</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    geometry<span class="op">=</span>gpd.points_from_xy(snap[<span class="st">"longitude"</span>], snap[<span class="st">"latitude"</span>]),</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    crs<span class="op">=</span><span class="st">"EPSG:4326"</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>).to_crs(epsg<span class="op">=</span><span class="dv">3857</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>minx, miny, maxx, maxy <span class="op">=</span> gdf.total_bounds</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>pad <span class="op">=</span> <span class="bu">max</span>(maxx <span class="op">-</span> minx, maxy <span class="op">-</span> miny) <span class="op">*</span> <span class="fl">0.05</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>vals <span class="op">=</span> gdf[<span class="st">"all_motor_vehicles"</span>]</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>smin, smax <span class="op">=</span> <span class="dv">8</span>, <span class="dv">120</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>size_scaled <span class="op">=</span> smin <span class="op">+</span> (smax <span class="op">-</span> smin) <span class="op">*</span> (vals <span class="op">-</span> vals.<span class="bu">min</span>()) <span class="op">/</span> (vals.<span class="bu">max</span>() <span class="op">-</span> vals.<span class="bu">min</span>() <span class="op">+</span> <span class="fl">1e-9</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>vals <span class="op">=</span> gdf[<span class="st">"all_motor_vehicles"</span>]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>smin, smax <span class="op">=</span> <span class="dv">8</span>, <span class="dv">120</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>size_scaled <span class="op">=</span> smin <span class="op">+</span> (smax <span class="op">-</span> smin) <span class="op">*</span> (vals <span class="op">-</span> vals.<span class="bu">min</span>()) <span class="op">/</span> (vals.<span class="bu">max</span>() <span class="op">-</span> vals.<span class="bu">min</span>() <span class="op">+</span> <span class="fl">1e-9</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">9</span>))</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>drew_outline <span class="op">=</span> add_gb_outline(ax)</span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">9</span>))</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(minx <span class="op">-</span> pad, maxx <span class="op">+</span> pad)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(miny <span class="op">-</span> pad, maxy <span class="op">+</span> pad)</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    cx.add_basemap(ax, source<span class="op">=</span>cx.providers.CartoDB.Positron,</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                   zoom<span class="op">=</span><span class="st">"auto"</span>, attribution_size<span class="op">=</span><span class="dv">5</span>)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> exc:</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Basemap unavailable: </span><span class="sc">{</span>exc<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>gdf.plot(</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    ax<span class="op">=</span>ax, column<span class="op">=</span><span class="st">"hgv_proportion"</span>, cmap<span class="op">=</span><span class="st">"viridis"</span>,</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    markersize<span class="op">=</span>size_scaled, edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.3</span>,</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">0.85</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">3</span>,</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"HGV proportion"</span>, <span class="st">"shrink"</span>: <span class="fl">0.5</span>},</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="bu">max</span>(<span class="fl">0.3</span>, gdf[<span class="st">"hgv_proportion"</span>].quantile(<span class="fl">0.95</span>)),</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>ax.set_axis_off()</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="ss">f"AADF count points — </span><span class="sc">{</span>latest<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>gdf.plot(</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    ax<span class="op">=</span>ax, column<span class="op">=</span><span class="st">"hgv_proportion"</span>, cmap<span class="op">=</span><span class="st">"viridis"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    markersize<span class="op">=</span>size_scaled, edgecolor<span class="op">=</span><span class="st">"white"</span>, linewidth<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">0.85</span>, legend<span class="op">=</span><span class="va">True</span>, zorder<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    legend_kwds<span class="op">=</span>{<span class="st">"label"</span>: <span class="st">"HGV proportion"</span>, <span class="st">"shrink"</span>: <span class="fl">0.5</span>},</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="bu">max</span>(<span class="fl">0.3</span>, gdf[<span class="st">"hgv_proportion"</span>].quantile(<span class="fl">0.95</span>)),</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>set_gb_wgs84_extent(ax)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>ax.set_axis_off()</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="ss">f"AADF count points — </span><span class="sc">{</span>latest<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> drew_outline:</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    fig.text(<span class="fl">0.01</span>, <span class="fl">0.01</span>, GB_OUTLINE_ATTRIBUTION, fontsize<span class="op">=</span><span class="dv">5</span>, color<span class="op">=</span><span class="st">"#888888"</span>, ha<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div id="fig-aadf-map" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-aadf-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="aadf_files/figure-html/fig-aadf-map-output-1.png" width="807" height="734" class="figure-img">
+<img src="aadf_files/figure-html/fig-aadf-map-output-1.png" width="813" height="862" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aadf-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: AADF count points — size by flow, colour by HGV share (most recent year)
@@ -657,7 +650,7 @@ Figure&nbsp;1: AADF count points — size by flow, colour by HGV share (most rec
 <div id="fig-aadf-yearly" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-aadf-yearly-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="aadf_files/figure-html/fig-aadf-yearly-output-1.png" width="950" height="420" class="figure-img">
+<img src="aadf_files/figure-html/fig-aadf-yearly-output-1.png" width="950" height="422" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aadf-yearly-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: Mean daily flow by road type over time
