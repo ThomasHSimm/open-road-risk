@@ -32,6 +32,8 @@ Key notes:
   - all_hgvs = sum of all 6 HGV sub-type columns
 """
 
+import hashlib
+import json
 import logging
 import zipfile
 from io import BytesIO
@@ -43,6 +45,48 @@ from road_risk.config import _ROOT, cfg
 from road_risk.geography import STUDY_AREA_NAME, filter_points_to_study_area
 
 logger = logging.getLogger(__name__)
+
+
+def _cache_settings(years, lat_bounds, lon_bounds, road_types, directions, region_name):
+    """Settings that fully determine the AADF cache contents."""
+    return {
+        "years": sorted(int(y) for y in years),
+        "lat_bounds": [float(x) for x in lat_bounds] if lat_bounds else None,
+        "lon_bounds": [float(x) for x in lon_bounds] if lon_bounds else None,
+        "road_types": sorted(road_types) if road_types else None,
+        "directions": sorted(directions) if directions else None,
+        "region_name": region_name,
+        "bbox_wgs84": dict(cfg["study_area"]["bbox_wgs84"]),
+    }
+
+
+def _cache_key(settings: dict) -> str:
+    """Short stable hash of the cache settings (bbox + filters)."""
+    blob = json.dumps(settings, sort_keys=True).encode()
+    return hashlib.sha1(blob).hexdigest()[:10]
+
+
+def _assert_cache_covers_bbox(cached_bbox: dict, configured_bbox: dict, cache_name: str) -> None:
+    """Raise if the cache was built under a bbox smaller than the configured one.
+
+    Guards against the stale-cache bug where a cache keyed only on the study-area
+    name is silently reused after the configured bbox is widened — filters can
+    only shrink a cache, never re-add the points that the narrower build dropped.
+    """
+    tol = 1e-6
+    smaller = (
+        cached_bbox["min_lat"] > configured_bbox["min_lat"] + tol
+        or cached_bbox["max_lat"] < configured_bbox["max_lat"] - tol
+        or cached_bbox["min_lon"] > configured_bbox["min_lon"] + tol
+        or cached_bbox["max_lon"] < configured_bbox["max_lon"] - tol
+    )
+    if smaller:
+        raise RuntimeError(
+            f"Stale AADF cache '{cache_name}': built under bbox {cached_bbox}, which is "
+            f"smaller than the configured bbox {configured_bbox}. Delete the cache (and its "
+            ".meta.json) and re-ingest — filters can only shrink a cache, not re-add points."
+        )
+
 
 _DEFAULT_YEARS = cfg["years"]["full_range"]
 _DEFAULT_REGION = None  # No region filter — use bbox instead
@@ -229,15 +273,29 @@ def load_aadf(
     """
     folder = Path(raw_folder)
     zip_path = folder / "dft_traffic_counts_aadf_by_direction.zip"
-    parquet_path = folder / f"aadf_filtered_{STUDY_AREA_NAME}.parquet"
 
     if years is None:
         years = _DEFAULT_YEARS
     # region_name already defaults to _DEFAULT_REGION via signature
 
+    # Cache is keyed on a hash of the bbox + filter settings, so widening the
+    # bbox (or changing any filter) selects a different file rather than silently
+    # reusing a narrower build. See _cache_key / _assert_cache_covers_bbox.
+    settings = _cache_settings(years, lat_bounds, lon_bounds, road_types, directions, region_name)
+    key = _cache_key(settings)
+    parquet_path = folder / f"aadf_filtered_{STUDY_AREA_NAME}_{key}.parquet"
+    meta_path = parquet_path.with_suffix(".meta.json")
+
     # --- Fast path: parquet cache -------------------------------------------
     if cache_parquet and parquet_path.exists():
         logger.info(f"Loading from parquet cache: {parquet_path}")
+        if meta_path.exists():
+            meta = json.loads(meta_path.read_text())
+            _assert_cache_covers_bbox(
+                meta.get("bbox_wgs84", settings["bbox_wgs84"]),
+                settings["bbox_wgs84"],
+                parquet_path.name,
+            )
         df = pd.read_parquet(parquet_path)
         # Still apply year / direction filters in case cache is broader
         df = df[df["year"].isin(years)]
@@ -301,7 +359,18 @@ def load_aadf(
     # --- Cache ---------------------------------------------------------------
     if cache_parquet:
         df.to_parquet(parquet_path, index=False)
-        logger.info(f"  Cached to {parquet_path}")
+        meta = {
+            **settings,
+            "data_extent": {
+                "min_lat": float(df["latitude"].min()),
+                "max_lat": float(df["latitude"].max()),
+                "min_lon": float(df["longitude"].min()),
+                "max_lon": float(df["longitude"].max()),
+            },
+            "n_rows": int(len(df)),
+        }
+        meta_path.write_text(json.dumps(meta, indent=2))
+        logger.info(f"  Cached to {parquet_path} (+ {meta_path.name})")
 
     return df
 
