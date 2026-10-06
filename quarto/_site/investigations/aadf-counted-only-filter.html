@@ -444,19 +444,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>AADF coverage caveat — 2026-10-06
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Stage 1a AADF training data was limited to 52.0–55.2°N due to a stale ingest cache; figures on this page reflect that subset; a full-GB rebuild is in progress.</p>
-</div>
-</div>
 <p><em>Decision register entry: <a href="https://github.com/thomashsimm/open-road-risk/blob/main/docs/internal/decision-register.md">2026-04-19 — AADF counted-only filter — adopted; weighted-Estimated alternative rejected</a></em></p>
 <section id="question" class="level2">
 <h2 class="anchored" data-anchor-id="question">Question</h2>
@@ -476,7 +463,7 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </section>
 <section id="result" class="level2">
 <h2 class="anchored" data-anchor-id="result">Result</h2>
-<p>Counted-only training was adopted. The filter drops 1,288 of 14,193 count points (9.1%) that are always <code>Estimated</code> across the 2015-2024 training window, leaving 12,905 directly counted training count points.</p>
+<p>Counted-only training was adopted. On the full-GB AADF network the filter drops 3,343 of 29,435 count points (11.4%) that are always <code>Estimated</code> across the 2015-2024 training window, leaving 26,092 directly counted training count points.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -488,23 +475,23 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>GroupKFold CV R²</td>
-<td style="text-align: right;">~0.72</td>
-<td style="text-align: right;">~0.83</td>
+<td style="text-align: right;">~0.73</td>
+<td style="text-align: right;">~0.82</td>
 </tr>
 <tr class="even">
 <td>Local holdout R²</td>
-<td style="text-align: right;">0.776</td>
-<td style="text-align: right;">0.832</td>
+<td style="text-align: right;">0.762</td>
+<td style="text-align: right;">0.816</td>
 </tr>
 <tr class="odd">
 <td>Spatial holdout R²</td>
-<td style="text-align: right;">0.707</td>
-<td style="text-align: right;">0.788</td>
+<td style="text-align: right;">0.624</td>
+<td style="text-align: right;">0.768</td>
 </tr>
 </tbody>
 </table>
 <p>The improvement should be read as a cleaner, more honest validation target rather than proof that the model became intrinsically stronger. DfT’s smoothed carry-forward estimates no longer contaminate the learning signal or holdout target. Log-MAE is slightly higher on counted-only holdout, which is expected because direct measurements retain real traffic variance that DfT-estimated rows partly smooth away.</p>
-<p>The removed points are not completely neutral. Dropped points skew Major versus Minor (11.2% vs 4.6%), so the counted-only training set is modestly less representative of Major-road conditions than a raw AADF training set would be. Regional loss is broadly uniform, with Wales higher at 17% on a small sample.</p>
+<p>The removed points are not completely neutral. Dropped points skew Major versus Minor (14.5% vs 4.3%), so the counted-only training set is modestly less representative of Major-road conditions than a raw AADF training set would be. Regional loss is broadly uniform, with Wales higher at 17% on a small sample.</p>
 <p>The filter affects only the learning signal. The fitted Stage 1a model is still applied to every OS Open Roads link for every AADF year, so downstream exposure coverage remains unchanged.</p>
 </section>
 <section id="limitations" class="level2">

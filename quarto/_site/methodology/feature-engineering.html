@@ -675,7 +675,7 @@ Important
 </tr>
 <tr class="odd">
 <td><code>hgv_proportion</code></td>
-<td>AADF</td>
+<td>AADF, nearest count point ≤2 km</td>
 <td>Float</td>
 </tr>
 <tr class="even">
@@ -817,6 +817,7 @@ Important
 <section id="applying-the-estimator" class="level3" data-number="4.7">
 <h3 data-number="4.7" class="anchored" data-anchor-id="applying-the-estimator"><span class="header-section-number">4.7</span> Applying the estimator</h3>
 <p>The trained model predicts AADT for <strong>every</strong> OS Open Roads link × every AADF year. Prediction uses link centroids for <code>latitude</code>/<code>longitude</code>; <code>road_class_ord</code> is derived from <code>road_classification</code> using the same ordinal space as training (Motorway=6, A Road=5, B Road=4, other=1); <code>hgv_proportion</code> and <code>link_length_km</code> are imputed from AADF medians when not available. <code>HistGradientBoostingRegressor</code> receives missing network features as NaN rather than zero so its native missing-value routing is preserved.</p>
+<p><code>hgv_proportion</code> is <strong>not</strong> the link’s own HGV share: each link takes the HGV proportion recorded at its nearest AADF count point within 2 km (and the AADF median where no count point is that close). It therefore reflects count-point conditions near the link, not a direct measurement on the link itself.</p>
 <p>The output has <code>link_id × year × estimated_aadt</code> — no link is dropped.</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">

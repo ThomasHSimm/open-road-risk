@@ -493,19 +493,6 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>AADF coverage caveat — 2026-10-06
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Stage 1a AADF training data was limited to 52.0–55.2°N due to a stale ingest cache; figures on this page reflect that subset; a full-GB rebuild is in progress.</p>
-</div>
-</div>
 <section id="overview" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
 <p>Annual Average Daily Flow (AADF) data provides <strong>measured traffic counts</strong> at DfT count points across Great Britain. In this project it is the main source of <strong>observed exposure</strong>: the dataset that anchors traffic estimation before that exposure is extended to roads without direct counts.</p>
@@ -557,8 +544,8 @@ Important
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"road types    : </span><span class="sc">{</span><span class="bu">sorted</span>(aadf[<span class="st">'road_type'</span>].dropna().unique())<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>rows          : 105,661
-count points  : 14,193
+<pre><code>rows          : 223,320
+count points  : 29,435
 years         : [np.int64(2015), np.int64(2016), np.int64(2017), np.int64(2018), np.int64(2019), np.int64(2020), np.int64(2021), np.int64(2022), np.int64(2023), np.int64(2024)]
 road types    : ['Major', 'Minor']</code></pre>
 </div>
@@ -720,19 +707,19 @@ Figure&nbsp;2: Mean daily flow by road type over time
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">Major</th>
-<td>8293</td>
-<td>22166.7</td>
-<td>1381.2</td>
-<td>4.4</td>
-<td>19.5</td>
+<td>17775</td>
+<td>21277.0</td>
+<td>1150.7</td>
+<td>4.1</td>
+<td>20.2</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">Minor</th>
-<td>2322</td>
-<td>2865.8</td>
-<td>33.7</td>
-<td>1.8</td>
-<td>16.2</td>
+<td>4396</td>
+<td>2718.3</td>
+<td>31.3</td>
+<td>1.6</td>
+<td>16.7</td>
 </tr>
 </tbody>
 </table>
@@ -771,13 +758,13 @@ Figure&nbsp;2: Mean daily flow by road type over time
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">Major</th>
-<td>1936</td>
-<td>6357</td>
+<td>4206</td>
+<td>13569</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">Minor</th>
-<td>1874</td>
-<td>448</td>
+<td>3597</td>
+<td>799</td>
 </tr>
 </tbody>
 </table>

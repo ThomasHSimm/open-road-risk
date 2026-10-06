@@ -447,23 +447,10 @@ gtag('config', 'G-WD8T0TPHC5', { 'anonymize_ip': true});
 </header>
 
 
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>AADF coverage caveat — 2026-10-06
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Stage 1a AADF training data was limited to 52.0–55.2°N due to a stale ingest cache; figures on this page reflect that subset; a full-GB rebuild is in progress.</p>
-</div>
-</div>
 <div class="small text-muted">
 <p>Last updated: 2026-07-05 · Full GB output rebuild: 2026-07-05.</p>
 </div>
-<p>This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The current GB production export uses the XGBoost <code>risk_percentile</code> ranking from <code>data/models/risk_scores.parquet</code>.</p>
+<p>This page maps the global top 1% highest-risk road links. The current GB production export uses the XGBoost <code>risk_percentile</code> ranking from <code>data/models/risk_scores.parquet</code>. <code>risk_percentile</code> ranks each link by its <strong>expected collision count (burden)</strong> — the prediction includes the traffic-exposure offset — <strong>not</strong> by collision rate per vehicle-km, so these are the links expected to carry the most collisions, which are concentrated on high-traffic roads.</p>
 <p>These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. Sparse collision histories should be interpreted cautiously.</p>
 <p>The refreshed GB outputs and top-risk web assets were regenerated from the current production score file on 2026-07-05. Short segments under 50 m are present in the full dataset and map layer; they are flagged for manual review before use as case study examples.</p>
 <p>The map colours links by <code>log_predicted_score = log1p(predicted_xgb)</code> rather than by <code>risk_percentile</code>, because the global top-1% percentile values are tightly compressed at the top end. The percentile rank remains available in each popup.</p>

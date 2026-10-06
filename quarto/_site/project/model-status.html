@@ -422,7 +422,7 @@ background-size: cover;
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page">
+    <div class="quarto-title column-page-left">
       <h1 class="title">Current Model Status for Open Road Risk</h1>
                   <div>
         <div class="description">
@@ -433,7 +433,7 @@ background-size: cover;
   </div>
     
   
-  <div class="quarto-title-meta column-page">
+  <div class="quarto-title-meta column-page-left">
 
       
     
@@ -450,33 +450,29 @@ background-size: cover;
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#changelog" id="toc-changelog" class="nav-link active" data-scroll-target="#changelog">Changelog</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page" id="quarto-document-content">
+<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
 
 
 
 
 
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>AADF coverage caveat — 2026-10-06
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Stage 1a AADF training data was limited to 52.0–55.2°N due to a stale ingest cache; figures on this page reflect that subset; a full-GB rebuild is in progress.</p>
-</div>
-</div>
 <div class="small text-muted">
-<p>Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.</p>
+<p>Last updated: 2026-10-06 · Full GB output rebuild: 2026-10-06.</p>
 </div>
-<p>This section provides a live view of the modelling pipeline’s performance and status, sourced directly from the latest validation artefacts, provenance records, and full-GB collision rebuild counts. Note: the Stage 1a AADT model (and its validation metrics) was trained on a 52.0–55.2°N AADF subset, so AADT performance is not yet validated GB-wide — see the caveat above.</p>
+<p>This section provides a live view of the modelling pipeline’s performance and status, sourced directly from the latest validation artefacts, provenance records, and full-GB collision rebuild counts. Stage 1a AADT is now trained and validated on the full-GB AADF count network.</p>
+<section id="changelog" class="level2">
+<h2 class="anchored" data-anchor-id="changelog">Changelog</h2>
+<p><strong>2026-10-06 — AADF full-GB coverage fix.</strong> Stage 1a AADF training data had been silently clipped to a <strong>52.0–55.2°N</strong> subset (central England) by an ingest cache keyed only on the study-area name: the cache was built under an earlier, smaller study-area bbox and was never regenerated when the bbox was widened to full GB, so filters could only shrink it. <strong>Impact:</strong> the AADT (exposure) model was trained on ~12,900 central-England count points and extrapolated to the rest of GB; ~49% of links and ~57% of collisions sat outside the training band, HGV proportion was missing for ~60% of links, and exposure was systematically under-estimated out-of-band (worst in Wales, Scotland, London). <strong>Fix:</strong> the ingest cache is now keyed on a hash of the bbox + filter settings and raises if a cached extent is smaller than configured; AADF was re-ingested full-GB (~29,400 count points, ~26,100 counted) and Stage 1a + Stage 2 rebuilt. Stage 1a keeps latitude/longitude (the full-GB spatial-holdout bias passes in every region; London is the weakest at +0.090). HGV coverage rose from ~40% to ~80%. Ranking is highly stable (Spearman 0.99; top-1% overlap 80%); the exposure-adjusted rate per vehicle-km fell most out-of-band, as expected. See the <a href="../investigations/aadf-counted-only-filter.html">transferability study</a> and <code>results/aadf-transferability/</code> in the repository.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -496,7 +492,7 @@ background-size: cover;
 <tr class="odd">
 <td>Stage 1a: AADT model</td>
 <td>Implemented</td>
-<td>Local R²: 0.821, Spatial R²: 0.777, N=17412</td>
+<td>Local R²: 0.816, Spatial R²: 0.768, N=36151</td>
 <td>Estimates traffic where direct counts are unavailable</td>
 </tr>
 <tr class="even">
@@ -508,13 +504,13 @@ background-size: cover;
 <tr class="odd">
 <td>Stage 2: GLM collision-risk model</td>
 <td>Implemented</td>
-<td>Pseudo-R²: 0.505; rows: 3,781,492</td>
+<td>Pseudo-R²: 0.518; rows: 3,781,492</td>
 <td>Interpretable exposure-adjusted baseline on a 1:3 zero-collision sampled surface</td>
 </tr>
 <tr class="even">
 <td>Stage 2: XGBoost collision-risk model</td>
 <td>Implemented</td>
-<td>Pseudo-R²: 0.360; zero policy: full-zero; train/test rows: 31,530,390/7,882,600</td>
+<td>Pseudo-R²: 0.362; zero policy: full-zero; train/test rows: 31,530,390/7,882,600</td>
 <td>Flexible ranking model; check calibration before presenting raw predicted counts as expected counts</td>
 </tr>
 <tr class="odd">
@@ -533,6 +529,7 @@ background-size: cover;
 <p>“These figures describe the latest model artefacts available at documentation render time. They indicate the current analytical state of the exposure-adjusted risk pipeline; they should not be read as operational approval for safety decisions.”</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
