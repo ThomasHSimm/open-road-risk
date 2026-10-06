@@ -602,10 +602,16 @@ plt.show()
 #| fig-cap: "Collision density by severity — Great Britain 2015–2024 (COVID years included)"
 
 import geopandas as gpd
-import contextily as cx
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+
+from road_risk.viz import (
+    GB_MAP_EXTENT,
+    GB_OUTLINE_ATTRIBUTION,
+    load_gb_outline,
+    set_gb_wgs84_extent,
+)
 
 # Filter to valid coords within the configured GB bbox
 valid = (
@@ -620,17 +626,19 @@ gdf = gpd.GeoDataFrame(
     cols_geo,
     geometry=gpd.points_from_xy(cols_geo["longitude"], cols_geo["latitude"]),
     crs="EPSG:4326",
-).to_crs(epsg=3857)
+)
 
 severities = ["Slight", "Serious", "Fatal"]
 cmaps      = ["Blues",  "Oranges", "Reds"]
 # gridsize controls resolution — lower = coarser, faster
 GRIDSIZE = 200
 
-# Shared spatial extent
-minx, miny, maxx, maxy = gdf.total_bounds
-pad = max(maxx - minx, maxy - miny) * 0.03
-extent = (minx - pad, maxx + pad, miny - pad, maxy + pad)
+# Shared GB spatial extent (WGS84), consistent with the Stage 2 maps.
+hist_range = [
+    [GB_MAP_EXTENT["min_lon"], GB_MAP_EXTENT["max_lon"]],
+    [GB_MAP_EXTENT["min_lat"], GB_MAP_EXTENT["max_lat"]],
+]
+gb_outline = load_gb_outline()
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 7))
 
@@ -639,20 +647,11 @@ for ax, sev, cmap in zip(axes, severities, cmaps):
     x, y = sub.geometry.x.values, sub.geometry.y.values
 
     # 2D histogram binned to grid
-    h, xedges, yedges = np.histogram2d(
-        x, y, bins=GRIDSIZE,
-        range=[[extent[0], extent[1]], [extent[2], extent[3]]],
-    )
+    h, xedges, yedges = np.histogram2d(x, y, bins=GRIDSIZE, range=hist_range)
     h = np.ma.masked_where(h == 0, h)   # transparent empty cells
 
-    ax.set_xlim(extent[0], extent[1])
-    ax.set_ylim(extent[2], extent[3])
-
-    try:
-        cx.add_basemap(ax, source=cx.providers.CartoDB.Positron,
-                       zoom="auto", attribution_size=5)
-    except Exception as exc:
-        print(f"Basemap unavailable: {exc}")
+    if gb_outline is not None:
+        gb_outline.boundary.plot(ax=ax, color="#9aa0a6", linewidth=0.6, zorder=1)
 
     ax.pcolormesh(
         xedges, yedges, h.T,
@@ -662,10 +661,13 @@ for ax, sev, cmap in zip(axes, severities, cmaps):
         zorder=2,
     )
 
+    set_gb_wgs84_extent(ax)
     ax.set_axis_off()
     ax.set_title(f"{sev}  (n={len(sub):,})", fontsize=11)
 
 fig.suptitle("Collision density — Great Britain 2015–2024", fontsize=13, y=1.01)
+if gb_outline is not None:
+    fig.text(0.005, 0.005, GB_OUTLINE_ATTRIBUTION, fontsize=5, color="#888888", ha="left")
 plt.tight_layout()
 plt.show()
 ```

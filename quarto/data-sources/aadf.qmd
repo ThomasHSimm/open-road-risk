@@ -68,9 +68,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import geopandas as gpd
-import contextily as cx
 
 from road_risk.config import _ROOT
+from road_risk.viz import GB_OUTLINE_ATTRIBUTION, add_gb_outline, set_gb_wgs84_extent
 
 COVID_YEARS = [2020, 2021]
 ```
@@ -119,24 +119,14 @@ gdf = gpd.GeoDataFrame(
     snap,
     geometry=gpd.points_from_xy(snap["longitude"], snap["latitude"]),
     crs="EPSG:4326",
-).to_crs(epsg=3857)
-
-minx, miny, maxx, maxy = gdf.total_bounds
-pad = max(maxx - minx, maxy - miny) * 0.05
+)
 
 vals = gdf["all_motor_vehicles"]
 smin, smax = 8, 120
 size_scaled = smin + (smax - smin) * (vals - vals.min()) / (vals.max() - vals.min() + 1e-9)
 
 fig, ax = plt.subplots(figsize=(9, 9))
-ax.set_xlim(minx - pad, maxx + pad)
-ax.set_ylim(miny - pad, maxy + pad)
-
-try:
-    cx.add_basemap(ax, source=cx.providers.CartoDB.Positron,
-                   zoom="auto", attribution_size=5)
-except Exception as exc:
-    print(f"Basemap unavailable: {exc}")
+drew_outline = add_gb_outline(ax)
 
 gdf.plot(
     ax=ax, column="hgv_proportion", cmap="viridis",
@@ -145,8 +135,11 @@ gdf.plot(
     legend_kwds={"label": "HGV proportion", "shrink": 0.5},
     vmin=0, vmax=max(0.3, gdf["hgv_proportion"].quantile(0.95)),
 )
+set_gb_wgs84_extent(ax)
 ax.set_axis_off()
 ax.set_title(f"AADF count points — {latest}")
+if drew_outline:
+    fig.text(0.01, 0.01, GB_OUTLINE_ATTRIBUTION, fontsize=5, color="#888888", ha="left")
 plt.tight_layout()
 plt.show()
 ```
