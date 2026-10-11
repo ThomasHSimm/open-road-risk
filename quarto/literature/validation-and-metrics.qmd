@@ -230,7 +230,7 @@ pedestrian SPF report as the primary model-fit assessment tool; no external
 holdout is reported for the SPF models (only the AADPT exposure model is
 cross-validated).
 
-For Open Road Risk at 2.1M observations, individual-link CURE plots would be
+For Open Road Risk at 3.94M observations, individual-link CURE plots would be
 unreadable; AADT-quantile bins (e.g., 50-unit quantile bins) are required to
 produce an interpretable plot.
 
@@ -458,7 +458,7 @@ that raw hourly data (with 23% quality failures) underperforms smoothed average-
 
 For Open Road Risk, CURE plots by AADT quantile and link-length quantile are a low-effort
 diagnostic that would reveal whether the Stage 2 model systematically under- or
-over-predicts at specific exposure ranges. At 2.17M rows, individual-link CURE plots are
+over-predicts at specific exposure ranges. At 3.94M rows, individual-link CURE plots are
 unreadable; 50-quantile bins of AADT and length are appropriate.
 
 Roll et al. (2026) use the same diagnostic — CURE plots are standard SPF practice in the
@@ -478,7 +478,7 @@ misleading when traffic volumes or collision counts are low.
 For Open Road Risk, this supports treating any link-level "significance" flag cautiously,
 especially on low-AADT links with zero or one observed collision. The National Highways
 Monte-Carlo likelihood-ratio test is more appropriate for pairwise aggregate comparisons
-than for production-scale ranking across 2.1 million links. It is therefore best treated as
+than for production-scale ranking across 3.94 million links. It is therefore best treated as
 methodological support for diagnostic rate comparisons, not as a replacement for grouped
 holdout validation.
 

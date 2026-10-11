@@ -144,7 +144,7 @@ exposure structure that model uses.
 | Requirement | Literature basis | Current pipeline | Gap / action |
 |---|---|---|---|
 | Spatial autocorrelation in residuals is present and biases coefficient SEs | [Spatial](spatial-methods-and-network-risk.qmd): Aguero-Valverde 2008; Gilardi 2022; Wang 2009 (UK motorways) | Not modelled | **Diagnostic**: Moran's I on Stage 2 GLM residuals (sampled 10k–50k links, first-order adjacency) |
-| CAR spatial model is computationally infeasible at 2.17M links | [Spatial](spatial-methods-and-network-risk.qmd) | Not attempted | **Documentation**: note as known limitation; Moran's I is the feasible alternative |
+| CAR spatial model is computationally infeasible at 3.94M links | [Spatial](spatial-methods-and-network-risk.qmd) | Not attempted | **Documentation**: note as known limitation; Moran's I is the feasible alternative |
 | Geographic residual mapping to identify persistent high-residual corridors | [Spatial](spatial-methods-and-network-risk.qmd): Aguero-Valverde 2008 | Not yet done | **Diagnostic**: choropleth map of Stage 2 GLM residuals on OS Open Roads geometry for a pilot area |
 | Do not use planar KDE or Euclidean Moran's I on crash point locations | [Spatial](spatial-methods-and-network-risk.qmd): Baddeley 2021 | Not currently used | **Documentation**: note constraint for any future crash-point visualisation |
 | Junction-segment spatial correlations are the strongest spatial dependencies | [Spatial](spatial-methods-and-network-risk.qmd): Ziakopoulos 2020 | Not explicitly modelled | **Documentation / candidate feature**: junction-proximity feature addresses this indirectly |

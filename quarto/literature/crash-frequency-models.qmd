@@ -206,7 +206,7 @@ overconfident standard errors.
 
 The finding is informative about the direction of the problem; its magnitude in Open Road
 Risk's mixed urban/rural/motorway network is unknown. The paper covers a single rural county
-with one road type; generalisation to 2.1 million links spanning multiple road classes and
+with one road type; generalisation to 3.94 million links spanning multiple road classes and
 geographies is uncertain.
 
 ::: {.callout-note}
@@ -293,12 +293,12 @@ caveats.
 
 | Model | Zero-heavy handling | Formal exposure offset | Computational scale | Open Road Risk status |
 |---|---|---|---|---|
-| **Poisson GLM** | None — mean = variance constraint | ✓ | Scales to 2.1M rows | **Current** (Stage 2 SPF) |
-| **Negative Binomial GLM** | Overdispersion parameter $\hat{\alpha}$ | ✓ | Scales to 2.1M rows | **Candidate** — priority next step |
+| **Poisson GLM** | None — mean = variance constraint | ✓ | Scales to 3.94M rows | **Current** (Stage 2 SPF) |
+| **Negative Binomial GLM** | Overdispersion parameter $\hat{\alpha}$ | ✓ | Scales to 3.94M rows | **Candidate** — priority next step |
 | **ZIP** | Structural-zero mixing + Poisson counts | Non-standard; possible | Scales well if frequentist | **Diagnostic only** |
 | **ZINB** | Structural-zero mixing + NB counts | Non-standard; possible | Moderate; MCMC heavy | **Diagnostic only** — lower priority than NB given $\hat{\pi} \approx 0$ (Pew 2020) |
 | **NB-Lindley** | Compound NB mixture; zero-heavy via random effect | ✓ | Moderate | **Not current** — comparable to ZINB with equivalent random effects |
-| **Poisson log-normal / CAR** | Structured + unstructured random effects | ✓ | MCMC; infeasible at 2.1M links | **Diagnostic on sample only** |
+| **Poisson log-normal / CAR** | Structured + unstructured random effects | ✓ | MCMC; infeasible at 3.94M links | **Diagnostic on sample only** |
 | **DBN with MSE regression** | None — MSE loss | ✗ (AADT as feature) | GPU-intensive | **Avoid** — structurally mismatched to sparse count data (Pan et al. 2017) |
 
 ---
