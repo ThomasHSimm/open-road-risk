@@ -83,7 +83,14 @@ def test_stale_narrower_cache_raises(tmp_path):
         )
 
 
-def test_cache_with_covering_bbox_is_reused(tmp_path):
+def test_cache_with_covering_bbox_is_reused(tmp_path, monkeypatch):
+    # Bypass the study-area boundary filter: it needs the gitignored
+    # gb_boundary.gpkg (absent in CI), and this test is about cache reuse, not
+    # boundary clipping.
+    monkeypatch.setattr(
+        "road_risk.ingest.ingest_aadf.filter_points_to_study_area",
+        lambda df, **kwargs: df,
+    )
     _write_fake_cache(tmp_path, bbox_in_meta=FULL_GB)
     df = load_aadf(
         raw_folder=tmp_path,
