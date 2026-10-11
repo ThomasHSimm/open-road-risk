@@ -37,7 +37,7 @@ What is freely available at national England scale, and what is not.
 | Data domain | Available (open) | Not available / not open |
 |---|---|---|
 | Road network geometry | OS Open Roads: link geometry, road name, road classification, form of way | Lane count (sparse in OSM, absent in OS Open Roads); shoulder width; median type/width; lane marking |
-| Traffic volume (AADT) | DfT AADF count points (~14,200 processed count points; ~12,900 directly counted for Stage 1a training) | Observed AADT for all links (~2.1M); INRIX probe-based AADT (commercial); full motorway sensor density |
+| Traffic volume (AADT) | DfT AADF count points (full GB: ~29,400 processed count points; ~26,100 directly counted for Stage 1a training) | Observed AADT for all links (~3.94M); INRIX probe-based AADT (commercial); full motorway sensor density |
 | Traffic profiles | WebTRIS sensor data (National Highways motorways/A-roads) | Push-button pedestrian actuations; turning-movement counts; corridor-level time series without exposure |
 | Collision records | STATS19 injury collisions: location, severity, date, road class; record-level CF fields for pre-2024 context where recorded | PDO collisions; record-level RSF fields in the standard open download; post-event crash attributes as Stage 2 predictors |
 | Road geometry/context | OS Terrain 50 DEM (grade derivable); OS Open Roads topology | Degree of horizontal curvature (derivable from polyline geometry but not a RAMM/DOT-style inventory); driveway/access density; side slope; fixed objects |
@@ -82,7 +82,7 @@ directly:
 
 Limitation: The paper's traffic exposure is Census-routed commuter flow —
 weaker than Open Road Risk's AADF-calibrated AADT. The INLA Bayesian spatial
-model is not feasible at 2.1M links.
+model is not feasible at 3.94M links.
 
 ::: {.callout-caution}
 Three independent extractions exist (LIT-012, LIT-013, LIT-014). Active
@@ -171,7 +171,7 @@ proxies add little) is a useful documentation note for Stage 2.
   Open Road Risk's full national network; only National Highways routes have
   WebTRIS coverage, and WebTRIS provides time profiles not raw AADT counts.
 - The paper's CAR spatial model and full Bayesian estimation are not feasible
-  at 2.1M links.
+  at 3.94M links.
 - Coefficient values are motorway-specific; rural A-road or minor road
   behaviour will differ.
 
@@ -223,7 +223,7 @@ GLM on link-year data.
 - No exposure offset in Pew et al. — they use a standardised entering-vehicle
   covariate, not a log-offset. This does not challenge Open Road Risk's
   offset design; it is simply a different exposure treatment.
-- JAGS MCMC at intersection scale is not scalable to 2.1M link-years.
+- JAGS MCMC at intersection scale is not scalable to 3.94M link-years.
 
 #### Roll, Anderson & McNeil 2026 — Oregon pedestrian SPF
 
@@ -280,7 +280,7 @@ a conceptual analogue to Stage 1a.
 - **Shoulder width** (< 1.8 ft / ≥ 1.8 ft): not in any UK national open
   dataset.
 - **Driveway/access density**: the paper suggests derivation from Google Maps
-  aerial imagery. Not available at 2.1M link scale in UK open data.
+  aerial imagery. Not available at 3.94M link scale in UK open data.
 - **Side slope classification**: derived from video log inspection. No UK
   open-data equivalent.
 - **Fixed object density**: from video logs. No open-data equivalent.
@@ -331,7 +331,7 @@ paper does not transfer to Open Road Risk for the following reasons:
 | **Severity-weighted composite response** | Response variable = Σ (collision count × severity weight 1/2/3). Not equivalent to raw injury count or exposure-adjusted frequency. |
 | **Daily temporal resolution** | Daily counts per road segment in a single year (2019). Aggregation to annual link-year counts, which Open Road Risk uses, changes the zero-inflation structure and predictive problem completely. |
 | **Within-year temporal split only** | 8:2:2 split within 2019. No cross-year test. No spatial holdout. Same roads appear in training and test. Weaker than Open Road Risk's grouped link CV. |
-| **GNN architecture** | GRU temporal encoder + GAT spatial encoder at borough scale (~4,700–5,700 nodes). Computationally infeasible at Open Road Risk's 2.1M link scale. |
+| **GNN architecture** | GRU temporal encoder + GAT spatial encoder at borough scale (~4,700–5,700 nodes). Computationally infeasible at Open Road Risk's 3.94M link scale. |
 | **Three-borough scope** | Three London boroughs (highly urbanised). Generalisation to Open Road Risk's national rural/urban mixed scope is not tested. |
 
 **What does transfer:** `AccHR@k` (accuracy hit rate at top-k% predicted roads)
@@ -369,7 +369,7 @@ its availability in the UK open data stack used by Open Road Risk.
 | Road link geometry | OS Open Roads | S1a / S2 | None — core data | All |
 | Road classification (motorway/A/B/minor) | OS Open Roads | S2 | None | Chengye, Wang, Michalaki, Al-Omari |
 | Form of way (slip road, roundabout, motorway) | OS Open Roads | S2 | Partial (not all distinctions visible) | Chengye (ramp detection) |
-| Annual observed traffic count (AADF) | DfT AADF (~12,900 directly counted training count points) | S1a | **Major** — direct-count locations are equivalent to only ~0.6% of the scored link count; rest estimated | All exposure papers |
+| Annual observed traffic count (AADF) | DfT AADF (full GB: ~26,100 directly counted training count points) | S1a | **Major** — direct-count locations are equivalent to only ~0.66% of the scored link count; rest estimated | All exposure papers |
 | Motorway/A-road traffic profiles | WebTRIS (National Highways) | S1b | **Major** — not nationally complete | Chengye, Wang, Roll |
 | Injury collision records | STATS19 | S2 | Partial — PDO absent; contributory factors excluded | All |
 | Terrain / elevation / grade | OS Terrain 50 DEM | S2 | Low-medium — derived, not fully validated | Huda, Wang, Chengye |

@@ -94,7 +94,7 @@ level shifts.
 | `is_trunk` | AADF `road_name` regex match | Binary |
 | `latitude`, `longitude` | AADF | Coordinates (tree-based model can use raw) |
 | `is_covid` | `year ∈ {2020, 2021}` | Binary |
-| `hgv_proportion` | AADF | Float |
+| `hgv_proportion` | AADF, nearest count point ≤2 km | Float |
 | `link_length_km` | OS Open Roads | Float, median-imputed per road class |
 | Network features | `network_features.parquet` | See below if available |
 
@@ -251,6 +251,11 @@ space as training (Motorway=6, A Road=5, B Road=4, other=1);
 `hgv_proportion` and `link_length_km` are imputed from AADF medians when not
 available. `HistGradientBoostingRegressor` receives missing network features as
 NaN rather than zero so its native missing-value routing is preserved.
+
+`hgv_proportion` is **not** the link's own HGV share: each link takes the HGV
+proportion recorded at its nearest AADF count point within 2 km (and the AADF
+median where no count point is that close). It therefore reflects count-point
+conditions near the link, not a direct measurement on the link itself.
 
 The output has `link_id × year × estimated_aadt` — no link is dropped.
 

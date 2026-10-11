@@ -19,8 +19,29 @@ jupyter: python3
 ---
 
 ::: {.small .text-muted}
-Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.
+Last updated: 2026-10-06 · Full GB output rebuild: 2026-10-06.
 :::
+
+```{python}
+#| label: headline-figures
+#| include: false
+import json
+import pandas as pd
+from road_risk.config import _ROOT as _R
+
+_metrics = json.load(open(_R / "data/models/collision_metrics.json"))
+GLM_PR2 = _metrics["glm"]["pseudo_r2"]
+XGB_PR2 = _metrics["xgb"]["pseudo_r2"]
+_rs = pd.read_parquet(
+    _R / "data/models/risk_scores.parquet",
+    columns=["risk_percentile", "road_classification"],
+)
+_top = _rs[_rs["risk_percentile"] >= 99]
+N_TOP1 = len(_top)
+TOP1_BREAKDOWN = ", ".join(
+    f"{int(n):,} {c}" for c, n in _top["road_classification"].value_counts().items()
+)
+```
 
 ## Overview
 
@@ -45,13 +66,22 @@ and context feature tables. The run built 39,412,990 link-year rows for
 deprivation, and rural/urban context fields, and excluded the retired
 English-only IMD fields.
 
-The XGBoost Poisson model achieved pseudo-R² = 0.360 with full-zero training
+The XGBoost Poisson model achieved pseudo-R² =
+`{python} f"{XGB_PR2:.3f}"` with full-zero training
 over the full 39,412,990 link-year population: 945,373 positive road-link ×
 year rows and 38,467,617 zero rows. The production XGBoost fit uses
 `tree_method="hist"` and `max_bin=128`; sampled-zero XGBoost is available only
 as an explicit memory fallback. The GLM baseline converged with pseudo-R² =
-0.505 on its 3,781,492-row 1:3 zero-collision sampled surface. These values are
+`{python} f"{GLM_PR2:.3f}"` on its 3,781,492-row 1:3 zero-collision sampled surface. These values are
 not directly comparable because the GLM and XGBoost evaluation surfaces differ.
+
+**What the ranking means.** `risk_percentile` ranks each link by its *expected
+collision count* (burden) — the pooled mean of the XGBoost Poisson prediction,
+which includes the traffic-exposure offset — **not** by collision rate per
+vehicle-km. A high-percentile link is one expected to carry many collisions,
+largely because it carries much traffic; it is not necessarily the most
+dangerous per vehicle-km. The diagnostic maps below add the exposure-adjusted
+rate for comparison.
 
 Outputs were written to `data/models/risk_scores.parquet`,
 `data/models/collision_glm.pkl`, `data/models/collision_xgb.json`, and
@@ -750,8 +780,10 @@ show_table(
 
 Key observations:
 
-- XGBoost's current full-GB run has pseudo-R² `0.360`, with temporal features
-  included and full-zero training, while the GLM sits at pseudo-R² `0.505` on
+- XGBoost's current full-GB run has pseudo-R²
+  `{python} f"{metrics['xgb']['pseudo_r2']:.3f}"`, with temporal features
+  included and full-zero training, while the GLM sits at pseudo-R²
+  `{python} f"{metrics['glm']['pseudo_r2']:.3f}"` on
   its own 1:3 zero-collision sampled surface.
   Earlier repo docs cited an XGBoost pseudo-R² around `0.86`, but that figure
   came from a pre-fix evaluation surface that was later superseded after a
@@ -771,9 +803,8 @@ Key observations:
 - Residuals show where traffic volume and road geometry alone under-predict
   observed collisions — likely reflecting local factors not in the feature set
   (junction design, sight lines, speed compliance).
-- The regenerated top 1% output contains 39,413 links: 28,435 A roads, 4,234
-  B roads, 4,168 classified unnumbered roads, 2,001 motorways, 568
-  unclassified roads, 6 unknown-class links, and 1 not-classified link.
+- The regenerated top 1% output contains `{python} f"{N_TOP1:,}"` links:
+  `{python} TOP1_BREAKDOWN` (by road classification).
 - Excess-risk links (residual > 2) are candidates for targeted intervention
   where infrastructure or behaviour factors drive risk beyond what the model
   can attribute to road class and traffic alone.

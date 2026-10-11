@@ -1,9 +1,9 @@
 {
   "active_network_family_counts": {
-    "motorway": 2279,
-    "other_rural": 48564,
-    "other_urban": 177296,
-    "trunk_a": 5465
+    "motorway": 4639,
+    "other_rural": 118149,
+    "other_urban": 392789,
+    "trunk_a": 15865
   },
   "families_trained": [
     "motorway",
@@ -31,39 +31,42 @@
     "betweenness_relative",
     "dist_to_major_km",
     "pop_density_per_km2",
-    "speed_limit_mph_effective",
-    "lanes",
-    "is_unpaved"
+    "overall_decile_within_country",
+    "income_decile_within_country",
+    "employment_decile_within_country",
+    "deprivation_country_england",
+    "deprivation_country_wales",
+    "deprivation_country_scotland"
   ],
-  "git_sha": "e446d677",
+  "git_sha": "1eb6ac7d",
   "input_fingerprints": {
     "network_features": {
-      "mtime_ns": 1777143305822993108,
+      "mtime_ns": 1783114790600900295,
       "path": "data/features/network_features.parquet",
-      "row_count": 2167557,
-      "size_bytes": 118995501
+      "row_count": 3941299,
+      "size_bytes": 275258014
     },
     "road_link_annual": {
-      "mtime_ns": 1776548449693590028,
+      "mtime_ns": 1791306867331228346,
       "path": "data/features/road_link_annual.parquet",
-      "row_count": 391255,
-      "size_bytes": 27932375
+      "row_count": 945373,
+      "size_bytes": 74698931
     }
   },
   "missing_prod_risk_percentile_count": 0,
   "n_jobs": 1,
   "output_family_counts": {
-    "motorway": 4084,
-    "other_rural": 780537,
-    "other_urban": 1366925,
-    "trunk_a": 16011
+    "motorway": 7166,
+    "other_rural": 1472022,
+    "other_urban": 2431647,
+    "trunk_a": 30464
   },
   "output_fingerprint": {
-    "mtime_ns": 1777154482734987458,
+    "mtime_ns": 1791709174854523582,
     "path": "data/models/risk_scores_family.parquet",
-    "row_count": 2167557,
-    "sha256": "e6a3978a1550d5d05600b0656f4a3e6399afa1c64c45147ec94af0433f56aa1e",
-    "size_bytes": 148028751
+    "row_count": 3941299,
+    "sha256": "455b8668673aef1571ff85e71ad6f49da3ef5c65f67b0358493d9c24fd419700",
+    "size_bytes": 257515660
   },
   "per_family_metrics": {
     "motorway": {
@@ -87,15 +90,18 @@
         "betweenness_relative",
         "dist_to_major_km",
         "pop_density_per_km2",
-        "speed_limit_mph_effective",
-        "lanes",
-        "is_unpaved"
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland"
       ],
-      "n_test": 8170,
-      "n_train": 32670,
-      "pseudo_r2": 0.8507006526980221,
+      "n_test": 14340,
+      "n_train": 57320,
+      "pseudo_r2": 0.6086294651031494,
       "seed": 42,
-      "training_time_s": 1.8
+      "training_time_s": 3.8
     },
     "other_rural": {
       "features": [
@@ -118,15 +124,18 @@
         "betweenness_relative",
         "dist_to_major_km",
         "pop_density_per_km2",
-        "speed_limit_mph_effective",
-        "lanes",
-        "is_unpaved"
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland"
       ],
-      "n_test": 1561080,
-      "n_train": 6244290,
-      "pseudo_r2": 0.6484097478740768,
+      "n_test": 2944050,
+      "n_train": 11776170,
+      "pseudo_r2": 0.32940930128097534,
       "seed": 42,
-      "training_time_s": 210.6
+      "training_time_s": 425.8
     },
     "other_urban": {
       "features": [
@@ -149,15 +158,18 @@
         "betweenness_relative",
         "dist_to_major_km",
         "pop_density_per_km2",
-        "speed_limit_mph_effective",
-        "lanes",
-        "is_unpaved"
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland"
       ],
-      "n_test": 2733850,
-      "n_train": 10935400,
-      "pseudo_r2": 0.9173394711084588,
+      "n_test": 4863300,
+      "n_train": 19453170,
+      "pseudo_r2": 0.3243825435638428,
       "seed": 42,
-      "training_time_s": 376.4
+      "training_time_s": 622.7
     },
     "trunk_a": {
       "features": [
@@ -180,15 +192,18 @@
         "betweenness_relative",
         "dist_to_major_km",
         "pop_density_per_km2",
-        "speed_limit_mph_effective",
-        "lanes",
-        "is_unpaved"
+        "overall_decile_within_country",
+        "income_decile_within_country",
+        "employment_decile_within_country",
+        "deprivation_country_england",
+        "deprivation_country_wales",
+        "deprivation_country_scotland"
       ],
-      "n_test": 32030,
-      "n_train": 128080,
-      "pseudo_r2": 0.7730858382340355,
+      "n_test": 60930,
+      "n_train": 243710,
+      "pseudo_r2": 0.2980993986129761,
       "seed": 42,
-      "training_time_s": 4.5
+      "training_time_s": 8.6
     }
   },
   "production_risk_scores_before": {
@@ -204,14 +219,12 @@
       "risk_percentile",
       "road_classification",
       "hgv_proportion",
-      "speed_limit_mph_effective",
-      "speed_limit_mph",
       "betweenness_relative"
     ],
-    "mtime_ns": 1777068483027642035,
+    "mtime_ns": 1791321586291563985,
     "path": "data/models/risk_scores.parquet",
-    "row_count": 2167557,
-    "size_bytes": 161647320
+    "row_count": 3941299,
+    "size_bytes": 287148050
   },
   "production_risk_scores_unchanged": true,
   "rank_stability_seed_files_exist": {
@@ -223,5 +236,5 @@
   },
   "script_path": "src/road_risk/model/family_split.py",
   "seed": 42,
-  "timestamp_utc": "2026-04-25T22:01:23.794929+00:00"
+  "timestamp_utc": "2026-10-11T08:59:36.612011+00:00"
 }

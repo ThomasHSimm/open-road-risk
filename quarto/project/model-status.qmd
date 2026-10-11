@@ -8,10 +8,31 @@ title-block-banner-color: "#ffffff"
 ---
 
 ::: {.small .text-muted}
-Last updated: 2026-07-04 · Full GB output rebuild: 2026-07-04.
+Last updated: 2026-10-06 · Full GB output rebuild: 2026-10-06.
 :::
 
-This section provides a live view of the modelling pipeline's performance and status, sourced directly from the latest validation artefacts, provenance records, and validated full-GB rebuild counts.
+This section provides a live view of the modelling pipeline's performance and status, sourced directly from the latest validation artefacts, provenance records, and full-GB collision rebuild counts. Stage 1a AADT is now trained and validated on the full-GB AADF count network.
+
+## Changelog
+
+**2026-10-06 — AADF full-GB coverage fix.** Stage 1a AADF training data had been
+silently clipped to a **52.0–55.2°N** subset (central England) by an ingest
+cache keyed only on the study-area name: the cache was built under an earlier,
+smaller study-area bbox and was never regenerated when the bbox was widened to
+full GB, so filters could only shrink it. **Impact:** the AADT (exposure) model
+was trained on ~12,900 central-England count points and extrapolated to the rest
+of GB; ~49% of links and ~57% of collisions sat outside the training band, HGV
+proportion was missing for ~60% of links, and exposure was systematically
+under-estimated out-of-band (worst in Wales, Scotland, London). **Fix:** the
+ingest cache is now keyed on a hash of the bbox + filter settings and raises if
+a cached extent is smaller than configured; AADF was re-ingested full-GB
+(~29,400 count points, ~26,100 counted) and Stage 1a + Stage 2 rebuilt. Stage 1a
+keeps latitude/longitude (the full-GB spatial-holdout bias passes in every region;
+London is the weakest at +0.090). HGV coverage rose from ~40% to ~80%. Ranking
+is highly stable (Spearman 0.99; top-1% overlap 80%); the exposure-adjusted rate
+per vehicle-km fell most out-of-band, as expected. See the
+[transferability study](../investigations/aadf-counted-only-filter.qmd) and
+`results/aadf-transferability/` in the repository.
 
 ```{python}
 #| echo: false

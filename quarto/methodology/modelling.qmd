@@ -20,7 +20,7 @@ different gap in the available data, and each stage feeds the next.
 
 | Stage | What it predicts | Why it exists | Output |
 |---|---|---|---|
-| **1a — Traffic volume** | AADT for every road link | DfT AADF has ~14,200 processed count points, of which ~12,900 provide directly counted Stage 1a training signal; the network has 3.94M links | `aadt_estimates.parquet` |
+| **1a — Traffic volume** | AADT for every road link | DfT AADF has ~29,400 processed count points, of which ~26,100 provide directly counted Stage 1a training signal; the network has 3.94M links | `aadt_estimates.parquet` |
 | **1b — Time-zone profiles** | Within-day traffic shape (peak / pre-peak / off-peak fractions) | WebTRIS sensors are sparse; profiles let temporal exposure be projected to all links | `timezone_profiles.parquet` |
 | **2 — Collision risk** | Expected collisions per link per year | The headline risk model — uses Stage 1a output as exposure | `risk_scores.parquet` |
 
@@ -35,8 +35,8 @@ with 100,000 vehicles per day should have more collisions than a country lane
 with 500 — that's not a safety problem, it's a volume problem.
 
 The natural denominator is AADT (Annual Average Daily Flow), and the processed
-DfT AADF table contains ~14,200 count points across the study area. Stage 1a
-uses the ~12,900 count points with at least one directly counted observation
+DfT AADF table contains ~29,400 count points across the study area. Stage 1a
+uses the ~26,100 count points with at least one directly counted observation
 as the training signal. But the project scores 3.94 million road links. Most
 of the network — particularly minor and unclassified roads where collision
 under-counting is most severe — has no nearby count point.

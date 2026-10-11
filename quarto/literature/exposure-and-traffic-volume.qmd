@@ -90,9 +90,9 @@ the risk percentile ranking for those classes.
 The single largest gap between Open Road Risk and most papers in the literature is that Open
 Road Risk does not observe AADT — it estimates it.
 
-The processed AADF table contains approximately 14,200 count points across 2015--2024,
+The processed AADF table contains approximately 29,400 count points across 2015--2024,
 including DfT-estimated rows. Stage 1a trains on the cleaner subset of approximately
-12,900 count points with at least one directly `Counted` observation. That direct-count
+26,100 count points with at least one directly `Counted` observation. That direct-count
 training signal is equivalent to only about 0.6% as many measured locations as the 2.17
 million OS Open Roads links being scored, so the remaining ~99.4% of links receive an
 AADT estimate from the Stage 1a machine-learning model. This introduces estimation
@@ -113,7 +113,7 @@ The table below summarises how the reviewed papers obtain their traffic exposure
 | Roll et al. 2026 | HPMS observed → INRIX probe → random forest data fusion | Statewide urban intersections | Three-tier hierarchy fills gaps at each level |
 | Pew et al. 2020 | UDOT entering vehicles per day | All 1,738 Utah intersections | Not discussed; full coverage assumed |
 | Gao et al. 2024 | None | Not used | N/A — no traffic exposure in model |
-| Open Road Risk | DfT AADF (~12,900 directly counted count points; ~0.6% of link count) → Stage 1a ML estimate | All ~2.17M links (estimated) | Stage 1a model fills the gap; uncertainty not propagated into Stage 2 |
+| Open Road Risk | DfT AADF (~26,100 directly counted count points; ~0.6% of link count) → Stage 1a ML estimate | All ~3.94M links (estimated) | Stage 1a model fills the gap; uncertainty not propagated into Stage 2 |
 
 The contrast with Gao et al. (2024) is a useful negative example. That paper uses
 OS-style road links in London with STATS19 crash data — superficially close to Open Road
@@ -340,7 +340,7 @@ Jayasinghe et al. (2019) show that a learning-curve diagnostic — measuring val
 as a function of the number of calibration count points — is a simple, useful way to
 understand how performance degrades with sparse coverage. Around 40 calibration observations
 produced RMSE below 30% in their five case cities. Open Road Risk has approximately
-12,900 directly counted DfT AADF count points in the current Stage 1a training signal,
+26,100 directly counted DfT AADF count points in the current Stage 1a training signal,
 which is dense by comparison, but the points are highly skewed toward major roads. The
 learning curve for minor road AADT estimation would look quite different if assessed
 separately.

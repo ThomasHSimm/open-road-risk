@@ -17,7 +17,7 @@ execute:
 Last updated: 2026-07-05 · Full GB output rebuild: 2026-07-05.
 :::
 
-This page maps the global top 1% highest-risk road links after controlling for traffic exposure. The current GB production export uses the XGBoost `risk_percentile` ranking from `data/models/risk_scores.parquet`.
+This page maps the global top 1% highest-risk road links. The current GB production export uses the XGBoost `risk_percentile` ranking from `data/models/risk_scores.parquet`. `risk_percentile` ranks each link by its **expected collision count (burden)** — the prediction includes the traffic-exposure offset — **not** by collision rate per vehicle-km, so these are the links expected to carry the most collisions, which are concentrated on high-traffic roads.
 
 These links are screening candidates for inspection, mapping, portfolio review, and demo use. They are not causal proof, crash prediction guarantees, or engineering-audit results. Sparse collision histories should be interpreted cautiously.
 

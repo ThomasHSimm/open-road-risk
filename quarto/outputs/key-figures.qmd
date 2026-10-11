@@ -18,9 +18,13 @@ Last updated: 2026-07-07 · Full GB output rebuild: 2026-07-04.
 :::
 
 Figures summarising the main outputs of the risk model, without the modelling
-detail. The map is *exposure-adjusted*: it reflects risk given traffic, not
-simply where the most collisions happen. Full methodology and diagnostics are
-on the [Stage 2 model](../analysis/model-results.qmd) page.
+detail. `risk_percentile` ranks each link by its **expected collision count
+(burden)** — the model's prediction includes the traffic-exposure offset, so a
+high-ranked link is one expected to carry many collisions, largely because it
+carries much traffic. It is **not** a ranking of collision rate per vehicle-km;
+the diagnostic maps below add that exposure-adjusted rate for comparison. Full
+methodology and diagnostics are on the
+[Stage 2 model](../analysis/model-results.qmd) page.
 
 For GIS users, the full link-level QGIS-ready GeoPackage is distributed through
 the public [Open Road Risk GB link risk + exposure GIS Kaggle Dataset](https://www.kaggle.com/datasets/thomassimm/open-road-risk-gb-link-risk-exposure-gis/).

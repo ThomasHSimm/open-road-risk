@@ -15,7 +15,7 @@ distinction between link-level aggregation and continuous point-process analysis
 sensitivity of risk maps to spatial unit choice.
 
 The conclusions are mostly diagnostic. No currently reviewed paper justifies a production
-architecture change at 2.17M links. What the literature collectively establishes is that
+architecture change at 3.94M links. What the literature collectively establishes is that
 the current pipeline has known spatial limitations that should be documented, measured, and
 where feasible, tested.
 
@@ -75,10 +75,10 @@ is that this finding is from 70 motorway segments, not a mixed national network.
 ### What this means for Open Road Risk
 
 The practical implication is not to immediately refit the Stage 2 model with CAR spatial
-effects. At 2.17M links, a full Bayesian MCMC with CAR priors is computationally infeasible
+effects. At 3.94M links, a full Bayesian MCMC with CAR priors is computationally infeasible
 as a production model. Gilardi et al. took 30–45 minutes per model for 3,661 segments on a
 dedicated 32GB server; national scale would require orders of magnitude more compute and
-more complex approximations. Even the faster INLA approach does not scale trivially to 2.1M
+more complex approximations. Even the faster INLA approach does not scale trivially to 3.94M
 links.
 
 The practical implication is to diagnose the problem. Moran's I — the standard spatial
@@ -178,7 +178,7 @@ is the honest finding, not a problem to suppress.
 coordinates, fit with a spatial exclusion buffer, and use clusters as CV folds. This is
 more principled than police force holdout because the clusters can be parameterised to
 approximately match the variogram range. It is also more complex to implement correctly
-at 2.17M links, particularly for checking that each fold contains enough positive
+at 3.94M links, particularly for checking that each fold contains enough positive
 collision link-years.
 
 ::: {.callout-note}
@@ -229,7 +229,7 @@ None of these papers show that the link-level count model is wrong or should be 
 Their practical scale — 249 events on 253 line segments (Cronie 2019), city-block analyses
 (Baddeley 2021) — is not comparable to 21.7 million link-years. The network heat-kernel KDE
 approach involves solving the heat equation on the road graph, which is computationally
-intensive even at city scale. Full-network network point-process diagnostics at 2.17M links
+intensive even at city scale. Full-network network point-process diagnostics at 3.94M links
 have not been demonstrated and would require significant computational investment to attempt.
 
 None of these papers use AADT or traffic exposure. The intensity function that underlies
