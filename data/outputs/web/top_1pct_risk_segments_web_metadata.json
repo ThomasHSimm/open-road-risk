@@ -1,5 +1,5 @@
 {
-  "created_at_utc": "2026-07-05T21:44:46+00:00",
+  "created_at_utc": "2026-10-06T22:16:57+00:00",
   "source": "data/outputs/top_1pct_risk_segments.parquet",
   "geojson": "data/outputs/web/top_1pct_risk_segments.geojson",
   "quarto_resource_copy": "quarto/data/outputs/web/top_1pct_risk_segments.geojson",
@@ -8,61 +8,60 @@
   "geometry_simplification_tolerance_m": 25.0,
   "geometry_simplification_crs": "EPSG:3857",
   "coordinate_precision_degrees": 1e-05,
-  "ranking_field": "risk_percentile",
-  "score_field": "predicted_xgb",
-  "colour_scaling": "log_predicted_score = log1p(predicted_xgb)",
-  "file_size_bytes": 28482475,
+  "ranking_field": "risk_percentile_eb",
+  "score_field": "predicted_eb",
+  "colour_scaling": "log_predicted_score = log1p(predicted_eb)",
+  "file_size_bytes": 30539707,
   "count_by_family": {
-    "other_urban": 28411,
-    "other_rural": 5140,
-    "trunk_a": 3428,
-    "motorway": 2431,
+    "other_urban": 29328,
+    "other_rural": 4483,
+    "trunk_a": 3414,
+    "motorway": 2185,
     "other_unknown": 3
   },
   "count_by_road_classification": {
-    "A Road": 31799,
-    "B Road": 3305,
-    "Motorway": 2431,
-    "Classified Unnumbered": 1824,
-    "Unclassified": 48,
-    "Unknown": 4,
-    "Not Classified": 2
+    "A Road": 33328,
+    "B Road": 2433,
+    "Motorway": 2185,
+    "Classified Unnumbered": 1447,
+    "Unclassified": 17,
+    "Unknown": 3
   },
   "count_by_road_archetype": {
-    "urban_a_road": 23755,
-    "rural_a_road": 4613,
-    "trunk_a": 3428,
-    "urban_b_road": 2865,
-    "motorway": 2431,
-    "urban_minor": 1791,
-    "rural_b_road": 440,
-    "rural_minor": 87,
+    "urban_a_road": 25872,
+    "rural_a_road": 4039,
+    "trunk_a": 3414,
+    "motorway": 2185,
+    "urban_b_road": 2032,
+    "urban_minor": 1424,
+    "rural_b_road": 401,
+    "rural_minor": 43,
     "other_unknown": 3
   },
   "numeric_summary": {
     "estimated_aadt": {
       "n": 39413,
-      "min": 312.6,
-      "median": 11559.2,
-      "mean": 13206.159,
-      "p90": 20893.32,
-      "max": 101745.0
+      "min": 568.4,
+      "median": 18625.8,
+      "mean": 19201.96,
+      "p90": 26168.82,
+      "max": 110889.8
     },
     "collision_count": {
       "n": 39413,
       "min": 0.0,
       "median": 4.0,
-      "mean": 6.409,
+      "mean": 6.417,
       "p90": 14.0,
       "max": 267.0
     },
-    "predicted_xgb": {
+    "predicted_eb": {
       "n": 39413,
-      "min": 0.435,
-      "median": 0.607,
-      "mean": 0.827,
-      "p90": 1.245,
-      "max": 26.749
+      "min": 0.027,
+      "median": 0.41,
+      "mean": 0.649,
+      "p90": 1.38,
+      "max": 26.664
     }
   }
 }
