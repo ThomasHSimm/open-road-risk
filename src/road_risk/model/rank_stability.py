@@ -482,7 +482,11 @@ def run_rank_stability(seeds: list[int] | None = None) -> dict[str, Any]:
 
     for i, seed in enumerate(seeds, start=1):
         logger.info("=== Rank stability seed %s (%s/%s) ===", seed, i, len(seeds))
-        xgb_model, xgb_features, xgb_metrics = train_collision_xgb(df, seed=seed)
+        # drop_feature_cols=False: this harness reuses df to score (and re-trains
+        # across seeds), so the feature columns must survive training.
+        xgb_model, xgb_features, xgb_metrics = train_collision_xgb(
+            df, seed=seed, drop_feature_cols=False
+        )
         if xgb_metrics.get("n_jobs") != 1:
             raise RuntimeError(f"XGBoost n_jobs is not confirmed as 1 for seed {seed}")
 

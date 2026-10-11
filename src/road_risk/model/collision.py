@@ -733,6 +733,7 @@ def train_collision_xgb(
     df: pd.DataFrame,
     seed: int = RANDOM_STATE,
     memory_efficient: bool = False,
+    drop_feature_cols: bool = True,
 ) -> tuple:
     """
     Fit XGBoost Poisson regression. Returns model, features, metrics.
@@ -783,10 +784,13 @@ def train_collision_xgb(
         len(feature_cols),
     )
 
-    # The caller does not need the wide training dataframe after this point.
-    # Dropping feature columns before train/test slicing reduces peak RSS for
-    # the full-zero fit attempt.
-    df.drop(columns=[c for c in feature_cols if c in df.columns], inplace=True, errors="ignore")
+    # The one-shot caller does not need the wide training dataframe after this
+    # point. Dropping feature columns before train/test slicing reduces peak RSS
+    # for the full-zero fit attempt. Callers that reuse df afterwards (e.g. the
+    # rank-stability harness, which scores and re-trains across seeds) must pass
+    # drop_feature_cols=False to keep the columns intact.
+    if drop_feature_cols:
+        df.drop(columns=[c for c in feature_cols if c in df.columns], inplace=True, errors="ignore")
     gc.collect()
 
     # XGBoost Poisson with exposure offset via base_margin.

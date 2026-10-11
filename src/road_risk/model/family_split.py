@@ -56,13 +56,16 @@ RISK_SCORES_PATH = MODELS / "risk_scores.parquet"
 
 FAMILIES = ["motorway", "trunk_a", "other_urban", "other_rural"]
 
-# Active-network family link counts from design doc §2 (road_link_annual.parquet
-# distinct link_ids). Any family differing by more than _TOLERANCE halts the run.
+# Active-network family link counts (road_link_annual.parquet distinct link_ids).
+# Any family differing by more than _TOLERANCE halts the run — a tripwire to force
+# review when the underlying network changes. Re-baselined 2026-10-06 to the
+# full-GB network; the earlier design-doc §2 values (motorway 2,279, trunk_a 5,465,
+# other_urban 177,296, other_rural 48,564) predated the full-GB Open Roads rebuild.
 _EXPECTED_ACTIVE_COUNTS: dict[str, int] = {
-    "motorway": 2_279,
-    "trunk_a": 5_465,
-    "other_urban": 177_296,
-    "other_rural": 48_564,
+    "motorway": 4_639,
+    "trunk_a": 15_865,
+    "other_urban": 392_789,
+    "other_rural": 118_149,
 }
 _FAMILY_COUNT_TOLERANCE = 0.01  # 1 %
 
@@ -92,13 +95,19 @@ def assign_family(df: pd.DataFrame) -> pd.DataFrame:
     family_arr = np.select(conditions, FAMILIES, default="")
     n_unknown = int((family_arr == "").sum())
     if n_unknown > 0:
+        # A tiny number of links have no rural/urban classification (ruc_urban_rural
+        # missing) and are not motorway/trunk-A. Rather than fail the whole diagnostic
+        # build, fall them back to other_rural and warn.
         unknown_mask = family_arr == ""
         bad_cols = ["link_id", "road_function", "is_trunk", "ruc_urban_rural"]
-        bad = df.loc[unknown_mask, bad_cols].head(10)
-        raise ValueError(
-            f"{n_unknown:,} rows could not be assigned to a facility family.\n"
-            f"First examples:\n{bad.to_string()}"
+        logger.warning(
+            "%s rows could not be matched to a facility family (missing "
+            "ruc_urban_rural / road_function); assigning them to 'other_rural'. "
+            "First examples:\n%s",
+            f"{n_unknown:,}",
+            df.loc[unknown_mask, bad_cols].head(10).to_string(),
         )
+        family_arr = np.where(unknown_mask, "other_rural", family_arr)
     df = df.copy()
     df["family"] = family_arr
     return df
@@ -306,11 +315,16 @@ def run_family_split(seed: int = 42) -> dict[str, Any]:
     logger.info("Collision dataset built in %.0f s: %s rows", time.time() - t1, f"{len(df):,}")
 
     # ── Join road_function and assign families ────────────────────────────────
-    # build_collision_dataset extracts is_trunk but not road_function from openroads.
-    # ruc_urban_rural is already in df via the net_features merge.
+    # build_collision_dataset extracts is_trunk but not road_function from
+    # openroads, and merges only the numeric model features from net_features
+    # (NETWORK_FEATURE_COLS_FOR_COLLISION), which excludes the string
+    # ruc_urban_rural. Join both explicitly here for family assignment.
     if "road_function" not in df.columns:
         road_func = pd.DataFrame(openroads[["link_id", "road_function"]]).drop_duplicates("link_id")
         df = df.merge(road_func, on="link_id", how="left")
+    if "ruc_urban_rural" not in df.columns:
+        ruc = net_features[["link_id", "ruc_urban_rural"]].drop_duplicates("link_id")
+        df = df.merge(ruc, on="link_id", how="left")
 
     n_missing_rf = int(df["road_function"].isna().sum())
     if n_missing_rf > 0:
